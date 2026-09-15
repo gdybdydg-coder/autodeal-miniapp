@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
   <meta name="theme-color" content="#070709">
   <title>AUTODEAL</title>
-  <link rel="stylesheet" href="style.css?v=3">
+  <link rel="stylesheet" href="style.css?v=4">
 </head>
 <body>
 <main class="app">
@@ -22,7 +22,18 @@
       <fieldset><legend class="label">Ціна, $</legend><div class="range"><input id="priceFrom" class="input" type="number" inputmode="numeric" min="0" placeholder="Від" aria-label="Ціна від"><input id="priceTo" class="input" type="number" inputmode="numeric" min="0" placeholder="До" aria-label="Ціна до"></div></fieldset>
       <fieldset><legend class="label">Рік</legend><div class="range"><input id="yearFrom" class="input" type="number" inputmode="numeric" placeholder="Від" aria-label="Рік від"><input id="yearTo" class="input" type="number" inputmode="numeric" placeholder="До" aria-label="Рік до"></div></fieldset>
     </div>
-    <details class="advanced"><summary>Додаткові фільтри</summary><div class="advanced-body"><label class="label" for="region">Область</label><select id="region" class="input"></select></div></details>
+    <div class="group"><label class="label" for="region">Область</label><select id="region" class="input"></select></div>
+    <details class="advanced" id="advancedFilters">
+      <summary>Додаткові фільтри <span id="advancedCount" class="filter-count"></span></summary>
+      <div class="advanced-body">
+        <p class="filter-help">Можна обрати кілька варіантів у кожній категорії.</p>
+        <details class="filter-section"><summary>Тип кузова <span id="bodyCount" class="filter-count"></span></summary><fieldset id="bodyOptions" class="choices"><legend class="sr-only">Тип кузова</legend></fieldset></details>
+        <details class="filter-section"><summary>Тип палива <span id="fuelCount" class="filter-count"></span></summary><fieldset id="fuelOptions" class="choices"><legend class="sr-only">Тип палива</legend></fieldset></details>
+        <details class="filter-section"><summary>Коробка передач <span id="transmissionCount" class="filter-count"></span></summary><fieldset id="transmissionOptions" class="choices"><legend class="sr-only">Коробка передач</legend></fieldset></details>
+        <fieldset class="mileage-group"><legend class="label">Пробіг, тис. км</legend><div class="row"><input id="mileageFrom" class="input" type="number" inputmode="decimal" min="0" step="any" placeholder="Від" aria-label="Пробіг від, тис. км"><input id="mileageTo" class="input" type="number" inputmode="decimal" min="0" step="any" placeholder="До" aria-label="Пробіг до, тис. км"></div></fieldset>
+        <button id="resetAdvanced" class="reset-filters" type="button">Скинути додаткові фільтри</button>
+      </div>
+    </details>
     <button id="marketSwitch" class="market" type="button" role="switch" aria-checked="true">
       <span class="market-left"><span class="fire">🔥</span><span><strong>Тільки вигідні авто</strong><small>Нижче ринку мінімум на 15%</small></span></span><span class="switch active" aria-hidden="true"></span>
     </button>
@@ -31,6 +42,7 @@
 
   <section id="results" class="results" aria-live="polite">
     <div class="results-head"><h2>🔥 Вигідні зараз</h2><span id="count" class="count"></span></div>
+    <p class="filter-help demo-note">Демо: тестові авто, характеристики й ціни. Фото ілюстративні.</p>
     <div id="resultsList" class="results-list"></div>
   </section>
 
@@ -42,7 +54,7 @@
   </nav>
 </main>
 <div id="toast" class="toast" role="status"></div>
-<script src="data/cars.js"></script>
-<script src="app.js?v=3"></script>
+<script src="data/cars.js?v=4"></script>
+<script src="app.js?v=4"></script>
 </body>
 </html>

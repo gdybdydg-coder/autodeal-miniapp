@@ -63,3 +63,21 @@ legend { padding: 0; }
 .input:focus-visible { outline-offset: -2px; }
 @media(max-width:350px) { .app { padding-left: 10px; padding-right: 10px; } .search-box { padding: 10px; } .row { gap: 8px; } h1 { font-size: 24px; } }
 @media(prefers-reduced-motion:reduce) { *, *::after { scroll-behavior: auto !important; transition: none !important; } }
+
+/* Selectable advanced filters */
+h1 { font-weight: 400; letter-spacing: -.3px; }
+.logo { font-weight: 600; }
+.search-button, .results-head h2, .car-name, .car-price { font-weight: 500; }
+.label, .market-left strong { font-weight: 400; }
+.advanced summary { gap: 8px; }
+.filter-count { margin-left: auto; color: #ff737b; font-size: 12px; flex-shrink: 0; }
+.filter-help { font-size: 12px; line-height: 1.5; color: #a5a5ae; margin: 0 0 10px; }
+.filter-section { border-top: 1px solid #303036; }
+.choices { display: grid; gap: 4px; padding: 0 0 10px; }
+.choice { min-height: 44px; display: flex; align-items: center; gap: 10px; padding: 6px 8px; border-radius: 8px; color: #d7d7de; font-size: 14px; cursor: pointer; }
+.choice:has(input:checked) { background: #2c1c21; }
+.choice input { width: 18px; height: 18px; flex: 0 0 18px; margin: 0; accent-color: #f11d27; }
+.sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+.mileage-group { padding-top: 12px; margin-top: 4px; border-top: 1px solid #303036; }
+.reset-filters { min-height: 44px; padding: 8px 0; margin-top: 6px; border: 0; background: transparent; color: #babac3; font-size: 13px; text-decoration: underline; cursor: pointer; }
+.demo-note { margin-bottom: 12px; }
