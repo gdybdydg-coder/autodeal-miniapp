@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="uk">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+<meta name="theme-color" content="#070709" />
+<title>AUTODEAL</title>
+<style>
+:root{--bg:#070709;--panel:#141417;--field:#202024;--line:#303036;--muted:#85858d;--text:#f7f7f8;--red:#f11d27;--nav:#0d0d11}
+*{box-sizing:border-box} html,body{margin:0;min-height:100%;background:#202020;color:var(--text);font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif} button,select,input{font:inherit}
+.app{max-width:520px;min-height:100dvh;margin:auto;background:var(--bg);position:relative;padding:34px 23px 110px;overflow:hidden}
+.header{display:flex;justify-content:space-between;align-items:center;margin-bottom:45px}.logo{font-size:31px;font-weight:900;letter-spacing:-1.5px}.logo span{color:var(--red)}.settings{width:54px;height:54px;border:0;border-radius:17px;background:#15151a;color:#fff;font-size:29px;display:grid;place-items:center;cursor:pointer}
+h1{font-size:36px;line-height:1.08;margin:0 0 12px;font-weight:900;letter-spacing:-1.4px}.subtitle{color:#818187;font-size:19px;margin-bottom:30px}
+.search-box{background:var(--panel);border:1px solid #29292f;border-radius:24px;padding:25px 23px 22px}.row{display:grid;grid-template-columns:1fr 1fr;gap:14px}.group{margin-bottom:22px}.label{display:block;color:#96969e;font-size:14px;font-weight:800;letter-spacing:.5px;margin-bottom:10px}.input{width:100%;height:61px;border-radius:15px;border:1px solid #37373d;background:var(--field);color:#f5f5f6;padding:0 17px;font-size:19px;outline:none}.input:focus{border-color:#55555d}.input::placeholder{color:#aaaab0}.input:disabled{opacity:.55}select.input{appearance:auto}
+.market{min-height:79px;background:#202024;border-radius:16px;display:flex;align-items:center;justify-content:space-between;padding:13px 17px;margin:5px 0 21px;gap:12px}.market-left{display:flex;align-items:center;gap:13px;min-width:0}.fire{font-size:28px}.market-title{font-size:18px;font-weight:800}.market-subtitle{font-size:14px;color:#85858d;margin-top:5px}.switch{flex:0 0 58px;width:58px;height:34px;border-radius:999px;background:#4b4b50;padding:3px;cursor:pointer;transition:.2s}.switch:after{content:"";display:block;width:28px;height:28px;border-radius:50%;background:#fff;transition:.2s}.switch.active{background:var(--red)}.switch.active:after{transform:translateX(24px)}
+.search-button{width:100%;height:69px;border:0;border-radius:15px;background:var(--red);color:#fff;font-size:22px;font-weight:900;cursor:pointer}.search-button:active{transform:scale(.99)}
+.results{display:none;padding:26px 2px 5px}.results.show{display:block}.results-head{display:flex;justify-content:space-between;align-items:end;margin-bottom:15px}.results-title{font-size:20px;font-weight:900}.count{color:#888890;font-size:14px}.car{background:#151519;border:1px solid #29292f;border-radius:18px;padding:16px;margin-bottom:12px}.car-top{display:flex;justify-content:space-between;gap:10px}.car-name{font-weight:850;font-size:18px}.car-price{font-weight:900;font-size:18px}.car-meta{color:#97979f;font-size:14px;margin-top:8px}.deal{color:#ff525a;font-weight:800;font-size:13px;margin-top:9px}.empty{text-align:center;color:#8d8d95;padding:24px 8px}
+.navbar{position:absolute;left:0;right:0;bottom:0;height:94px;background:rgba(13,13,17,.98);border-top:1px solid #29292e;display:grid;grid-template-columns:repeat(4,1fr);padding-bottom:max(8px,env(safe-area-inset-bottom))}.nav{border:0;background:transparent;color:#6f6f76;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;font-size:13px;cursor:pointer}.nav-icon{font-size:25px;line-height:1}.nav.active{color:#fff}
+.toast{position:fixed;left:50%;bottom:115px;transform:translateX(-50%) translateY(15px);background:#26262c;color:#fff;padding:11px 16px;border-radius:12px;font-size:14px;opacity:0;pointer-events:none;transition:.2s;white-space:nowrap}.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+@media(max-width:390px){.app{padding-left:17px;padding-right:17px}.search-box{padding-left:17px;padding-right:17px}h1{font-size:32px}.subtitle{font-size:17px}.input{font-size:17px}.market-title{font-size:16px}.market-subtitle{font-size:12px}}
+</style>
+</head>
+<body>
+<main class="app">
+  <header class="header"><div class="logo">AUTO<span>DEAL</span></div><button class="settings" id="settingsBtn" aria-label="Налаштування">⚙️</button></header>
+  <h1>Знайди вигідне авто</h1><div class="subtitle">Пошук автомобілів нижче ринкової ціни</div>
+  <section class="search-box">
+    <div class="row group">
+      <div><label class="label" for="brand">МАРКА</label><select id="brand" class="input"><option value="">Всі марки</option></select></div>
+      <div><label class="label" for="model">МОДЕЛЬ</label><select id="model" class="input" disabled><option value="">Всі моделі</option></select></div>
+    </div>
+    <div class="group"><label class="label">ЦІНА, $</label><div class="row"><input id="priceFrom" class="input" type="number" inputmode="numeric" placeholder="Від"><input id="priceTo" class="input" type="number" inputmode="numeric" placeholder="До"></div></div>
+    <div class="group"><label class="label">РІК</label><div class="row"><input id="yearFrom" class="input" type="number" inputmode="numeric" placeholder="Від"><input id="yearTo" class="input" type="number" inputmode="numeric" placeholder="До"></div></div>
+    <div class="group"><label class="label" for="region">ОБЛАСТЬ</label><select id="region" class="input"></select></div>
+    <div class="market"><div class="market-left"><div class="fire">🔥</div><div><div class="market-title">Тільки вигідні авто</div><div class="market-subtitle">Нижче ринку мінімум на 15%</div></div></div><div id="marketSwitch" class="switch active" role="switch" aria-checked="true" tabindex="0"></div></div>
+    <button id="searchBtn" class="search-button" type="button">ПОКАЗАТИ АВТО</button>
+  </section>
+  <section id="results" class="results"><div class="results-head"><div class="results-title">🔥 Вигідні зараз</div><div id="count" class="count"></div></div><div id="resultsList"></div></section>
+  <nav class="navbar"><button class="nav active" data-tab="search"><span class="nav-icon">🔎</span>Пошук</button><button class="nav" data-tab="deals"><span class="nav-icon">🔥</span>Вигідні</button><button class="nav" data-tab="saved"><span class="nav-icon">♡</span>Збережені</button><button class="nav" data-tab="settings"><span class="nav-icon">⚙️</span>Налаштування</button></nav>
+</main><div id="toast" class="toast"></div>
+<script>
+const catalog={BMW:["3 Series","5 Series","X3","X5"],Volkswagen:["Passat","Golf","Tiguan","Touareg"],Audi:["A4","A6","Q5","Q7"],Skoda:["Octavia","Superb","Kodiaq"],"Mercedes-Benz":["C-Class","E-Class","GLC","GLE"]};
+const regions=["Вся Україна","Хмельницька область","Львівська область","Вінницька область","Київська область","Одеська область","Дніпропетровська область","Івано-Франківська область","Тернопільська область","Чернівецька область","Закарпатська область","Рівненська область","Волинська область","Житомирська область","Черкаська область","Полтавська область"];
+const cars=[
+ {brand:"BMW",model:"3 Series",year:2018,price:15900,market:19000,region:"Київська область"},{brand:"Volkswagen",model:"Passat",year:2017,price:11900,market:14500,region:"Хмельницька область"},{brand:"Audi",model:"A4",year:2019,price:18900,market:22500,region:"Львівська область"},{brand:"Skoda",model:"Octavia",year:2018,price:11200,market:12500,region:"Вінницька область"},{brand:"Mercedes-Benz",model:"C-Class",year:2017,price:17800,market:21500,region:"Київська область"},{brand:"BMW",model:"X5",year:2016,price:23900,market:28500,region:"Одеська область"}
+];
+const $=id=>document.getElementById(id), brand=$("brand"), model=$("model"), region=$("region");
+Object.keys(catalog).forEach(b=>brand.add(new Option(b,b))); regions.forEach((r,i)=>region.add(new Option(r,i? r:"")));
+brand.addEventListener("change",()=>{model.innerHTML='<option value="">Всі моделі</option>'; const list=catalog[brand.value]||[]; list.forEach(m=>model.add(new Option(m,m))); model.disabled=!list.length});
+let onlyMarket=true; const sw=$("marketSwitch"); function toggleMarket(){onlyMarket=!onlyMarket;sw.classList.toggle("active",onlyMarket);sw.setAttribute("aria-checked",String(onlyMarket))} sw.addEventListener("click",toggleMarket); sw.addEventListener("keydown",e=>{if(e.key===" "||e.key==="Enter"){e.preventDefault();toggleMarket()}});
+function num(id){const v=$(id).value;return v===""?null:Number(v)}
+function searchCars(){const pf=num("priceFrom"),pt=num("priceTo"),yf=num("yearFrom"),yt=num("yearTo"); if(pf!==null&&pt!==null&&pf>pt)return toast("Ціна «Від» не може бути більшою за «До»"); if(yf!==null&&yt!==null&&yf>yt)return toast("Рік «Від» не може бути більшим за «До»"); const found=cars.filter(c=>(!brand.value||c.brand===brand.value)&&(!model.value||c.model===model.value)&&(pf===null||c.price>=pf)&&(pt===null||c.price<=pt)&&(yf===null||c.year>=yf)&&(yt===null||c.year<=yt)&&(!region.value||c.region===region.value)&&(!onlyMarket||c.price<=c.market*.85)); render(found)}
+function render(list){$("results").classList.add("show");$("count").textContent=`Знайдено: ${list.length}`;$("resultsList").innerHTML=list.length?list.map(c=>{const pct=Math.round((1-c.price/c.market)*100);return `<article class="car"><div class="car-top"><div class="car-name">${c.brand} ${c.model}</div><div class="car-price">$${c.price.toLocaleString("en-US")}</div></div><div class="car-meta">${c.year} • ${c.region} • ринок ≈ $${c.market.toLocaleString("en-US")}</div><div class="deal">↓ ${pct}% нижче ринку</div></article>`}).join(""):'<div class="empty">За цими фільтрами авто не знайдено.</div>';$("results").scrollIntoView({behavior:"smooth",block:"start"})}
+function toast(t){const el=$("toast");el.textContent=t;el.classList.add("show");clearTimeout(window.tt);window.tt=setTimeout(()=>el.classList.remove("show"),2200)}
+$("searchBtn").addEventListener("click",searchCars); $("settingsBtn").addEventListener("click",()=>toast("Налаштування підключимо наступним екраном")); document.querySelectorAll(".nav").forEach(n=>n.addEventListener("click",()=>{document.querySelectorAll(".nav").forEach(x=>x.classList.remove("active"));n.classList.add("active");if(n.dataset.tab!=="search")toast("Розділ «"+n.textContent.trim()+"» поки в розробці")}));
+if(window.Telegram?.WebApp){Telegram.WebApp.ready();Telegram.WebApp.expand();}
+</script>
+</body></html>
