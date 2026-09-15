@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
   <meta name="theme-color" content="#070709">
   <title>AUTODEAL</title>
-  <link rel="stylesheet" href="style.css?v=4">
+  <link rel="stylesheet" href="style.css?v=6">
 </head>
 <body>
 <main class="app">
@@ -38,6 +38,7 @@
       <span class="market-left"><span class="fire">🔥</span><span><strong>Тільки вигідні авто</strong><small>Нижче ринку мінімум на 15%</small></span></span><span class="switch active" aria-hidden="true"></span>
     </button>
     <button id="searchBtn" class="search-button" type="button">Показати авто</button>
+    <button id="saveSearchBtn" class="save-search-button" type="button">＋ Зберегти пошук</button>
   </section>
 
   <section id="results" class="results" aria-live="polite">
@@ -49,12 +50,28 @@
   <nav class="navbar" aria-label="Головна навігація">
     <button class="nav active" data-tab="search"><span>🔎</span>Пошук</button>
     <button class="nav" data-tab="deals"><span>🔥</span>Вигідні</button>
-    <button class="nav" data-tab="saved"><span>♡</span>Збережені</button>
+    <button class="nav" data-tab="saved"><span>♡</span>Мої пошуки</button>
     <button class="nav" data-tab="settings"><span>⚙️</span>Налаштування</button>
   </nav>
 </main>
 <div id="toast" class="toast" role="status"></div>
+<dialog id="savedDialog" aria-labelledby="savedTitle">
+  <div class="dialog-head"><h2 id="savedTitle">Мої пошуки</h2><button id="closeSaved" class="dialog-close" type="button" aria-label="Закрити">×</button></div>
+  <p class="delivery-status">Сповіщення ще не підключені</p>
+  <p class="filter-help">Пошуки зберігаються лише в цьому браузері на цьому пристрої, не в Telegram-акаунті. Сервер і реальні оголошення ще не підключені. Позначка нижче зберігає лише твоє побажання — повідомлення не надсилаються.</p>
+  <p id="savedError" class="saved-error" role="alert" hidden></p>
+  <form id="saveSearchForm" hidden>
+    <label class="label" for="savedName">Назва пошуку</label>
+    <input id="savedName" class="input" maxlength="60" required autocomplete="off">
+    <p id="draftSummary" class="filter-help"></p>
+    <label class="choice"><input id="draftNotify" type="checkbox"><span>Хочу сповіщення після підключення сервера</span></label>
+    <button class="search-button" id="confirmSaveSearch" type="submit">Зберегти на пристрої</button>
+  </form>
+  <div id="savedSearchList"></div>
+</dialog>
 <script src="data/cars.js?v=4"></script>
-<script src="app.js?v=5"></script>
+<script src="saved-searches.js?v=6"></script>
+<script src="app.js?v=6"></script>
+<script src="search-manager.js?v=6"></script>
 </body>
 </html>

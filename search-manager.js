@@ -1,0 +1,121 @@
+"use strict";
+const savedAPI=window.AutoDealSaved;
+let draftFilters=null,pendingDelete=null;
+function summarizeFilters(f) {
+  const parts=[f.brand||"Всі марки",f.model,f.region||"Вся Україна"];
+  for(const [key,label,unit] of [["price","Ціна","$"],["year","Рік",""],["mileage","Пробіг","тис. км"]]) {
+    const r=f[key];
+    if(r.from!==null||r.to!==null) parts.push(label+": "+(r.from??"…")+"–"+(r.to??"…")+" "+unit);
+  }
+  for(const key of ["body","fuel","transmission"]) if(f[key].length) parts.push(f[key].join(", "));
+  parts.push(f.onlyDeals?"Від 15% нижче ринку":"Без обмеження вигоди");
+  return parts.filter(Boolean).join(" · ");
+}
+function storageError() {
+  $("savedError").hidden=false;
+  $("savedError").textContent="Не вдалося прочитати або зберегти пошуки. Перевір доступ браузера до сховища. Наявні дані не очищалися.";
+}
+function managerButton(text,action) {
+  const button=document.createElement("button");
+  button.type="button";button.className="manager-button";button.textContent=text;
+  button.addEventListener("click",action);return button;
+}
+function renderSavedSearches() {
+  const list=$("savedSearchList");
+  list.replaceChildren();
+  $("savedError").hidden=true;
+  let items;
+  try { items=savedAPI.read(window.localStorage); }
+  catch { storageError();return; }
+  if(!items.length) {
+    const empty=document.createElement("p");empty.className="filter-help";
+    empty.textContent="Ще немає збережених пошуків. Вибери фільтри та натисни «Зберегти пошук».";
+    list.append(empty);return;
+  }
+  for(const item of items) {
+    const article=document.createElement("article");article.className="saved-search-card";
+    const name=document.createElement("h3");name.textContent=item.name;
+    const summary=document.createElement("p");summary.className="filter-help";summary.textContent=summarizeFilters(item.filters);
+    const status=document.createElement("p");status.className="filter-help";
+    status.textContent=item.notificationsWanted?"Сповіщення бажані · очікує підключення сервера":"Сповіщення не запитані";
+    const label=document.createElement("label");label.className="choice";
+    const checkbox=document.createElement("input");checkbox.type="checkbox";checkbox.checked=item.notificationsWanted;
+    const text=document.createElement("span");text.textContent="Хочу сповіщення після підключення сервера";
+    checkbox.addEventListener("change",()=>{
+      try { savedAPI.setWanted(window.localStorage,item.id,checkbox.checked);renderSavedSearches(); }
+      catch { checkbox.checked=item.notificationsWanted;storageError(); }
+    });
+    label.append(checkbox,text);
+    const actions=document.createElement("div");actions.className="saved-actions";
+    actions.append(managerButton("Відкрити пошук",()=>{
+      try {
+        applySavedFilters(item.filters);
+        $("savedDialog").close();
+        searchCars();
+      } catch(error) { toast(error.message); }
+    }));
+    if(pendingDelete===item.id) {
+      actions.append(managerButton("Так, видалити",()=>{
+        try { savedAPI.remove(window.localStorage,item.id);pendingDelete=null;renderSavedSearches(); }
+        catch { storageError(); }
+      }),managerButton("Скасувати",()=>{pendingDelete=null;renderSavedSearches();}));
+    } else actions.append(managerButton("Видалити",()=>{pendingDelete=item.id;renderSavedSearches();}));
+    article.append(name,summary,status,label,actions);list.append(article);
+  }
+}
+function applySavedFilters(raw) {
+  const f=savedAPI.normalize(raw);
+  if(f.brand && !catalog[f.brand]) throw Error("Ця марка більше не доступна");
+  if(f.model && !(catalog[f.brand]||[]).includes(f.model)) throw Error("Ця модель більше не доступна");
+  if(f.region && !regions.includes(f.region)) throw Error("Ця область більше не доступна");
+  for(const group of advancedGroups) if(f[group.name].some(v=>!group.options.includes(v))) throw Error("Деякі параметри пошуку більше не доступні");
+  brand.value=f.brand;brand.dispatchEvent(new Event("change"));model.value=f.model;region.value=f.region;
+  for(const key of ["price","year","mileage"]) {
+    $(key+"From").value=f[key].from??"";$(key+"To").value=f[key].to??"";
+  }
+  for(const group of advancedGroups) document.querySelectorAll('input[name="'+group.name+'"]').forEach(input=>input.checked=f[group.name].includes(input.value));
+  onlyDeals=f.onlyDeals;
+  marketButton.querySelector(".switch").classList.toggle("active",onlyDeals);
+  marketButton.setAttribute("aria-checked",String(onlyDeals));
+  updateAdvancedCount();
+  $("advancedFilters").open=!!$("advancedCount").textContent;
+  document.querySelectorAll(".nav").forEach(item=>item.classList.toggle("active",item.dataset.tab==="search"));
+}
+function openSearchManager(compose) {
+  draftFilters=null;pendingDelete=null;
+  if(compose) {
+    try { draftFilters=savedAPI.normalize(readCurrentFilters()); }
+    catch(error) { toast(error.message);return; }
+    $("savedName").value=[draftFilters.brand||"Мій пошук",draftFilters.model].filter(Boolean).join(" ");
+    $("draftSummary").textContent=summarizeFilters(draftFilters);
+    $("draftNotify").checked=false;
+  }
+  $("saveSearchForm").hidden=!compose;
+  renderSavedSearches();
+  $("savedDialog").showModal();
+  if(compose) $("savedName").focus();
+}
+$("saveSearchBtn").addEventListener("click",()=>openSearchManager(true));
+$("settingsBtn").addEventListener("click",()=>openSearchManager(false));
+$("closeSaved").addEventListener("click",()=>$("savedDialog").close());
+$("saveSearchForm").addEventListener("submit",event=>{
+  event.preventDefault();
+  if(!draftFilters) return;
+  try {
+    savedAPI.save(window.localStorage,draftFilters,$("savedName").value,$("draftNotify").checked);
+    $("saveSearchForm").hidden=true;draftFilters=null;renderSavedSearches();
+    toast("Пошук збережено на пристрої");
+  } catch(error) {
+    storageError();
+    if(error.message.includes("Назва")||error.message.includes("20 пошуків")) $("savedError").textContent=error.message;
+  }
+});
+document.querySelectorAll(".nav").forEach(item=>item.addEventListener("click",()=>{
+  if(item.dataset.tab==="saved"||item.dataset.tab==="settings") return openSearchManager(false);
+  if(item.dataset.tab==="deals") return toast("Розділ «Вигідні» ще в розробці");
+  document.querySelectorAll(".nav").forEach(node=>node.classList.toggle("active",node===item));
+  document.querySelector(".search-box").scrollIntoView({behavior:"smooth",block:"start"});
+}));
+window.addEventListener("storage",event=>{
+  if((event.key===savedAPI.KEY||event.key===null)&&$("savedDialog").open) renderSavedSearches();
+});

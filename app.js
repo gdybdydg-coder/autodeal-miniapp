@@ -87,20 +87,22 @@ function matchesFilters(car,filters) {
     && (!filters.transmission.length||filters.transmission.includes(car.transmission))
     && (!filters.onlyDeals||(Number.isFinite(car.market)&&car.market>0&&car.price<=car.market*.85));
 }
+function readCurrentFilters() {
+  updateAdvancedCount();
+  return {
+    brand:brand.value,model:model.value,region:region.value,
+    price:readRange("priceFrom","priceTo","Ціна"),
+    year:readRange("yearFrom","yearTo","Рік"),
+    mileage:readRange("mileageFrom","mileageTo","Пробіг"),
+    body:selectedValues("body"),fuel:selectedValues("fuel"),
+    transmission:selectedValues("transmission"),onlyDeals
+  };
+}
 function searchCars() {
-  try {
-    const filters={
-      brand:brand.value,model:model.value,region:region.value,
-      price:readRange("priceFrom","priceTo","Ціна"),
-      year:readRange("yearFrom","yearTo","Рік"),
-      mileage:readRange("mileageFrom","mileageTo","Пробіг"),
-      body:selectedValues("body"),fuel:selectedValues("fuel"),
-      transmission:selectedValues("transmission"),onlyDeals
-    };
-    render(cars.filter(car=>matchesFilters(car,filters)));
-  } catch (error) { toast(error.message); }
+  try { const filters=readCurrentFilters();render(cars.filter(car=>matchesFilters(car,filters))); }
+  catch (error) { toast(error.message); }
 }
 function render(list){$("results").classList.add("show");$("count").textContent=`Знайдено: ${list.length}`;$("resultsList").innerHTML=list.length?list.map(car=>{const discount=Math.round((1-car.price/car.market)*100);return `<article class="car"><div class="car-photo-wrap"><img class="car-photo" src="${car.image}" alt="${car.brand} ${car.model}" loading="lazy"><span class="badge">−${discount}% ВІД РИНКУ</span><button class="save" data-save="${car.id}" aria-label="Зберегти">♡</button></div><div class="car-body"><div class="car-top"><div class="car-name">${car.brand} ${car.model}</div><div class="car-price">$${car.price.toLocaleString("en-US")}</div></div><div class="car-meta">${car.year} • ${car.fuel} • ${Math.round(car.mileage/1000)} тис. км</div><div class="car-meta">${car.body || "Кузов не вказаний"} • ${car.transmission || "КПП не вказана"}</div><div class="market-price"><span>Ринок ≈ $${car.market.toLocaleString("en-US")}</span><span class="deal">↓ ${discount}%</span></div><div class="location">📍 ${car.region}</div><a class="car-link" href="${car.url}" data-demo="${car.url==="#"}">ВІДКРИТИ ОГОЛОШЕННЯ</a></div></article>`}).join(""):'<div class="empty">За цими фільтрами авто не знайдено.</div>';$("results").scrollIntoView({behavior:"smooth",block:"start"})}
 function toast(message){const element=$("toast");element.textContent=message;element.classList.add("show");clearTimeout(window.toastTimer);window.toastTimer=setTimeout(()=>element.classList.remove("show"),2200)}
-$("searchBtn").addEventListener("click",searchCars);$("settingsBtn").addEventListener("click",()=>toast("Налаштування додамо наступним етапом"));$("resultsList").addEventListener("click",event=>{const save=event.target.closest("[data-save]");if(save){save.textContent=save.textContent==="♡"?"♥":"♡";toast(save.textContent==="♥"?"Авто збережено":"Авто видалено зі збережених")}const demo=event.target.closest('[data-demo="true"]');if(demo){event.preventDefault();toast("Посилання підключимо до реальних оголошень")}});document.querySelectorAll(".nav").forEach(item=>item.addEventListener("click",()=>{document.querySelectorAll(".nav").forEach(node=>node.classList.remove("active"));item.classList.add("active");if(item.dataset.tab!=="search")toast(`Розділ «${item.textContent.trim()}» — наступний етап`)}));
+$("searchBtn").addEventListener("click",searchCars);$("resultsList").addEventListener("click",event=>{const save=event.target.closest("[data-save]");if(save){save.textContent=save.textContent==="♡"?"♥":"♡";toast(save.textContent==="♥"?"Авто збережено":"Авто видалено зі збережених")}const demo=event.target.closest('[data-demo="true"]');if(demo){event.preventDefault();toast("Посилання підключимо до реальних оголошень")}});
 if(window.Telegram?.WebApp){Telegram.WebApp.ready();Telegram.WebApp.expand();}

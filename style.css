@@ -81,3 +81,18 @@ h1 { font-weight: 400; letter-spacing: -.3px; }
 .mileage-group { padding-top: 12px; margin-top: 4px; border-top: 1px solid #303036; }
 .reset-filters { min-height: 44px; padding: 8px 0; margin-top: 6px; border: 0; background: transparent; color: #babac3; font-size: 13px; text-decoration: underline; cursor: pointer; }
 .demo-note { margin-bottom: 12px; }
+.save-search-button { width:100%; min-height:44px; border:1px solid #393940; border-radius:10px; margin-top:10px; background:transparent; color:#ddd; font-size:14px; cursor:pointer; }
+#savedDialog { box-sizing:border-box; width:calc(100% - 24px); max-width:480px; max-height:85dvh; overflow:auto; border:1px solid #393940; border-radius:18px; background:#141417; color:#f7f7f8; padding:16px; }
+#savedDialog::backdrop { background:rgba(0,0,0,.75); }
+.dialog-head { display:flex; align-items:center; justify-content:space-between; gap:12px; }
+.dialog-head h2 { font-size:20px; font-weight:500; margin:0; }
+.dialog-close { width:44px; height:44px; border:0; background:transparent; color:white; font-size:28px; cursor:pointer; }
+.delivery-status { font-size:13px; color:#f7c57b; padding:10px; background:#30271b; border-radius:10px; }
+.saved-error { font-size:13px; color:#ff939a; line-height:1.5; }
+#savedDialog [hidden] { display:none!important; }
+#saveSearchForm { border-bottom:1px solid #36363d; padding-bottom:16px; margin-bottom:16px; }
+#draftSummary { margin-top:10px; }
+.saved-search-card { padding:12px 0; border-top:1px solid #36363d; overflow-wrap:anywhere; }
+.saved-search-card h3 { margin:0 0 8px; font-size:16px; font-weight:500; }
+.saved-actions { display:flex; flex-wrap:wrap; gap:8px; margin-top:8px; }
+.manager-button { min-height:44px; padding:8px 12px; border:1px solid #44444c; border-radius:9px; color:#eee; background:#222228; font-size:13px; cursor:pointer; }
