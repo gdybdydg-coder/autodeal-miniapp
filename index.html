@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
   <meta name="theme-color" content="#070709">
   <title>AUTODEAL</title>
-  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="style.css?v=3">
 </head>
 <body>
 <main class="app">
@@ -15,16 +15,18 @@
 
   <section class="search-box" aria-label="Фільтри пошуку">
     <div class="row group">
-      <div><label class="label" for="brand">МАРКА</label><select id="brand" class="input"><option value="">Всі марки</option></select></div>
-      <div><label class="label" for="model">МОДЕЛЬ</label><select id="model" class="input" disabled><option value="">Всі моделі</option></select></div>
+      <div><label class="label" for="brand">Марка</label><select id="brand" class="input"><option value="">Всі марки</option></select></div>
+      <div><label class="label" for="model">Модель</label><select id="model" class="input" disabled><option value="">Всі моделі</option></select></div>
     </div>
-    <div class="group"><label class="label">ЦІНА, $</label><div class="row"><input id="priceFrom" class="input" type="number" inputmode="numeric" placeholder="Від"><input id="priceTo" class="input" type="number" inputmode="numeric" placeholder="До"></div></div>
-    <div class="group"><label class="label">РІК</label><div class="row"><input id="yearFrom" class="input" type="number" inputmode="numeric" placeholder="Від"><input id="yearTo" class="input" type="number" inputmode="numeric" placeholder="До"></div></div>
-    <div class="group"><label class="label" for="region">ОБЛАСТЬ</label><select id="region" class="input"></select></div>
+    <div class="row range-grid group">
+      <fieldset><legend class="label">Ціна, $</legend><div class="range"><input id="priceFrom" class="input" type="number" inputmode="numeric" min="0" placeholder="Від" aria-label="Ціна від"><input id="priceTo" class="input" type="number" inputmode="numeric" min="0" placeholder="До" aria-label="Ціна до"></div></fieldset>
+      <fieldset><legend class="label">Рік</legend><div class="range"><input id="yearFrom" class="input" type="number" inputmode="numeric" placeholder="Від" aria-label="Рік від"><input id="yearTo" class="input" type="number" inputmode="numeric" placeholder="До" aria-label="Рік до"></div></fieldset>
+    </div>
+    <details class="advanced"><summary>Додаткові фільтри</summary><div class="advanced-body"><label class="label" for="region">Область</label><select id="region" class="input"></select></div></details>
     <button id="marketSwitch" class="market" type="button" role="switch" aria-checked="true">
       <span class="market-left"><span class="fire">🔥</span><span><strong>Тільки вигідні авто</strong><small>Нижче ринку мінімум на 15%</small></span></span><span class="switch active" aria-hidden="true"></span>
     </button>
-    <button id="searchBtn" class="search-button" type="button">ПОКАЗАТИ АВТО</button>
+    <button id="searchBtn" class="search-button" type="button">Показати авто</button>
   </section>
 
   <section id="results" class="results" aria-live="polite">
@@ -41,6 +43,6 @@
 </main>
 <div id="toast" class="toast" role="status"></div>
 <script src="data/cars.js"></script>
-<script src="app.js"></script>
+<script src="app.js?v=3"></script>
 </body>
 </html>
