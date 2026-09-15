@@ -13,7 +13,14 @@ const advancedGroups = [
 function selectedValues(name) {
   return [...document.querySelectorAll('input[name="'+name+'"]:checked')].map(input=>input.value);
 }
+let reducerChoice=null;
 function updateAdvancedCount() {
+  if (reducerChoice) {
+    const electricSelected=selectedValues("fuel").includes("Електро");
+    reducerChoice.label.style.display=electricSelected ? "" : "none";
+    reducerChoice.input.disabled=!electricSelected;
+    if (!electricSelected) reducerChoice.input.checked=false;
+  }
   let total=0;
   for (const group of advancedGroups) {
     const count=selectedValues(group.name).length;
@@ -35,9 +42,13 @@ for (const group of advancedGroups) {
     const span=document.createElement("span");
     span.textContent=value;
     label.append(input,span);
+    if (group.name==="transmission" && value==="Редуктор") {
+      reducerChoice={label,input};
+    }
     $(group.name+"Options").append(label);
   }
 }
+updateAdvancedCount();
 ["mileageFrom","mileageTo"].forEach(id=>$(id).addEventListener("input",updateAdvancedCount));
 $("resetAdvanced").addEventListener("click",()=>{
   for (const group of advancedGroups) document.querySelectorAll('input[name="'+group.name+'"]').forEach(input=>input.checked=false);
