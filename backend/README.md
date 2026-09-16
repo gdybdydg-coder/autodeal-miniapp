@@ -1,8 +1,17 @@
-# AUTODeal backend — prepared, NOT deployed
+# AUTODeal backend — staging, delivery disabled
 
-The GitHub Pages Mini App is unchanged. It still stores device-local drafts.
-This backend is not connected to it and sends nothing by default.
-No bot token, database, webhook, external source or hosting resource has been configured.
+The GitHub Pages Mini App retains device-local drafts and now offers explicit
+server saving through https://autodeal-api.onrender.com. The Telegram SDK supplies
+raw initData; the API validates the signature and user ownership. No automatic
+import occurs. Cloud saves always use enabled=false. A separate cloud list supports
+read-back, restoring filters, and confirmed deletion. Open from a Telegram Mini App
+button, not a normal browser link. No session data or bot token is persisted by the
+client. Render hosting has been provisioned; authenticated end-to-end cloud saving
+still requires an owner test inside Telegram. No webhook or worker is configured
+by this integration. Real listings and valuation are still absent.
+
+Frontend checks: `node --test cloud-test.cjs`, `node filter-test.cjs`,
+`node storage-test.cjs`. The DOM harness checks behavior, not rendered visual layout.
 
 ## Components
 

@@ -58,7 +58,7 @@
 <dialog id="savedDialog" aria-labelledby="savedTitle">
   <div class="dialog-head"><h2 id="savedTitle">Мої пошуки</h2><button id="closeSaved" class="dialog-close" type="button" aria-label="Закрити">×</button></div>
   <p class="delivery-status">Сповіщення ще не підключені</p>
-  <p class="filter-help">Пошуки зберігаються лише в цьому браузері на цьому пристрої, не в Telegram-акаунті. Сервер і реальні оголошення ще не підключені. Позначка нижче зберігає лише твоє побажання — повідомлення не надсилаються.</p>
+  <p class="filter-help">Локальні пошуки залишаються на пристрої. Окрема кнопка збереження в Telegram-акаунті передає назву, фільтри та підтверджений Telegram ID на сервер AUTODeal у Render. Це не вмикає сповіщення. Реальні оголошення ще не підключені.</p>
   <p id="savedError" class="saved-error" role="alert" hidden></p>
   <form id="saveSearchForm" hidden>
     <label class="label" for="savedName">Назва пошуку</label>
@@ -66,12 +66,23 @@
     <p id="draftSummary" class="filter-help"></p>
     <label class="choice"><input id="draftNotify" type="checkbox"><span>Хочу сповіщення після підключення сервера</span></label>
     <button class="search-button" id="confirmSaveSearch" type="submit">Зберегти на пристрої</button>
+    <button class="save-search-button" id="saveCloudSearch" type="button">Зберегти в Telegram-акаунті без сповіщень</button>
   </form>
+  <section aria-labelledby="cloudTitle">
+    <h3 id="cloudTitle">Пошуки в Telegram-акаунті</h3>
+    <p id="cloudStatus" class="filter-help" role="status">Відкрий Mini App через кнопку бота в Telegram для доступу до серверних пошуків.</p>
+    <button id="refreshCloud" class="manager-button" type="button">Завантажити з сервера</button>
+    <div id="cloudSearchList"></div>
+  </section>
+  <h3>Пошуки на цьому пристрої</h3>
   <div id="savedSearchList"></div>
 </dialog>
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
 <script src="data/cars.js?v=4"></script>
 <script src="saved-searches.js?v=6"></script>
 <script src="app.js?v=6"></script>
-<script src="search-manager.js?v=6"></script>
+<script src="search-manager.js?v=7"></script>
+<script src="cloud-api.js?v=7"></script>
+<script src="cloud-searches.js?v=7"></script>
 </body>
 </html>

@@ -96,3 +96,34 @@ byId.saveSearchBtn.listeners.click();
 byId.saveSearchForm.listeners.submit({preventDefault(){}});
 assert.equal(byId.savedError.hidden,false);assert.equal(byId.saveSearchForm.hidden,false);
 console.log('PASS: manager open/save/restore, draft notification preference, confirmed deletion and storage failure UI.');
+// Cloud UI: explicit saving, read-back, error recovery, and confirmed deletion.
+(async()=>{
+ let cloudItems=[],saves=0,deletes=0;
+ const localBefore=savedRaw;
+ byId.saveSearchForm.reportValidity=()=>true;
+ context.window.AutoDealCloud={
+  list:async()=>cloudItems,
+  save:async(name,filters)=>{saves++;cloudItems=[{id:7,name,filters,enabled:false}];},
+  remove:async()=>{deletes++;cloudItems=[];}
+ };
+ vm.runInContext(fs.readFileSync(__dirname+'/cloud-searches.js','utf8'),context);
+ assert.equal(saves,0); // No import or writes on script load.
+ byId.savedName.value='<img src=x onerror=alert(1)>';
+ byId.saveCloudSearch.listeners.click();
+ await new Promise(resolve=>setImmediate(resolve));
+ assert.equal(saves,1);assert.equal(savedRaw,localBefore);
+ assert.equal(byId.cloudSearchList.children[0].children[0].textContent,byId.savedName.value);
+ assert.match(byId.cloudSearchList.children[0].children[2].textContent,/без сповіщень/);
+ const actions=byId.cloudSearchList.children[0].children[3];
+ actions.replaceChildren=function(...children){this.children=children;};
+ actions.children[1].listeners.click();assert.equal(deletes,0);
+ actions.children[0].listeners.click();
+ await new Promise(resolve=>setImmediate(resolve));
+ assert.equal(deletes,1);assert.equal(byId.cloudSearchList.children.length,0);
+ context.window.AutoDealCloud.list=async()=>{throw Error('Session expired');};
+ byId.refreshCloud.listeners.click();
+ await new Promise(resolve=>setImmediate(resolve));
+ assert.equal(byId.cloudStatus.textContent,'Session expired');
+ assert.equal(byId.refreshCloud.disabled,false);
+ console.log('PASS: cloud UI save/read/delete confirmation, no automatic import, text-safe rendering, recovery.');
+})().catch(error=>{console.error(error);process.exitCode=1;});
