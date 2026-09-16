@@ -14,6 +14,13 @@
           ...(body?{body:JSON.stringify(body)}:{})
         });
         if(!response.ok) {
+          if(path==="/api/cars/search" && response.status!==401) {
+            const reasons={unsupported_filter:"AUTO.RIA не підтвердила один із фільтрів. Зміни вибір: фільтр не буде проігноровано.",
+              busy:"Інший пошук ще виконується. Спробуй за хвилину.",quota_exceeded:"Досягнуто ліміт тестових запитів AUTO.RIA. Спробуй пізніше.",
+              search_limit:"Перевірка зайняла забагато часу. Спробуй пізніше.",not_configured:"Джерело AUTO.RIA ще не налаштоване."};
+            let code="";try {code=(await response.json()).detail;}catch(_){}
+            throw Error(reasons[code]||"AUTO.RIA зараз не відповідає. Спробуй пізніше.");
+          }
           const messages={401:"Сесія Telegram закінчилася або не підтверджена. Закрий Mini App і відкрий знову через бота.",
             409:"Ліміт: до 20 серверних пошуків. Видали непотрібний пошук.",422:"Перевір назву та фільтри пошуку.",
             404:"Пошук уже видалено. Онови список.",503:"Сервер тимчасово недоступний. Спробуй пізніше."};
@@ -27,6 +34,7 @@
       } finally {clearTimeout(timer);}
     }
     return {
+      search:filters=>request("/api/cars/search","POST",filters),
       list:()=>request("/api/subscriptions"),
       save:(name,filters)=>request("/api/subscriptions","POST",{name,filters,enabled:false}),
       remove:id=>{

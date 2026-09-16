@@ -42,8 +42,9 @@
   </section>
 
   <section id="results" class="results" aria-live="polite">
-    <div class="results-head"><h2>🔥 Вигідні зараз</h2><span id="count" class="count"></span></div>
-    <p class="filter-help demo-note">Демо: тестові авто, характеристики й ціни. Фото ілюстративні.</p>
+    <div class="results-head"><h2>Результати пошуку</h2><span id="count" class="count"></span></div>
+    <p class="filter-help" id="sourceNote">Оголошення завантажуються з AUTO.RIA.</p>
+    <p class="filter-help">Джерело: <a href="https://auto.ria.com/" target="_blank" rel="noopener">AUTO.RIA</a></p>
     <div id="resultsList" class="results-list"></div>
   </section>
 
@@ -75,14 +76,15 @@
   </section>
   <h3>На цьому пристрої</h3>
   <div id="savedSearchList"></div>
-  <details class="save-privacy"><summary>Про збереження</summary><p class="filter-help">Збереження в акаунті передає назву, фільтри та підтверджений Telegram ID на сервер AUTODeal у Render. Видалити пошук можна в його картці. Локальні пошуки залишаються в цьому браузері й автоматично не переносяться. Оголошення поки демонстраційні.</p></details>
+  <details class="save-privacy"><summary>Про збереження</summary><p class="filter-help">Збереження в акаунті передає назву, фільтри та підтверджений Telegram ID на сервер AUTODeal у Render. Видалити пошук можна в його картці. Локальні пошуки залишаються в цьому браузері й автоматично не переносяться. Для пошуку сервер передає фільтри до AUTO.RIA без твого Telegram ID.</p></details>
 </dialog>
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
 <script src="data/cars.js?v=4"></script>
 <script src="saved-searches.js?v=6"></script>
-<script src="app.js?v=6"></script>
+<script src="app.js?v=9"></script>
 <script src="search-manager.js?v=8"></script>
-<script src="cloud-api.js?v=7"></script>
+<script src="cloud-api.js?v=9"></script>
+<script src="live-search.js?v=9"></script>
 <script src="cloud-searches.js?v=8"></script>
 </body>
 </html>

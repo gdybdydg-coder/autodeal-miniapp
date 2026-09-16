@@ -99,7 +99,10 @@ function readCurrentFilters() {
   };
 }
 function searchCars() {
-  try { const filters=readCurrentFilters();render(cars.filter(car=>matchesFilters(car,filters))); }
+  try { const filters=readCurrentFilters();
+    if(!window.AutoDealLive) throw Error("Онови Mini App, щоб завантажити пошук AUTO.RIA.");
+    return window.AutoDealLive.search(filters);
+  }
   catch (error) { toast(error.message); }
 }
 function render(list){$("results").classList.add("show");$("count").textContent=`Знайдено: ${list.length}`;$("resultsList").innerHTML=list.length?list.map(car=>{const discount=Math.round((1-car.price/car.market)*100);return `<article class="car"><div class="car-photo-wrap"><img class="car-photo" src="${car.image}" alt="${car.brand} ${car.model}" loading="lazy"><span class="badge">−${discount}% ВІД РИНКУ</span><button class="save" data-save="${car.id}" aria-label="Зберегти">♡</button></div><div class="car-body"><div class="car-top"><div class="car-name">${car.brand} ${car.model}</div><div class="car-price">$${car.price.toLocaleString("en-US")}</div></div><div class="car-meta">${car.year} • ${car.fuel} • ${Math.round(car.mileage/1000)} тис. км</div><div class="car-meta">${car.body || "Кузов не вказаний"} • ${car.transmission || "КПП не вказана"}</div><div class="market-price"><span>Ринок ≈ $${car.market.toLocaleString("en-US")}</span><span class="deal">↓ ${discount}%</span></div><div class="location">📍 ${car.region}</div><a class="car-link" href="${car.url}" data-demo="${car.url==="#"}">ВІДКРИТИ ОГОЛОШЕННЯ</a></div></article>`}).join(""):'<div class="empty">За цими фільтрами авто не знайдено.</div>';$("results").scrollIntoView({behavior:"smooth",block:"start"})}

@@ -14,6 +14,8 @@ const context=vm.createContext({document,window:{},Option:function(text,value){r
 vm.runInContext(fs.readFileSync(__dirname+'/data/cars.js','utf8'),context);
 vm.runInContext(fs.readFileSync(__dirname+'/app.js','utf8'),context);
 const run=code=>vm.runInContext(code,context);
+// Fixture-only adapter for testing the filter form; production uses live-search.js.
+context.window.AutoDealLive={search:()=>run('render(cars.filter(car=>matchesFilters(car,readCurrentFilters())))')};
 const selected=(name,values)=>nodes.filter(n=>n.name===name).forEach(n=>n.checked=values.includes(n.value));
 const count=()=>{run('searchCars()');return byId.count.textContent};
 assert.equal(nodes.filter(n=>n.name==='body').length,13);
