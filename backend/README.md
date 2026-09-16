@@ -14,6 +14,15 @@ yet been verified on a sufficient real-world sample.
 Frontend checks: `node --test cloud-test.cjs`, `node filter-test.cjs`,
 `node storage-test.cjs`. The DOM harness checks behavior, not rendered visual layout.
 
+The bottom «Вигідні» navigation runs the same authenticated search with the current
+form filters and `onlyDeals=true`, without changing the regular search preference.
+Its heading and criteria identify the request. The client also checks the exact
+15% threshold, five comparables, supported valuation and freshness before showing
+a deal. «Пошук» / «Змінити фільтри» returns to the form without another request.
+Repeated taps while loading cannot duplicate requests. Navigation back to the
+form prevents a completed background response from scrolling away from it.
+Run `node --test deals-test.cjs live-test.cjs cloud-test.cjs` for these interactions.
+
 ## Components
 
 - FastAPI subscription API; PostgreSQL via SQLAlchemy (SQLite only in local tests).

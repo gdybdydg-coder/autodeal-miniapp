@@ -4,7 +4,7 @@ const fs=require('node:fs'),vm=require('node:vm');
 function setup(search) {
   function node(){return {children:[],textContent:'',classList:{add(){}},append(...items){this.children.push(...items)},
     replaceChildren(...items){this.children=items},scrollIntoView(){}};}
-  const ids=Object.fromEntries(['resultsList','count','sourceNote','results','searchBtn'].map(id=>[id,node()]));
+  const ids=Object.fromEntries(['resultsList','count','sourceNote','results','searchBtn','resultsTitle','resultsCriteria'].map(id=>[id,node()]));
   ids.searchBtn.textContent='Шукати';
   const window={AutoDealCloud:{search}};
   vm.runInNewContext(fs.readFileSync(__dirname+'/live-search.js','utf8'),{window,URL,

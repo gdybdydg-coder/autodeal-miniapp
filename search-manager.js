@@ -71,7 +71,7 @@ function applySavedFilters(raw) {
   marketButton.setAttribute("aria-checked",String(onlyDeals));
   updateAdvancedCount();
   $("advancedFilters").open=!!$("advancedCount").textContent;
-  document.querySelectorAll(".nav").forEach(item=>item.classList.toggle("active",item.dataset.tab==="search"));
+  setSearchTab("search");
 }
 function openSearchManager(compose) {
   draftFilters=null;pendingDelete=null;
@@ -104,9 +104,8 @@ $("saveSearchForm").addEventListener("submit",event=>{
 });
 document.querySelectorAll(".nav").forEach(item=>item.addEventListener("click",()=>{
   if(item.dataset.tab==="saved"||item.dataset.tab==="settings") return openSearchManager(false);
-  if(item.dataset.tab==="deals") return toast("Розділ «Вигідні» ще в розробці");
-  document.querySelectorAll(".nav").forEach(node=>node.classList.toggle("active",node===item));
-  document.querySelector(".search-box").scrollIntoView({behavior:"smooth",block:"start"});
+  if(item.dataset.tab==="deals") return searchCars({deals:true});
+  showSearchForm();
 }));
 window.addEventListener("storage",event=>{
   if((event.key===savedAPI.KEY||event.key===null)&&$("savedDialog").open) renderSavedSearches();

@@ -13,7 +13,7 @@
   <h1>Знайди вигідне авто</h1>
   <p class="subtitle">Пошук автомобілів нижче ринкової ціни</p>
 
-  <section class="search-box" aria-label="Фільтри пошуку">
+  <section id="searchFilters" class="search-box" aria-label="Фільтри пошуку">
     <div class="row group">
       <div><label class="label" for="brand">Марка</label><select id="brand" class="input"><option value="">Всі марки</option></select></div>
       <div><label class="label" for="model">Модель</label><select id="model" class="input" disabled><option value="">Всі моделі</option></select></div>
@@ -42,14 +42,16 @@
   </section>
 
   <section id="results" class="results" aria-live="polite">
-    <div class="results-head"><h2>Результати пошуку</h2><span id="count" class="count"></span></div>
+    <div class="results-head"><h2 id="resultsTitle">Результати пошуку</h2><span id="count" class="count"></span></div>
+    <p class="filter-help" id="resultsCriteria"></p>
+    <p><button id="editResultsFilters" type="button" class="manager-button">Змінити фільтри</button></p>
     <p class="filter-help" id="sourceNote">Оголошення завантажуються з AUTO.RIA.</p>
     <p class="filter-help">Джерело: <a href="https://auto.ria.com/" target="_blank" rel="noopener">AUTO.RIA</a></p>
     <div id="resultsList" class="results-list"></div>
   </section>
 
   <nav class="navbar" aria-label="Головна навігація">
-    <button class="nav active" data-tab="search"><span>🔎</span>Пошук</button>
+    <button class="nav active" data-tab="search" aria-current="page"><span>🔎</span>Пошук</button>
     <button class="nav" data-tab="deals"><span>🔥</span>Вигідні</button>
     <button class="nav" data-tab="saved"><span>♡</span>Мої пошуки</button>
     <button class="nav" data-tab="settings"><span>⚙️</span>Налаштування</button>
@@ -81,10 +83,10 @@
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
 <script src="data/cars.js?v=4"></script>
 <script src="saved-searches.js?v=6"></script>
-<script src="app.js?v=9"></script>
-<script src="search-manager.js?v=8"></script>
+<script src="app.js?v=12"></script>
+<script src="search-manager.js?v=12"></script>
 <script src="cloud-api.js?v=10"></script>
-<script src="live-search.js?v=11"></script>
+<script src="live-search.js?v=12"></script>
 <script src="cloud-searches.js?v=8"></script>
 </body>
 </html>

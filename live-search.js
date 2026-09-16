@@ -1,6 +1,6 @@
 (function(root) {
   "use strict";
-  let busy=false;
+  let busy=false,scrollOnFinish=true;
   const node=(tag,cls,text)=>{
     const el=document.createElement(tag);el.className=cls;
     if(text!==undefined) el.textContent=text;
@@ -12,9 +12,12 @@
       return url.protocol==="https:" && (photo?url.hostname.endsWith(".riastatic.com"):url.hostname==="auto.ria.com")?url.href:null;
     } catch(_) {return null;}
   }
-  function renderResults(data,filters) {
+  function renderResults(data,filters,options) {
     const list=document.getElementById("resultsList");list.replaceChildren();
-    document.getElementById("count").textContent="Показано: "+data.cars.length;
+    const visibleCars=filters.onlyDeals?data.cars.filter(car=>!data.stale&&car.valuation==="sample_median"&&
+      car.comparables>=5&&Number.isFinite(car.market)&&car.market>0&&Number.isFinite(car.price_usd)&&
+      car.price_usd>0&&car.price_usd<=car.market*.85):data.cars;
+    document.getElementById("count").textContent="Показано: "+visibleCars.length;
     const checked=Number.isFinite(data.checked_at)?new Date(data.checked_at*1000).toLocaleString("uk-UA"):null;
     document.getElementById("sourceNote").textContent=
       (data.stale?"Раніше отримані дані. Ціни та наявність авто могли змінитися. ":data.cached?"Повторно показано отримані дані. ":"")+
@@ -25,7 +28,7 @@
       "Оцінка — медіана цін щонайменше 5 схожих авто; це ціни пропозицій, не продажів.";
     if(data.warnings.includes("quota_exceeded") && Number.isFinite(data.quota?.retry_after_seconds) && data.quota.retry_after_seconds>0)
       document.getElementById("sourceNote").textContent+=" Нові запити можна повторити приблизно через "+Math.ceil(data.quota.retry_after_seconds/60)+" хв.";
-    for(const car of data.cars) {
+    for(const car of visibleCars) {
       const article=node("article","car");
       const photo=safeLink(car.image,true);
       if(photo) {
@@ -46,28 +49,33 @@
       if(href) {const link=node("a","car-link","ВІДКРИТИ НА AUTO.RIA");link.href=href;link.target="_blank";link.rel="noopener";body.append(link);}
       article.append(body);list.append(article);
     }
-    if(!data.cars.length) list.append(node("div","empty",filters.onlyDeals?
-      "У перевіреній частині оголошень не підтверджено пропозицій на 15% нижче медіани. Вимкни цей фільтр, щоб бачити авто без оцінки. Це не означає, що вигідних авто на AUTO.RIA немає.":
+    if(!visibleCars.length) list.append(node("div","empty",filters.onlyDeals?
+      (data.stale?"Потрібна свіжа перевірка цін, щоб показати вигідні авто. ":"У перевіреній частині оголошень не підтверджено пропозицій на 15% нижче медіани. ")+
+      (options.dealsView?"Повернися до «Пошук» та вимкни «Тільки вигідні авто», щоб переглянути авто без оцінки. ":"Вимкни цей фільтр, щоб бачити авто без оцінки. ")+
+      "Це не означає, що вигідних авто на AUTO.RIA немає.":
       "У перевіреній частині оголошень немає авто, які відповідають усім фільтрам."));
   }
-  async function search(filters) {
+  async function search(filters,options={}) {
     if(busy) return;
-    busy=true;
+    busy=true;scrollOnFinish=true;
     const button=document.getElementById("searchBtn"),label=button.textContent;
     const section=document.getElementById("results"),list=document.getElementById("resultsList");
     button.disabled=true;button.textContent="Перевіряю AUTO.RIA…";
     section.classList.add("show");
+    document.getElementById("resultsTitle").textContent=options.dealsView?"Вигідні авто":"Результати пошуку";
+    document.getElementById("resultsCriteria").textContent=options.criteria||"";
     document.getElementById("count").textContent="";
     document.getElementById("sourceNote").textContent="Завантажую оголошення та перевіряю ціни. Це може тривати близько хвилини.";
     list.replaceChildren();
-    try {renderResults(await root.AutoDealCloud.search(filters),filters);}
+    if(options.dealsView) section.scrollIntoView({behavior:"smooth",block:"start"});
+    try {renderResults(await root.AutoDealCloud.search(filters),filters,options);}
     catch(error) {
       document.getElementById("sourceNote").textContent="Пошук не завершено.";
       list.replaceChildren(node("div","empty",error.message));
     } finally {
       busy=false;button.disabled=false;button.textContent=label;
-      section.scrollIntoView({behavior:"smooth",block:"start"});
+      if(scrollOnFinish) section.scrollIntoView({behavior:"smooth",block:"start"});
     }
   }
-  root.AutoDealLive={search};
+  root.AutoDealLive={search,isBusy:()=>busy,dismissAutoScroll:()=>{scrollOnFinish=false;}};
 })(window);
