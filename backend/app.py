@@ -1,7 +1,8 @@
+import asyncio
 import hmac
 import os
 from contextlib import asynccontextmanager
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 
 from fastapi import Depends, FastAPI, Header, HTTPException, Request
 from fastapi.exceptions import RequestValidationError
@@ -12,6 +13,7 @@ from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 from sqlalchemy.orm import Session
 
 from .auth import telegram_user
+from .auto_ria import probe_once, probe_status
 from .models import Base, Delivery, EnabledRequest, Listing, Search, SearchRequest, User
 
 
@@ -23,6 +25,7 @@ class Settings:
     delivery_enabled: bool = False
     source_ready: bool = False
     origin: str = "https://gdybdydg-coder.github.io"
+    auto_ria_api_key: str = field(default="", repr=False)
 
     @classmethod
     def env(cls):
@@ -32,6 +35,7 @@ class Settings:
             webhook_secret=os.environ["TELEGRAM_WEBHOOK_SECRET"],
             delivery_enabled=os.getenv("DELIVERY_ENABLED") == "true",
             source_ready=os.getenv("SOURCE_READY") == "true",
+            auto_ria_api_key=os.getenv("AUTO_RIA_API_KEY", "").strip(),
         )
 
     @property
@@ -48,6 +52,7 @@ def create_app(settings: Settings, engine=None):
     async def lifespan(app):
         # Initial schema only. Use versioned migrations before altering deployed tables.
         Base.metadata.create_all(engine)
+        await asyncio.to_thread(probe_once, engine, settings.auto_ria_api_key)
         yield
 
     app = FastAPI(lifespan=lifespan)
@@ -120,6 +125,11 @@ def create_app(settings: Settings, engine=None):
     @app.get("/api/subscriptions")
     def subscriptions(uid=Depends(identity), db=Depends(session)):
         return [view(row) for row in db.scalars(select(Search).where(Search.user_id == uid))]
+
+    @app.get("/api/source-status")
+    def source_status():
+        # Cached public diagnostic only; refreshing NEVER spends API requests.
+        return probe_status(engine, bool(settings.auto_ria_api_key))
 
     @app.post("/api/subscriptions")
     def save(payload: SearchRequest, uid=Depends(identity), db=Depends(session)):

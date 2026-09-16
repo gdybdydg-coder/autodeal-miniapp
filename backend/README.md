@@ -103,3 +103,27 @@ update_id, accommodating Telegram's update ID reset after long inactivity.
 Do not expose database/admin ingestion endpoints to the Mini App. Names, tokens and
 initData must not be logged. User IDs/filters are personal data: decide retention,
 account deletion and the privacy notice before accepting other users.
+# AUTO.RIA connection check
+
+Set server-only `AUTO_RIA_API_KEY` in Render. On startup, a one-time check calls
+the documented used-car search (one newest active passenger-car ID) and info
+endpoints, at most two requests in total. No paid valuation endpoints are used.
+The claim is committed in the new `source_probes` table before any network call;
+failures, process crashes and redeploys do not automatically retry. If a check
+fails, investigate its status before explicitly arranging another attempt.
+
+`GET /api/source-status` reads the cached check without contacting AUTO.RIA.
+It exposes only a fixed status, timestamp, requests reserved, and a small public
+listing preview. It never returns the key, upstream errors, seller data or VIN.
+The preview is a historical connectivity sample, not a current search result.
+The `checking` state can remain after an interrupted startup; it is not a retry loop.
+`connected_empty` means a valid empty search, not verified listing details.
+
+This does not connect Mini App filters, calculate a market price, ingest delivery
+listings, start a worker, or change `SOURCE_READY` / `DELIVERY_ENABLED`.
+Both flags must remain false during integration. Source attribution:
+[AUTO.RIA](https://auto.ria.com/).
+
+Official API contracts:
+- https://docs-developers.ria.com/en/used-cars/auto_search_and_info/search_auto
+- https://docs-developers.ria.com/en/used-cars/auto_search_and_info/auto_info

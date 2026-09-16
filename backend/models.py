@@ -89,6 +89,15 @@ class Base(DeclarativeBase):
     pass
 
 
+class SourceProbe(Base):
+    __tablename__ = "source_probes"
+    id: Mapped[str] = mapped_column(String(80), primary_key=True)
+    status: Mapped[str] = mapped_column(String(40))
+    checked_at: Mapped[float] = mapped_column(Float)
+    requests: Mapped[int] = mapped_column(Integer, default=0)
+    result: Mapped[dict] = mapped_column(JSON)
+
+
 class User(Base):
     __tablename__ = "users"
     id: Mapped[int] = mapped_column(BigInteger, primary_key=True, autoincrement=False)
