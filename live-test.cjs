@@ -40,3 +40,16 @@ test('empty deal subset is not presented as a complete market search',async()=>{
   assert.match(ids.resultsList.children[0].textContent,/не означає/);
   assert.match(ids.sourceNote.textContent,/до 3/);
 });
+test('historical results show observation time and suppress old valuation',async()=>{
+  const {window,ids}=setup(async()=>({cars:[{title:'Golf',price_usd:10000,year:2017,mileage:100000,
+    fuel:'Дизель',body:'Хетчбек',transmission:'Автомат',region:'Хмельницька',market:15000,discount:33.3,comparables:5}],
+    warnings:['quota_exceeded'],inspected:1,source_total:20,checked_at:1700000000,cached:true,stale:true,
+    quota:{retry_after_seconds:600}}));
+  await window.AutoDealLive.search({onlyDeals:false});
+  assert.match(ids.sourceNote.textContent,/Раніше отримані дані/);
+  assert.match(ids.sourceNote.textContent,/2023/);
+  assert.match(ids.sourceNote.textContent,/10 хв/);
+  const contents=ids.resultsList.children[0].children[0].children.map(n=>n.textContent).join(' ');
+  assert.match(contents,/потребує оновлення/);
+  assert.doesNotMatch(contents,/33.3|15,000/);
+});

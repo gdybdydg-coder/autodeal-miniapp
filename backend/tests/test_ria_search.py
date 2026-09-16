@@ -8,7 +8,7 @@ from sqlalchemy.orm import Session
 from backend.app import Settings, create_app
 from backend.auto_ria import RiaError
 from backend.models import Base, Filters, SourceBudget, SourceCache
-from backend.ria_search import RiaSearch, budget_state, estimate, initialize_budget, matches, parse_car
+from backend.ria_search import RiaSearch, budget_state, estimate, initialize_budget, matches, parse_car, snapshot_key
 
 
 def raw(source_id="123", **overrides):
@@ -186,6 +186,81 @@ def test_quota_wait_uses_all_limits_and_never_promises_total_reset():
     assert budget_state(row, 10000) == {"reason": "daily", "retry_after_seconds": 81400}
     row.total = 900
     assert budget_state(row, 10000) == {"reason": "total", "retry_after_seconds": None}
+
+
+def test_snapshot_toggle_does_not_spend_or_hide_unvalued_cards(engine):
+    calls = []
+    def fetch(key, path, params):
+        if path == "info":
+            calls.append((path, params))
+            return raw(params["auto_id"], technicalCondition=None)
+        return fixture_fetch(calls)(key, path, params)
+    first = RiaSearch(engine, "key", fetch).search(Filters())
+    assert first["cars"] == []
+    before = len(calls)
+    second = RiaSearch(engine, "key", fetch).search(Filters(onlyDeals=False))
+    assert len(second["cars"]) == 1 and second["cached"]
+    assert second["checked_at"] == first["checked_at"]
+    assert len(calls) == before
+
+
+def test_stale_snapshot_survives_quota_but_never_qualifies_as_deal(engine, monkeypatch):
+    filters = Filters(brand="Volkswagen", onlyDeals=False)
+    first = RiaSearch(engine, "key", fixture_fetch([])).search(filters)
+    assert first["cars"][0]["market"] == 15000
+    later = time.time() + 901
+    monkeypatch.setattr("backend.ria_search.time.time", lambda: later)
+    with Session(engine) as db:
+        row = db.get(SourceBudget, "auto_ria")
+        row.blocked_until = later + 3600
+        db.commit()
+    def no_network(*args): pytest.fail("must serve the snapshot without AUTO.RIA requests")
+    second = RiaSearch(engine, "key", no_network).search(filters)
+    assert second["stale"] and second["cached"]
+    assert len(second["cars"]) == 1
+    assert second["cars"][0]["market"] is None
+    assert second["checked_at"] == first["checked_at"]
+    deals = RiaSearch(engine, "key", no_network).search(filters.model_copy(update={"onlyDeals": True}))
+    assert deals["cars"] == []
+    # Exact criteria only: a different region must not receive this snapshot.
+    with pytest.raises(RiaError, match="quota_exceeded"):
+        RiaSearch(engine, "key", no_network).search(Filters(region="Київська область"))
+
+
+def test_expired_snapshot_cannot_bypass_quota(engine, monkeypatch):
+    RiaSearch(engine, "key", fixture_fetch([])).search(Filters(onlyDeals=False))
+    later = time.time() + 86401
+    monkeypatch.setattr("backend.ria_search.time.time", lambda: later)
+    with Session(engine) as db:
+        row = db.get(SourceBudget, "auto_ria")
+        row.blocked_until = later + 3600
+        db.commit()
+    with pytest.raises(RiaError, match="quota_exceeded"):
+        RiaSearch(engine, "key", lambda *args: pytest.fail("network")).search(Filters(onlyDeals=False))
+
+
+def test_refresh_after_pause_replaces_snapshot_and_preserves_time(engine, monkeypatch):
+    filters = Filters(onlyDeals=False)
+    first = RiaSearch(engine, "key", fixture_fetch([])).search(filters)
+    later = time.time() + 901
+    monkeypatch.setattr("backend.ria_search.time.time", lambda: later)
+    calls = []
+    second = RiaSearch(engine, "key", fixture_fetch(calls)).search(filters)
+    assert calls and not second["cached"] and not second["stale"]
+    assert second["checked_at"] > first["checked_at"]
+    with Session(engine) as db:
+        assert db.get(SourceCache, snapshot_key(filters)).payload["checked_at"] == second["checked_at"]
+
+
+def test_transient_failure_keeps_old_snapshot_timestamp(engine, monkeypatch):
+    filters = Filters(onlyDeals=False)
+    first = RiaSearch(engine, "key", fixture_fetch([])).search(filters)
+    later = time.time() + 901
+    monkeypatch.setattr("backend.ria_search.time.time", lambda: later)
+    def fail(*args): raise RiaError("connection_error")
+    result = RiaSearch(engine, "key", fail).search(filters)
+    assert result["stale"] and result["checked_at"] == first["checked_at"]
+    assert "connection_error" in result["warnings"]
 
 
 def test_search_route_requires_telegram_before_network(engine):

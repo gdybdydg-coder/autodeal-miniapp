@@ -3,6 +3,7 @@
 No paid valuation API: estimates use at least five independently retrieved peers.
 No search/valuation result is ingested into the notification pipeline.
 """
+import copy
 import hashlib
 import json
 import math
@@ -18,6 +19,34 @@ from sqlalchemy.orm import Session
 
 from .auto_ria import RiaError, fetch_json, listing_preview
 from .models import Filters, SourceBudget, SourceCache, SourceProbe
+
+FRESH_SECONDS = 900
+SNAPSHOT_SECONDS = 86400
+TRANSIENT_ERRORS = {"quota_exceeded", "busy", "search_limit", "connection_error", "upstream_error"}
+
+
+def snapshot_key(filters):
+    criteria = filters.canonical()
+    # Switching the deals toggle only filters the already checked candidate cards.
+    criteria["onlyDeals"] = False
+    return hashlib.sha256(json.dumps(["search-snapshot-v1", criteria], sort_keys=True).encode()).hexdigest()
+
+
+def snapshot_view(payload, filters, quota, cached=False, reason=None):
+    result = copy.deepcopy(payload)
+    result["cached"] = cached
+    result["stale"] = time.time() - result["checked_at"] >= FRESH_SECONDS
+    result["quota"] = quota
+    if reason:
+        result["warnings"] = sorted(set(result["warnings"] + [reason]))
+    if result["stale"]:
+        # Historical prices are useful; an old discount must not look current.
+        for car in result["cars"]:
+            car.update(market=None, discount=None, comparables=0, valuation="stale")
+    if filters.onlyDeals:
+        result["cars"] = [car for car in result["cars"]
+                          if car["market"] and car["price_usd"] <= car["market"] * .85]
+    return result
 
 
 def normalize(value):
@@ -142,6 +171,7 @@ class RiaSearch:
         self.owner = uuid.uuid4().hex
         self.deadline = time.monotonic() + 42
         self.stage = "acquire"
+        self.observed_at = time.time()
 
     def acquire(self):
         if not self.key:
@@ -166,6 +196,8 @@ class RiaSearch:
         with Session(self.engine) as db:
             cached = db.get(SourceCache, digest)
             if cached and cached.expires_at > time.time():
+                if ttl == FRESH_SECONDS:
+                    self.observed_at = min(self.observed_at, cached.expires_at - ttl)
                 return cached.payload
             row = db.scalar(select(SourceBudget).where(SourceBudget.id == "auto_ria").with_for_update())
             now = time.time()
@@ -265,6 +297,44 @@ class RiaSearch:
         return peers
 
     def search(self, filters):
+        if not self.key:
+            raise RiaError("not_configured")
+        key = snapshot_key(filters)
+        with Session(self.engine) as db:
+            row = db.get(SourceCache, key)
+            snapshot = copy.deepcopy(row.payload) if row and row.expires_at > time.time() else None
+        quota = quota_status(self.engine)
+        if snapshot:
+            if time.time() - snapshot["checked_at"] < FRESH_SECONDS:
+                return snapshot_view(snapshot, filters, quota, cached=True)
+            if quota["reason"] != "available":
+                return snapshot_view(snapshot, filters, quota, cached=True, reason="quota_exceeded")
+        try:
+            payload = self.search_uncached(filters.model_copy(update={"onlyDeals": False}))
+        except RiaError as exc:
+            if snapshot and str(exc) in TRANSIENT_ERRORS:
+                return snapshot_view(snapshot, filters, quota_status(self.engine), cached=True, reason=str(exc))
+            raise
+        # Do not replace a useful snapshot with an interrupted empty response.
+        if payload["cars"] or not payload["warnings"]:
+            with Session(self.engine) as db:
+                row = db.scalar(select(SourceCache).where(SourceCache.id == key).with_for_update())
+                if row is None:
+                    try:
+                        with db.begin_nested():
+                            row = SourceCache(id=key, payload=payload,
+                                              expires_at=payload["checked_at"] + SNAPSHOT_SECONDS)
+                            db.add(row)
+                            db.flush()
+                    except IntegrityError:
+                        row = db.scalar(select(SourceCache).where(SourceCache.id == key).with_for_update())
+                if row.payload["checked_at"] <= payload["checked_at"]:
+                    row.payload = payload
+                    row.expires_at = payload["checked_at"] + SNAPSHOT_SECONDS
+                db.commit()
+        return snapshot_view(payload, filters, payload["quota"])
+
+    def search_uncached(self, filters):
         self.acquire()
         try:
             params, ids = self.parameters(filters)
@@ -294,7 +364,7 @@ class RiaSearch:
                     cars.append(car)
             return {"cars": cars, "source_total": results["total"], "inspected": inspected,
                     "quota": quota_status(self.engine),
-                    "limited": True, "warnings": sorted(set(warnings)), "checked_at": time.time(),
+                    "limited": True, "warnings": sorted(set(warnings)), "checked_at": self.observed_at,
                     "source": "AUTO.RIA", "source_url": "https://auto.ria.com/"}
         finally:
             self.release()

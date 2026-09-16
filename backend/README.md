@@ -6,9 +6,10 @@ raw initData; the API validates the signature and user ownership. No automatic
 import occurs. Cloud saves always use enabled=false. A separate cloud list supports
 read-back, restoring filters, and confirmed deletion. Open from a Telegram Mini App
 button, not a normal browser link. No session data or bot token is persisted by the
-client. Render hosting has been provisioned; authenticated end-to-end cloud saving
-still requires an owner test inside Telegram. No webhook or worker is configured
-by this integration. Real listings and valuation are still absent.
+client. Render hosting and authenticated cloud saving have been verified. No
+webhook or worker is configured by this integration. Bounded AUTO.RIA search is
+connected; peer valuation is implemented and tested with fixtures, but has not
+yet been verified on a sufficient real-world sample.
 
 Frontend checks: `node --test cloud-test.cjs`, `node filter-test.cjs`,
 `node storage-test.cjs`. The DOM harness checks behavior, not rendered visual layout.
@@ -18,7 +19,7 @@ Frontend checks: `node --test cloud-test.cjs`, `node filter-test.cjs`,
 - FastAPI subscription API; PostgreSQL via SQLAlchemy (SQLite only in local tests).
 - Raw Telegram initData HMAC validation, one-hour expiry and per-user ownership.
 - Private /start and /stop webhook with a secret header; no unsolicited startup messages.
-- Trusted internal listing ingestion; NO scraper or valuation algorithm yet.
+- Trusted internal delivery ingestion, separate from authenticated AUTO.RIA search.
 - Matching of body, fuel, transmission, price/year and mileage, minimum 15% below
   the supplied market estimate. At least five comparables must be declared by the
   future trusted valuation adapter. This is a guard, not a valuation model.
@@ -73,8 +74,8 @@ No silent import of device-local notification preferences is implemented.
 3. Review existing bot webhook/polling before any change; do not replace an existing
    bot integration without approval. Register this webhook deliberately with
    secret_token and allowed_updates=["message"]. No registration happens on boot.
-4. Integrate an authorized real listing source and valuation process, map vocabulary
-   to the frontend, validate freshness/source identity. No real data source exists yet.
+4. Verify live valuation and freshness before connecting search data to delivery.
+   The current AUTO.RIA search does not feed the notification pipeline.
 5. Connect Mini App to API: load official Telegram SDK, validate initData server-side,
    explicitly confirm each cloud subscription and request write access/start as needed.
 6. Run a single approved test to the owner's verified private bot chat.
@@ -128,6 +129,17 @@ valuation quota failure preserves available matching cards. Error and search
 responses include a quota reason and wait in seconds, taking all rolling limits
 and provider cooldowns into account. The lifetime cap never promises an automatic
 reset. `/api/source-status` exposes this read-only quota state for diagnostics.
+
+Successful candidate results are also retained as sanitized snapshots for up to
+24 hours from the original observation time. Identical filters reuse the snapshot
+for 15 minutes without network calls, including when the deals toggle changes.
+During a quota pause or temporary source failure, an older matching snapshot may
+be returned with `cached=true`, `stale=true` and its original `checked_at`. Different
+filters never receive that snapshot. Snapshots older than 24 hours are unavailable.
+Old market estimates/discounts are removed, and stale cars cannot pass the deals
+filter. The UI labels historical prices and warns that availability may change.
+Refresh replaces the snapshot; viewing it never extends the observation time.
+Snapshots contain no seller details, credentials or Telegram data.
 
 The provider's legacy median API is deprecated:
 https://docs-developers.ria.com/en/used-cars/average_price/median_average_price

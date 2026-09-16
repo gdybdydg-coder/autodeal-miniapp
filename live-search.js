@@ -15,9 +15,12 @@
   function renderResults(data,filters) {
     const list=document.getElementById("resultsList");list.replaceChildren();
     document.getElementById("count").textContent="Показано: "+data.cars.length;
+    const checked=Number.isFinite(data.checked_at)?new Date(data.checked_at*1000).toLocaleString("uk-UA"):null;
     document.getElementById("sourceNote").textContent=
-      "Перевірено оголошень: "+data.inspected+". На AUTO.RIA за фільтрами: "+data.source_total+
-      ". Тестовий режим: до 3 оголошень за пошук, дані кешуються до 15 хв. "+
+      (data.stale?"Раніше отримані дані. Ціни та наявність авто могли змінитися. ":data.cached?"Повторно показано отримані дані. ":"")+
+      (checked?"Перевірено: "+checked+". ":"")+
+      "Переглянуто оголошень: "+data.inspected+". На час перевірки за фільтрами: "+data.source_total+
+      ". Тестовий режим: до 3 оголошень за пошук. "+
       (data.warnings.length?"Частину перевірки не завершено через ліміт або недоступність даних. ":"")+
       "Оцінка — медіана цін щонайменше 5 схожих авто; це ціни пропозицій, не продажів.";
     if(data.warnings.includes("quota_exceeded") && Number.isFinite(data.quota?.retry_after_seconds) && data.quota.retry_after_seconds>0)
@@ -33,10 +36,10 @@
       body.append(node("div","car-name",car.title),node("div","car-price","$"+car.price_usd.toLocaleString("en-US")),
         node("div","car-meta",car.year+" • "+car.fuel+" • "+Math.round(car.mileage/1000)+" тис. км"),
         node("div","car-meta",car.body+" • "+car.transmission),node("div","location",car.region));
-      const valued=Number.isFinite(car.market)&&car.market>0;
+      const valued=!data.stale&&Number.isFinite(car.market)&&car.market>0;
       body.append(node("p","market-price",valued?
         "Медіана вибірки ≈ $"+car.market.toLocaleString("en-US")+" · "+car.comparables+" схожих авто":
-        "Недостатньо схожих авто для оцінки"));
+        data.stale?"Оцінка потребує оновлення":"Недостатньо схожих авто для оцінки"));
       if(valued) body.append(node("p","car-meta",car.discount>=0?
         "На "+car.discount+"% нижче медіани вибірки":"На "+Math.abs(car.discount)+"% вище медіани вибірки"));
       const href=safeLink(car.url);
