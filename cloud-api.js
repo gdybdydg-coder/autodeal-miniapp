@@ -18,7 +18,11 @@
             const reasons={unsupported_filter:"AUTO.RIA не підтвердила один із фільтрів. Зміни вибір: фільтр не буде проігноровано.",
               busy:"Інший пошук ще виконується. Спробуй за хвилину.",quota_exceeded:"Досягнуто ліміт тестових запитів AUTO.RIA. Спробуй пізніше.",
               search_limit:"Перевірка зайняла забагато часу. Спробуй пізніше.",not_configured:"Джерело AUTO.RIA ще не налаштоване."};
-            let code="";try {code=(await response.json()).detail;}catch(_){}
+            let code="",quota=null;try {const error=await response.json();code=error.detail;quota=error.quota;}catch(_){}
+            if(code==="quota_exceeded" && quota?.reason==="total")
+              throw Error("Досягнуто загальну межу тестових запитів. Потрібно перевірити залишок пакета AUTO.RIA.");
+            if(code==="quota_exceeded" && Number.isFinite(quota?.retry_after_seconds) && quota.retry_after_seconds>0)
+              throw Error("Ліміт запитів AUTO.RIA. Спробуй знову приблизно через "+Math.ceil(quota.retry_after_seconds/60)+" хв.");
             throw Error(reasons[code]||"AUTO.RIA зараз не відповідає. Спробуй пізніше.");
           }
           const messages={401:"Сесія Telegram закінчилася або не підтверджена. Закрий Mini App і відкрий знову через бота.",
@@ -29,7 +33,9 @@
         return response.status===204?null:await response.json();
       } catch(error) {
         if(error.name==="AbortError"||error instanceof TypeError)
-          throw Error("Немає відповіді сервера. Free-сервер може прокидатися близько хвилини. Онови список перед повторним збереженням.");
+          throw Error(path==="/api/cars/search"?
+            "Немає відповіді сервера. Зачекай близько хвилини та повтори пошук.":
+            "Немає відповіді сервера. Free-сервер може прокидатися близько хвилини. Онови список перед повторним збереженням.");
         throw error;
       } finally {clearTimeout(timer);}
     }

@@ -15,7 +15,7 @@ from sqlalchemy.orm import Session
 from .auth import telegram_user
 from .auto_ria import probe_once, probe_status
 from .auto_ria import RiaError
-from .ria_search import RiaSearch, initialize_budget, verify_search_once
+from .ria_search import RiaSearch, initialize_budget, verify_search_once, quota_status
 from .models import Base, Delivery, EnabledRequest, Filters, Listing, Search, SearchRequest, User
 
 
@@ -133,7 +133,7 @@ def create_app(settings: Settings, engine=None):
     @app.get("/api/source-status")
     def source_status():
         # Cached public diagnostic only; refreshing NEVER spends API requests.
-        return probe_status(engine, bool(settings.auto_ria_api_key))
+        return {**probe_status(engine, bool(settings.auto_ria_api_key)), "quota": quota_status(engine)}
 
     @app.post("/api/cars/search")
     def search_cars(payload: Filters, uid=Depends(identity)):
@@ -142,7 +142,7 @@ def create_app(settings: Settings, engine=None):
         except RiaError as exc:
             code = str(exc)
             status = 422 if code == "unsupported_filter" else 429 if code in {"quota_exceeded", "busy", "search_limit"} else 503
-            return JSONResponse({"detail": code}, status_code=status)
+            return JSONResponse({"detail": code, "quota": quota_status(engine)}, status_code=status)
         except Exception:
             return JSONResponse({"detail": "source_unavailable"}, status_code=503)
 

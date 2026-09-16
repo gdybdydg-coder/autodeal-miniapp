@@ -38,6 +38,30 @@ def valid_id(value):
     return type(value) is int and value > 0
 
 
+def budget_state(row, now):
+    if row.total >= 900:
+        return {"reason": "total", "retry_after_seconds": None}
+    calls = sorted(t for t in row.calls if t > now - 86400)
+    hourly = [t for t in calls if t > now - 3600]
+    waits = []
+    if len(hourly) >= 24:
+        waits.append((hourly[-24] + 3600, "hourly"))
+    if len(calls) >= 60:
+        waits.append((calls[-60] + 86400, "daily"))
+    if row.blocked_until > now:
+        waits.append((row.blocked_until, "upstream"))
+    if waits:
+        until, reason = max(waits)
+        return {"reason": reason, "retry_after_seconds": max(1, math.ceil(until - now))}
+    return {"reason": "available", "retry_after_seconds": 0}
+
+
+def quota_status(engine):
+    with Session(engine) as db:
+        row = db.get(SourceBudget, "auto_ria")
+        return budget_state(row, time.time()) if row else {"reason": "unavailable", "retry_after_seconds": None}
+
+
 def parse_ids(data):
     try:
         result = data["result"]["search_result"]
@@ -148,7 +172,7 @@ class RiaSearch:
             calls = [t for t in row.calls if t > now - 86400]
             if row.owner != self.owner or time.monotonic() > self.deadline:
                 raise RiaError("search_limit")
-            if row.blocked_until > now or len([t for t in calls if t > now - 3600]) >= 24 or len(calls) >= 60 or row.total >= 900:
+            if budget_state(row, now)["reason"] != "available":
                 raise RiaError("quota_exceeded")
             row.calls, row.total = calls + [now], row.total + 1
             db.commit()  # Failed calls consume budget too, even on a process crash.
@@ -245,7 +269,7 @@ class RiaSearch:
         try:
             params, ids = self.parameters(filters)
             results = self.request("search", params, parse_ids)
-            cars, warnings = [], []
+            candidates, cars, warnings = [], [], []
             inspected = 0
             for source_id in results["ids"][:3]:
                 try:
@@ -253,19 +277,23 @@ class RiaSearch:
                     inspected += 1
                     if not matches(car, filters, ids):
                         continue
-                    rating = estimate(car, [])
-                    try:
-                        rating = estimate(car, self.comparisons(car))
-                    except RiaError as exc:
-                        warnings.append(str(exc))
-                    car.update(rating)
-                    if not filters.onlyDeals or (car["market"] and car["price_usd"] <= car["market"] * .85):
-                        cars.append(car)
+                    candidates.append(car)
                 except RiaError as exc:
                     warnings.append(str(exc))
                     if str(exc) not in {"listing_unavailable", "invalid_response"}:
                         break
+            # Fetch candidate cards first so peer valuation cannot starve results.
+            for car in candidates:
+                rating = estimate(car, [])
+                try:
+                    rating = estimate(car, self.comparisons(car))
+                except RiaError as exc:
+                    warnings.append(str(exc))
+                car.update(rating)
+                if not filters.onlyDeals or (car["market"] and car["price_usd"] <= car["market"] * .85):
+                    cars.append(car)
             return {"cars": cars, "source_total": results["total"], "inspected": inspected,
+                    "quota": quota_status(self.engine),
                     "limited": True, "warnings": sorted(set(warnings)), "checked_at": time.time(),
                     "source": "AUTO.RIA", "source_url": "https://auto.ria.com/"}
         finally:

@@ -8,7 +8,7 @@ from sqlalchemy.orm import Session
 from backend.app import Settings, create_app
 from backend.auto_ria import RiaError
 from backend.models import Base, Filters, SourceBudget, SourceCache
-from backend.ria_search import RiaSearch, estimate, initialize_budget, matches, parse_car
+from backend.ria_search import RiaSearch, budget_state, estimate, initialize_budget, matches, parse_car
 
 
 def raw(source_id="123", **overrides):
@@ -161,6 +161,31 @@ def test_optional_nulls_and_fractional_ranges(engine):
         assert not matches(car, Filters(mileage={"from": 100.5}), {})
     finally:
         search.release()
+
+
+def test_all_candidate_cards_survive_valuation_quota(engine):
+    calls = []
+    def fetch(key, path, params):
+        calls.append((path, params))
+        if path == "search":
+            if "generation_id[0][0]" in params:
+                raise RiaError("quota_exceeded")
+            return {"result": {"search_result": {"ids": ["123", "124", "125"], "count": 3}}}
+        return raw(params["auto_id"])
+    result = RiaSearch(engine, "key", fetch).search(Filters(onlyDeals=False))
+    assert len(result["cars"]) == 3
+    assert [path for path, _ in calls[:4]] == ["search", "info", "info", "info"]
+    assert all(car["market"] is None for car in result["cars"])
+    assert result["quota"]["retry_after_seconds"] > 3500
+
+
+def test_quota_wait_uses_all_limits_and_never_promises_total_reset():
+    row = SourceBudget(total=20, calls=[9900] * 24, blocked_until=10150)
+    assert budget_state(row, 10000) == {"reason": "hourly", "retry_after_seconds": 3500}
+    row.calls = [5000] * 60
+    assert budget_state(row, 10000) == {"reason": "daily", "retry_after_seconds": 81400}
+    row.total = 900
+    assert budget_state(row, 10000) == {"reason": "total", "retry_after_seconds": None}
 
 
 def test_search_route_requires_telegram_before_network(engine):

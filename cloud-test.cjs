@@ -35,3 +35,11 @@ test('timeout aborts pending request',async()=>{
   })),()=> 'fake',5);
   await assert.rejects(api.list(),/Немає відповіді/);
 });
+test('search quota waits distinguish temporary and total limits',async()=>{
+  const api=create(async()=>({ok:false,status:429,json:async()=>({detail:'quota_exceeded',
+    quota:{reason:'hourly',retry_after_seconds:61}})}),()=> 'fake');
+  await assert.rejects(api.search({}),/через 2 хв/);
+  const total=create(async()=>({ok:false,status:429,json:async()=>({detail:'quota_exceeded',
+    quota:{reason:'total',retry_after_seconds:null}})}),()=> 'fake');
+  await assert.rejects(total.search({}),/залишок пакета/);
+});

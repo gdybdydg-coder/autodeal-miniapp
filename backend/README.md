@@ -123,6 +123,12 @@ Limits persist across deployment. Only one search can spend quota at a time;
 a lease recovers after 90 seconds if the process crashes. Calls made elsewhere
 with the same key are not known to this budget. No paid APIs are called.
 
+Candidate cards are loaded before spending requests on peer valuation, so a
+valuation quota failure preserves available matching cards. Error and search
+responses include a quota reason and wait in seconds, taking all rolling limits
+and provider cooldowns into account. The lifetime cap never promises an automatic
+reset. `/api/source-status` exposes this read-only quota state for diagnostics.
+
 The provider's legacy median API is deprecated:
 https://docs-developers.ria.com/en/used-cars/average_price/median_average_price
 Instead, a conservative sample median needs five distinct OTHER active listings,

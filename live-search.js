@@ -20,6 +20,8 @@
       ". Тестовий режим: до 3 оголошень за пошук, дані кешуються до 15 хв. "+
       (data.warnings.length?"Частину перевірки не завершено через ліміт або недоступність даних. ":"")+
       "Оцінка — медіана цін щонайменше 5 схожих авто; це ціни пропозицій, не продажів.";
+    if(data.warnings.includes("quota_exceeded") && Number.isFinite(data.quota?.retry_after_seconds) && data.quota.retry_after_seconds>0)
+      document.getElementById("sourceNote").textContent+=" Нові запити можна повторити приблизно через "+Math.ceil(data.quota.retry_after_seconds/60)+" хв.";
     for(const car of data.cars) {
       const article=node("article","car");
       const photo=safeLink(car.image,true);
