@@ -66,8 +66,8 @@ def parse_catalog(data):
 def parse_car(data, source_id):
     preview = listing_preview(data, source_id)
     auto = data["autoData"]
-    state = data.get("stateData", {})
-    flags = data.get("autoInfoBar", {})
+    state = data.get("stateData") or {}
+    flags = data.get("autoInfoBar") or {}
     mileage = auto.get("raceInt")
     if type(mileage) not in (int, float) or not math.isfinite(mileage) or mileage < 0:
         raise RiaError("invalid_response")
@@ -75,7 +75,7 @@ def parse_car(data, source_id):
         return value[:150] if isinstance(value, str) else ""
     def ident(value):
         return value if valid_id(value) else None
-    photo = data.get("photoData", {}).get("seoLinkM", "")
+    photo = (data.get("photoData") or {}).get("seoLinkM", "")
     url = urlsplit(photo) if isinstance(photo, str) else urlsplit("")
     photo = photo if url.scheme == "https" and (url.hostname or "").endswith(".riastatic.com") else None
     return {**preview, "brand": label(data.get("markName")), "model": label(data.get("modelName")),
@@ -86,7 +86,7 @@ def parse_car(data, source_id):
             "gear_id": ident(auto.get("gearBoxId")), "transmission": label(auto.get("gearboxName")),
             "generation_id": ident(auto.get("generationId")), "modification_id": ident(auto.get("modificationId")),
             "mileage": round(mileage * 1000), "image": photo,
-            "comparable_condition": data.get("technicalCondition", {}).get("id") == 1
+            "comparable_condition": (data.get("technicalCondition") or {}).get("id") == 1
                 and all(flags.get(k) is False for k in ("damage", "onRepairParts", "abroad", "custom")),
             "observed_at": time.time()}
 
@@ -117,6 +117,7 @@ class RiaSearch:
         self.engine, self.key, self.fetch = engine, key, fetch
         self.owner = uuid.uuid4().hex
         self.deadline = time.monotonic() + 42
+        self.stage = "acquire"
 
     def acquire(self):
         if not self.key:
@@ -136,6 +137,7 @@ class RiaSearch:
                 db.commit()
 
     def request(self, path, params, parser, ttl=900):
+        self.stage = path
         digest = hashlib.sha256(json.dumps([path, params], sort_keys=True).encode()).hexdigest()
         with Session(self.engine) as db:
             cached = db.get(SourceCache, digest)
@@ -209,9 +211,9 @@ class RiaSearch:
             value = getattr(filters, field)
             for boundary, name in ((value.from_, low), (value.to, high)):
                 if boundary is not None:
-                    if boundary != int(boundary):
+                    if field == "year" and boundary != int(boundary):
                         raise RiaError("unsupported_filter")
-                    params[name] = int(boundary)
+                    params[name] = math.floor(boundary) if name == low else math.ceil(boundary)
         return params, ids
 
     def car(self, source_id):
@@ -292,7 +294,7 @@ def verify_search_once(engine, key):
     """
     if not key:
         return
-    check_id = "auto-ria-filter-check-v1"
+    check_id = "auto-ria-filter-check-v2"
     with Session(engine) as db:
         db.add(SourceProbe(id=check_id, status="checking", checked_at=time.time(), requests=0, result={}))
         try:
@@ -301,16 +303,18 @@ def verify_search_once(engine, key):
             db.rollback()
             return
     status, result = "check_failed", {}
+    search = RiaSearch(engine, key)
     try:
-        data = RiaSearch(engine, key).search(Filters(brand="Volkswagen", region="Хмельницька область", onlyDeals=False))
+        data = search.search(Filters(brand="Volkswagen", region="Хмельницька область", onlyDeals=False))
         status = "verified" if data["inspected"] else "no_verified_details"
         result = {"inspected": data["inspected"], "returned": len(data["cars"]),
                   "source_total": data["source_total"], "warnings": data["warnings"],
                   "valued": sum(car["market"] is not None for car in data["cars"])}
     except RiaError as exc:
         status = str(exc)
-    except Exception:
-        pass
+    except Exception as exc:
+        # Class + fixed stage only: never exception messages or upstream URLs.
+        result = {"error_type": type(exc).__name__, "stage": search.stage}
     with Session(engine) as db:
         row = db.get(SourceProbe, check_id)
         row.status, row.result, row.checked_at = status, result, time.time()

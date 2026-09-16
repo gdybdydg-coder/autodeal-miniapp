@@ -134,7 +134,7 @@ def probe_once(engine, key, fetch=fetch_json):
 def probe_status(engine, configured):
     with Session(engine) as db:
         row = db.get(SourceProbe, PROBE_ID)
-        search_check = db.get(SourceProbe, "auto-ria-filter-check-v1")
+        search_check = db.get(SourceProbe, "auto-ria-filter-check-v2")
         return {"source": "AUTO.RIA", "source_url": "https://auto.ria.com/",
                 "filter_check": {"status": search_check.status, **search_check.result} if search_check else None,
                 "status": row.status if row else ("pending" if configured else "not_configured"),

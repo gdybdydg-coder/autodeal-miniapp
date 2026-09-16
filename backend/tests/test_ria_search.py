@@ -149,6 +149,20 @@ def test_detail_rechecks_and_private_data_removed():
     assert not matches(car, Filters(), {"fuel_id": [6]})
 
 
+def test_optional_nulls_and_fractional_ranges(engine):
+    car = parse_car(raw(technicalCondition=None, photoData=None, autoInfoBar=None, stateData=None), "123")
+    assert not car["comparable_condition"]
+    assert car["image"] is None
+    search = RiaSearch(engine, "key", fixture_fetch([]))
+    search.acquire()
+    try:
+        params, _ = search.parameters(Filters(mileage={"from": 100.5, "to": 101.5}))
+        assert params["raceFrom"] == 100 and params["raceTo"] == 102
+        assert not matches(car, Filters(mileage={"from": 100.5}), {})
+    finally:
+        search.release()
+
+
 def test_search_route_requires_telegram_before_network(engine):
     with TestClient(create_app(Settings(str(engine.url), "test-token", "x" * 32), engine)) as client:
         assert client.post("/api/cars/search", json={}).status_code == 401
