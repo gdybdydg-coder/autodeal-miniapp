@@ -98,6 +98,23 @@ class SourceProbe(Base):
     result: Mapped[dict] = mapped_column(JSON)
 
 
+class SourceBudget(Base):
+    __tablename__ = "source_budgets"
+    id: Mapped[str] = mapped_column(String(40), primary_key=True)
+    calls: Mapped[list] = mapped_column(JSON, default=list)
+    total: Mapped[int] = mapped_column(Integer, default=2)
+    busy_until: Mapped[float] = mapped_column(Float, default=0)
+    blocked_until: Mapped[float] = mapped_column(Float, default=0)
+    owner: Mapped[str] = mapped_column(String(40), default="")
+
+
+class SourceCache(Base):
+    __tablename__ = "source_cache"
+    id: Mapped[str] = mapped_column(String(64), primary_key=True)
+    expires_at: Mapped[float] = mapped_column(Float, index=True)
+    payload: Mapped[dict] = mapped_column(JSON)
+
+
 class User(Base):
     __tablename__ = "users"
     id: Mapped[int] = mapped_column(BigInteger, primary_key=True, autoincrement=False)

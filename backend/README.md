@@ -105,6 +105,45 @@ initData must not be logged. User IDs/filters are personal data: decide retentio
 account deletion and the privacy notice before accepting other users.
 # AUTO.RIA connection check
 
+## Authenticated search and sample valuation
+
+`POST /api/cars/search` accepts the existing Filters payload and requires valid
+Telegram initData. Names are resolved against official AUTO.RIA dictionaries,
+cached for seven days. Unknown/ambiguous filters return 422, never a wider search.
+Result details are checked again against selected IDs and ranges. Mileage is
+converted from the provider's thousands of kilometres into kilometres.
+
+The test search inspects at most three candidate listings, with at most six
+additional peers per candidate. There is no pagination or automatic polling.
+Raw search IDs and sanitized details are cached for 15 minutes. The shared
+PostgreSQL budget allows at most 24 calls in a rolling hour, 60 per rolling day,
+and 900 lifetime (including a reserve of two for the first connectivity check).
+Errors count toward the budget; 401/403/429 block further calls for one hour.
+Limits persist across deployment. Only one search can spend quota at a time;
+a lease recovers after 90 seconds if the process crashes. Calls made elsewhere
+with the same key are not known to this budget. No paid APIs are called.
+
+The provider's legacy median API is deprecated:
+https://docs-developers.ria.com/en/used-cars/average_price/median_average_price
+Instead, a conservative sample median needs five distinct OTHER active listings,
+with the same make, model, generation, modification, body, fuel and gearbox,
+year within one year and mileage within max(30,000 km, 20%). All must explicitly
+be undamaged, in Ukraine and customs-cleared; missing data prevents an estimate.
+Peer queries deliberately omit buyer price and region limits. A max/min price
+ratio over two rejects a mixed sample. This is a small sample of asking prices,
+not a validated appraisal or transaction prices. The UI states these limits.
+Only an unrounded comparison of price <= median * 0.85 qualifies for deals.
+Insufficient data, source errors or quota exhaustion NEVER fabricate a discount.
+
+An additional once-only deployment check uses Volkswagen / Khmelnytskyi, without
+the deals filter, through the same shared quota/cache. Its summarized result is
+under `filter_check` in `/api/source-status`. It cannot be triggered by a visitor.
+Existing connection-check status/preview describes the original one-time sample.
+
+The UI now calls authenticated search instead of rendering demonstration cars.
+Empty/partial results are labeled as a limited sample. Delivery remains disabled;
+search results never write to the `listings` / `deliveries` tables.
+
 Set server-only `AUTO_RIA_API_KEY` in Render. On startup, a one-time check calls
 the documented used-car search (one newest active passenger-car ID) and info
 endpoints, at most two requests in total. No paid valuation endpoints are used.

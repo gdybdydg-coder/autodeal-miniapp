@@ -14,7 +14,9 @@ from sqlalchemy.orm import Session
 
 from .auth import telegram_user
 from .auto_ria import probe_once, probe_status
-from .models import Base, Delivery, EnabledRequest, Listing, Search, SearchRequest, User
+from .auto_ria import RiaError
+from .ria_search import RiaSearch, initialize_budget, verify_search_once
+from .models import Base, Delivery, EnabledRequest, Filters, Listing, Search, SearchRequest, User
 
 
 @dataclass(frozen=True)
@@ -52,7 +54,9 @@ def create_app(settings: Settings, engine=None):
     async def lifespan(app):
         # Initial schema only. Use versioned migrations before altering deployed tables.
         Base.metadata.create_all(engine)
+        initialize_budget(engine)
         await asyncio.to_thread(probe_once, engine, settings.auto_ria_api_key)
+        await asyncio.to_thread(verify_search_once, engine, settings.auto_ria_api_key)
         yield
 
     app = FastAPI(lifespan=lifespan)
@@ -130,6 +134,17 @@ def create_app(settings: Settings, engine=None):
     def source_status():
         # Cached public diagnostic only; refreshing NEVER spends API requests.
         return probe_status(engine, bool(settings.auto_ria_api_key))
+
+    @app.post("/api/cars/search")
+    def search_cars(payload: Filters, uid=Depends(identity)):
+        try:
+            return RiaSearch(engine, settings.auto_ria_api_key).search(payload)
+        except RiaError as exc:
+            code = str(exc)
+            status = 422 if code == "unsupported_filter" else 429 if code in {"quota_exceeded", "busy", "search_limit"} else 503
+            return JSONResponse({"detail": code}, status_code=status)
+        except Exception:
+            return JSONResponse({"detail": "source_unavailable"}, status_code=503)
 
     @app.post("/api/subscriptions")
     def save(payload: SearchRequest, uid=Depends(identity), db=Depends(session)):

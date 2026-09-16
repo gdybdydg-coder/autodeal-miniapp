@@ -30,12 +30,13 @@ class NoRedirect(HTTPRedirectHandler):
 
 
 def fetch_json(key, method, params):
-    if method not in {"search", "info"}:
+    if method not in {"search", "info", "states", "type", "categories/1/marks",
+                      "categories/1/bodystyles", "categories/1/gearboxes"} and not re.fullmatch(r"categories/1/marks/[1-9][0-9]*/models", method):
         raise RiaError("invalid_method")
     url = "https://developers.ria.com/auto/" + method + "?" + urlencode({**params, "api_key": key})
     try:
         # urllib emits no request URL logs. Do not print exceptions: URLs contain the key.
-        with build_opener(NoRedirect()).open(Request(url, headers={"Accept": "application/json"}), timeout=12) as response:
+        with build_opener(NoRedirect()).open(Request(url, headers={"Accept": "application/json"}), timeout=8) as response:
             raw = response.read(1024 * 1024 + 1)
             if len(raw) > 1024 * 1024:
                 raise RiaError("invalid_response")
@@ -133,7 +134,9 @@ def probe_once(engine, key, fetch=fetch_json):
 def probe_status(engine, configured):
     with Session(engine) as db:
         row = db.get(SourceProbe, PROBE_ID)
+        search_check = db.get(SourceProbe, "auto-ria-filter-check-v1")
         return {"source": "AUTO.RIA", "source_url": "https://auto.ria.com/",
+                "filter_check": {"status": search_check.status, **search_check.result} if search_check else None,
                 "status": row.status if row else ("pending" if configured else "not_configured"),
                 "checked_at": row.checked_at if row else None,
                 "requests_used": row.requests if row else 0,
