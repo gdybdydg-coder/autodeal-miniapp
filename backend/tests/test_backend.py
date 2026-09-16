@@ -112,6 +112,42 @@ def test_enable_gates(setup):
     assert deliver_one(engine, replace(settings, source_ready=False), lambda *a: pytest.fail("network")) == "disabled"
 
 
+def test_health_database_failure_and_recovery(setup, monkeypatch):
+    from sqlalchemy.exc import OperationalError
+    engine, settings, _ = setup
+    with TestClient(create_app(replace(settings, delivery_enabled=False), engine)) as client:
+        before = client.get("/health")
+        assert before.status_code == 200
+        assert before.json() == {"ok": True, "database": "connected",
+                                 "database_type": "sqlite", "delivery_available": False}
+        assert before.headers["cache-control"] == "no-store"
+        with monkeypatch.context() as patch:
+            def unavailable():
+                raise OperationalError("SELECT 1", {}, Exception("password=SECRET host=PRIVATE"))
+            patch.setattr(engine, "connect", unavailable)
+            failed = client.get("/health")
+            assert failed.status_code == 503
+            assert failed.json() == {"ok": False, "database": "unavailable",
+                                     "delivery_available": False}
+            assert "SECRET" not in failed.text and "PRIVATE" not in failed.text
+            assert failed.headers["cache-control"] == "no-store"
+        assert client.get("/health").json()["database"] == "connected"
+
+
+def test_health_is_read_only(setup):
+    from sqlalchemy import event
+    engine, _, client = setup
+    statements = []
+    def capture(conn, cursor, statement, parameters, context, executemany):
+        statements.append(statement)
+    event.listen(engine, "before_cursor_execute", capture)
+    try:
+        assert client.get("/health").status_code == 200
+    finally:
+        event.remove(engine, "before_cursor_execute", capture)
+    assert statements and all(s.lstrip().upper().startswith("SELECT") for s in statements)
+
+
 def test_duplicate_search_stop_and_replay(setup):
     engine, _, client = setup
     search_id = ready(setup, fuel=["Дизель", "Бензин"])

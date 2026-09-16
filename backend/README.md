@@ -48,7 +48,10 @@ databases and injected fake senders; they never contact Telegram.
 Authenticated requests supply raw Telegram.WebApp.initData in the
 `X-Telegram-Init-Data` header, never a browser-supplied user/chat ID.
 
-- GET /health — readiness/feature flag only, not a delivery guarantee.
+- GET /health — read-only database probe: 200 with database=connected and
+  database_type, or 503 with database=unavailable. Does not return credentials,
+  user data or database error details. Reports delivery_available but does not
+  verify the Telegram token, listing source, schema integrity or delivery.
 - GET /api/subscriptions — this user's searches.
 - POST /api/subscriptions — {name, filters, enabled}; filters match the Mini App's
   names and kilometre units (mileage bounds are in thousands). Same filters update

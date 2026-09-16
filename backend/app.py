@@ -8,7 +8,7 @@ from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from sqlalchemy import create_engine, func, select, update
-from sqlalchemy.exc import IntegrityError
+from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 from sqlalchemy.orm import Session
 
 from .auth import telegram_user
@@ -106,7 +106,16 @@ def create_app(settings: Settings, engine=None):
 
     @app.get("/health")
     def health():
-        return {"ok": True, "delivery_available": settings.live}
+        # Read-only readiness probe. Never expose a connection URL or DB exception.
+        try:
+            with engine.connect() as connection:
+                connection.execute(select(1)).scalar_one()
+        except SQLAlchemyError:
+            return JSONResponse({"ok": False, "database": "unavailable",
+                                 "delivery_available": False}, status_code=503)
+        return {"ok": True, "database": "connected",
+                "database_type": engine.dialect.name,
+                "delivery_available": settings.live}
 
     @app.get("/api/subscriptions")
     def subscriptions(uid=Depends(identity), db=Depends(session)):
