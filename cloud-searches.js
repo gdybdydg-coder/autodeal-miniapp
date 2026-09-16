@@ -20,7 +20,7 @@ async function loadCloud() {
     const name=document.createElement("h3");name.textContent=item.name;
     const summary=document.createElement("p");summary.className="filter-help";summary.textContent=summarizeFilters(filters);
     const status=document.createElement("p");status.className="filter-help";
-    status.textContent="Збережено на сервері · "+(item.enabled?"підписка активна":"без сповіщень");
+    status.textContent="Збережено в акаунті · "+(item.enabled?"підписка активна":"без сповіщень");
     const actions=document.createElement("div");actions.className="saved-actions";
     actions.append(managerButton("Відкрити пошук",()=>{
       try {applySavedFilters(filters);$("savedDialog").close();searchCars();}
@@ -34,7 +34,7 @@ async function loadCloud() {
     card.append(name,summary,status,actions);return card;
   });
   $("cloudSearchList").replaceChildren(...cards);
-  cloudMessage(items.length?"Список отримано із сервера. У цьому інтерфейсі розсилка не вмикається.":"На сервері ще немає пошуків.");
+  cloudMessage(items.length?"Список оновлено.":"В акаунті ще немає пошуків.");
 }
 $("refreshCloud").addEventListener("click",()=>cloudAction(loadCloud));
 $("saveCloudSearch").addEventListener("click",()=>{
@@ -44,7 +44,8 @@ $("saveCloudSearch").addEventListener("click",()=>{
   if(!name) {cloudMessage("Введи назву пошуку.");return;}
   cloudAction(async()=>{
     await window.AutoDealCloud.save(name,filters);
-    toast("Пошук збережено на сервері без сповіщень");
+    $("saveSearchForm").hidden=true;
+    toast("Збережено в акаунті · без сповіщень");
     await loadCloud();
   });
 });

@@ -37,15 +37,7 @@ function renderSavedSearches() {
     const name=document.createElement("h3");name.textContent=item.name;
     const summary=document.createElement("p");summary.className="filter-help";summary.textContent=summarizeFilters(item.filters);
     const status=document.createElement("p");status.className="filter-help";
-    status.textContent=item.notificationsWanted?"Сповіщення бажані · очікує підключення сервера":"Сповіщення не запитані";
-    const label=document.createElement("label");label.className="choice";
-    const checkbox=document.createElement("input");checkbox.type="checkbox";checkbox.checked=item.notificationsWanted;
-    const text=document.createElement("span");text.textContent="Хочу сповіщення після підключення сервера";
-    checkbox.addEventListener("change",()=>{
-      try { savedAPI.setWanted(window.localStorage,item.id,checkbox.checked);renderSavedSearches(); }
-      catch { checkbox.checked=item.notificationsWanted;storageError(); }
-    });
-    label.append(checkbox,text);
+    status.textContent="Лише на цьому пристрої · без сповіщень";
     const actions=document.createElement("div");actions.className="saved-actions";
     actions.append(managerButton("Відкрити пошук",()=>{
       try {
@@ -60,7 +52,7 @@ function renderSavedSearches() {
         catch { storageError(); }
       }),managerButton("Скасувати",()=>{pendingDelete=null;renderSavedSearches();}));
     } else actions.append(managerButton("Видалити",()=>{pendingDelete=item.id;renderSavedSearches();}));
-    article.append(name,summary,status,label,actions);list.append(article);
+    article.append(name,summary,status,actions);list.append(article);
   }
 }
 function applySavedFilters(raw) {
@@ -88,12 +80,12 @@ function openSearchManager(compose) {
     catch(error) { toast(error.message);return; }
     $("savedName").value=[draftFilters.brand||"Мій пошук",draftFilters.model].filter(Boolean).join(" ");
     $("draftSummary").textContent=summarizeFilters(draftFilters);
-    $("draftNotify").checked=false;
   }
   $("saveSearchForm").hidden=!compose;
   renderSavedSearches();
   $("savedDialog").showModal();
-  if(compose) $("savedName").focus();
+  $("savedDialog").scrollTop=0;
+  $("closeSaved").focus();
 }
 $("saveSearchBtn").addEventListener("click",()=>openSearchManager(true));
 $("settingsBtn").addEventListener("click",()=>openSearchManager(false));
@@ -102,7 +94,7 @@ $("saveSearchForm").addEventListener("submit",event=>{
   event.preventDefault();
   if(!draftFilters) return;
   try {
-    savedAPI.save(window.localStorage,draftFilters,$("savedName").value,$("draftNotify").checked);
+    savedAPI.save(window.localStorage,draftFilters,$("savedName").value,false);
     $("saveSearchForm").hidden=true;draftFilters=null;renderSavedSearches();
     toast("Пошук збережено на пристрої");
   } catch(error) {
