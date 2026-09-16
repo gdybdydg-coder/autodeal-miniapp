@@ -61,6 +61,7 @@
 <dialog id="savedDialog" aria-labelledby="savedTitle">
   <div class="dialog-head"><h2 id="savedTitle">Мої пошуки</h2><button id="closeSaved" class="dialog-close" type="button" aria-label="Закрити" autofocus>×</button></div>
   <p class="delivery-status">Сповіщення вимкнені</p>
+  <button id="newSavedSearch" class="manager-button" type="button">＋ Новий пошук</button>
   <p id="savedError" class="saved-error" role="alert" hidden></p>
   <form id="saveSearchForm" hidden>
     <label class="label" for="savedName">Назва пошуку</label>
@@ -72,11 +73,11 @@
   </form>
   <section aria-labelledby="cloudTitle">
     <h3 id="cloudTitle">В акаунті Telegram</h3>
-    <p id="cloudStatus" class="filter-help" role="status">Натисни «Оновити список», щоб побачити збережені пошуки. Доступно через бота в Telegram.</p>
+    <p id="cloudStatus" class="filter-help" role="status">Збережені в акаунті пошуки завантажуються при відкритті цього списку в Telegram.</p>
     <button id="refreshCloud" class="manager-button" type="button">Оновити список</button>
     <div id="cloudSearchList"></div>
   </section>
-  <h3>На цьому пристрої</h3>
+  <h3 id="localTitle">На цьому пристрої</h3>
   <div id="savedSearchList"></div>
   <details class="save-privacy"><summary>Про збереження</summary><p class="filter-help">Збереження в акаунті передає назву, фільтри та підтверджений Telegram ID на сервер AUTODeal у Render. Видалити пошук можна в його картці. Локальні пошуки залишаються в цьому браузері й автоматично не переносяться. Для пошуку сервер передає фільтри до AUTO.RIA без твого Telegram ID.</p></details>
 </dialog>
@@ -84,9 +85,9 @@
 <script src="data/cars.js?v=4"></script>
 <script src="saved-searches.js?v=6"></script>
 <script src="app.js?v=12"></script>
-<script src="search-manager.js?v=12"></script>
+<script src="search-manager.js?v=13"></script>
 <script src="cloud-api.js?v=10"></script>
 <script src="live-search.js?v=12"></script>
-<script src="cloud-searches.js?v=8"></script>
+<script src="cloud-searches.js?v=13"></script>
 </body>
 </html>

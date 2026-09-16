@@ -23,6 +23,15 @@ Repeated taps while loading cannot duplicate requests. Navigation back to the
 form prevents a completed background response from scrolling away from it.
 Run `node --test deals-test.cjs live-test.cjs cloud-test.cjs` for these interactions.
 
+Opening «Мої пошуки» reads the account list once per user opening, with duplicate
+requests blocked while loading. This does not call AUTO.RIA. Device searches stay
+available if the server fails; each list shows its count. «Новий пошук» returns to
+the filter form without saving or searching. Opening a saved card restores its
+filters and explicitly searches, unless another search is still running. Closing
+the manager restores the previous navigation tab. A late cloud-save response
+cannot hide a newly opened draft. Deletion still requires confirmation and saves
+remain without notifications. Run `node --test manager-test.cjs` for these flows.
+
 ## Components
 
 - FastAPI subscription API; PostgreSQL via SQLAlchemy (SQLite only in local tests).

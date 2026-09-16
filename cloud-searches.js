@@ -12,6 +12,8 @@ async function cloudAction(action) {
   finally {cloudBusy=false;$("saveCloudSearch").disabled=false;$("refreshCloud").disabled=false;}
 }
 async function loadCloud() {
+  $("cloudSearchList").replaceChildren();
+  $("cloudTitle").textContent="В акаунті Telegram";
   const items=await window.AutoDealCloud.list();
   if(!Array.isArray(items)) throw Error("Некоректна відповідь сервера.");
   const cards=items.map(item=>{
@@ -22,10 +24,7 @@ async function loadCloud() {
     const status=document.createElement("p");status.className="filter-help";
     status.textContent="Збережено в акаунті · "+(item.enabled?"підписка активна":"без сповіщень");
     const actions=document.createElement("div");actions.className="saved-actions";
-    actions.append(managerButton("Відкрити пошук",()=>{
-      try {applySavedFilters(filters);$("savedDialog").close();searchCars();}
-      catch(error) {cloudMessage(error.message);}
-    }),managerButton("Видалити із сервера",()=>{
+    actions.append(managerButton("Відкрити пошук",()=>openSavedSearch(filters)),managerButton("Видалити із сервера",()=>{
       if(cloudBusy) return;
       actions.replaceChildren(managerButton("Так, видалити із сервера",()=>cloudAction(async()=>{
         await window.AutoDealCloud.remove(item.id);await loadCloud();
@@ -34,17 +33,20 @@ async function loadCloud() {
     card.append(name,summary,status,actions);return card;
   });
   $("cloudSearchList").replaceChildren(...cards);
+  $("cloudTitle").textContent="В акаунті Telegram ("+items.length+")";
   cloudMessage(items.length?"Список оновлено.":"В акаунті ще немає пошуків.");
 }
+window.AutoDealCloudSearches={refresh:()=>cloudAction(loadCloud)};
 $("refreshCloud").addEventListener("click",()=>cloudAction(loadCloud));
 $("saveCloudSearch").addEventListener("click",()=>{
   if(!draftFilters||!$("saveSearchForm").reportValidity()) return;
   const name=$("savedName").value.trim();
   const filters=savedAPI.normalize(draftFilters);
+  const savingSession=managerSession;
   if(!name) {cloudMessage("Введи назву пошуку.");return;}
   cloudAction(async()=>{
     await window.AutoDealCloud.save(name,filters);
-    $("saveSearchForm").hidden=true;
+    if(managerSession===savingSession) {$("saveSearchForm").hidden=true;draftFilters=null;}
     toast("Збережено в акаунті · без сповіщень");
     await loadCloud();
   });

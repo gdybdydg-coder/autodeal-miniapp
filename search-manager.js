@@ -1,6 +1,7 @@
 "use strict";
 const savedAPI=window.AutoDealSaved;
 let draftFilters=null,pendingDelete=null;
+let managerReturnTab="search",managerSession=0;
 function summarizeFilters(f) {
   const parts=[f.brand||"Всі марки",f.model,f.region||"Вся Україна"];
   for(const [key,label,unit] of [["price","Ціна","$"],["year","Рік",""],["mileage","Пробіг","тис. км"]]) {
@@ -24,9 +25,11 @@ function renderSavedSearches() {
   const list=$("savedSearchList");
   list.replaceChildren();
   $("savedError").hidden=true;
+  $("localTitle").textContent="На цьому пристрої";
   let items;
   try { items=savedAPI.read(window.localStorage); }
   catch { storageError();return; }
+  $("localTitle").textContent="На цьому пристрої ("+items.length+")";
   if(!items.length) {
     const empty=document.createElement("p");empty.className="filter-help";
     empty.textContent="Ще немає збережених пошуків. Вибери фільтри та натисни «Зберегти пошук».";
@@ -39,13 +42,7 @@ function renderSavedSearches() {
     const status=document.createElement("p");status.className="filter-help";
     status.textContent="Лише на цьому пристрої · без сповіщень";
     const actions=document.createElement("div");actions.className="saved-actions";
-    actions.append(managerButton("Відкрити пошук",()=>{
-      try {
-        applySavedFilters(item.filters);
-        $("savedDialog").close();
-        searchCars();
-      } catch(error) { toast(error.message); }
-    }));
+    actions.append(managerButton("Відкрити пошук",()=>openSavedSearch(item.filters)));
     if(pendingDelete===item.id) {
       actions.append(managerButton("Так, видалити",()=>{
         try { savedAPI.remove(window.localStorage,item.id);pendingDelete=null;renderSavedSearches(); }
@@ -54,6 +51,17 @@ function renderSavedSearches() {
     } else actions.append(managerButton("Видалити",()=>{pendingDelete=item.id;renderSavedSearches();}));
     article.append(name,summary,status,actions);list.append(article);
   }
+}
+function openSavedSearch(filters) {
+  function explain(message) {$("savedError").hidden=false;$("savedError").textContent=message;}
+  if(window.AutoDealLive?.isBusy?.()) {
+    explain("Пошук ще виконується. Зачекай, щоб відкрити збережений.");return;
+  }
+  try {
+    applySavedFilters(filters);
+    $("savedDialog").close();
+    return searchCars();
+  } catch(error) { explain(error.message); }
 }
 function applySavedFilters(raw) {
   const f=savedAPI.normalize(raw);
@@ -81,15 +89,33 @@ function openSearchManager(compose) {
     $("savedName").value=[draftFilters.brand||"Мій пошук",draftFilters.model].filter(Boolean).join(" ");
     $("draftSummary").textContent=summarizeFilters(draftFilters);
   }
+  if(!$("savedDialog").open) {
+    const active=[...document.querySelectorAll(".nav")].find(item=>item.classList.contains("active"));
+    managerReturnTab=active?.dataset.tab==="deals"?"deals":"search";
+  }
+  managerSession++;
+  setSearchTab("saved");
+  window.AutoDealLive?.dismissAutoScroll?.();
+  $("savedTitle").textContent=compose?"Зберегти пошук":"Мої пошуки";
+  $("newSavedSearch").hidden=compose;
   $("saveSearchForm").hidden=!compose;
   renderSavedSearches();
-  $("savedDialog").showModal();
+  if(!$("savedDialog").open) $("savedDialog").showModal();
   $("savedDialog").scrollTop=0;
   $("closeSaved").focus();
+  if(!compose) return window.AutoDealCloudSearches?.refresh();
 }
 $("saveSearchBtn").addEventListener("click",()=>openSearchManager(true));
 $("settingsBtn").addEventListener("click",()=>openSearchManager(false));
 $("closeSaved").addEventListener("click",()=>$("savedDialog").close());
+$("savedDialog").addEventListener("close",()=>{
+  if([...document.querySelectorAll(".nav")].some(item=>item.dataset.tab==="saved"&&item.classList.contains("active")))
+    setSearchTab(managerReturnTab);
+});
+$("newSavedSearch").addEventListener("click",()=>{
+  $("savedDialog").close();showSearchForm();
+  toast("Обери фільтри та натисни «Зберегти пошук».");
+});
 $("saveSearchForm").addEventListener("submit",event=>{
   event.preventDefault();
   if(!draftFilters) return;
