@@ -14,11 +14,14 @@ notification to the owner's phone and wider accuracy checks remain launch checks
 Frontend checks: `node --test cloud-test.cjs`, `node filter-test.cjs`,
 `node storage-test.cjs`. The DOM harness checks behavior, not rendered visual layout.
 
-«Пошук», «Вигідні» and «Мої пошуки» now switch separate in-app screens. Filters
-are hidden on the deals screen; the saved-search manager is a full page, not a
+«Пошук», «Вигідні» and «Мої пошуки» now switch separate in-app screens. Ordinary
+search results also open a separate screen after «Показати авто»; the filter form
+never includes old results underneath it. «← До фільтрів» or the Search tab returns
+to the unchanged form without another provider request. Filters are hidden on both
+results screens; the saved-search manager is a full page, not a
 modal. The bottom navigation stays available. Screen switches start at the top
 without an animated scroll down the filter form, and retain entered filters.
-Deals loading/completion never scrolls the page. Returning to search or opening
+Results loading/completion never scrolls the page. Returning to search or opening
 saved searches also cancels a pending ordinary search's completion scroll.
 
 Settings is a separate screen opened by both the header gear and the bottom

@@ -109,8 +109,9 @@ function readCurrentFilters() {
     transmission:selectedValues("transmission"),onlyDeals
   };
 }
-let resultsTab="search";
+let resultsTab=null,currentScreen="search";
 function setSearchTab(tab) {
+  currentScreen=tab;
   if($("subscriptionMenu").open) $("subscriptionMenu").close();
   $("searchIntro").hidden=tab!=="search";
   $("searchFilters").hidden=tab!=="search";
@@ -120,7 +121,7 @@ function setSearchTab(tab) {
   window.AutoDealLive?.dismissAutoScroll?.();
   window.scrollTo?.({top:0,left:0,behavior:"instant"});
   document.querySelectorAll(".nav").forEach(item=>{
-    const active=item.dataset.tab===tab;
+    const active=item.dataset.tab===(tab==="results"?"search":tab);
     item.classList.toggle("active",active);
     item.setAttribute("aria-current",active?"page":"false");
   });
@@ -137,11 +138,13 @@ function searchCars(options={}) {
     if(!window.AutoDealLive) throw Error("Онови Mini App, щоб завантажити пошук AUTO.RIA.");
     const dealsView=options.deals===true;
     if(dealsView) filters.onlyDeals=true;
-    resultsTab=dealsView?"deals":"search";
-    setSearchTab(dealsView?"deals":"search");
-    if(dealsView) $("resultsTitle").focus({preventScroll:true});
+    resultsTab=dealsView?"deals":"results";
+    setSearchTab(resultsTab);
     const criteria=typeof summarizeFilters==="function"?summarizeFilters(filters):"";
-    return window.AutoDealLive.search(filters,{dealsView,criteria});
+    const pending=window.AutoDealLive.search(filters,{dealsView,criteria});
+    window.AutoDealLive.dismissAutoScroll?.();
+    $("resultsTitle").focus({preventScroll:true});
+    return pending;
   }
   catch (error) { toast(error.message); }
 }

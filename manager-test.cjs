@@ -93,6 +93,17 @@ test('new search goes to filters without sending or deleting anything',async()=>
   assert.equal(writes,0);assert.equal(ui.searches.length,0);
 });
 
+test('closing saved searches restores the separate results screen without a new search',async()=>{
+  const ui=setup();
+  await ui.ids.searchBtn.listeners.click();
+  assert.equal(ui.ids.searchFilters.hidden,true);assert.equal(ui.ids.results.hidden,false);
+  await ui.nav.saved.listeners.click();ui.ids.closeSaved.listeners.click();
+  assert.equal(ui.ids.searchFilters.hidden,true);assert.equal(ui.ids.results.hidden,false);
+  assert.equal(ui.nav.search.attributes['aria-current'],'page');assert.equal(ui.searches.length,1);
+  ui.nav.search.listeners.click();
+  assert.equal(ui.ids.results.hidden,true);assert.equal(ui.ids.searchFilters.hidden,false);
+});
+
 test('settings tab and header gear open a separate screen without loading searches',async()=>{
   let lists=0,statusReads=0;
   const ui=setup({list:async()=>{lists++;return[]},notificationStatus:async()=>{

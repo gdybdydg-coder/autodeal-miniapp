@@ -164,8 +164,7 @@ function openSearchManager(compose) {
     $("draftSummary").textContent=summarizeFilters(draftFilters);
   }
   if($("savedDialog").hidden) {
-    const active=[...document.querySelectorAll(".nav")].find(item=>item.classList.contains("active"));
-    managerReturnTab=["deals","settings"].includes(active?.dataset.tab)?active.dataset.tab:"search";
+    managerReturnTab=currentScreen;
   }
   managerSession++;
   setSearchTab("saved");

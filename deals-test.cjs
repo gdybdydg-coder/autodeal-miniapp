@@ -59,6 +59,13 @@ test('deals navigation uses selected filters, exact threshold and preserves regu
   assert.equal(ids.results.hidden,true);assert.equal(ids.searchTitle.focused,true);
   await ids.searchBtn.listeners.click();
   assert.equal(calls[1].onlyDeals,false);assert.equal(ids.resultsTitle.textContent,'Результати пошуку');
+  assert.equal(ids.searchFilters.hidden,true);assert.equal(ids.searchIntro.hidden,true);
+  assert.equal(ids.results.hidden,false);assert.equal(ids.results.scrolls,undefined);
+  assert.equal(nav.search.attributes['aria-current'],'page');
+  ids.editResultsFilters.listeners.click();
+  assert.equal(ids.searchFilters.hidden,false);assert.equal(ids.results.hidden,true);
+  assert.equal(ids.priceTo.value,'20000');assert.equal(ids.model.value,'Golf');
+  assert.equal(calls.length,2);
 });
 
 test('rapid taps do not duplicate search and returning to form prevents a late scroll',async()=>{
@@ -78,6 +85,20 @@ test('invalid filters do not navigate or call API',async()=>{
   ids.priceFrom.value='30000';
   await nav.deals.listeners.click();assert.equal(calls,0);
   assert.match(ids.toast.textContent,/Від/);assert.ok(nav.search.classList.contains('active'));
+});
+
+test('ordinary results stay off the filter form, including after a late response and tab switches',async()=>{
+  let done,calls=0;
+  const {ids,nav}=setup(()=>{calls++;return new Promise(resolve=>{done=resolve})});
+  assert.equal(ids.results.hidden,true);
+  const pending=ids.searchBtn.listeners.click();
+  assert.equal(ids.searchFilters.hidden,true);assert.equal(ids.results.hidden,false);
+  ids.editResultsFilters.listeners.click();
+  assert.equal(ids.searchFilters.hidden,false);assert.equal(ids.results.hidden,true);
+  done(result([car()]));await pending;
+  assert.equal(ids.results.hidden,true);assert.equal(ids.results.scrolls,undefined);
+  await nav.settings.listeners.click();await nav.search.listeners.click();
+  assert.equal(ids.searchFilters.hidden,false);assert.equal(ids.results.hidden,true);assert.equal(calls,1);
 });
 
 test('deals handles stale data, quota errors and recovery without showing ordinary cars',async()=>{
