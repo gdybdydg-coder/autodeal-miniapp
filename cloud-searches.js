@@ -5,11 +5,13 @@ let cloudBusy=false;
 let notificationState=null;
 function renderNotificationStatus() {
   const state=notificationState;
-  $("notificationStatus").textContent=!state?.available?"Готуються до запуску":
+  const testAvailable=state?.test_available??state?.available;
+  $("notificationStatus").textContent=!testAvailable&&!state?.available?"Готуються до запуску":
     !state.telegram_ready?"Підключи чат бота":
     !state.test_sent?"Перевір зв’язок тестовим повідомленням":
+    !state.available?"Тест надіслано · моніторинг ще не ввімкнено":
     "Готові до ввімкнення · один пошук";
-  $("testNotification").disabled=cloudBusy||!state?.available||!state?.telegram_ready;
+  $("testNotification").disabled=cloudBusy||!testAvailable||!state?.telegram_ready;
 }
 function cloudMessage(message) {
   $("cloudStatus").textContent=message;
@@ -77,8 +79,8 @@ $("refreshSettings").addEventListener("click",()=>cloudAction(loadSettings));
 $("refreshCloud").addEventListener("click",()=>cloudAction(loadCloud));
 $("testNotification").addEventListener("click",()=>cloudAction(async()=>{
   const result=await window.AutoDealCloud.testNotification();
-  await loadCloud();
-  cloudMessage(result.state==="sent"?"Тест надіслано. Перевір чат бота; потім увімкни потрібний пошук.":
+  await loadSettings();
+  cloudMessage(result.state==="sent"?"Тест надіслано. Відкрий чат бота та перевір отримання.":
     "Доставку тесту не підтверджено. Перевір чат; автоматично повторювати повідомлення не будемо.");
 }));
 $("saveCloudSearch").addEventListener("click",()=>{

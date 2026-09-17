@@ -106,6 +106,10 @@ Authenticated requests supply raw Telegram.WebApp.initData in the
 - GET /api/notifications/status — authenticated runtime, private /start and test status.
 - POST /api/notifications/test — explicitly sends one test to the authenticated
   user's verified private chat; at most once per ten minutes, including failures.
+  Requires TELEGRAM_TEST_ENABLED=true and a configured webhook. This separate
+  opt-in works with MONITOR_ENABLED, SOURCE_READY and DELIVERY_ENABLED all false.
+  The status endpoint reports test_available separately from monitoring availability.
+  Neither /start nor opening Settings sends a message; the user taps Send test.
 
 Enabling requires both server flags and a verified private /start. The monitor
 pilot additionally requires a current heartbeat, configured webhook, successful
@@ -128,8 +132,10 @@ No silent import of device-local notification preferences is implemented.
    explicitly confirm each cloud subscription and request write access/start as needed.
 6. Set MONITOR_ENABLED=true, SOURCE_READY=true, DELIVERY_ENABLED=true only with
    the paid always-on API and reviewed request caps. Existing saved searches stay off.
-7. In the Mini App send the explicit test to the verified private chat, then enable
-   one saved search. A successful test is enforced server-side before activation.
+7. Set TELEGRAM_TEST_ENABLED=true for the explicit Mini App test. For a Telegram-only
+   check this can follow step 3 with all monitoring/delivery flags still false.
+   In Settings send the test to the verified private chat. After the monitor rollout,
+   enable one saved search. A successful test is enforced server-side before activation.
 
 `backend.monitor` runs as an API lifespan task, using a thread for blocking work
 and a stop event for graceful shutdown. The database lease prevents two instances

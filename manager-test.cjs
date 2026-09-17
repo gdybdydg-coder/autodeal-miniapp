@@ -138,6 +138,7 @@ test('notification controls require readiness and send only on an explicit tap',
   state={...state,telegram_ready:true};await ui.ids.refreshCloud.listeners.click();
   assert.equal(ui.ids.testNotification.disabled,false);assert.equal(toggle().disabled,true);
   await ui.ids.testNotification.listeners.click();
+  await ui.ids.refreshCloud.listeners.click();
   assert.equal(tests,1);assert.equal(toggle().disabled,false);
   await toggle().listeners.click();
   assert.deepEqual(updates,[[8,true]]);assert.match(toggle().textContent,/Вимкнути/);
@@ -145,6 +146,25 @@ test('notification controls require readiness and send only on an explicit tap',
   state={...state,available:false};await ui.ids.refreshCloud.listeners.click();
   assert.equal(toggle().disabled,false);
   await toggle().listeners.click();assert.deepEqual(updates,[[8,true],[8,false]]);
+});
+
+test('Telegram-only test stays separate from subscriptions and sends only after a tap',async()=>{
+  let state={available:false,test_available:true,telegram_ready:false,test_sent:false},tests=0,lists=0;
+  const ui=setup({notificationStatus:async()=>state,list:async()=>{lists++;return[]},
+    testNotification:async()=>{tests++;state={...state,test_sent:true};return{state:'sent'}},
+    enable:async()=>assert.fail('test must not enable a search')});
+  await ui.nav.settings.listeners.click();
+  assert.equal(ui.ids.testNotification.disabled,true);assert.equal(tests,0);
+  assert.match(ui.ids.notificationStatus.textContent,/Підключи чат/);
+  state={...state,telegram_ready:true};await ui.ids.refreshSettings.listeners.click();
+  assert.equal(ui.ids.testNotification.disabled,false);assert.equal(tests,0);
+  await ui.ids.testNotification.listeners.click();
+  assert.equal(tests,1);assert.equal(lists,0);
+  assert.equal(ui.ids.settingsPage.hidden,false);
+  assert.match(ui.ids.notificationStatus.textContent,/моніторинг ще не ввімкнено/);
+  assert.match(ui.ids.settingsStatus.textContent,/перевір отримання/);
+  state={...state,test_available:false,available:true};await ui.ids.refreshSettings.listeners.click();
+  assert.equal(ui.ids.testNotification.disabled,true);
 });
 
 test('subscription tabs switch independent lists without searching or reloading the account',async()=>{

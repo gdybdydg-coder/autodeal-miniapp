@@ -38,6 +38,7 @@ class Settings:
     monitor_enabled: bool = False
     configure_webhook: bool = False
     miniapp_release: str = ""
+    telegram_test_enabled: bool = False
 
     @classmethod
     def env(cls):
@@ -52,6 +53,7 @@ class Settings:
             monitor_enabled=os.getenv("MONITOR_ENABLED") == "true",
             configure_webhook=os.getenv("TELEGRAM_CONFIGURE_WEBHOOK") == "true",
             miniapp_release=os.getenv("MINIAPP_RELEASE", ""),
+            telegram_test_enabled=os.getenv("TELEGRAM_TEST_ENABLED") == "true",
         )
 
     @property
@@ -152,6 +154,10 @@ def create_app(settings: Settings, engine=None):
     def latest(db):
         return db.scalar(select(func.max(Listing.id))) or 0
 
+    def telegram_status():
+        state = telegram_setup.webhook_status(engine)
+        return {**state, "test_available": settings.telegram_test_enabled and state["status"] == "configured"}
+
     def view(search, db):
         watch = db.get(MonitorWatch, search.id)
         status = watch.status if watch else "off"
@@ -190,15 +196,17 @@ def create_app(settings: Settings, engine=None):
                 "budget": budget_usage(engine),
                 "valuation_check": validation_status(engine, settings.ria_validation_run_id),
                 "monitor": monitor.runtime_status(engine, settings.monitor_enabled),
-                "telegram": telegram_setup.webhook_status(engine),
+                "telegram": telegram_status(),
                 "miniapp_menu": telegram_setup.menu_status(engine, settings.miniapp_release)}
 
     @app.get("/api/notifications/status")
     def notification_status(uid=Depends(identity), db=Depends(session)):
         user, test = db.get(User, uid), db.get(TelegramTest, uid)
         runtime = monitor.runtime_status(engine, settings.monitor_enabled)
-        connected = telegram_setup.webhook_status(engine)["status"] == "configured"
+        telegram = telegram_status()
+        connected = telegram["status"] == "configured"
         return {**runtime, "available": settings.live and runtime["running"] and connected,
+                "test_available": telegram["test_available"],
                 "telegram_ready": bool(user and user.ready),
                 "test_sent": bool(test and test.state == "sent"),
                 "bot_url": "https://t.me/" + telegram_setup.BOT_USERNAME + "?start=notifications"}
@@ -206,7 +214,7 @@ def create_app(settings: Settings, engine=None):
     @app.post("/api/notifications/test")
     def notification_test(uid=Depends(identity), db=Depends(session)):
         user = user_row(db, uid)
-        if not settings.monitor_enabled or telegram_setup.webhook_status(engine)["status"] != "configured":
+        if not telegram_status()["test_available"]:
             raise HTTPException(503, "Telegram is not connected")
         if not user.ready:
             raise HTTPException(409, "Send /start to the bot first")

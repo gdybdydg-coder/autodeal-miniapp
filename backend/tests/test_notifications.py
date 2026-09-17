@@ -107,7 +107,7 @@ def api(db, monkeypatch):
     monkeypatch.setattr("backend.app.probe_once", lambda *_: None)
     monkeypatch.setattr("backend.app.verify_search_once", lambda *_: None)
     settings = Settings("unused", TOKEN, SECRET, True, True,
-                        auto_ria_api_key="test-only", monitor_enabled=True)
+                        auto_ria_api_key="test-only", monitor_enabled=True, telegram_test_enabled=True)
     with TestClient(create_app(settings, db)) as client:
         with Session(db) as session:
             session.get(MonitorControl, "pilot").heartbeat = time.time()
@@ -160,3 +160,45 @@ def test_dead_monitor_does_not_allow_new_activation(db, api):
         session.commit()
     assert api.get("/api/notifications/status", headers=headers()).json()["available"] is False
     assert subscribe(api).status_code == 503
+
+
+def test_explicit_test_works_with_all_monitoring_flags_off(db, monkeypatch):
+    sent = []
+    monkeypatch.setattr(telegram_setup, "send_test", lambda token, uid:
+                        sent.append(uid) or {"ok": True, "result": {"message_id": 7}})
+    monkeypatch.setattr("backend.app.monitor.run", lambda *_: pytest.fail("monitor must stay off"))
+    settings = Settings("unused", TOKEN, SECRET, telegram_test_enabled=True)
+    with TestClient(create_app(settings, db)) as api:
+        assert api.post("/api/notifications/test", headers=headers()).status_code == 503
+        with Session(db) as session:
+            session.add(SourceProbe(id=telegram_setup.PROBE_ID, status="configured",
+                                    checked_at=time.time(), requests=0, result={}))
+            session.commit()
+        assert api.get("/api/source-status").json()["telegram"]["test_available"] is True
+        assert api.post("/api/notifications/test").status_code == 401
+        assert api.post("/api/notifications/test", headers=headers()).status_code == 409
+        command(api, "/start")
+        assert sent == []  # /start and status reads never send a message.
+        state = api.get("/api/notifications/status", headers=headers()).json()
+        assert state["test_available"] is True and state["available"] is False
+        assert api.post("/api/notifications/test", headers=headers(222)).status_code == 409
+        assert api.post("/api/notifications/test", headers=headers()).json() == {"state": "sent"}
+        assert sent == [111]
+        assert api.post("/api/notifications/test", headers=headers()).status_code == 429
+        assert subscribe(api).status_code == 503
+        assert api.get("/health").json()["delivery_available"] is False
+        command(api, "/stop", update=2)
+        assert api.post("/api/notifications/test", headers=headers()).status_code == 409
+        assert sent == [111]
+
+
+def test_connected_webhook_alone_does_not_authorize_test(db, monkeypatch):
+    monkeypatch.setattr(telegram_setup, "send_test", lambda *_: pytest.fail("no test opt-in"))
+    with Session(db) as session:
+        session.add(SourceProbe(id=telegram_setup.PROBE_ID, status="configured",
+                                checked_at=time.time(), requests=0, result={}))
+        session.commit()
+    with TestClient(create_app(Settings("unused", TOKEN, SECRET), db)) as api:
+        command(api, "/start")
+        assert api.get("/api/notifications/status", headers=headers()).json()["test_available"] is False
+        assert api.post("/api/notifications/test", headers=headers()).status_code == 503
