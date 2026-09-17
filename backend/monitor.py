@@ -266,6 +266,7 @@ class Monitor:
             if not self.owned(db):
                 return
             job = db.get(MonitorJob, source_id)
+            evidence = {**evidence, "discovered_at": job.first_seen, "evaluated_at": time.time()}
             for sid, uid, epoch, _ in self.interests(db, source_id):
                 state = self.current(db, sid, uid, epoch)
                 if not state:
@@ -296,7 +297,9 @@ class Monitor:
                     transmission=candidate["transmission"][:100], year=candidate["year"],
                     mileage=candidate["mileage"], price=candidate["price_usd"], market=rating["market"],
                     comparables=rating["comparables"], observed_at=candidate["observed_at"],
-                    valuation_evidence=rating["valuation_evidence"])
+                    valuation_evidence=rating["valuation_evidence"],
+                    pipeline={"discovered_at": job.first_seen, "evaluated_at": evidence["evaluated_at"],
+                              "source_added_at": candidate.get("source_added_at")})
                 if listing is None:
                     listing = Listing(source="auto_ria", source_id=source_id)
                     db.add(listing)

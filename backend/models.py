@@ -81,6 +81,7 @@ class Car(StrictModel):
     comparables: int = Field(ge=5)
     observed_at: float = Field(gt=0)
     valuation_evidence: dict | None = None
+    pipeline: dict | None = None
 
     @model_validator(mode="after")
     def https_only(self):
@@ -225,6 +226,19 @@ class Delivery(Base):
     state: Mapped[str] = mapped_column(String(20), default="pending", index=True)
     retry_at: Mapped[float] = mapped_column(Float, default=0)
     message_id: Mapped[int | None] = mapped_column(BigInteger, nullable=True)
+
+
+class DeliveryTiming(Base):
+    """Server observations; Telegram acceptance is not a phone push receipt."""
+    __tablename__ = "delivery_timings"
+    delivery_id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=False)
+    queued_at: Mapped[float] = mapped_column(Float)
+    discovered_at: Mapped[float | None] = mapped_column(Float, nullable=True)
+    evaluated_at: Mapped[float | None] = mapped_column(Float, nullable=True)
+    source_added_at: Mapped[float | None] = mapped_column(Float, nullable=True)
+    send_started_at: Mapped[float | None] = mapped_column(Float, nullable=True)
+    accepted_at: Mapped[float | None] = mapped_column(Float, nullable=True, index=True)
+    telegram_date: Mapped[int | None] = mapped_column(BigInteger, nullable=True)
 
 
 class MonitorControl(Base):

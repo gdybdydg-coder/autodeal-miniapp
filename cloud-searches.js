@@ -10,7 +10,15 @@ function renderNotificationStatus() {
     !state.telegram_ready?"Підключи чат бота":
     !state.test_sent?"Перевір зв’язок тестовим повідомленням":
     !state.available?"Тест надіслано · моніторинг ще не ввімкнено":
-    "Готові до ввімкнення";
+    state.activity?.enabled_subscriptions>0?"Моніторинг працює":"Готові до ввімкнення";
+  const activity=state?.activity;
+  $("launchProgress").textContent=!activity?"Увійди через Telegram, щоб побачити стан перевірок.":
+    !activity.enabled_subscriptions?"Активних підписок ще немає. У розділі «Підписки» натисни ⋯ і ввімкни потрібну.":
+    "Активних підписок: "+activity.enabled_subscriptions+". Нових авто: "+activity.new_listings+
+    ". Оцінено: "+activity.evaluated+". Бракує даних: "+activity.unknown+". У черзі: "+activity.pending+
+    ". Повідомлень прийнято Telegram: "+activity.messages_accepted+"."+
+    (Number.isFinite(activity.last_delivery?.discovery_to_telegram_seconds)?
+      " Остання доставка після виявлення: "+Math.ceil(activity.last_delivery.discovery_to_telegram_seconds)+" с.":"");
   $("testNotification").disabled=cloudBusy||!testAvailable||!state?.telegram_ready;
   $("subscriptionsHint").textContent=!state?(cloudBusy?"Перевіряємо стан сповіщень…":"Стан сповіщень не підтверджено. Онови список, щоб перевірити підключення."):
     !state.available?"Підписки збережені. Сповіщення ще готуються до запуску.":
