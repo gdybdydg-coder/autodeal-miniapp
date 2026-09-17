@@ -8,8 +8,8 @@ read-back, restoring filters, and confirmed deletion. Open from a Telegram Mini 
 button, not a normal browser link. No session data or bot token is persisted by the
 client. Render hosting and authenticated cloud saving have been verified. No
 webhook or worker is configured by this integration. Bounded AUTO.RIA search is
-connected; peer valuation is implemented and tested with fixtures, but has not
-yet been verified on a sufficient real-world sample.
+connected; peer valuation is tested with fixtures and one live five-comparable
+sample. Wider accuracy checks and end-to-end notification delivery remain pending.
 
 Frontend checks: `node --test cloud-test.cjs`, `node filter-test.cjs`,
 `node storage-test.cjs`. The DOM harness checks behavior, not rendered visual layout.
@@ -171,7 +171,7 @@ headroom, not unlimited users. At two-minute intervals the base counts halve.
 Actual cadence also depends on provider indexing, response time and new-car volume.
 This budget configuration does not start monitoring or enable delivery. The
 current manual search still uses its bounded sample and 15-minute snapshot cache;
-a fresh-data monitoring adapter and live valuation check remain required.
+a fresh-data monitoring adapter and end-to-end delivery check remain required.
 
 An operator can set `RIA_VALIDATION_RUN_ID` (1–40 letters/digits/dashes/underscores)
 to request a once-only live Volkswagen Golf valuation check at the next deploy.
@@ -184,6 +184,17 @@ No raw seller data, VIN, descriptions, cookies or secrets are stored. This check
 does not ingest listings, send messages, register a webhook, or enable delivery.
 Provider response headers can confirm its hourly rate; they do not establish the
 remaining package balance. A successful sample is not a validated appraisal.
+
+On 2026-09-17, the first paid-allowance check returned three real Golf listings but
+only two suitable peers for its eligible candidate. The follow-up, with a 20-car
+scan cap and precise condition/mileage queries, verified five other comparable
+listings for Golf 2011 #39818198: asking prices 7800, 7950, 8590, 7990 and 7999 USD;
+median 7990 USD versus the candidate's 8950 USD. It correctly did not qualify as a
+deal. Two other candidates stayed unvalued due to missing condition/modification
+data. These are historical observations, not current prices. Both checks used 17
+new upstream calls in total, sharing cached details. AUTO.RIA did not provide the
+allowlisted quota headers, so this does not independently verify its account balance.
+Delivery remained disabled; no paid Render resources were created by these checks.
 
 Candidate cards are loaded before spending requests on peer valuation, so a
 valuation quota failure preserves available matching cards. Error and search
