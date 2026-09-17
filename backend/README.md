@@ -186,6 +186,18 @@ small same-origin manifest without cache on foregrounding and offers an explicit
 reload button; reload preserves Telegram's URL fragment and device storage.
 It never reloads automatically while the user is editing filters.
 
+Valuation policy `asking-v3` treats an omitted optional technical-condition ID
+as unknown condition, rather than evidence of damage, provided all four source
+flags (damage, parts, abroad, customs) explicitly say false. Known adverse
+technical states or missing/ambiguous flags still prevent comparison. This is
+an asking-price estimate, not a vehicle inspection. If a modification ID cannot
+be resolved, peers must match the explicit litre value in the source fuel field,
+as well as generation, body, fuel, transmission, year and mileage tolerances.
+Missing or ambiguous engine capacity does not qualify for this fallback. Exact
+known modifications still take precedence; five independent peers and the 15%
+threshold are unchanged. Previously unvalued monitor interests may be rechecked
+once on policy change, only while their existing subscriptions remain active.
+
 For an incident involving a specific public listing, `RIA_DIAGNOSTIC_LISTING_ID`
 enables a once-per-ID check at startup. It logs only condition primitives,
 valuation blockers, monitor presence and aggregate subscription matches to

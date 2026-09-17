@@ -170,6 +170,21 @@ class Monitor:
                     db.add(MonitorFeed(id=member.feed_id, filters=source_filters(search.filters).canonical(),
                         started_at=member.started_at, cursor=member.started_at))
                     db.flush()
+            # Reconsider only previously discovered, still-active interests when
+            # the valuation policy changes. Never replay a catalog or /stop epoch.
+            outdated = db.execute(select(MonitorJob, MonitorSeen)
+                .join(MonitorSeen, MonitorSeen.source_id == MonitorJob.source_id)
+                .join(Search, Search.id == MonitorSeen.search_id)
+                .join(User, User.id == Search.user_id)
+                .join(MonitorWatch, MonitorWatch.search_id == Search.id)
+                .where(MonitorJob.state == "unvalued", MonitorSeen.state == "unvalued",
+                       Search.enabled.is_(True), User.ready.is_(True),
+                       MonitorSeen.epoch == MonitorWatch.epoch,
+                       MonitorJob.first_seen >= time.time() - 86400)).all()
+            for job, seen in outdated:
+                if job.result.get("rating", {}).get("valuation_version") != VERSION:
+                    job.state, job.next_run, job.result = "pending", 0, {}
+                    seen.state = "pending"
             db.commit()
 
     def prepare_window(self, feed_id):

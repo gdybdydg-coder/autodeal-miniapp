@@ -12,6 +12,7 @@ from sqlalchemy.orm import Session
 from .auto_ria import RiaError, fetch_json
 from .models import Filters, SourceProbe
 from .ria_search import RiaSearch, estimate
+from .valuation import comparison_dimensions
 
 PREFIX = "auto-ria-validation-"
 MAX_REQUESTS = 32
@@ -36,7 +37,7 @@ def validate_profile(profile):
 def car_summary(car):
     fields = ("id", "title", "url", "year", "price_usd", "mileage", "market",
               "comparables", "valuation", "valuation_reasons", "comparable_condition", "observed_at",
-              "modification_name", "modification_source", "modification_resolution", "vehicle_key", *DIMENSIONS)
+              "modification_name", "modification_source", "modification_resolution", "vehicle_key", "engine_cc", *DIMENSIONS)
     return {field: car.get(field) for field in fields}
 
 
@@ -55,7 +56,8 @@ def comparison_report(candidate, peers, *, now=None):
         if type(stamp) not in (int, float) or not math.isfinite(stamp) or stamp <= 0 or not -30 <= now - stamp <= 900:
             errors.append("stale_details")
         return errors
-    missing = [key for key in DIMENSIONS if type(candidate.get(key)) is not int or candidate[key] <= 0]
+    dimensions = comparison_dimensions(candidate)
+    missing = [key for key in dimensions if type(candidate.get(key)) is not int or candidate[key] <= 0]
     candidate_reasons = (["unverified_condition"] if candidate["comparable_condition"] is not True else [])
     candidate_reasons += ["missing_" + key for key in missing] + detail_errors(candidate)
     unique = {}
@@ -69,9 +71,9 @@ def comparison_report(candidate, peers, *, now=None):
         reasons = (["candidate_ineligible"] if candidate_reasons else [])
         if peer["comparable_condition"] is not True:
             reasons.append("unverified_condition")
-        reasons += ["missing_" + key for key in DIMENSIONS if type(peer.get(key)) is not int or peer[key] <= 0]
+        reasons += ["missing_" + key for key in dimensions if type(peer.get(key)) is not int or peer[key] <= 0]
         reasons += detail_errors(peer)
-        reasons += [key for key in DIMENSIONS if peer.get(key) != candidate.get(key)]
+        reasons += [key for key in dimensions if peer.get(key) != candidate.get(key)]
         if abs(peer["year"] - candidate["year"]) > 1:
             reasons.append("year")
         if abs(peer["mileage"] - candidate["mileage"]) > max(30000, candidate["mileage"] * .2):

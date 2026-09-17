@@ -193,7 +193,7 @@ def test_paid_comparable_scan_reaches_matching_peers_and_stops_at_five(engine, m
         calls.append((path, params))
         if path == "search":
             assert params["modifications[0][0][0]"] == 20
-            assert params["technicalCondition[0]"] == 1
+            assert params["damage"] == 1
             assert params["raceFrom"] == 70 and params["raceTo"] == 130
             assert "price_do" not in params and "state[0]" not in params
             return {"result": {"search_result": {"ids": list(map(str, range(1000, 1020))), "count": 20}}}
@@ -222,7 +222,7 @@ def test_comparable_scan_cap_does_not_relax_condition(engine, monkeypatch, limit
         calls.append(path)
         if path == "search":
             return {"result": {"search_result": {"ids": list(map(str, range(1000, 1050))), "count": 50}}}
-        return raw(params["auto_id"], technicalCondition=None)
+        return raw(params["auto_id"], technicalCondition={"id": 3})
     search = RiaSearch(engine, "key", fetch)
     candidate = parse_car(raw(), "123")
     search.acquire()
@@ -369,7 +369,7 @@ def test_snapshot_toggle_does_not_spend_or_hide_unvalued_cards(engine):
     def fetch(key, path, params):
         if path == "info":
             calls.append((path, params))
-            return raw(params["auto_id"], technicalCondition=None)
+            return raw(params["auto_id"], technicalCondition={"id": 3})
         return fixture_fetch(calls)(key, path, params)
     first = RiaSearch(engine, "key", fetch).search(Filters())
     assert first["cars"] == []

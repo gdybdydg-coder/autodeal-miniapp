@@ -20,7 +20,7 @@ from .auto_ria import RiaError, fetch_json, listing_preview
 from .models import Filters, SourceBudget, SourceCache, SourceProbe
 from .ria_budget import BudgetLimits, peer_scan_limit
 from . import peer_cache
-from .valuation import DIMENSIONS, VERSION, PeerBatch, estimate, is_deal, reasons, vehicle_key
+from .valuation import DIMENSIONS, VERSION, PeerBatch, comparison_dimensions, estimate, is_deal, reasons, vehicle_key
 from .launch import source_added_at
 
 FRESH_SECONDS = 900
@@ -74,6 +74,29 @@ def modification_name(value):
 
 def normalize_modification(value):
     return modification_name(value).casefold()
+
+
+def engine_capacity(fuel_name):
+    """Only a labelled litre value from the source field, never seller prose."""
+    if not isinstance(fuel_name, str) or len(fuel_name) > 150:
+        return None
+    value = re.fullmatch(r"[^0-9]*?([0-9]{1,2}(?:[.,][0-9]{1,2})?)\s*(?:л|l)\.?\s*", fuel_name, re.I)
+    if not value:
+        return None
+    litres = float(value[1].replace(",", "."))
+    return round(litres * 1000) if .6 <= litres <= 12 else None
+
+
+def comparable_condition(data):
+    flags, technical = data.get("autoInfoBar"), data.get("technicalCondition")
+    if not isinstance(flags, dict) or not all(flags.get(key) is False
+            for key in ("damage", "onRepairParts", "abroad", "custom")):
+        return False
+    # Missing optional technicalCondition is not evidence of damage. Still
+    # reject any explicitly repaired/damaged/non-running or malformed value.
+    if technical is None or (isinstance(technical, dict) and technical.get("id") is None):
+        return True
+    return isinstance(technical, dict) and type(technical.get("id")) is int and technical["id"] == 1
 
 
 def initialize_budget(engine):
@@ -166,7 +189,6 @@ def parse_car(data, source_id):
     preview = listing_preview(data, source_id)
     auto = data["autoData"]
     state = data.get("stateData") or {}
-    flags = data.get("autoInfoBar") or {}
     mileage = auto.get("raceInt")
     if type(mileage) not in (int, float) or not math.isfinite(mileage) or mileage < 0:
         raise RiaError("invalid_response")
@@ -186,10 +208,9 @@ def parse_car(data, source_id):
             "generation_id": ident(auto.get("generationId")), "modification_id": ident(auto.get("modificationId")),
             "modification_name": modification_name(auto.get("modificationName")),
             "modification_source": "listing" if valid_id(auto.get("modificationId")) else None,
+            "engine_cc": engine_capacity(auto.get("fuelName")),
             "mileage": round(mileage * 1000), "image": photo, "vehicle_key": vehicle_key(data.get("VIN")),
-            "comparable_condition": type((data.get("technicalCondition") or {}).get("id")) is int
-                and (data.get("technicalCondition") or {}).get("id") == 1
-                and all(flags.get(k) is False for k in ("damage", "onRepairParts", "abroad", "custom")),
+            "comparable_condition": comparable_condition(data),
             "source_added_at": source_added_at(data.get("addDate")), "observed_at": time.time()}
 
 
@@ -224,7 +245,7 @@ class RiaSearch:
 
     def request(self, path, params, parser, ttl=900, *, force=False):
         self.stage = path
-        cache_key = [path, params, "car-v3"] if path == "info" else [path, params]
+        cache_key = [path, params, "car-v4"] if path == "info" else [path, params]
         digest = hashlib.sha256(json.dumps(cache_key, sort_keys=True).encode()).hexdigest()
         with Session(self.engine) as db:
             cached = db.get(SourceCache, digest)
@@ -383,7 +404,7 @@ class RiaSearch:
 
     def comparisons(self, candidate):
         self.resolve_modification(candidate)
-        required = COMPARABLE_DIMENSIONS
+        required = comparison_dimensions(candidate)
         if reasons(candidate, time.time()):
             return PeerBatch()
         start_requests = self.requests_made
@@ -396,12 +417,16 @@ class RiaSearch:
         params = {"category_id": 1, "searchType": 4, "status_id": 0, "page": 0, "countpage": self.peer_scan_limit + 1,
                   "order_by": 7, "marka_id[0]": candidate["brand_id"], "model_id[0]": candidate["model_id"],
                   "generation_id[0][0]": candidate["generation_id"], "bodystyle[0]": candidate["body_id"],
-                  "modifications[0][0][0]": candidate["modification_id"],
                   "type[0]": candidate["fuel_id"], "gearbox[0]": candidate["gear_id"],
                   "s_yers[0]": candidate["year"] - 1, "po_yers[0]": candidate["year"] + 1,
                   "raceFrom": math.floor(max(0, candidate["mileage"] - tolerance) / 1000),
                   "raceTo": math.ceil((candidate["mileage"] + tolerance) / 1000),
-                  "technicalCondition[0]": 1, "damage": 1, "abroad": 2, "custom": 1}
+                  "damage": 1, "abroad": 2, "custom": 1}
+        if "modification_id" in required:
+            params["modifications[0][0][0]"] = candidate["modification_id"]
+        else:
+            params.update(engineVolumeFrom=candidate["engine_cc"] / 1000,
+                          engineVolumeTo=candidate["engine_cc"] / 1000)
         result = self.request("search", params, parse_ids)
         known_ids = {peer["id"] for peer in peers} | {candidate["id"]}
         ids = [sid for sid in result["ids"] if sid not in known_ids]

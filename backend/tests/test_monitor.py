@@ -436,7 +436,7 @@ def test_ageing_comparisons_refresh_even_when_candidate_price_is_still_fresh(p):
     with Session(p.engine) as db:
         listing = db.scalar(select(Listing))
         assert listing and listing.car["market"] == 15000
-        assert listing.car["valuation_evidence"]["version"] == "strict-v2"
+        assert listing.car["valuation_evidence"]["version"] == "asking-v3"
     # The candidate is only 11 seconds old; its peers are now too old. This also
     # covers stale evidence before the first enqueue, not just an existing queue.
     p.clock[0] += 11
@@ -472,7 +472,7 @@ def test_legacy_listing_without_comparable_proof_is_rechecked_instead_of_sent(p)
     p.clock[0] += 6
     p.runner.deliver_tick()
     assert len(p.sent) == 1 and len(details(p, "124")) == 2
-    assert p.sent[0][1].valuation_evidence["version"] == "strict-v2"
+    assert p.sent[0][1].valuation_evidence["version"] == "asking-v3"
 
 
 def test_known_changed_peer_price_invalidates_unexpired_evidence(p):

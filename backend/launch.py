@@ -65,6 +65,7 @@ def activity(db, uid=None):
         *jobs, MonitorJob.state == "unvalued").order_by(MonitorJob.last_attempt.desc()).limit(1))
     allowed = {"unverified_condition", "invalid_price", "invalid_year", "invalid_mileage",
                "stale_details", "insufficient_comparables", "comparison_limit", "mixed_sample",
+               "missing_engine_cc",
                *("missing_" + name for name in DIMENSIONS)}
     unknown_reason = None
     if isinstance(latest_unknown, dict):
