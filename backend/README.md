@@ -7,9 +7,13 @@ import occurs. Cloud saves always use enabled=false. A separate cloud list suppo
 read-back, restoring filters, and confirmed deletion. Open from a Telegram Mini App
 button, not a normal browser link. No session data or bot token is persisted by the
 client. Render hosting and authenticated cloud saving have been verified. Bounded AUTO.RIA search is
-connected; peer valuation is tested with fixtures and one live five-comparable
-sample. The paid API can run the explicit opt-in monitor described below. A real
-notification to the owner's phone and wider accuracy checks remain launch checks.
+connected; peer valuation has two live five-comparable examples, Golf and Passat.
+The wider three-model audit is partial: most sampled listings lack eligible
+condition/modification data or sufficient peers. See the
+[2026-09-17 valuation report](docs/valuation-audit-2026-09-17.md). The paid API can
+run the explicit opt-in monitor described below. The owner has confirmed the
+separate Telegram test message; a real-car notification and wider valuation
+coverage remain launch checks.
 
 Frontend checks: `node --test cloud-test.cjs`, `node filter-test.cjs`,
 `node storage-test.cjs`. The DOM harness checks behavior, not rendered visual layout.
@@ -243,9 +247,12 @@ the production search, detail parsing, post-filtering and estimator; it examines
 up to eight candidate cards with the configured peer scan limit. This does not
 call the provider's separate valuation product or submit anything to delivery.
 
-For the proposed wider check, use a fresh ID such as `popular-20260917-1` with the
-`popular-v1` profile after the code is published and the run is authorized. Do not
-reuse an old run ID with another profile: status reports `profile_conflict` and
+The `popular-v1` check `popular-20260917-1` completed on 2026-09-17 with status
+`partial`: 24 candidates, one median and 55 provider requests. The
+[report and retained evidence](docs/valuation-audit-2026-09-17.md) explain each
+coverage limit. This ID has already been used; any further live run needs a
+deliberately selected new ID and bounded scope. Do not reuse an old run ID with
+another profile: status reports `profile_conflict` and
 the original record is preserved. A claimed ID never automatically runs again,
 including after a failure or restart. No schema change or new service is needed.
 

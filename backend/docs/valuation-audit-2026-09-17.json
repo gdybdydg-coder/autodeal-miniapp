@@ -1,0 +1,1954 @@
+{
+  "schema": "autodeal.valuation-audit.v1",
+  "run_id": "popular-20260917-1",
+  "backend_commit": "da1ad67804a328bdc1021db921f19ea8b2895183",
+  "record_type": "historical_sanitized_observation",
+  "note": "Asking prices and provider-declared attributes observed on 2026-09-17. Not a current search, physical inspection, provider balance, or completed launch gate.",
+  "valuation_check": {
+    "status": "partial",
+    "checked_at": 1789649575.2645605,
+    "requests_used": 55,
+    "request_cap": 96,
+    "profile": "popular-v1",
+    "per_query_request_cap": 32,
+    "models_planned": [
+      "Volkswagen Passat",
+      "Audi A6",
+      "Mercedes-Benz E-Class"
+    ],
+    "queries": [
+      {
+        "filters": {
+          "brand": "Volkswagen",
+          "model": "Passat",
+          "region": "",
+          "price": {
+            "from": null,
+            "to": null
+          },
+          "year": {
+            "from": null,
+            "to": null
+          },
+          "mileage": {
+            "from": null,
+            "to": null
+          },
+          "body": [],
+          "fuel": [],
+          "transmission": [],
+          "onlyDeals": false
+        },
+        "inspected": 8,
+        "returned": 8,
+        "valued": 1,
+        "warnings": [
+          "search_limit"
+        ],
+        "observation_at": 1789649568.9995127,
+        "pending_valuations": 1,
+        "cars": [
+          {
+            "id": "40305688",
+            "title": "Volkswagen Passat",
+            "url": "https://auto.ria.com/auto_volkswagen_passat_40305688.html",
+            "year": 2014,
+            "price_usd": 7999,
+            "mileage": 266000,
+            "market": null,
+            "comparables": 0,
+            "valuation": "insufficient_data",
+            "comparable_condition": false,
+            "observed_at": 1789649569.2262654,
+            "brand_id": 84,
+            "model_id": 39690,
+            "generation_id": 16823,
+            "modification_id": 231741,
+            "body_id": 3,
+            "fuel_id": 1,
+            "gear_id": 2
+          },
+          {
+            "id": "37874547",
+            "title": "Volkswagen Passat",
+            "url": "https://auto.ria.com/auto_volkswagen_passat_37874547.html",
+            "year": 2017,
+            "price_usd": 14500,
+            "mileage": 299000,
+            "market": null,
+            "comparables": 0,
+            "valuation": "insufficient_data",
+            "comparable_condition": false,
+            "observed_at": 1789649569.3507237,
+            "brand_id": 84,
+            "model_id": 39690,
+            "generation_id": 40,
+            "modification_id": null,
+            "body_id": 2,
+            "fuel_id": 2,
+            "gear_id": null
+          },
+          {
+            "id": "40244416",
+            "title": "Volkswagen Passat",
+            "url": "https://auto.ria.com/auto_volkswagen_passat_40244416.html",
+            "year": 2006,
+            "price_usd": 5500,
+            "mileage": 320000,
+            "market": null,
+            "comparables": 0,
+            "valuation": "insufficient_data",
+            "comparable_condition": false,
+            "observed_at": 1789649569.462023,
+            "brand_id": 84,
+            "model_id": 39690,
+            "generation_id": 3204,
+            "modification_id": 7578,
+            "body_id": 3,
+            "fuel_id": 2,
+            "gear_id": 1
+          },
+          {
+            "id": "39378439",
+            "title": "Volkswagen Passat",
+            "url": "https://auto.ria.com/auto_volkswagen_passat_39378439.html",
+            "year": 2016,
+            "price_usd": 14400,
+            "mileage": 281000,
+            "market": 13300,
+            "comparables": 5,
+            "valuation": "sample_median",
+            "comparable_condition": true,
+            "observed_at": 1789649569.5522041,
+            "brand_id": 84,
+            "model_id": 39690,
+            "generation_id": 40,
+            "modification_id": 115343,
+            "body_id": 2,
+            "fuel_id": 2,
+            "gear_id": 1
+          },
+          {
+            "id": "40183208",
+            "title": "Volkswagen Passat",
+            "url": "https://auto.ria.com/auto_volkswagen_passat_40183208.html",
+            "year": 2016,
+            "price_usd": 18500,
+            "mileage": 240000,
+            "market": null,
+            "comparables": 0,
+            "valuation": "insufficient_data",
+            "comparable_condition": false,
+            "observed_at": 1789649569.6475759,
+            "brand_id": 84,
+            "model_id": 39690,
+            "generation_id": 40,
+            "modification_id": 210508,
+            "body_id": 2,
+            "fuel_id": 2,
+            "gear_id": 2
+          },
+          {
+            "id": "40443768",
+            "title": "Volkswagen Passat",
+            "url": "https://auto.ria.com/auto_volkswagen_passat_40443768.html",
+            "year": 1993,
+            "price_usd": 1100,
+            "mileage": 330000,
+            "market": null,
+            "comparables": 0,
+            "valuation": "insufficient_data",
+            "comparable_condition": false,
+            "observed_at": 1789649569.740114,
+            "brand_id": 84,
+            "model_id": 39690,
+            "generation_id": null,
+            "modification_id": null,
+            "body_id": 2,
+            "fuel_id": 4,
+            "gear_id": 1
+          },
+          {
+            "id": "40226560",
+            "title": "Volkswagen Passat",
+            "url": "https://auto.ria.com/auto_volkswagen_passat_40226560.html",
+            "year": 2011,
+            "price_usd": 9500,
+            "mileage": 263000,
+            "market": null,
+            "comparables": 4,
+            "valuation": "insufficient_data",
+            "comparable_condition": true,
+            "observed_at": 1789649569.825381,
+            "brand_id": 84,
+            "model_id": 39690,
+            "generation_id": 39,
+            "modification_id": 9621,
+            "body_id": 3,
+            "fuel_id": 2,
+            "gear_id": 4
+          },
+          {
+            "id": "40443746",
+            "title": "Volkswagen Passat",
+            "url": "https://auto.ria.com/auto_volkswagen_passat_40443746.html",
+            "year": 2012,
+            "price_usd": 10600,
+            "mileage": 321000,
+            "market": null,
+            "comparables": 0,
+            "valuation": "pending",
+            "comparable_condition": true,
+            "observed_at": 1789649569.9158049,
+            "brand_id": 84,
+            "model_id": 39690,
+            "generation_id": 39,
+            "modification_id": 9621,
+            "body_id": 3,
+            "fuel_id": 2,
+            "gear_id": 4
+          }
+        ],
+        "status": "valuation_verified",
+        "requests_used": 32,
+        "detail_checks": [
+          {
+            "id": "40305688",
+            "technical_condition_id": null,
+            "flags": {
+              "damage": true,
+              "onRepairParts": false,
+              "abroad": false,
+              "custom": false
+            },
+            "missing_auto_fields": []
+          },
+          {
+            "id": "37874547",
+            "technical_condition_id": null,
+            "flags": {
+              "damage": false,
+              "onRepairParts": false,
+              "abroad": false,
+              "custom": false
+            },
+            "missing_auto_fields": [
+              "modificationId",
+              "gearBoxId"
+            ]
+          },
+          {
+            "id": "40244416",
+            "technical_condition_id": null,
+            "flags": {
+              "damage": false,
+              "onRepairParts": false,
+              "abroad": false,
+              "custom": false
+            },
+            "missing_auto_fields": []
+          },
+          {
+            "id": "39378439",
+            "technical_condition_id": 1,
+            "flags": {
+              "damage": false,
+              "onRepairParts": false,
+              "abroad": false,
+              "custom": false
+            },
+            "missing_auto_fields": []
+          },
+          {
+            "id": "40183208",
+            "technical_condition_id": null,
+            "flags": {
+              "damage": false,
+              "onRepairParts": false,
+              "abroad": false,
+              "custom": false
+            },
+            "missing_auto_fields": []
+          },
+          {
+            "id": "40443768",
+            "technical_condition_id": null,
+            "flags": {
+              "damage": false,
+              "onRepairParts": false,
+              "abroad": false,
+              "custom": false
+            },
+            "missing_auto_fields": [
+              "generationId",
+              "modificationId"
+            ]
+          },
+          {
+            "id": "40226560",
+            "technical_condition_id": 1,
+            "flags": {
+              "damage": false,
+              "onRepairParts": false,
+              "abroad": false,
+              "custom": false
+            },
+            "missing_auto_fields": []
+          },
+          {
+            "id": "40443746",
+            "technical_condition_id": 1,
+            "flags": {
+              "damage": false,
+              "onRepairParts": false,
+              "abroad": false,
+              "custom": false
+            },
+            "missing_auto_fields": []
+          },
+          {
+            "id": "33208826",
+            "technical_condition_id": 1,
+            "flags": {
+              "damage": false,
+              "onRepairParts": false,
+              "abroad": false,
+              "custom": false
+            },
+            "missing_auto_fields": []
+          },
+          {
+            "id": "39486944",
+            "technical_condition_id": 1,
+            "flags": {
+              "damage": false,
+              "onRepairParts": false,
+              "abroad": false,
+              "custom": false
+            },
+            "missing_auto_fields": []
+          },
+          {
+            "id": "35409415",
+            "technical_condition_id": 1,
+            "flags": {
+              "damage": false,
+              "onRepairParts": false,
+              "abroad": false,
+              "custom": false
+            },
+            "missing_auto_fields": []
+          },
+          {
+            "id": "39749131",
+            "technical_condition_id": 1,
+            "flags": {
+              "damage": false,
+              "onRepairParts": false,
+              "abroad": false,
+              "custom": false
+            },
+            "missing_auto_fields": [
+              "modificationId"
+            ]
+          },
+          {
+            "id": "38611244",
+            "technical_condition_id": 1,
+            "flags": {
+              "damage": false,
+              "onRepairParts": false,
+              "abroad": false,
+              "custom": false
+            },
+            "missing_auto_fields": [
+              "modificationId"
+            ]
+          },
+          {
+            "id": "39045572",
+            "technical_condition_id": 1,
+            "flags": {
+              "damage": false,
+              "onRepairParts": false,
+              "abroad": false,
+              "custom": false
+            },
+            "missing_auto_fields": []
+          },
+          {
+            "id": "40424694",
+            "technical_condition_id": 1,
+            "flags": {
+              "damage": false,
+              "onRepairParts": false,
+              "abroad": false,
+              "custom": false
+            },
+            "missing_auto_fields": [
+              "modificationId"
+            ]
+          },
+          {
+            "id": "40423820",
+            "technical_condition_id": 1,
+            "flags": {
+              "damage": false,
+              "onRepairParts": false,
+              "abroad": false,
+              "custom": false
+            },
+            "missing_auto_fields": []
+          },
+          {
+            "id": "40423188",
+            "technical_condition_id": 1,
+            "flags": {
+              "damage": false,
+              "onRepairParts": false,
+              "abroad": false,
+              "custom": false
+            },
+            "missing_auto_fields": []
+          },
+          {
+            "id": "35637479",
+            "technical_condition_id": 1,
+            "flags": {
+              "damage": false,
+              "onRepairParts": false,
+              "abroad": false,
+              "custom": false
+            },
+            "missing_auto_fields": []
+          },
+          {
+            "id": "37625557",
+            "technical_condition_id": 1,
+            "flags": {
+              "damage": false,
+              "onRepairParts": false,
+              "abroad": false,
+              "custom": false
+            },
+            "missing_auto_fields": []
+          },
+          {
+            "id": "36191076",
+            "technical_condition_id": 1,
+            "flags": {
+              "damage": false,
+              "onRepairParts": false,
+              "abroad": false,
+              "custom": false
+            },
+            "missing_auto_fields": []
+          },
+          {
+            "id": "39679753",
+            "technical_condition_id": 1,
+            "flags": {
+              "damage": false,
+              "onRepairParts": false,
+              "abroad": false,
+              "custom": false
+            },
+            "missing_auto_fields": []
+          },
+          {
+            "id": "39264220",
+            "technical_condition_id": 1,
+            "flags": {
+              "damage": false,
+              "onRepairParts": false,
+              "abroad": false,
+              "custom": false
+            },
+            "missing_auto_fields": []
+          },
+          {
+            "id": "39660900",
+            "technical_condition_id": 1,
+            "flags": {
+              "damage": false,
+              "onRepairParts": false,
+              "abroad": false,
+              "custom": false
+            },
+            "missing_auto_fields": []
+          },
+          {
+            "id": "40179675",
+            "technical_condition_id": 1,
+            "flags": {
+              "damage": false,
+              "onRepairParts": false,
+              "abroad": false,
+              "custom": false
+            },
+            "missing_auto_fields": [
+              "modificationId"
+            ]
+          },
+          {
+            "id": "39753287",
+            "technical_condition_id": 1,
+            "flags": {
+              "damage": false,
+              "onRepairParts": false,
+              "abroad": false,
+              "custom": false
+            },
+            "missing_auto_fields": []
+          },
+          {
+            "id": "39018903",
+            "technical_condition_id": 1,
+            "flags": {
+              "damage": false,
+              "onRepairParts": false,
+              "abroad": false,
+              "custom": false
+            },
+            "missing_auto_fields": []
+          },
+          {
+            "id": "40383537",
+            "technical_condition_id": 1,
+            "flags": {
+              "damage": false,
+              "onRepairParts": false,
+              "abroad": false,
+              "custom": false
+            },
+            "missing_auto_fields": []
+          },
+          {
+            "id": "37906971",
+            "technical_condition_id": 1,
+            "flags": {
+              "damage": false,
+              "onRepairParts": false,
+              "abroad": false,
+              "custom": false
+            },
+            "missing_auto_fields": []
+          }
+        ],
+        "comparisons": [
+          {
+            "candidate_id": "40305688",
+            "candidate_reasons": [
+              "unverified_condition"
+            ],
+            "peers": [],
+            "accepted_ids": [],
+            "accepted_prices_usd": [],
+            "rejected": [],
+            "duplicate_or_self_entries": 0,
+            "mixed_sample": false,
+            "recalculated_market": null,
+            "deal_threshold_usd": null,
+            "qualifies_as_deal": false,
+            "calculation_matches": true
+          },
+          {
+            "candidate_id": "37874547",
+            "candidate_reasons": [
+              "unverified_condition",
+              "missing_modification_id",
+              "missing_gear_id"
+            ],
+            "peers": [],
+            "accepted_ids": [],
+            "accepted_prices_usd": [],
+            "rejected": [],
+            "duplicate_or_self_entries": 0,
+            "mixed_sample": false,
+            "recalculated_market": null,
+            "deal_threshold_usd": null,
+            "qualifies_as_deal": false,
+            "calculation_matches": true
+          },
+          {
+            "candidate_id": "40244416",
+            "candidate_reasons": [
+              "unverified_condition"
+            ],
+            "peers": [],
+            "accepted_ids": [],
+            "accepted_prices_usd": [],
+            "rejected": [],
+            "duplicate_or_self_entries": 0,
+            "mixed_sample": false,
+            "recalculated_market": null,
+            "deal_threshold_usd": null,
+            "qualifies_as_deal": false,
+            "calculation_matches": true
+          },
+          {
+            "candidate_id": "39378439",
+            "candidate_reasons": [],
+            "peers": [
+              {
+                "id": "33208826",
+                "title": "Volkswagen Passat Variant trendline ",
+                "url": "https://auto.ria.com/auto_volkswagen_passat_33208826.html",
+                "year": 2017,
+                "price_usd": 13800,
+                "mileage": 260000,
+                "market": null,
+                "comparables": null,
+                "valuation": null,
+                "comparable_condition": true,
+                "observed_at": 1789649570.201172,
+                "brand_id": 84,
+                "model_id": 39690,
+                "generation_id": 40,
+                "modification_id": 210500,
+                "body_id": 2,
+                "fuel_id": 2,
+                "gear_id": 1
+              },
+              {
+                "id": "39486944",
+                "title": "Volkswagen Passat",
+                "url": "https://auto.ria.com/auto_volkswagen_passat_39486944.html",
+                "year": 2016,
+                "price_usd": 13300,
+                "mileage": 254000,
+                "market": null,
+                "comparables": null,
+                "valuation": null,
+                "comparable_condition": true,
+                "observed_at": 1789649570.2901874,
+                "brand_id": 84,
+                "model_id": 39690,
+                "generation_id": 40,
+                "modification_id": 115343,
+                "body_id": 2,
+                "fuel_id": 2,
+                "gear_id": 1
+              },
+              {
+                "id": "35409415",
+                "title": "Volkswagen Passat",
+                "url": "https://auto.ria.com/auto_volkswagen_passat_35409415.html",
+                "year": 2015,
+                "price_usd": 13200,
+                "mileage": 328000,
+                "market": null,
+                "comparables": null,
+                "valuation": null,
+                "comparable_condition": true,
+                "observed_at": 1789649570.3793654,
+                "brand_id": 84,
+                "model_id": 39690,
+                "generation_id": 40,
+                "modification_id": 115343,
+                "body_id": 2,
+                "fuel_id": 2,
+                "gear_id": 1
+              },
+              {
+                "id": "39749131",
+                "title": "Volkswagen Passat",
+                "url": "https://auto.ria.com/auto_volkswagen_passat_39749131.html",
+                "year": 2015,
+                "price_usd": 12500,
+                "mileage": 257000,
+                "market": null,
+                "comparables": null,
+                "valuation": null,
+                "comparable_condition": true,
+                "observed_at": 1789649570.4619353,
+                "brand_id": 84,
+                "model_id": 39690,
+                "generation_id": 40,
+                "modification_id": null,
+                "body_id": 2,
+                "fuel_id": 2,
+                "gear_id": 1
+              },
+              {
+                "id": "38611244",
+                "title": "Volkswagen Passat",
+                "url": "https://auto.ria.com/auto_volkswagen_passat_38611244.html",
+                "year": 2015,
+                "price_usd": 13000,
+                "mileage": 305000,
+                "market": null,
+                "comparables": null,
+                "valuation": null,
+                "comparable_condition": true,
+                "observed_at": 1789649570.553858,
+                "brand_id": 84,
+                "model_id": 39690,
+                "generation_id": 40,
+                "modification_id": null,
+                "body_id": 2,
+                "fuel_id": 2,
+                "gear_id": 1
+              },
+              {
+                "id": "39045572",
+                "title": "Volkswagen Passat",
+                "url": "https://auto.ria.com/auto_volkswagen_passat_39045572.html",
+                "year": 2016,
+                "price_usd": 14500,
+                "mileage": 245000,
+                "market": null,
+                "comparables": null,
+                "valuation": null,
+                "comparable_condition": true,
+                "observed_at": 1789649570.6519647,
+                "brand_id": 84,
+                "model_id": 39690,
+                "generation_id": 40,
+                "modification_id": 115343,
+                "body_id": 2,
+                "fuel_id": 2,
+                "gear_id": 1
+              },
+              {
+                "id": "40424694",
+                "title": "Volkswagen Passat",
+                "url": "https://auto.ria.com/auto_volkswagen_passat_40424694.html",
+                "year": 2017,
+                "price_usd": 12200,
+                "mileage": 286000,
+                "market": null,
+                "comparables": null,
+                "valuation": null,
+                "comparable_condition": true,
+                "observed_at": 1789649570.7338653,
+                "brand_id": 84,
+                "model_id": 39690,
+                "generation_id": 40,
+                "modification_id": null,
+                "body_id": 2,
+                "fuel_id": 2,
+                "gear_id": 1
+              },
+              {
+                "id": "40423820",
+                "title": "Volkswagen Passat",
+                "url": "https://auto.ria.com/auto_volkswagen_passat_40423820.html",
+                "year": 2015,
+                "price_usd": 12500,
+                "mileage": 257000,
+                "market": null,
+                "comparables": null,
+                "valuation": null,
+                "comparable_condition": true,
+                "observed_at": 1789649570.8905175,
+                "brand_id": 84,
+                "model_id": 39690,
+                "generation_id": 40,
+                "modification_id": 115343,
+                "body_id": 2,
+                "fuel_id": 2,
+                "gear_id": 1
+              },
+              {
+                "id": "40423188",
+                "title": "Volkswagen Passat",
+                "url": "https://auto.ria.com/auto_volkswagen_passat_40423188.html",
+                "year": 2016,
+                "price_usd": 11350,
+                "mileage": 270000,
+                "market": null,
+                "comparables": null,
+                "valuation": null,
+                "comparable_condition": true,
+                "observed_at": 1789649570.9780922,
+                "brand_id": 84,
+                "model_id": 39690,
+                "generation_id": 40,
+                "modification_id": 210500,
+                "body_id": 2,
+                "fuel_id": 2,
+                "gear_id": 1
+              },
+              {
+                "id": "35637479",
+                "title": "Volkswagen Passat",
+                "url": "https://auto.ria.com/auto_volkswagen_passat_35637479.html",
+                "year": 2015,
+                "price_usd": 13850,
+                "mileage": 289000,
+                "market": null,
+                "comparables": null,
+                "valuation": null,
+                "comparable_condition": true,
+                "observed_at": 1789649571.2075229,
+                "brand_id": 84,
+                "model_id": 39690,
+                "generation_id": 40,
+                "modification_id": 115343,
+                "body_id": 2,
+                "fuel_id": 2,
+                "gear_id": 1
+              }
+            ],
+            "accepted_ids": [
+              "39486944",
+              "35409415",
+              "39045572",
+              "40423820",
+              "35637479"
+            ],
+            "accepted_prices_usd": [
+              12500,
+              13200,
+              13300,
+              13850,
+              14500
+            ],
+            "rejected": [
+              {
+                "id": "33208826",
+                "reasons": [
+                  "modification_id"
+                ]
+              },
+              {
+                "id": "39749131",
+                "reasons": [
+                  "modification_id"
+                ]
+              },
+              {
+                "id": "38611244",
+                "reasons": [
+                  "modification_id"
+                ]
+              },
+              {
+                "id": "40424694",
+                "reasons": [
+                  "modification_id"
+                ]
+              },
+              {
+                "id": "40423188",
+                "reasons": [
+                  "modification_id"
+                ]
+              }
+            ],
+            "duplicate_or_self_entries": 0,
+            "mixed_sample": false,
+            "recalculated_market": 13300,
+            "deal_threshold_usd": 11305.0,
+            "qualifies_as_deal": false,
+            "calculation_matches": true
+          },
+          {
+            "candidate_id": "40183208",
+            "candidate_reasons": [
+              "unverified_condition"
+            ],
+            "peers": [],
+            "accepted_ids": [],
+            "accepted_prices_usd": [],
+            "rejected": [],
+            "duplicate_or_self_entries": 0,
+            "mixed_sample": false,
+            "recalculated_market": null,
+            "deal_threshold_usd": null,
+            "qualifies_as_deal": false,
+            "calculation_matches": true
+          },
+          {
+            "candidate_id": "40443768",
+            "candidate_reasons": [
+              "unverified_condition",
+              "missing_generation_id",
+              "missing_modification_id"
+            ],
+            "peers": [],
+            "accepted_ids": [],
+            "accepted_prices_usd": [],
+            "rejected": [],
+            "duplicate_or_self_entries": 0,
+            "mixed_sample": false,
+            "recalculated_market": null,
+            "deal_threshold_usd": null,
+            "qualifies_as_deal": false,
+            "calculation_matches": true
+          },
+          {
+            "candidate_id": "40226560",
+            "candidate_reasons": [],
+            "peers": [
+              {
+                "id": "37625557",
+                "title": "Volkswagen Passat",
+                "url": "https://auto.ria.com/auto_volkswagen_passat_37625557.html",
+                "year": 2012,
+                "price_usd": 13400,
+                "mileage": 262000,
+                "market": null,
+                "comparables": null,
+                "valuation": null,
+                "comparable_condition": true,
+                "observed_at": 1789649571.4090269,
+                "brand_id": 84,
+                "model_id": 39690,
+                "generation_id": 39,
+                "modification_id": 9621,
+                "body_id": 3,
+                "fuel_id": 2,
+                "gear_id": 4
+              },
+              {
+                "id": "36191076",
+                "title": "Volkswagen Passat",
+                "url": "https://auto.ria.com/auto_volkswagen_passat_36191076.html",
+                "year": 2012,
+                "price_usd": 13000,
+                "mileage": 255000,
+                "market": null,
+                "comparables": null,
+                "valuation": null,
+                "comparable_condition": true,
+                "observed_at": 1789649571.5538578,
+                "brand_id": 84,
+                "model_id": 39690,
+                "generation_id": 39,
+                "modification_id": 34565,
+                "body_id": 3,
+                "fuel_id": 2,
+                "gear_id": 4
+              },
+              {
+                "id": "39679753",
+                "title": "Volkswagen Passat",
+                "url": "https://auto.ria.com/auto_volkswagen_passat_39679753.html",
+                "year": 2012,
+                "price_usd": 10900,
+                "mileage": 288000,
+                "market": null,
+                "comparables": null,
+                "valuation": null,
+                "comparable_condition": true,
+                "observed_at": 1789649571.6340644,
+                "brand_id": 84,
+                "model_id": 39690,
+                "generation_id": 39,
+                "modification_id": 210363,
+                "body_id": 3,
+                "fuel_id": 2,
+                "gear_id": 4
+              },
+              {
+                "id": "39264220",
+                "title": "Volkswagen Passat",
+                "url": "https://auto.ria.com/auto_volkswagen_passat_39264220.html",
+                "year": 2011,
+                "price_usd": 9500,
+                "mileage": 217000,
+                "market": null,
+                "comparables": null,
+                "valuation": null,
+                "comparable_condition": true,
+                "observed_at": 1789649571.9303236,
+                "brand_id": 84,
+                "model_id": 39690,
+                "generation_id": 39,
+                "modification_id": 9621,
+                "body_id": 3,
+                "fuel_id": 2,
+                "gear_id": 4
+              },
+              {
+                "id": "39660900",
+                "title": "Volkswagen Passat",
+                "url": "https://auto.ria.com/auto_volkswagen_passat_39660900.html",
+                "year": 2012,
+                "price_usd": 11700,
+                "mileage": 266000,
+                "market": null,
+                "comparables": null,
+                "valuation": null,
+                "comparable_condition": true,
+                "observed_at": 1789649572.0192928,
+                "brand_id": 84,
+                "model_id": 39690,
+                "generation_id": 39,
+                "modification_id": 9621,
+                "body_id": 3,
+                "fuel_id": 2,
+                "gear_id": 4
+              },
+              {
+                "id": "40179675",
+                "title": "Volkswagen Passat",
+                "url": "https://auto.ria.com/auto_volkswagen_passat_40179675.html",
+                "year": 2011,
+                "price_usd": 10500,
+                "mileage": 290000,
+                "market": null,
+                "comparables": null,
+                "valuation": null,
+                "comparable_condition": true,
+                "observed_at": 1789649572.1750996,
+                "brand_id": 84,
+                "model_id": 39690,
+                "generation_id": 39,
+                "modification_id": null,
+                "body_id": 3,
+                "fuel_id": 2,
+                "gear_id": 4
+              },
+              {
+                "id": "39753287",
+                "title": "Volkswagen Passat",
+                "url": "https://auto.ria.com/auto_volkswagen_passat_39753287.html",
+                "year": 2012,
+                "price_usd": 10500,
+                "mileage": 255000,
+                "market": null,
+                "comparables": null,
+                "valuation": null,
+                "comparable_condition": true,
+                "observed_at": 1789649572.36394,
+                "brand_id": 84,
+                "model_id": 39690,
+                "generation_id": 39,
+                "modification_id": 9621,
+                "body_id": 3,
+                "fuel_id": 2,
+                "gear_id": 4
+              }
+            ],
+            "accepted_ids": [
+              "37625557",
+              "39264220",
+              "39660900",
+              "39753287"
+            ],
+            "accepted_prices_usd": [
+              9500,
+              10500,
+              11700,
+              13400
+            ],
+            "rejected": [
+              {
+                "id": "36191076",
+                "reasons": [
+                  "modification_id"
+                ]
+              },
+              {
+                "id": "39679753",
+                "reasons": [
+                  "modification_id"
+                ]
+              },
+              {
+                "id": "40179675",
+                "reasons": [
+                  "modification_id"
+                ]
+              }
+            ],
+            "duplicate_or_self_entries": 0,
+            "mixed_sample": false,
+            "recalculated_market": null,
+            "deal_threshold_usd": null,
+            "qualifies_as_deal": false,
+            "calculation_matches": true
+          }
+        ]
+      },
+      {
+        "filters": {
+          "brand": "Audi",
+          "model": "A6",
+          "region": "",
+          "price": {
+            "from": null,
+            "to": null
+          },
+          "year": {
+            "from": null,
+            "to": null
+          },
+          "mileage": {
+            "from": null,
+            "to": null
+          },
+          "body": [],
+          "fuel": [],
+          "transmission": [],
+          "onlyDeals": false
+        },
+        "inspected": 8,
+        "returned": 8,
+        "valued": 0,
+        "warnings": [],
+        "observation_at": 1789649572.8038783,
+        "pending_valuations": 0,
+        "cars": [
+          {
+            "id": "40443927",
+            "title": "Audi A6",
+            "url": "https://auto.ria.com/auto_audi_a6_40443927.html",
+            "year": 2007,
+            "price_usd": 7600,
+            "mileage": 370000,
+            "market": null,
+            "comparables": 0,
+            "valuation": "insufficient_data",
+            "comparable_condition": false,
+            "observed_at": 1789649573.1419866,
+            "brand_id": 6,
+            "model_id": 49,
+            "generation_id": 10032,
+            "modification_id": null,
+            "body_id": 2,
+            "fuel_id": 4,
+            "gear_id": 2
+          },
+          {
+            "id": "40312380",
+            "title": "Audi A6",
+            "url": "https://auto.ria.com/auto_audi_a6_40312380.html",
+            "year": 2013,
+            "price_usd": 11800,
+            "mileage": 181000,
+            "market": null,
+            "comparables": 0,
+            "valuation": "insufficient_data",
+            "comparable_condition": false,
+            "observed_at": 1789649573.2314997,
+            "brand_id": 6,
+            "model_id": 49,
+            "generation_id": 525,
+            "modification_id": null,
+            "body_id": 3,
+            "fuel_id": 1,
+            "gear_id": 2
+          },
+          {
+            "id": "40443888",
+            "title": "Audi A6",
+            "url": "https://auto.ria.com/auto_audi_a6_40443888.html",
+            "year": 2007,
+            "price_usd": 6200,
+            "mileage": 298000,
+            "market": null,
+            "comparables": 0,
+            "valuation": "insufficient_data",
+            "comparable_condition": false,
+            "observed_at": 1789649573.3373485,
+            "brand_id": 6,
+            "model_id": 49,
+            "generation_id": 10032,
+            "modification_id": 164570,
+            "body_id": 3,
+            "fuel_id": 2,
+            "gear_id": 2
+          },
+          {
+            "id": "40443843",
+            "title": "Audi A6",
+            "url": "https://auto.ria.com/auto_audi_a6_40443843.html",
+            "year": 1996,
+            "price_usd": 1999,
+            "mileage": 450000,
+            "market": null,
+            "comparables": 0,
+            "valuation": "insufficient_data",
+            "comparable_condition": false,
+            "observed_at": 1789649573.4402828,
+            "brand_id": 6,
+            "model_id": 49,
+            "generation_id": 10029,
+            "modification_id": null,
+            "body_id": 3,
+            "fuel_id": 4,
+            "gear_id": 1
+          },
+          {
+            "id": "39976378",
+            "title": "Audi A6",
+            "url": "https://auto.ria.com/auto_audi_a6_39976378.html",
+            "year": 2014,
+            "price_usd": 16900,
+            "mileage": 137000,
+            "market": null,
+            "comparables": 0,
+            "valuation": "insufficient_data",
+            "comparable_condition": false,
+            "observed_at": 1789649573.5294938,
+            "brand_id": 6,
+            "model_id": 49,
+            "generation_id": 527,
+            "modification_id": 120051,
+            "body_id": 3,
+            "fuel_id": 1,
+            "gear_id": 2
+          },
+          {
+            "id": "39183365",
+            "title": "Audi A6",
+            "url": "https://auto.ria.com/auto_audi_a6_39183365.html",
+            "year": 2017,
+            "price_usd": 17499,
+            "mileage": 185000,
+            "market": null,
+            "comparables": 0,
+            "valuation": "insufficient_data",
+            "comparable_condition": false,
+            "observed_at": 1789649573.6306949,
+            "brand_id": 6,
+            "model_id": 49,
+            "generation_id": 527,
+            "modification_id": 121452,
+            "body_id": 3,
+            "fuel_id": 1,
+            "gear_id": 2
+          },
+          {
+            "id": "39235084",
+            "title": "Audi A6",
+            "url": "https://auto.ria.com/auto_audi_a6_39235084.html",
+            "year": 2005,
+            "price_usd": 6500,
+            "mileage": 290000,
+            "market": null,
+            "comparables": 0,
+            "valuation": "insufficient_data",
+            "comparable_condition": false,
+            "observed_at": 1789649573.72599,
+            "brand_id": 6,
+            "model_id": 49,
+            "generation_id": 10032,
+            "modification_id": null,
+            "body_id": 3,
+            "fuel_id": 1,
+            "gear_id": 1
+          },
+          {
+            "id": "40443824",
+            "title": "Audi A6",
+            "url": "https://auto.ria.com/auto_audi_a6_40443824.html",
+            "year": 1999,
+            "price_usd": 2850,
+            "mileage": 370000,
+            "market": null,
+            "comparables": 0,
+            "valuation": "insufficient_data",
+            "comparable_condition": false,
+            "observed_at": 1789649573.8083274,
+            "brand_id": 6,
+            "model_id": 49,
+            "generation_id": 10030,
+            "modification_id": null,
+            "body_id": 2,
+            "fuel_id": 2,
+            "gear_id": 1
+          }
+        ],
+        "status": "insufficient_comparables",
+        "requests_used": 10,
+        "detail_checks": [
+          {
+            "id": "40443927",
+            "technical_condition_id": 2,
+            "flags": {
+              "damage": false,
+              "onRepairParts": false,
+              "abroad": false,
+              "custom": false
+            },
+            "missing_auto_fields": [
+              "modificationId"
+            ]
+          },
+          {
+            "id": "40312380",
+            "technical_condition_id": null,
+            "flags": {
+              "damage": true,
+              "onRepairParts": false,
+              "abroad": false,
+              "custom": false
+            },
+            "missing_auto_fields": [
+              "modificationId"
+            ]
+          },
+          {
+            "id": "40443888",
+            "technical_condition_id": null,
+            "flags": {
+              "damage": false,
+              "onRepairParts": false,
+              "abroad": false,
+              "custom": false
+            },
+            "missing_auto_fields": []
+          },
+          {
+            "id": "40443843",
+            "technical_condition_id": null,
+            "flags": {
+              "damage": false,
+              "onRepairParts": false,
+              "abroad": false,
+              "custom": false
+            },
+            "missing_auto_fields": [
+              "modificationId"
+            ]
+          },
+          {
+            "id": "39976378",
+            "technical_condition_id": null,
+            "flags": {
+              "damage": true,
+              "onRepairParts": false,
+              "abroad": false,
+              "custom": false
+            },
+            "missing_auto_fields": []
+          },
+          {
+            "id": "39183365",
+            "technical_condition_id": null,
+            "flags": {
+              "damage": true,
+              "onRepairParts": false,
+              "abroad": false,
+              "custom": false
+            },
+            "missing_auto_fields": []
+          },
+          {
+            "id": "39235084",
+            "technical_condition_id": null,
+            "flags": {
+              "damage": false,
+              "onRepairParts": false,
+              "abroad": false,
+              "custom": false
+            },
+            "missing_auto_fields": [
+              "modificationId"
+            ]
+          },
+          {
+            "id": "40443824",
+            "technical_condition_id": 2,
+            "flags": {
+              "damage": false,
+              "onRepairParts": false,
+              "abroad": false,
+              "custom": false
+            },
+            "missing_auto_fields": [
+              "modificationId"
+            ]
+          }
+        ],
+        "comparisons": [
+          {
+            "candidate_id": "40443927",
+            "candidate_reasons": [
+              "unverified_condition",
+              "missing_modification_id"
+            ],
+            "peers": [],
+            "accepted_ids": [],
+            "accepted_prices_usd": [],
+            "rejected": [],
+            "duplicate_or_self_entries": 0,
+            "mixed_sample": false,
+            "recalculated_market": null,
+            "deal_threshold_usd": null,
+            "qualifies_as_deal": false,
+            "calculation_matches": true
+          },
+          {
+            "candidate_id": "40312380",
+            "candidate_reasons": [
+              "unverified_condition",
+              "missing_modification_id"
+            ],
+            "peers": [],
+            "accepted_ids": [],
+            "accepted_prices_usd": [],
+            "rejected": [],
+            "duplicate_or_self_entries": 0,
+            "mixed_sample": false,
+            "recalculated_market": null,
+            "deal_threshold_usd": null,
+            "qualifies_as_deal": false,
+            "calculation_matches": true
+          },
+          {
+            "candidate_id": "40443888",
+            "candidate_reasons": [
+              "unverified_condition"
+            ],
+            "peers": [],
+            "accepted_ids": [],
+            "accepted_prices_usd": [],
+            "rejected": [],
+            "duplicate_or_self_entries": 0,
+            "mixed_sample": false,
+            "recalculated_market": null,
+            "deal_threshold_usd": null,
+            "qualifies_as_deal": false,
+            "calculation_matches": true
+          },
+          {
+            "candidate_id": "40443843",
+            "candidate_reasons": [
+              "unverified_condition",
+              "missing_modification_id"
+            ],
+            "peers": [],
+            "accepted_ids": [],
+            "accepted_prices_usd": [],
+            "rejected": [],
+            "duplicate_or_self_entries": 0,
+            "mixed_sample": false,
+            "recalculated_market": null,
+            "deal_threshold_usd": null,
+            "qualifies_as_deal": false,
+            "calculation_matches": true
+          },
+          {
+            "candidate_id": "39976378",
+            "candidate_reasons": [
+              "unverified_condition"
+            ],
+            "peers": [],
+            "accepted_ids": [],
+            "accepted_prices_usd": [],
+            "rejected": [],
+            "duplicate_or_self_entries": 0,
+            "mixed_sample": false,
+            "recalculated_market": null,
+            "deal_threshold_usd": null,
+            "qualifies_as_deal": false,
+            "calculation_matches": true
+          },
+          {
+            "candidate_id": "39183365",
+            "candidate_reasons": [
+              "unverified_condition"
+            ],
+            "peers": [],
+            "accepted_ids": [],
+            "accepted_prices_usd": [],
+            "rejected": [],
+            "duplicate_or_self_entries": 0,
+            "mixed_sample": false,
+            "recalculated_market": null,
+            "deal_threshold_usd": null,
+            "qualifies_as_deal": false,
+            "calculation_matches": true
+          },
+          {
+            "candidate_id": "39235084",
+            "candidate_reasons": [
+              "unverified_condition",
+              "missing_modification_id"
+            ],
+            "peers": [],
+            "accepted_ids": [],
+            "accepted_prices_usd": [],
+            "rejected": [],
+            "duplicate_or_self_entries": 0,
+            "mixed_sample": false,
+            "recalculated_market": null,
+            "deal_threshold_usd": null,
+            "qualifies_as_deal": false,
+            "calculation_matches": true
+          },
+          {
+            "candidate_id": "40443824",
+            "candidate_reasons": [
+              "unverified_condition",
+              "missing_modification_id"
+            ],
+            "peers": [],
+            "accepted_ids": [],
+            "accepted_prices_usd": [],
+            "rejected": [],
+            "duplicate_or_self_entries": 0,
+            "mixed_sample": false,
+            "recalculated_market": null,
+            "deal_threshold_usd": null,
+            "qualifies_as_deal": false,
+            "calculation_matches": true
+          }
+        ]
+      },
+      {
+        "filters": {
+          "brand": "Mercedes-Benz",
+          "model": "E-Class",
+          "region": "",
+          "price": {
+            "from": null,
+            "to": null
+          },
+          "year": {
+            "from": null,
+            "to": null
+          },
+          "mileage": {
+            "from": null,
+            "to": null
+          },
+          "body": [],
+          "fuel": [],
+          "transmission": [],
+          "onlyDeals": false
+        },
+        "inspected": 8,
+        "returned": 8,
+        "valued": 0,
+        "warnings": [],
+        "observation_at": 1789649573.836834,
+        "pending_valuations": 0,
+        "cars": [
+          {
+            "id": "40443745",
+            "title": "Mercedes-Benz E-Class",
+            "url": "https://auto.ria.com/auto_mercedes_benz_e_class_40443745.html",
+            "year": 2017,
+            "price_usd": 31000,
+            "mileage": 290000,
+            "market": null,
+            "comparables": 0,
+            "valuation": "insufficient_data",
+            "comparable_condition": false,
+            "observed_at": 1789649574.132566,
+            "brand_id": 48,
+            "model_id": 428,
+            "generation_id": 195,
+            "modification_id": 118874,
+            "body_id": 3,
+            "fuel_id": 2,
+            "gear_id": 2
+          },
+          {
+            "id": "40443711",
+            "title": "Mercedes-Benz E-Class",
+            "url": "https://auto.ria.com/auto_mercedes_benz_e_class_40443711.html",
+            "year": 2000,
+            "price_usd": 4725,
+            "mileage": 380000,
+            "market": null,
+            "comparables": 0,
+            "valuation": "insufficient_data",
+            "comparable_condition": false,
+            "observed_at": 1789649574.248041,
+            "brand_id": 48,
+            "model_id": 428,
+            "generation_id": 9659,
+            "modification_id": 157311,
+            "body_id": 3,
+            "fuel_id": 2,
+            "gear_id": 2
+          },
+          {
+            "id": "40310964",
+            "title": "Mercedes-Benz E-Class",
+            "url": "https://auto.ria.com/auto_mercedes_benz_e_class_40310964.html",
+            "year": 2012,
+            "price_usd": 12000,
+            "mileage": 283000,
+            "market": null,
+            "comparables": 0,
+            "valuation": "insufficient_data",
+            "comparable_condition": true,
+            "observed_at": 1789649574.3392515,
+            "brand_id": 48,
+            "model_id": 428,
+            "generation_id": 193,
+            "modification_id": 157912,
+            "body_id": 3,
+            "fuel_id": 2,
+            "gear_id": 3
+          },
+          {
+            "id": "40175448",
+            "title": "Mercedes-Benz E-Class",
+            "url": "https://auto.ria.com/auto_mercedes_benz_e_class_40175448.html",
+            "year": 2004,
+            "price_usd": 6900,
+            "mileage": 394000,
+            "market": null,
+            "comparables": 0,
+            "valuation": "insufficient_data",
+            "comparable_condition": false,
+            "observed_at": 1789649574.4292862,
+            "brand_id": 48,
+            "model_id": 428,
+            "generation_id": 9662,
+            "modification_id": 157444,
+            "body_id": 3,
+            "fuel_id": 2,
+            "gear_id": 2
+          },
+          {
+            "id": "40443663",
+            "title": "Mercedes-Benz E-Class",
+            "url": "https://auto.ria.com/auto_mercedes_benz_e_class_40443663.html",
+            "year": 2001,
+            "price_usd": 4200,
+            "mileage": 412000,
+            "market": null,
+            "comparables": 0,
+            "valuation": "insufficient_data",
+            "comparable_condition": false,
+            "observed_at": 1789649574.5327659,
+            "brand_id": 48,
+            "model_id": 428,
+            "generation_id": 9659,
+            "modification_id": 157316,
+            "body_id": 3,
+            "fuel_id": 2,
+            "gear_id": 2
+          },
+          {
+            "id": "40174950",
+            "title": "Mercedes-Benz E-Class",
+            "url": "https://auto.ria.com/auto_mercedes_benz_e_class_40174950.html",
+            "year": 1978,
+            "price_usd": 1200,
+            "mileage": 208000,
+            "market": null,
+            "comparables": 0,
+            "valuation": "insufficient_data",
+            "comparable_condition": false,
+            "observed_at": 1789649574.6171923,
+            "brand_id": 48,
+            "model_id": 428,
+            "generation_id": 9604,
+            "modification_id": null,
+            "body_id": 3,
+            "fuel_id": 2,
+            "gear_id": null
+          },
+          {
+            "id": "39161731",
+            "title": "Mercedes-Benz E-Class",
+            "url": "https://auto.ria.com/auto_mercedes_benz_e_class_39161731.html",
+            "year": 2002,
+            "price_usd": 5300,
+            "mileage": 245000,
+            "market": null,
+            "comparables": 0,
+            "valuation": "insufficient_data",
+            "comparable_condition": false,
+            "observed_at": 1789649574.7083044,
+            "brand_id": 48,
+            "model_id": 428,
+            "generation_id": 9662,
+            "modification_id": 157401,
+            "body_id": 3,
+            "fuel_id": 2,
+            "gear_id": 2
+          },
+          {
+            "id": "38345811",
+            "title": "Mercedes-Benz E-Class",
+            "url": "https://auto.ria.com/auto_mercedes_benz_e_class_38345811.html",
+            "year": 1991,
+            "price_usd": 3100,
+            "mileage": 349000,
+            "market": null,
+            "comparables": 0,
+            "valuation": "insufficient_data",
+            "comparable_condition": true,
+            "observed_at": 1789649574.7939947,
+            "brand_id": 48,
+            "model_id": 428,
+            "generation_id": 9647,
+            "modification_id": 157107,
+            "body_id": 2,
+            "fuel_id": 4,
+            "gear_id": 1
+          }
+        ],
+        "status": "insufficient_comparables",
+        "requests_used": 13,
+        "detail_checks": [
+          {
+            "id": "40443745",
+            "technical_condition_id": null,
+            "flags": {
+              "damage": false,
+              "onRepairParts": false,
+              "abroad": false,
+              "custom": false
+            },
+            "missing_auto_fields": []
+          },
+          {
+            "id": "40443711",
+            "technical_condition_id": null,
+            "flags": {
+              "damage": false,
+              "onRepairParts": false,
+              "abroad": false,
+              "custom": false
+            },
+            "missing_auto_fields": []
+          },
+          {
+            "id": "40310964",
+            "technical_condition_id": 1,
+            "flags": {
+              "damage": false,
+              "onRepairParts": false,
+              "abroad": false,
+              "custom": false
+            },
+            "missing_auto_fields": []
+          },
+          {
+            "id": "40175448",
+            "technical_condition_id": 2,
+            "flags": {
+              "damage": false,
+              "onRepairParts": false,
+              "abroad": false,
+              "custom": false
+            },
+            "missing_auto_fields": []
+          },
+          {
+            "id": "40443663",
+            "technical_condition_id": null,
+            "flags": {
+              "damage": false,
+              "onRepairParts": false,
+              "abroad": false,
+              "custom": false
+            },
+            "missing_auto_fields": []
+          },
+          {
+            "id": "40174950",
+            "technical_condition_id": null,
+            "flags": {
+              "damage": false,
+              "onRepairParts": false,
+              "abroad": false,
+              "custom": false
+            },
+            "missing_auto_fields": [
+              "modificationId",
+              "gearBoxId"
+            ]
+          },
+          {
+            "id": "39161731",
+            "technical_condition_id": null,
+            "flags": {
+              "damage": false,
+              "onRepairParts": false,
+              "abroad": false,
+              "custom": false
+            },
+            "missing_auto_fields": []
+          },
+          {
+            "id": "38345811",
+            "technical_condition_id": 1,
+            "flags": {
+              "damage": false,
+              "onRepairParts": false,
+              "abroad": false,
+              "custom": false
+            },
+            "missing_auto_fields": []
+          },
+          {
+            "id": "39792796",
+            "technical_condition_id": 1,
+            "flags": {
+              "damage": false,
+              "onRepairParts": false,
+              "abroad": false,
+              "custom": false
+            },
+            "missing_auto_fields": []
+          }
+        ],
+        "comparisons": [
+          {
+            "candidate_id": "40443745",
+            "candidate_reasons": [
+              "unverified_condition"
+            ],
+            "peers": [],
+            "accepted_ids": [],
+            "accepted_prices_usd": [],
+            "rejected": [],
+            "duplicate_or_self_entries": 0,
+            "mixed_sample": false,
+            "recalculated_market": null,
+            "deal_threshold_usd": null,
+            "qualifies_as_deal": false,
+            "calculation_matches": true
+          },
+          {
+            "candidate_id": "40443711",
+            "candidate_reasons": [
+              "unverified_condition"
+            ],
+            "peers": [],
+            "accepted_ids": [],
+            "accepted_prices_usd": [],
+            "rejected": [],
+            "duplicate_or_self_entries": 0,
+            "mixed_sample": false,
+            "recalculated_market": null,
+            "deal_threshold_usd": null,
+            "qualifies_as_deal": false,
+            "calculation_matches": true
+          },
+          {
+            "candidate_id": "40310964",
+            "candidate_reasons": [],
+            "peers": [
+              {
+                "id": "39792796",
+                "title": "Mercedes-Benz E-Class",
+                "url": "https://auto.ria.com/auto_mercedes_benz_e_class_39792796.html",
+                "year": 2011,
+                "price_usd": 11300,
+                "mileage": 340000,
+                "market": null,
+                "comparables": null,
+                "valuation": null,
+                "comparable_condition": true,
+                "observed_at": 1789649575.0886772,
+                "brand_id": 48,
+                "model_id": 428,
+                "generation_id": 193,
+                "modification_id": 157911,
+                "body_id": 3,
+                "fuel_id": 2,
+                "gear_id": 3
+              }
+            ],
+            "accepted_ids": [],
+            "accepted_prices_usd": [],
+            "rejected": [
+              {
+                "id": "39792796",
+                "reasons": [
+                  "modification_id",
+                  "mileage"
+                ]
+              }
+            ],
+            "duplicate_or_self_entries": 0,
+            "mixed_sample": false,
+            "recalculated_market": null,
+            "deal_threshold_usd": null,
+            "qualifies_as_deal": false,
+            "calculation_matches": true
+          },
+          {
+            "candidate_id": "40175448",
+            "candidate_reasons": [
+              "unverified_condition"
+            ],
+            "peers": [],
+            "accepted_ids": [],
+            "accepted_prices_usd": [],
+            "rejected": [],
+            "duplicate_or_self_entries": 0,
+            "mixed_sample": false,
+            "recalculated_market": null,
+            "deal_threshold_usd": null,
+            "qualifies_as_deal": false,
+            "calculation_matches": true
+          },
+          {
+            "candidate_id": "40443663",
+            "candidate_reasons": [
+              "unverified_condition"
+            ],
+            "peers": [],
+            "accepted_ids": [],
+            "accepted_prices_usd": [],
+            "rejected": [],
+            "duplicate_or_self_entries": 0,
+            "mixed_sample": false,
+            "recalculated_market": null,
+            "deal_threshold_usd": null,
+            "qualifies_as_deal": false,
+            "calculation_matches": true
+          },
+          {
+            "candidate_id": "40174950",
+            "candidate_reasons": [
+              "unverified_condition",
+              "missing_modification_id",
+              "missing_gear_id"
+            ],
+            "peers": [],
+            "accepted_ids": [],
+            "accepted_prices_usd": [],
+            "rejected": [],
+            "duplicate_or_self_entries": 0,
+            "mixed_sample": false,
+            "recalculated_market": null,
+            "deal_threshold_usd": null,
+            "qualifies_as_deal": false,
+            "calculation_matches": true
+          },
+          {
+            "candidate_id": "39161731",
+            "candidate_reasons": [
+              "unverified_condition"
+            ],
+            "peers": [],
+            "accepted_ids": [],
+            "accepted_prices_usd": [],
+            "rejected": [],
+            "duplicate_or_self_entries": 0,
+            "mixed_sample": false,
+            "recalculated_market": null,
+            "deal_threshold_usd": null,
+            "qualifies_as_deal": false,
+            "calculation_matches": true
+          },
+          {
+            "candidate_id": "38345811",
+            "candidate_reasons": [],
+            "peers": [],
+            "accepted_ids": [],
+            "accepted_prices_usd": [],
+            "rejected": [],
+            "duplicate_or_self_entries": 0,
+            "mixed_sample": false,
+            "recalculated_market": null,
+            "deal_threshold_usd": null,
+            "qualifies_as_deal": false,
+            "calculation_matches": true
+          }
+        ]
+      }
+    ],
+    "provider_quota": {},
+    "valued": 1,
+    "returned": 24
+  }
+}
