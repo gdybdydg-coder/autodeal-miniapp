@@ -106,7 +106,7 @@ function readCurrentFilters() {
     year:readRange("yearFrom","yearTo","Рік"),
     mileage:readRange("mileageFrom","mileageTo","Пробіг"),
     body:selectedValues("body"),fuel:selectedValues("fuel"),
-    transmission:selectedValues("transmission"),onlyDeals
+    transmission:selectedValues("transmission"),onlyDeals:document.documentElement?.dataset?.mode==="subscriptions"||onlyDeals
   };
 }
 let resultsTab=null,currentScreen="search";
@@ -131,6 +131,11 @@ function showSearchForm() {
   $("searchTitle").focus({preventScroll:true});
 }
 function searchCars(options={}) {
+  if(document.documentElement?.dataset?.mode==="subscriptions") {
+    showSearchForm();
+    toast("Налаштуй фільтри та натисни «Створити підписку».");
+    return;
+  }
   if(window.AutoDealLive?.isBusy?.()) {
     toast("Пошук ще виконується. Зачекай на результат.");return;
   }

@@ -24,6 +24,19 @@ PAGE_SIZE = 50
 LEASE_SECONDS = 90
 
 
+def pause_all(engine):
+    """Retire active mass scans without deleting subscriptions or stored results."""
+    with Session(engine) as db:
+        db.execute(update(FullScan).where(FullScan.status.in_(ACTIVE)).values(status="paused", error=""))
+        db.commit()
+
+
+def runtime_status(engine, enabled):
+    with Session(engine) as db:
+        count = db.scalar(select(func.count()).select_from(FullScan).where(FullScan.status.in_(ACTIVE)))
+    return {"enabled": enabled, "active_jobs": count}
+
+
 def start(db, uid, filters, restart=False):
     """Caller holds the user's row lock, serializing starts across browser tabs."""
     filters = filters.model_copy(update={"onlyDeals": False})

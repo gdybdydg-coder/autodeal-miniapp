@@ -42,6 +42,7 @@ class Settings:
     telegram_test_enabled: bool = False
     catalog_rollout_check: bool = False
     ria_validation_profile: str = "golf"
+    full_scan_enabled: bool = False
 
     @classmethod
     def env(cls):
@@ -59,6 +60,7 @@ class Settings:
             telegram_test_enabled=os.getenv("TELEGRAM_TEST_ENABLED") == "true",
             catalog_rollout_check=os.getenv("RIA_CATALOG_ROLLOUT_CHECK") == "true",
             ria_validation_profile=os.getenv("RIA_VALIDATION_PROFILE", "golf"),
+            full_scan_enabled=os.getenv("FULL_SCAN_ENABLED") == "true",
         )
 
     @property
@@ -83,6 +85,8 @@ def create_app(settings: Settings, engine=None):
         Base.metadata.create_all(engine)
         initialize_budget(engine)
         monitor.initialize(engine)
+        if not settings.full_scan_enabled:
+            full_scan.pause_all(engine)
         await asyncio.to_thread(probe_once, engine, settings.auto_ria_api_key)
         await asyncio.to_thread(verify_search_once, engine, settings.auto_ria_api_key)
         await asyncio.to_thread(ria_rollout.check_once, engine, settings.auto_ria_api_key, settings.catalog_rollout_check)
@@ -90,7 +94,7 @@ def create_app(settings: Settings, engine=None):
         await asyncio.to_thread(telegram_setup.configure_menu, engine, settings)
         stop = asyncio.Event()
         task = asyncio.create_task(monitor.run(engine, settings, stop)) if settings.monitor_enabled else None
-        scan_task = asyncio.create_task(full_scan.run(engine, settings.auto_ria_api_key, stop)) if settings.auto_ria_api_key else None
+        scan_task = asyncio.create_task(full_scan.run(engine, settings.auto_ria_api_key, stop)) if settings.auto_ria_api_key and settings.full_scan_enabled else None
         validation_stop = threading.Event()
         validation_task = asyncio.create_task(asyncio.to_thread(
             validate_once, engine, settings.auto_ria_api_key, settings.ria_validation_run_id,
@@ -214,6 +218,7 @@ def create_app(settings: Settings, engine=None):
                 "valuation_check": validation_status(engine, settings.ria_validation_run_id, settings.ria_validation_profile),
                 "catalog_check": ria_rollout.status(engine),
                 "monitor": monitor.runtime_status(engine, settings.monitor_enabled),
+                "full_scan": full_scan.runtime_status(engine, settings.full_scan_enabled),
                 "telegram": telegram_status(),
                 "miniapp_menu": telegram_setup.menu_status(engine, settings.miniapp_release)}
 
@@ -256,6 +261,8 @@ def create_app(settings: Settings, engine=None):
     @app.post("/api/cars/search")
     def search_cars(payload: Filters, cursor: str | None = Query(default=None, pattern=r"^[a-f0-9]{32}$"),
                     uid=Depends(identity)):
+        if not settings.full_scan_enabled:
+            raise HTTPException(409, "full_scan_disabled")
         try:
             return RiaSearch(engine, settings.auto_ria_api_key).search(payload, cursor)
         except RiaError as exc:
@@ -267,6 +274,8 @@ def create_app(settings: Settings, engine=None):
 
     @app.post("/api/cars/scans")
     def start_full_scan(payload: Filters, restart: bool = False, uid=Depends(identity), db=Depends(session)):
+        if not settings.full_scan_enabled:
+            raise HTTPException(409, "full_scan_disabled")
         if not settings.auto_ria_api_key:
             raise HTTPException(503, "not_configured")
         user_row(db, uid)
@@ -285,6 +294,8 @@ def create_app(settings: Settings, engine=None):
 
     @app.patch("/api/cars/scans/{scan_id}")
     def control_full_scan(scan_id: str, payload: EnabledRequest, uid=Depends(identity), db=Depends(session)):
+        if payload.enabled and not settings.full_scan_enabled:
+            raise HTTPException(409, "full_scan_disabled")
         user_row(db, uid)
         if not full_scan.change(db, uid, scan_id, payload.enabled):
             raise HTTPException(404, "Scan not found")

@@ -44,9 +44,9 @@ would enable a more detailed interaction review without account access.
 
 This is a code review, not a successful live notification test.
 
-1. The notification monitor is disabled in production. Release 29 still starts
-   the full-scan worker when an API key is present; changing this document does
-   not stop active scans.
+1. The notification monitor is disabled in production. Release 30 separately
+   disables the old full-scan worker by default and pauses its active jobs.
+   This retirement does not activate notification monitoring or delivery.
 2. `app.check_enable()` and `Monitor.tick()` permit one active subscription
    globally. This is a pilot limitation, not the intended product capacity.
 3. `Monitor.poll()` checks at most three pending cars per cycle. Pending cars
@@ -126,6 +126,14 @@ mirror of AUTO.RIA's database.
 
 ## Change status
 
-The strategy and code findings are recorded. No production settings or delivery
-flags were changed by this analysis; no AutoSpect interaction was completed.
-The runtime transition above remains to be implemented and verified.
+Release 20260917-30 implements the first transition step: the Mini App's main
+action creates a saved subscription; old catalog navigation is hidden; starting
+or resuming mass scans is disabled by default; startup pauses existing mass-scan
+jobs while preserving their data and saved subscriptions. Public source status
+exposes the disabled flag and active-job count for rollout verification. Existing
+notification readiness and consent checks remain in force. Backend and frontend
+regression tests cover the shutdown guards and the subscription-only UI entry.
+
+The durable new-listing monitor, multi-subscription scheduling and a real
+end-to-end notification test remain to be implemented and verified. This release
+does not enable monitoring or delivery. No AutoSpect interaction was completed.
