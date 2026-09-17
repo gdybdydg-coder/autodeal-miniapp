@@ -53,6 +53,7 @@
       const choices=Object.fromEntries(["body","fuel","transmission"].map(key=>[key,names(result[key])]));
       for(const value of brands) if(!Object.hasOwn(data.catalog,value)) data.catalog[value]=[];
       fill(brand,brands,"Всі марки");
+      root.AutoDealBrandPicker?.refresh();
       data.regions.splice(0,data.regions.length,"Вся Україна",...states);
       fill(region,states,"Вся Україна");
       for(const group of advancedGroups) {

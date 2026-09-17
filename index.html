@@ -4,9 +4,9 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
   <meta name="theme-color" content="#070709">
-  <meta name="autodeal-version" content="20260917-24">
+  <meta name="autodeal-version" content="20260917-25">
   <title>AUTODEAL</title>
-  <link rel="stylesheet" href="style.css?v=20260917-22">
+  <link rel="stylesheet" href="style.css?v=20260917-25">
 </head>
 <body>
 <main class="app">
@@ -18,7 +18,7 @@
 
   <section id="searchFilters" class="search-box" aria-label="Фільтри пошуку">
     <div class="row group">
-      <div><label class="label" for="brand">Марка</label><select id="brand" class="input"><option value="">Всі марки</option></select></div>
+      <div><label id="brandLabel" class="label" for="brand">Марка</label><select id="brand" class="input"><option value="">Всі марки</option></select><button id="brandPickerButton" class="input brand-picker-button" type="button" aria-haspopup="dialog" aria-controls="brandDialog" aria-labelledby="brandLabel brandPickerValue" hidden><span id="brandPickerValue">Всі марки</span><span aria-hidden="true">⌄</span></button></div>
       <div><label class="label" for="model">Модель</label><select id="model" class="input" disabled><option value="">Всі моделі</option></select></div>
     </div>
     <div class="catalog-help"><p id="catalogStatus" class="filter-help" role="status">Завантажуємо марки та моделі AUTO.RIA…</p><button id="retryCatalog" class="manager-button" type="button" hidden>Оновити списки</button></div>
@@ -115,9 +115,18 @@
     <p class="filter-help notification-footnote">/stop у чаті — вимкнути всі сповіщення.</p>
   </section>
   <details class="save-privacy"><summary>Про збереження</summary><p class="filter-help">Збереження в акаунті передає назву, фільтри та підтверджений Telegram ID на сервер AUTODeal у Render. Видалити пошук можна в його картці. Локальні пошуки залишаються в цьому браузері й автоматично не переносяться. Для пошуку сервер передає фільтри до AUTO.RIA без твого Telegram ID.</p></details>
-  <div class="app-release"><span>Версія 20260917-24</span><button id="reloadApp" class="manager-button" type="button">Оновити застосунок</button></div>
+  <div class="app-release"><span>Версія 20260917-25</span><button id="reloadApp" class="manager-button" type="button">Оновити застосунок</button></div>
 </section>
 </main>
+<dialog id="brandDialog" class="brand-dialog" aria-labelledby="brandDialogTitle">
+  <div class="brand-dialog-head"><h2 id="brandDialogTitle">Марка авто</h2><button id="closeBrandDialog" class="dialog-close" type="button" aria-label="Закрити вибір марки">×</button></div>
+  <div class="brand-search-wrap">
+    <label class="sr-only" for="brandSearch">Пошук марки</label>
+    <input id="brandSearch" class="input" type="search" placeholder="Введи назву марки" autocomplete="off" autocapitalize="off" spellcheck="false" enterkeyhint="search" aria-controls="brandOptions">
+  </div>
+  <p id="brandSearchStatus" class="brand-search-status" role="status"></p>
+  <div id="brandOptions" class="brand-options"></div>
+</dialog>
 <dialog id="subscriptionMenu" class="subscription-sheet" aria-labelledby="subscriptionMenuTitle" aria-describedby="subscriptionMenuSummary">
   <div class="sheet-handle" aria-hidden="true"></div>
   <div class="subscription-sheet-head"><h2 id="subscriptionMenuTitle"></h2><button id="closeSubscriptionMenu" type="button" aria-label="Закрити меню">×</button></div>
@@ -132,9 +141,10 @@
 <script src="data/cars.js?v=4"></script>
 <script src="saved-searches.js?v=6"></script>
 <script src="app.js?v=20260917-24"></script>
+<script src="brand-picker.js?v=20260917-25"></script>
 <script src="search-manager.js?v=20260917-24"></script>
 <script src="cloud-api.js?v=20260917-24"></script>
-<script src="catalog-loader.js?v=20260917-24"></script>
+<script src="catalog-loader.js?v=20260917-25"></script>
 <script src="live-search.js?v=20260917-24"></script>
 <script src="cloud-searches.js?v=20260917-23"></script>
 <script src="app-version.js?v=20260917-22"></script>

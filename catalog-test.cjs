@@ -8,12 +8,14 @@ function setup(fetch) {
   const brand=control(),model=control(),region=control(),status=control(),retry=control();
   const data={catalog:{BMW:['X5']},regions:['Вся Україна','Київська область']};
   const advancedGroups=['body','fuel','transmission'].map(name=>({name,options:[]}));
-  const window={AUTO_DEAL_DATA:data,AutoDealCloud:{catalog:fetch}};
+  let pickerValues=[];
+  const window={AUTO_DEAL_DATA:data,AutoDealCloud:{catalog:fetch},
+    AutoDealBrandPicker:{refresh(){pickerValues=brand.children.map(o=>o.value)}}};
   const context=vm.createContext({window,brand,model,region,advancedGroups,
     selectedValues:()=>[],renderAdvancedOptions(){},Option:function(text,value){return{text,value}},
     document:{getElementById:id=>({catalogStatus:status,retryCatalog:retry})[id]}});
   vm.runInContext(fs.readFileSync(__dirname+'/catalog-loader.js','utf8'),context);
-  return{window,data,brand,model,region,status,retry};
+  return{window,data,brand,model,region,status,retry,pickerValues:()=>pickerValues};
 }
 const rootCatalog=()=>({brands:entries(['BMW','Peugeot','Toyota']),regions:entries(['Київська','Сумська','Хмельницька']),
   body:entries(['Седан']),fuel:entries(['Дизель','Електро']),transmission:entries(['Автомат','Редуктор'])});
@@ -23,6 +25,7 @@ test('official brands and regions expand choices; models load once per selected 
   const ui=setup(async brand=>{calls.push(brand||'root');return brand?{models:entries(['3008','5008'])}:rootCatalog()});
   await tick();
   assert.ok(ui.brand.children.some(o=>o.value==='Peugeot'));
+  assert.ok(ui.pickerValues().includes('Peugeot'));
   assert.ok(ui.region.children.some(o=>o.value==='Сумська область'));
   assert.deepEqual(calls,['root']);
   ui.brand.value='Peugeot';await ui.brand.listeners.change();
