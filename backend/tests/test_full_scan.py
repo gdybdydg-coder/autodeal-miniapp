@@ -23,7 +23,7 @@ def provider(calls, total=123):
         if path == "search":
             start = params["page"] * params["countpage"]
             return {"result": {"search_result": {"ids": list(map(str, range(100 + start, 100 + min(total, start + params["countpage"])))), "count": total}}}
-        return raw(params["auto_id"], technicalCondition=None)
+        return raw(params["auto_id"], technicalCondition={"id": 3})
     return fetch
 
 
@@ -292,7 +292,7 @@ def test_refresh_removes_a_cached_car_that_no_longer_matches(engine, monkeypatch
     start(engine, filters, restart=True)
     base = provider([], 1)
     def fetch(key, path, params):
-        return raw(params["auto_id"], USD=20000, technicalCondition=None) if path == "info" else base(key, path, params)
+        return raw(params["auto_id"], USD=20000, technicalCondition={"id": 3}) if path == "info" else base(key, path, params)
     result = finish(engine, scan_id, runner(engine, fetch))
     assert result["cars"] == result["cache"]["cars"] == []
     assert [entry["id"] for entry in result["removed"]] == ["100"]

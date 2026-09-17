@@ -21,7 +21,7 @@ def pages(calls, total=19):
             start = params["page"] * params["countpage"]
             return {"result": {"search_result": {"ids": [str(100+i) for i in range(start, min(total, start+params["countpage"]))], "count": total}}}
         assert path == "info"
-        return raw(params["auto_id"], technicalCondition=None)
+        return raw(params["auto_id"], technicalCondition={"id": 3})
     return fetch
 
 
@@ -75,7 +75,7 @@ def test_valuation_budget_is_bounded_and_continues_before_next_page(engine):
         data = raw(params["auto_id"])
         data["autoData"]["modificationId"] = int(params["auto_id"])
         if int(params["auto_id"]) >= 10000:
-            data["technicalCondition"] = None
+            data["technicalCondition"] = {"id": 3}
         return data
     filters = Filters(onlyDeals=False)
     data = RiaSearch(engine, "test-only", fetch, LIMITS).search(filters)

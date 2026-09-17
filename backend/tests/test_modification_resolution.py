@@ -142,10 +142,10 @@ def test_supported_condition_audit_is_labeled_and_still_checks_returned_details(
 
     def fetch(key, path, params):
         if path == "search":
-            assert params["technicalCondition[0]"] == 1
+            assert params["damage"] == 1
         data = fixture(key, path, params)
         if path == "info" and int(params["auto_id"]) // 1000 == 6:
-            data["technicalCondition"] = None
+            data["technicalCondition"] = {"id": 3}
         return data
 
     validate_once(engine, "key", "eligible-test", fetch, profile="eligible-v1")

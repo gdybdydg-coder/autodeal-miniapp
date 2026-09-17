@@ -7,11 +7,19 @@ import statistics
 import time
 from decimal import Decimal
 
-VERSION = "strict-v2"
+VERSION = "asking-v3"
 MAX_AGE = 900
 MIN_PEERS = 5
 DIMENSIONS = ("brand_id", "model_id", "generation_id", "modification_id", "body_id", "fuel_id", "gear_id")
-FIELDS = ("id", "price_usd", "year", "mileage", "observed_at", "comparable_condition", "vehicle_key", *DIMENSIONS)
+BASE_DIMENSIONS = tuple(key for key in DIMENSIONS if key != "modification_id")
+FIELDS = ("id", "price_usd", "year", "mileage", "observed_at", "comparable_condition", "vehicle_key", "engine_cc", *DIMENSIONS)
+
+
+def comparison_dimensions(car):
+    # Prefer the exact modification. An explicitly stated engine capacity is a
+    # separate comparison basis when the provider omits the modification ID.
+    return DIMENSIONS if type(car.get("modification_id")) is int and car["modification_id"] > 0 else (
+        (*BASE_DIMENSIONS, "engine_cc") if type(car.get("engine_cc")) is int and car["engine_cc"] > 0 else DIMENSIONS)
 
 
 class PeerBatch(list):
@@ -42,17 +50,18 @@ def vehicle_key(vin):
 
 
 def group_key(car):
-    values = [car.get(key) for key in DIMENSIONS]
+    dimensions = (*BASE_DIMENSIONS, "engine_cc") if car.get("engine_cc") else DIMENSIONS
+    values = [car.get(key) for key in dimensions]
     if any(type(value) is not int or value <= 0 for value in values):
         return ""
-    return hashlib.sha256(json.dumps(values).encode()).hexdigest()
+    return hashlib.sha256(json.dumps([dimensions, values]).encode()).hexdigest()
 
 
-def reasons(car, now):
+def reasons(car, now, dimensions=None):
     result = []
     if car.get("comparable_condition") is not True:
         result.append("unverified_condition")
-    result.extend("missing_" + key for key in DIMENSIONS
+    result.extend("missing_" + key for key in (dimensions or comparison_dimensions(car))
                   if type(car.get(key)) is not int or car[key] <= 0)
     if not number(car.get("price_usd"), positive=True):
         result.append("invalid_price")
@@ -66,8 +75,12 @@ def reasons(car, now):
 
 
 def comparable(candidate, peer, now):
-    rejected = reasons(peer, now)
-    rejected.extend(key for key in DIMENSIONS if peer.get(key) != candidate.get(key))
+    dimensions = comparison_dimensions(candidate)
+    rejected = reasons(peer, now, dimensions)
+    rejected.extend(key for key in dimensions if peer.get(key) != candidate.get(key))
+    # Even in engine comparisons, conflicting known modifications stay apart.
+    if candidate.get("modification_id") and peer.get("modification_id") and candidate["modification_id"] != peer["modification_id"]:
+        rejected.append("modification_id")
     if type(peer.get("year")) is int and abs(peer["year"] - candidate["year"]) > 1:
         rejected.append("year")
     if number(peer.get("mileage")) and abs(peer["mileage"] - candidate["mileage"]) > max(30000, candidate["mileage"] * .2):
@@ -81,6 +94,7 @@ def estimate(candidate, peers, *, now=None):
     result = {"market": None, "discount": None, "comparables": 0, "valuation": "insufficient_data",
               "valuation_reasons": candidate_reasons, "assessment": "unknown", "valuation_version": VERSION}
     evidence = {"version": VERSION, "basis": "asking_prices", "currency": "USD", "threshold_percent": 15,
+                "comparison_basis": "engine_capacity" if "engine_cc" in comparison_dimensions(candidate) else "modification",
                 "evaluated_at": now, "candidate": {key: candidate.get(key) for key in FIELDS},
                 "peers": [], "rejected": [], "duplicate_entries": 0,
                 "search": getattr(peers, "diagnostics", {})}
@@ -153,6 +167,8 @@ def evidence_valid(car, now):
 def policy():
     return {"version": VERSION, "basis": "asking_prices", "threshold_percent": 15,
             "minimum_comparables": MIN_PEERS, "dimensions": list(DIMENSIONS),
+            "missing_modification_fallback": "same_generation_body_fuel_gear_and_explicit_engine_capacity",
+            "condition_basis": "no_source_damage_parts_abroad_or_custom_flags",
             "year_tolerance": 1, "mileage_tolerance_percent": 20, "mileage_tolerance_min_km": 30000,
             "maximum_detail_age_seconds": MAX_AGE, "sample_max_price_ratio": 2,
             "user_price_and_region_affect_median": False}
