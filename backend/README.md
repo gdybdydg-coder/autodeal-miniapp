@@ -169,6 +169,18 @@ This budget configuration does not start monitoring or enable delivery. The
 current manual search still uses its bounded sample and 15-minute snapshot cache;
 a fresh-data monitoring adapter and live valuation check remain required.
 
+An operator can set `RIA_VALIDATION_RUN_ID` (1–40 letters/digits/dashes/underscores)
+to request a once-only live Volkswagen Golf valuation check at the next deploy.
+It uses production filters and estimation, the shared quota/cache/lease, and a
+hard cap of 32 upstream attempts. A committed unique claim prevents retries on
+restart, failure or concurrent deployment. Use a new identifier only deliberately.
+`valuation_check` in `/api/source-status` exposes sanitized listing/comparable
+summaries, missing vehicle fields and numeric provider rate-limit headers if sent.
+No raw seller data, VIN, descriptions, cookies or secrets are stored. This check
+does not ingest listings, send messages, register a webhook, or enable delivery.
+Provider response headers can confirm its hourly rate; they do not establish the
+remaining package balance. A successful sample is not a validated appraisal.
+
 Candidate cards are loaded before spending requests on peer valuation, so a
 valuation quota failure preserves available matching cards. Error and search
 responses include a quota reason and wait in seconds, taking all rolling limits

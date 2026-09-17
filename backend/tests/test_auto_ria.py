@@ -109,3 +109,22 @@ def test_network_errors_redacted(monkeypatch, error, expected):
 
 def test_redirects_refused():
     assert auto_ria.NoRedirect().redirect_request(None, None, 302, "", {}, "https://evil.example") is None
+
+
+def test_only_numeric_quota_headers_are_exposed(monkeypatch):
+    class Response:
+        headers = {"X-RateLimit-Limit": "5000", "X-RateLimit-Remaining": "4999",
+                   "Set-Cookie": "private-cookie", "Authorization": "private-token"}
+        def __enter__(self): return self
+        def __exit__(self, *args): pass
+        def read(self, limit): return b'{}'
+    class Opener:
+        def open(self, *args, **kwargs): return Response()
+    monkeypatch.setattr(auto_ria, "build_opener", lambda *args: Opener())
+    quota = {}
+    auto_ria.fetch_json("key", "search", {}, telemetry=quota.update)
+    assert quota == {"hourly_limit": 5000, "hourly_remaining": 4999}
+    Response.headers["X-RateLimit-Remaining"] = "private-token"
+    quota.clear()
+    auto_ria.fetch_json("key", "search", {}, telemetry=quota.update)
+    assert quota == {"hourly_limit": 5000}

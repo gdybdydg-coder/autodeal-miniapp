@@ -9,6 +9,7 @@ from backend.app import Settings, create_app
 from backend.auto_ria import RiaError
 from backend.models import Base, Filters, SourceBudget, SourceCache
 from backend.ria_budget import BudgetLimits
+from backend.ria_validation import validate_once, validation_status
 from backend.ria_search import RiaSearch, budget_state, estimate, initialize_budget, matches, parse_car, snapshot_key
 
 
@@ -135,6 +136,54 @@ def test_public_budget_read_is_safe_and_does_not_spend_requests(engine, monkeypa
     with Session(engine) as db:
         row = db.get(SourceBudget, "auto_ria")
         assert row.total == 500 and len(row.calls) == 3
+
+
+def test_explicit_live_validation_is_once_only_private_and_uses_real_estimator(engine, monkeypatch):
+    configure_caps(monkeypatch)
+    calls = []
+    fixture = fixture_fetch(calls)
+    def fetch(key, method, params):
+        data = fixture(key, method, params)
+        if method == "info":
+            data.update(VIN="sensitive-marker", seller={"phone": "sensitive-marker"})
+            data["autoData"]["description"] = "sensitive-marker"
+        return data
+    validate_once(engine, "private-key", "", fetch)
+    assert not calls
+    validate_once(engine, "private-key", "paid-1", fetch)
+    count = len(calls)
+    assert count > 0
+    validate_once(engine, "private-key", "paid-1", fetch)
+    assert len(calls) == count
+    result = validation_status(engine, "paid-1")
+    assert result["status"] == "valuation_verified"
+    assert result["valued"] == 1 and result["requests_used"] == count
+    assert result["cars"][0]["market"] == 15000
+    assert result["cars"][0]["comparables"] == 5
+    assert "private-key" not in str(result) and "sensitive-marker" not in str(result)
+    assert all(x["missing_auto_fields"] == [] for x in result["detail_checks"])
+    from backend.models import Delivery, Listing
+    with Session(engine) as db:
+        assert db.query(Delivery).count() == 0 and db.query(Listing).count() == 0
+
+
+def test_validation_has_hard_request_cap_and_failure_never_retries(engine, monkeypatch):
+    configure_caps(monkeypatch)
+    monkeypatch.setattr("backend.ria_validation.MAX_REQUESTS", 2)
+    calls = []
+    validate_once(engine, "key", "limited", fixture_fetch(calls))
+    assert len(calls) == 2
+    assert validation_status(engine, "limited")["requests_used"] == 2
+    validate_once(engine, "key", "limited", fixture_fetch(calls))
+    assert len(calls) == 2
+    def fail(*args):
+        calls.append("failed")
+        raise RuntimeError("private-key-in-exception")
+    validate_once(engine, "key", "failed", fail)
+    validate_once(engine, "key", "failed", fail)
+    result = validation_status(engine, "failed")
+    assert result["status"] == "check_failed" and result["error_type"] == "RuntimeError"
+    assert calls.count("failed") == 1 and "private-key-in-exception" not in str(result)
 
 
 def test_filters_and_independent_valuation_with_cache(engine):

@@ -29,7 +29,7 @@ class NoRedirect(HTTPRedirectHandler):
         return None
 
 
-def fetch_json(key, method, params):
+def fetch_json(key, method, params, telemetry=None):
     if method not in {"search", "info", "states", "type", "categories/1/marks",
                       "categories/1/bodystyles", "categories/1/gearboxes"} and not re.fullmatch(r"categories/1/marks/[1-9][0-9]*/models", method):
         raise RiaError("invalid_method")
@@ -37,6 +37,15 @@ def fetch_json(key, method, params):
     try:
         # urllib emits no request URL logs. Do not print exceptions: URLs contain the key.
         with build_opener(NoRedirect()).open(Request(url, headers={"Accept": "application/json"}), timeout=8) as response:
+            if telemetry:
+                # Only these numeric public quota headers; never cookies or URLs.
+                quota = {}
+                for header, name in (("X-RateLimit-Limit", "hourly_limit"),
+                                     ("X-RateLimit-Remaining", "hourly_remaining")):
+                    value = response.headers.get(header, "")
+                    if value.isascii() and value.isdecimal() and len(value) <= 12:
+                        quota[name] = int(value)
+                telemetry(quota)
             raw = response.read(1024 * 1024 + 1)
             if len(raw) > 1024 * 1024:
                 raise RiaError("invalid_response")
