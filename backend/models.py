@@ -252,6 +252,42 @@ class MonitorMatch(Base):
     fingerprint: Mapped[str] = mapped_column(String(64))
 
 
+class MonitorMembership(Base):
+    """An explicit activation epoch and its shared, canonical source filter."""
+    __tablename__ = "monitor_memberships"
+    search_id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=False)
+    epoch: Mapped[str] = mapped_column(String(32))
+    feed_id: Mapped[str] = mapped_column(String(64), index=True)
+    started_at: Mapped[float] = mapped_column(Float)
+
+
+class MonitorFeed(Base):
+    __tablename__ = "monitor_feeds"
+    id: Mapped[str] = mapped_column(String(64), primary_key=True)
+    filters: Mapped[dict] = mapped_column(JSON)
+    started_at: Mapped[float] = mapped_column(Float)
+    cursor: Mapped[float] = mapped_column(Float)
+    # Frozen date windows, recipient epochs, page and verification-pass progress.
+    context: Mapped[dict] = mapped_column(JSON, default=dict)
+    next_poll: Mapped[float] = mapped_column(Float, default=0, index=True)
+    checked_at: Mapped[float] = mapped_column(Float, default=0)
+    status: Mapped[str] = mapped_column(String(40), default="starting")
+
+
+class MonitorJob(Base):
+    """One durable valuation job per source ID, shared by all subscriptions."""
+    __tablename__ = "monitor_jobs"
+    source_id: Mapped[str] = mapped_column(String(100), primary_key=True)
+    state: Mapped[str] = mapped_column(String(24), default="pending", index=True)
+    first_seen: Mapped[float] = mapped_column(Float)
+    next_run: Mapped[float] = mapped_column(Float, default=0, index=True)
+    last_attempt: Mapped[float] = mapped_column(Float, default=0)
+    attempts: Mapped[int] = mapped_column(Integer, default=0)
+    reason: Mapped[str] = mapped_column(String(40), default="")
+    # Monitor-only evidence; manual search caches cannot authorize notifications.
+    result: Mapped[dict] = mapped_column(JSON, default=dict)
+
+
 class TelegramTest(Base):
     __tablename__ = "telegram_tests"
     user_id: Mapped[int] = mapped_column(BigInteger, primary_key=True, autoincrement=False)

@@ -25,9 +25,16 @@ by delivery and /stop. Explicit activation creates a fresh baseline. Editing doe
 not consume a new subscription slot, opt in to messages, or start a catalog scan.
 Creating a duplicate draft cannot silently pause an existing active subscription.
 
-Monitoring, delivery and provider-budget settings are unchanged. The global
-one-active-subscription pilot cap remains until transition step 2; this release
-completes subscription management, not the live notification rollout.
+Monitoring, delivery and provider-budget settings are unchanged. Release 31
+completed subscription management; release 32 below implements durable monitoring.
+
+## Durable subscription monitor (release 20260917-32)
+
+Step 2 replaces the one-search/three-car pilot with shared source filters,
+persistent creation-time windows, a durable valuation queue, fair work steps and
+independent Telegram dispatch. The production flags remain off for this release;
+valuation verification and a real opted-in delivery test are still required.
+See [implementation and acceptance evidence](docs/notification-first-strategy.md#durable-monitor-release-20260917-32).
 
 ## Retiring mass scans (release 20260917-30)
 
@@ -218,12 +225,13 @@ Authenticated requests supply raw Telegram.WebApp.initData in the
   Neither /start nor opening Settings sends a message; the user taps Send test.
 
 Enabling requires both server flags and a verified private /start. The monitor
-pilot additionally requires a current heartbeat, configured webhook, successful
-test message and a free global pilot slot. /start never re-enables old searches
-after /stop. A new/re-enabled search baselines the latest 50 IDs without alerts.
+additionally requires a current heartbeat, configured webhook and successful
+test message. Multiple opted-in subscriptions can run together; identical source
+filters share polling. /start never re-enables old searches after /stop.
+A new/re-enabled search records a creation-time cutoff without replaying old ads.
 No silent import of device-local notification preferences is implemented.
 
-## Deployment and pilot limits
+## Deployment and monitoring limits
 
 1. Choose/authorize hosting and review its current costs before resource creation.
 2. Provision PostgreSQL and an HTTPS API. Add secrets through the provider UI,
@@ -243,22 +251,34 @@ No silent import of device-local notification preferences is implemented.
    In Settings send the test to the verified private chat. After the monitor rollout,
    enable one saved search. A successful test is enforced server-side before activation.
 
-`backend.monitor` runs as an API lifespan task, using a thread for blocking work
-and a stop event for graceful shutdown. The database lease prevents two instances
-from polling simultaneously during deployments. One active search globally is
-enforced with a PostgreSQL control-row lock. This first pilot reuses the $7 API;
-no additional worker is required. Move the loop to a separate worker and review
-the budget before expanding concurrency. All notification flags default off.
+`backend.monitor` runs two API lifespan loops: source work and Telegram dispatch,
+with threads for blocking calls and a shared stop event. A database lease prevents
+parallel source work across deploys. No additional paid worker is created; the
+existing $7 API is reused. All notification flags still default off.
 
-Every ~60 seconds the monitor fetches up to 50 latest matching IDs, bypassing the
-manual search snapshot and source-search cache. It refreshes candidate details,
-post-filters by official IDs/ranges and estimates with cached peers no older than
-15 minutes. At most three new candidates are evaluated per cycle within the shared
-42-second request deadline. Pending IDs survive restart, but expire after five
-minutes instead of causing a delayed blast. The UI reports expired coverage and
-asks for narrower filters. This is NOT full-market coverage or instant delivery.
-A full page with no overlap pauses with window_gap; a narrower/new activation is
-required. Listing freshness is rechecked (five minutes) before Telegram delivery.
+Creation-time windows use official `created_after`, `created_before`, `order_by=7`
+and 50-ID pages. Each response is committed before evaluation. Multi-page windows
+are verified with another pass, recovering page shifts due to removals. Fixed
+upper bounds avoid moving new heads; a two-minute overlap recovers short indexing
+delays. Repeated/inconsistent pages remain visibly paused, without advancing the
+checkpoint. Restarts resume the saved window and page. Activation boundaries split
+shared windows so a new subscriber never inherits an earlier subscriber's backlog.
+
+Jobs run in short fair steps between discovery requests, without a three-car cap
+or five-minute queue expiry. Identical listings share valuation across matching
+subscriptions, using recent monitor evidence only (up to 60 seconds). Candidate
+details are fetched fresh after long waits; cached peers remain limited to 15
+minutes. Insufficient comparisons are recorded as unvalued, never a false bargain.
+An alert queued longer than five minutes returns to valuation before dispatch;
+removed/non-qualifying cars lose their old match evidence and are cancelled.
+
+The base interval is 60 seconds. The target grows with distinct filter groups to
+reserve half the configured hourly/daily allowance for details and valuations.
+With caps of 900/hour and 3,000/day, one group targets 60 seconds, two 116 seconds.
+Catch-up pages, overlap/activation slices and valuations consume extra calls;
+the global hard caps still govern every request. These are targets, not an instant
+delivery or full-coverage guarantee. Source indexing delays beyond the overlap,
+provider inconsistencies and exhausted quotas remain explicit rollout risks.
 
 Separate additive monitor tables record seen IDs, enable epochs, filter match
 evidence and heartbeat. Subscription changes or /stop invalidate old work. No
@@ -268,9 +288,9 @@ seller data or tokens are stored in monitor records. Source errors defer work;
 quota limits include failed calls and pause polling until capacity returns.
 
 Worker entry: `python -m backend.worker`; one invocation attempts at most one message.
-The initial implementation scans listings, intended for small-scale staging only.
-Add indexed delivery batching and per-chat rate limits before large-scale use.
-The pilot attempts at most one queued alert per five-second loop tick.
+Dispatch selects each user's matching, not-yet-queued listings and attempts one
+message per separate one-second loop tick. Per-chat rate limits, load measurement
+and operational-state retention still need review before large-scale use.
 Add reverse-proxy request/body/rate limits and database backups.
 Use one API worker initially. User creation handles uniqueness conflicts with a
 savepoint; PostgreSQL user-row locks serialize existing-user edits.
@@ -430,8 +450,9 @@ They are NOT the provider's balance: calls outside AUTODeal are unknown.
 Launch sizing example (not a measured performance promise): one distinct filter
 checked once a minute needs 43,200 search calls in 30 days, before listing details,
 valuation and catalog lookups. Two such filters need 86,400; three need 129,600.
-A 100,000-call package therefore targets an initial ONE-filter pilot with measured
-headroom, not unlimited users. At two-minute intervals the base counts halve.
+A 100,000-call package needs measured headroom. Shared identical filters save
+polls; multiple distinct filters automatically increase the target interval.
+At two-minute intervals the base counts halve.
 Actual cadence also depends on provider indexing, response time and new-car volume.
 This budget configuration does not start monitoring or enable delivery. The
 current manual search still uses its bounded sample and 15-minute snapshot cache.

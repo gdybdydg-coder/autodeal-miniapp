@@ -33,7 +33,6 @@
             let code="";try {code=(await response.json()).detail;}catch(_){}
             const reasons={"Send /start to the bot first":"Відкрий чат бота, натисни «Розпочати» або надішли /start, потім онови список.",
               "Send a test notification first":"Спочатку натисни «Надіслати тестове повідомлення».",
-              "Pilot allows one active search":"На першому запуску доступний один активний пошук. Вимкни попередній, щоб увімкнути цей.",
               "Wait ten minutes before another test":"Наступне тестове повідомлення можна надіслати через 10 хвилин.",
               "Subscription filters already exist":"Підписка з такими фільтрами вже є. Відкрий її у списку або зміни фільтри.",
               "Name is required":"Введи назву підписки.",

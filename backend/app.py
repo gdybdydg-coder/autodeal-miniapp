@@ -22,7 +22,8 @@ from .ria_search import RiaSearch, initialize_budget, verify_search_once, quota_
 from .ria_budget import BudgetLimits, peer_scan_limit
 from .ria_validation import validate_once, validate_run_id, validate_profile, validation_status
 from .models import (Base, Delivery, EnabledRequest, Filters, Listing, MonitorControl,
-                     MonitorSeen, MonitorWatch, Search, SearchEditRequest, SearchRequest, TelegramTest, User)
+                     MonitorFeed, MonitorJob, MonitorMembership, MonitorSeen, MonitorWatch,
+                     Search, SearchEditRequest, SearchRequest, TelegramTest, User)
 from . import monitor, telegram_setup, ria_rollout, full_scan
 
 
@@ -161,16 +162,12 @@ def create_app(settings: Settings, engine=None):
         if settings.monitor_enabled:
             if not settings.auto_ria_api_key or telegram_setup.webhook_status(engine)["status"] != "configured":
                 raise HTTPException(503, "Delivery/source not connected")
-            # Serialize the global pilot slot across different Telegram users.
-            control = db.scalar(select(MonitorControl).where(MonitorControl.id == "pilot").with_for_update())
+            control = db.get(MonitorControl, "pilot")
             if not control or time.time() - control.heartbeat >= monitor.LEASE + 60:
                 raise HTTPException(503, "Monitor is offline")
             test = db.get(TelegramTest, user.id)
             if not test or test.state != "sent":
                 raise HTTPException(409, "Send a test notification first")
-            other = db.scalar(select(Search.id).where(Search.enabled.is_(True), Search.id != (search_id or -1)).limit(1))
-            if other:
-                raise HTTPException(409, "Pilot allows one active search")
 
     def latest(db):
         return db.scalar(select(func.max(Listing.id))) or 0
@@ -182,15 +179,22 @@ def create_app(settings: Settings, engine=None):
     def view(search, db):
         watch = db.get(MonitorWatch, search.id)
         status = watch.status if watch else "off"
-        if watch and status == "watching":
-            states = set(db.scalars(select(MonitorSeen.state).where(MonitorSeen.search_id == search.id).distinct()))
-            if "expired" in states:
-                status = "coverage_limited"
-            elif "pending" in states:
-                status = "checking"
+        pending = db.scalar(select(func.count()).select_from(MonitorSeen).where(
+            MonitorSeen.search_id == search.id, MonitorSeen.state == "pending")) or 0
+        unvalued = db.scalar(select(func.count()).select_from(MonitorSeen).where(
+            MonitorSeen.search_id == search.id, MonitorSeen.state == "unvalued")) or 0
+        if watch and status == "watching" and pending:
+            reason = db.scalar(select(MonitorJob.reason).join(MonitorSeen, MonitorSeen.source_id == MonitorJob.source_id)
+                .where(MonitorSeen.search_id == search.id, MonitorSeen.state == "pending",
+                       MonitorJob.reason == "quota_exceeded").limit(1))
+            status = reason or "checking"
+        membership = db.get(MonitorMembership, search.id)
+        feed = db.get(MonitorFeed, membership.feed_id) if membership else None
         return {"id": search.id, "name": search.name, "filters": search.filters,
                 "enabled": search.enabled, "delivery_available": settings.live,
                 "monitor_status": status,
+                "pending_count": pending, "unvalued_count": unvalued,
+                "checked_through": feed.cursor if feed and watch and watch.initialized else None,
                 "last_checked_at": watch.checked_at if watch else None}
 
     @app.get("/health")

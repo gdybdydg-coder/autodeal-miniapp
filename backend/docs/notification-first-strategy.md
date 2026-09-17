@@ -40,7 +40,7 @@ would enable a more detailed interaction review without account access.
 - Public-card and comparable caches. They support new-car valuation without
   requiring the full source market to be downloaded.
 
-## Current limitations found in the code
+## Original limitations found before the transition
 
 This is a code review, not a successful live notification test.
 
@@ -92,17 +92,17 @@ Acceptance: a burst larger than three cars and a window larger than 50 IDs are
 handled with recorded coverage; process restart does not duplicate or lose jobs;
 first activation and promotion of an old ad do not cause an old-listing blast.
 
-### 3. Deliver to multiple opted-in users
+### 3. Verify worthwhile-price classification
 
-Replace the global one-subscription pilot slot with fair scheduling and explicit
-capacity based on available provider requests. One valuation can serve several
-matching users; a user receives the same source listing once even when multiple
-subscriptions overlap. Recheck /stop and subscription ownership before delivery.
-Decouple the delivery queue from provider discovery/valuation delays.
+Verify the existing conservative estimator against representative real listings,
+including generation/modification, condition, gearbox, fuel, year and mileage.
+Explain unvalued outcomes instead of treating missing comparable data as a deal.
+Measure usable sample coverage and API cost; retain the >=15% rule and enough
+comparable listings. Do not rerun the already-exhausted one-time validation audit.
 
-Acceptance: multiple users and filters work; overlapping filters do not duplicate
-alerts; disabling a subscription or /stop prevents queued messages from sending.
-No messages are enabled for users who have not opted in.
+Acceptance: defensible bargains and ordinary/uncertain prices are distinguished,
+with traceable comparable evidence. The multi-user scheduler, shared valuation
+jobs, deduplication and independent dispatch are implemented as part of step 2.
 
 ### 4. Measure and enable a real monitored subscription
 
@@ -134,9 +134,9 @@ exposes the disabled flag and active-job count for rollout verification. Existin
 notification readiness and consent checks remain in force. Backend and frontend
 regression tests cover the shutdown guards and the subscription-only UI entry.
 
-The durable new-listing monitor, multi-subscription scheduling and a real
-end-to-end notification test remain to be implemented and verified. This release
-does not enable monitoring or delivery. No AutoSpect interaction was completed.
+At release 30 the durable new-listing monitor, multi-subscription scheduling and
+a real end-to-end notification test remained outstanding. That release did not
+enable monitoring or delivery. No AutoSpect interaction was completed.
 
 ### Subscription management follow-up (release 20260917-31)
 
@@ -150,3 +150,56 @@ old queued-message invalidation, duplicates and editing at the subscription cap.
 Frontend tests cover complete filter restoration, save/cancel/retry, async
 navigation and draft preservation. Monitoring/delivery remain disabled, with
 the one-active-subscription pilot capacity deferred to step 2.
+
+### Durable monitor (release 20260917-32)
+
+Step 2 now implements shared canonical filter groups and a source-ID valuation
+queue in three additive tables: `monitor_memberships`, `monitor_feeds` and
+`monitor_jobs`. Existing deployed tables require no column migration. There is
+no one-global-subscription cap and no three-car processing/5-minute queue cutoff.
+Persisted subscription epochs and the per-user/listing unique delivery constraint
+still enforce consent, cancellation and deduplication.
+
+The official [search documentation](https://docs-developers.ria.com/en/used-cars/auto_search_and_info/search_auto)
+was checked on 2026-09-17. It specifies `order_by=7` as newest date-added ordering,
+`created_after`/`created_before` creation-time filters, and zero-based `page` with
+`countpage`. Creation-time filters, rather than publication/update dates, exclude
+older promoted/edited ads. The exact live provider behaviour still needs the
+opted-in rollout check; synthetic fixtures are not evidence of live coverage.
+
+Each activation records a cutoff rounded up to the next UTC second. Discovery
+freezes date bounds, persists each 50-ID page and its recipient epochs, and only
+advances the checkpoint after finishing a window. A verification pass for large
+windows handles removal-induced page shifts; inconsistent pages leave the cursor
+unchanged with a visible error. A two-minute overlap recovers recent indexing
+delays. Longer outages are processed in bounded one-hour windows. Activation
+boundaries split shared windows so later subscribers receive no earlier backlog.
+First activation does not fetch details of the existing catalog.
+
+Discovery and valuation alternate short budgeted steps. Distinct feeds and queued
+cars get turns, while identical filters share polling and identical source IDs
+share fresh valuation evidence. Candidate details are fetched fresh after waits;
+pending work survives restarts and quota cooldowns. Unvalued cars remain explicitly
+recorded. A separate loop dispatches messages without waiting on source HTTP calls.
+Stale delivery records request a fresh valuation before dispatch; price increases
+or unavailable listings invalidate their old match evidence.
+
+The scheduler targets at least 60 seconds between ordinary polls, growing the
+interval with distinct group count to reserve half the hourly/day caps for detail
+and comparison calls. Catch-up and boundary slices cost extra requests. Hard caps,
+provider cooldowns and the cumulative counter remain unchanged. Indexing delay,
+provider data quality, workload and quotas prevent a one-second delivery promise.
+
+Regression scenarios cover 117 new cars over three pages, restart after the first
+page, head deletion, later insertion, delayed indexing, transient/total quota
+pauses, pending work older than five minutes, multiple users and overlapping
+filters, late activation, /stop during work, stale queued prices, independent
+dispatch, repeated provider pages and insufficient valuation data. All use fake
+provider/Telegram responses and spend no production requests.
+
+This release publishes the implementation with `MONITOR_ENABLED`, `SOURCE_READY`,
+`DELIVERY_ENABLED` and `FULL_SCAN_ENABLED` still off. It creates no paid resources,
+sends no real messages and does not activate any saved subscription. Remaining
+launch work: step 3 valuation verification, then step 4 the owner's live monitoring
+and delivery check, measured cadence/cost, PostgreSQL concurrency/load behaviour
+and operational-state retention before scaling beyond the initial rollout.
