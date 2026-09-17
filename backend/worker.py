@@ -113,17 +113,23 @@ class TelegramSender:
 
     def __call__(self, user_id, car):
         discount = (1 - car.price / car.market) * 100
+        price = f"${car.price:,.0f}".replace(",", " ")
+        market = f"${car.market:,.0f}".replace(",", " ")
+        benefit = f"{discount:.1f}".rstrip("0").rstrip(".").replace(".", ",")
+        mileage = f"{car.mileage / 1000:g}".replace(".", ",")
         text = (
-            f"Вигідне авто: {car.brand} {car.model}\n"
-            f"{car.year} · {car.fuel} · {car.mileage / 1000:g} тис. км\n"
-            f"{car.transmission} · {car.region}\n"
-            f"Ціна: ${car.price:,.0f}\n"
-            f"Медіана {car.comparables} схожих оголошень: ${car.market:,.0f} · нижче на {discount:.1f}%\n"
-            "Це оцінка, не гарантія стану або вигоди. Перевір авто перед купівлею.\n"
-            "/stop — вимкнути всі сповіщення"
+            f"🚘 {car.brand} {car.model} · {car.year}\n\n"
+            f"⛽️ {car.fuel}\n"
+            f"⚙️ {car.transmission}\n"
+            f"🛣️ Пробіг: {mileage} тис. км\n"
+            f"📍 {car.region}\n\n"
+            f"💰 Ціна: {price}\n"
+            f"📊 Ринкова ціна: ≈ {market}\n"
+            f"🔥 Вигода: {benefit}%\n\n"
+            "/stop — вимкнути сповіщення"
         )
         payload = {"chat_id": user_id, "reply_markup": {"inline_keyboard": [
-            [{"text": "Відкрити оголошення", "url": str(car.url)}]]}}
+            [{"text": "🔗 Відкрити оголошення", "url": str(car.url)}]]}}
         if car.photo:
             method = "sendPhoto"
             payload.update(photo=str(car.photo), caption=text[:1000])
