@@ -1,5 +1,6 @@
 """Read-only launch observations: no user impersonation, source calls or sends."""
 import time
+from collections import Counter
 from datetime import datetime
 
 from sqlalchemy import func, select
@@ -12,6 +13,28 @@ from .valuation import DIMENSIONS, reason_category
 
 PROBE_ID = "subscription-launch-v1"
 WINDOW = 86400
+UNKNOWN_CODES = {"unverified_condition", "invalid_price", "invalid_year", "invalid_mileage",
+                 "stale_details", "insufficient_comparables", "comparison_limit", "mixed_sample",
+                 "missing_engine_cc", *("missing_" + name for name in DIMENSIONS)}
+PEER_CODES = UNKNOWN_CODES | set(DIMENSIONS) | {"engine_cc", "year", "mileage", "duplicate_vehicle"}
+
+
+def unknown_breakdown(db, conditions):
+    """Only fixed reason codes and counts leave the stored valuation evidence."""
+    reasons, peers, samples = Counter(), Counter(), Counter()
+    query = select(MonitorJob.result["rating"]).where(*conditions, MonitorJob.state == "unvalued")
+    for rating in db.scalars(query).yield_per(100):
+        if not isinstance(rating, dict):
+            continue
+        reasons.update({code for code in rating.get("valuation_reasons", []) if code in UNKNOWN_CODES})
+        size = rating.get("comparables")
+        if type(size) is int and size >= 0:
+            samples[str(min(size, 5))] += 1
+        evidence = rating.get("valuation_evidence") or {}
+        for rejected in evidence.get("rejected", []):
+            peers.update({code for code in rejected.get("reasons", []) if code in PEER_CODES})
+    return {"reasons": dict(sorted(reasons.items())), "peer_rejections": dict(sorted(peers.items())),
+            "comparable_counts": dict(sorted(samples.items()))}
 
 
 def source_added_at(value):
@@ -63,13 +86,9 @@ def activity(db, uid=None):
     rating = MonitorJob.result["rating"]["valuation"].as_string()
     latest_unknown = db.scalar(select(MonitorJob.result["rating"]).where(
         *jobs, MonitorJob.state == "unvalued").order_by(MonitorJob.last_attempt.desc()).limit(1))
-    allowed = {"unverified_condition", "invalid_price", "invalid_year", "invalid_mileage",
-               "stale_details", "insufficient_comparables", "comparison_limit", "mixed_sample",
-               "missing_engine_cc",
-               *("missing_" + name for name in DIMENSIONS)}
     unknown_reason = None
     if isinstance(latest_unknown, dict):
-        codes = [code for code in latest_unknown.get("valuation_reasons", []) if code in allowed]
+        codes = [code for code in latest_unknown.get("valuation_reasons", []) if code in UNKNOWN_CODES]
         unknown_reason = {"category": reason_category({"valuation_reasons": codes}), "codes": codes,
                           "comparables": latest_unknown.get("comparables", 0)}
     delivery_filters = [DeliveryTiming.accepted_at >= cutoff, Delivery.state == "sent"]
@@ -92,6 +111,7 @@ def activity(db, uid=None):
             "evaluated": count(MonitorJob, *jobs, rating == "sample_median"),
             "unknown": count(MonitorJob, *jobs, MonitorJob.state == "unvalued"),
             "latest_unknown_reason": unknown_reason,
+            "unknown_breakdown": unknown_breakdown(db, jobs),
             "messages_accepted": sent, "last_delivery": last, "receipt_basis": "telegram_api_acceptance"}
 
 
