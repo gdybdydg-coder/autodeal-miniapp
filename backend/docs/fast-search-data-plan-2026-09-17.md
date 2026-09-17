@@ -1,5 +1,10 @@
 # Fast search and full catalog access
 
+> Historical proposal, superseded by the user's notification-first direction on
+> 2026-09-17. Do not pursue a full-market import or an Enterprise bulk-data purchase
+> as a launch prerequisite. Follow [the current strategy](notification-first-strategy.md).
+> Small caches remain useful for evaluating new listings and avoiding duplicate work.
+
 The observed release-28 scan collected 3,200 of 35,156 Volkswagen IDs before
 evaluating any candidate. Enumeration-before-valuation was an application
 ordering issue. A broader constraint remains: fresh details and price comparisons

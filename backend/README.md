@@ -1,5 +1,12 @@
 # AUTODeal backend — full manual search and one-search notification pilot
 
+> Product direction changed on 2026-09-17: AUTODeal will monitor new, qualifying
+> listings for saved subscriptions and notify users in their private bot chat.
+> A full-market catalog and bulk database acquisition are no longer launch goals.
+> See [the notification-first transition plan](docs/notification-first-strategy.md).
+> This records the new scope; release 20260917-29 still has the full-scan worker,
+> and the notification pilot is still disabled. Runtime changes are pending.
+
 ## Full search scans with a shared local index (release 20260917-29)
 
 The Mini App starts a durable scan with authenticated `POST /api/cars/scans`.
