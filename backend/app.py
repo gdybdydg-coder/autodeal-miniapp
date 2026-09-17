@@ -15,7 +15,8 @@ from sqlalchemy.orm import Session
 from .auth import telegram_user
 from .auto_ria import probe_once, probe_status
 from .auto_ria import RiaError
-from .ria_search import RiaSearch, initialize_budget, verify_search_once, quota_status
+from .ria_search import RiaSearch, initialize_budget, verify_search_once, quota_status, budget_usage
+from .ria_budget import BudgetLimits
 from .models import Base, Delivery, EnabledRequest, Filters, Listing, Search, SearchRequest, User
 
 
@@ -46,6 +47,7 @@ class Settings:
 
 
 def create_app(settings: Settings, engine=None):
+    BudgetLimits.env()  # Validate before serving requests or running startup probes.
     if not settings.bot_token or len(settings.webhook_secret) < 32:
         raise ValueError("Configure server-only Telegram secrets")
     engine = engine or create_engine(settings.database_url, pool_pre_ping=True)
@@ -133,7 +135,8 @@ def create_app(settings: Settings, engine=None):
     @app.get("/api/source-status")
     def source_status():
         # Cached public diagnostic only; refreshing NEVER spends API requests.
-        return {**probe_status(engine, bool(settings.auto_ria_api_key)), "quota": quota_status(engine)}
+        return {**probe_status(engine, bool(settings.auto_ria_api_key)), "quota": quota_status(engine),
+                "budget": budget_usage(engine)}
 
     @app.post("/api/cars/search")
     def search_cars(payload: Filters, uid=Depends(identity)):

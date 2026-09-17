@@ -142,6 +142,33 @@ Limits persist across deployment. Only one search can spend quota at a time;
 a lease recovers after 90 seconds if the process crashes. Calls made elsewhere
 with the same key are not known to this budget. No paid APIs are called.
 
+### Moving beyond the free test allowance
+
+Buying a provider package does not change the application caps. After purchase
+and verification of the provider balance, set ALL three server-only variables:
+`RIA_REQUESTS_HOURLY_CAP`, `RIA_REQUESTS_DAILY_CAP`, `RIA_REQUESTS_TOTAL_CAP`.
+Omitting all three keeps the original free caps. Partial, non-integer, zero, or
+inconsistent caps fail startup. Use the same values on the API and future worker.
+The total cap is an absolute ceiling on the persisted request counter: it never
+resets on a deploy, date change, new API key, or package purchase. Increase it
+deliberately by the verified additional allowance, retaining a reserve. Provider
+cooldowns and the shared database budget still apply under paid caps.
+
+`GET /api/source-status` includes `budget` with local hourly/daily/cumulative usage,
+caps and remaining requests. This read spends no API requests and reveals no key
+or user data. Counters include failed calls and the initial two-call reserve.
+They are NOT the provider's balance: calls outside AUTODeal are unknown.
+
+Launch sizing example (not a measured performance promise): one distinct filter
+checked once a minute needs 43,200 search calls in 30 days, before listing details,
+valuation and catalog lookups. Two such filters need 86,400; three need 129,600.
+A 100,000-call package therefore targets an initial ONE-filter pilot with measured
+headroom, not unlimited users. At two-minute intervals the base counts halve.
+Actual cadence also depends on provider indexing, response time and new-car volume.
+This budget configuration does not start monitoring or enable delivery. The
+current manual search still uses its bounded sample and 15-minute snapshot cache;
+a fresh-data monitoring adapter and live valuation check remain required.
+
 Candidate cards are loaded before spending requests on peer valuation, so a
 valuation quota failure preserves available matching cards. Error and search
 responses include a quota reason and wait in seconds, taking all rolling limits

@@ -8,6 +8,7 @@ from sqlalchemy.orm import Session
 from backend.app import Settings, create_app
 from backend.auto_ria import RiaError
 from backend.models import Base, Filters, SourceBudget, SourceCache
+from backend.ria_budget import BudgetLimits
 from backend.ria_search import RiaSearch, budget_state, estimate, initialize_budget, matches, parse_car, snapshot_key
 
 
@@ -56,6 +57,84 @@ def fixture_fetch(calls):
             return raw(params["auto_id"], USD=10000 if params["auto_id"] == "123" else 15000)
         raise AssertionError(path)
     return fetch
+
+
+def configure_caps(monkeypatch, hourly="120", daily="3000", total="90000"):
+    for suffix, value in zip(("HOURLY", "DAILY", "TOTAL"), (hourly, daily, total)):
+        key = "RIA_REQUESTS_" + suffix + "_CAP"
+        if value is None:
+            monkeypatch.delenv(key, raising=False)
+        else:
+            monkeypatch.setenv(key, value)
+
+
+@pytest.mark.parametrize("caps", [("120", None, "90000"), ("0", "3000", "90000"),
+                                  ("3001", "3000", "90000"), ("120", "3000", "2999"),
+                                  ("１２", "3000", "90000"), ("-1", "3000", "90000")])
+def test_invalid_operator_caps_fail_before_startup(engine, monkeypatch, caps):
+    configure_caps(monkeypatch, *caps)
+    with pytest.raises(ValueError, match="AUTO.RIA"):
+        create_app(Settings("unused", "fake", "x" * 32), engine)
+
+
+def test_paid_caps_preserve_history_and_enforce_absolute_ceiling(engine, monkeypatch):
+    configure_caps(monkeypatch)
+    with Session(engine) as db:
+        row = db.get(SourceBudget, "auto_ria")
+        row.total = 89999
+        row.calls = [time.time()] * 25
+        db.commit()
+    initialize_budget(engine)
+    calls = []
+    client = RiaSearch(engine, "never-print-key", fixture_fetch(calls))
+    client.acquire()
+    try:
+        client.request("info", {"auto_id": "123"}, lambda data: parse_car(data, "123"))
+        with pytest.raises(RiaError, match="quota_exceeded"):
+            client.request("info", {"auto_id": "124"}, lambda data: parse_car(data, "124"))
+        assert len(calls) == 1
+        # Fresh cached content does not spend another request at the total cap.
+        client.request("info", {"auto_id": "123"}, lambda data: parse_car(data, "123"))
+        assert len(calls) == 1
+    finally:
+        client.release()
+    initialize_budget(engine)
+    with Session(engine) as db:
+        row = db.get(SourceBudget, "auto_ria")
+        assert row.total == 90000 and len(row.calls) == 26
+
+
+def test_paid_caps_keep_provider_cooldown_and_rolling_windows():
+    limits = BudgetLimits(120, 3000, 90000)
+    row = SourceBudget(total=1000, calls=[9500] * 120, blocked_until=13500)
+    assert budget_state(row, 10000, limits) == {"reason": "upstream", "retry_after_seconds": 3500}
+    row.blocked_until = 0
+    assert budget_state(row, 10000, limits) == {"reason": "hourly", "retry_after_seconds": 3100}
+    row.calls = [1000] * 3000
+    assert budget_state(row, 10000, limits) == {"reason": "daily", "retry_after_seconds": 77400}
+
+
+def test_public_budget_read_is_safe_and_does_not_spend_requests(engine, monkeypatch):
+    configure_caps(monkeypatch)
+    with Session(engine) as db:
+        row = db.get(SourceBudget, "auto_ria")
+        row.calls = [time.time(), time.time() - 4000, time.time() - 90000]
+        row.total = 500
+        db.commit()
+    app = create_app(Settings("unused", "fake-token", "x" * 32, auto_ria_api_key="private-key"), engine)
+    client = TestClient(app)
+    for _ in range(2):
+        response = client.get("/api/source-status")
+        assert response.status_code == 200
+        assert "private-key" not in response.text and "fake-token" not in response.text
+        budget = response.json()["budget"]
+        assert budget["limits"] == {"hourly": 120, "daily": 3000, "total": 90000}
+        assert budget["used"] == {"hourly": 1, "daily": 2, "total": 500}
+        assert budget["remaining"]["total"] == 89500
+        assert budget["total_resets_automatically"] is False
+    with Session(engine) as db:
+        row = db.get(SourceBudget, "auto_ria")
+        assert row.total == 500 and len(row.calls) == 3
 
 
 def test_filters_and_independent_valuation_with_cache(engine):

@@ -19,6 +19,7 @@ from sqlalchemy.orm import Session
 
 from .auto_ria import RiaError, fetch_json, listing_preview
 from .models import Filters, SourceBudget, SourceCache, SourceProbe
+from .ria_budget import BudgetLimits
 
 FRESH_SECONDS = 900
 SNAPSHOT_SECONDS = 86400
@@ -67,16 +68,17 @@ def valid_id(value):
     return type(value) is int and value > 0
 
 
-def budget_state(row, now):
-    if row.total >= 900:
+def budget_state(row, now, limits=None):
+    limits = limits or BudgetLimits.env()
+    if row.total >= limits.total:
         return {"reason": "total", "retry_after_seconds": None}
     calls = sorted(t for t in row.calls if t > now - 86400)
     hourly = [t for t in calls if t > now - 3600]
     waits = []
-    if len(hourly) >= 24:
-        waits.append((hourly[-24] + 3600, "hourly"))
-    if len(calls) >= 60:
-        waits.append((calls[-60] + 86400, "daily"))
+    if len(hourly) >= limits.hourly:
+        waits.append((hourly[-limits.hourly] + 3600, "hourly"))
+    if len(calls) >= limits.daily:
+        waits.append((calls[-limits.daily] + 86400, "daily"))
     if row.blocked_until > now:
         waits.append((row.blocked_until, "upstream"))
     if waits:
@@ -85,10 +87,25 @@ def budget_state(row, now):
     return {"reason": "available", "retry_after_seconds": 0}
 
 
-def quota_status(engine):
+def quota_status(engine, limits=None):
     with Session(engine) as db:
         row = db.get(SourceBudget, "auto_ria")
-        return budget_state(row, time.time()) if row else {"reason": "unavailable", "retry_after_seconds": None}
+        return budget_state(row, time.time(), limits) if row else {"reason": "unavailable", "retry_after_seconds": None}
+
+
+def budget_usage(engine):
+    """Read-only local accounting, not the provider's account balance."""
+    limits = BudgetLimits.env()
+    now = time.time()
+    with Session(engine) as db:
+        row = db.get(SourceBudget, "auto_ria")
+        if row is None:
+            return {"status": "unavailable", "limits": limits.public()}
+        used = {"hourly": sum(t > now - 3600 for t in row.calls),
+                "daily": sum(t > now - 86400 for t in row.calls), "total": row.total}
+        return {"status": "local_accounting", "limits": limits.public(), "used": used,
+                "remaining": {key: max(0, cap - used[key]) for key, cap in limits.public().items()},
+                "total_resets_automatically": False}
 
 
 def parse_ids(data):
@@ -166,8 +183,9 @@ def estimate(candidate, peers):
 
 
 class RiaSearch:
-    def __init__(self, engine, key, fetch=fetch_json):
+    def __init__(self, engine, key, fetch=fetch_json, limits=None):
         self.engine, self.key, self.fetch = engine, key, fetch
+        self.limits = limits or BudgetLimits.env()
         self.owner = uuid.uuid4().hex
         self.deadline = time.monotonic() + 42
         self.stage = "acquire"
@@ -204,7 +222,7 @@ class RiaSearch:
             calls = [t for t in row.calls if t > now - 86400]
             if row.owner != self.owner or time.monotonic() > self.deadline:
                 raise RiaError("search_limit")
-            if budget_state(row, now)["reason"] != "available":
+            if budget_state(row, now, self.limits)["reason"] != "available":
                 raise RiaError("quota_exceeded")
             row.calls, row.total = calls + [now], row.total + 1
             db.commit()  # Failed calls consume budget too, even on a process crash.
@@ -303,7 +321,7 @@ class RiaSearch:
         with Session(self.engine) as db:
             row = db.get(SourceCache, key)
             snapshot = copy.deepcopy(row.payload) if row and row.expires_at > time.time() else None
-        quota = quota_status(self.engine)
+        quota = quota_status(self.engine, self.limits)
         if snapshot:
             if time.time() - snapshot["checked_at"] < FRESH_SECONDS:
                 return snapshot_view(snapshot, filters, quota, cached=True)
@@ -313,7 +331,7 @@ class RiaSearch:
             payload = self.search_uncached(filters.model_copy(update={"onlyDeals": False}))
         except RiaError as exc:
             if snapshot and str(exc) in TRANSIENT_ERRORS:
-                return snapshot_view(snapshot, filters, quota_status(self.engine), cached=True, reason=str(exc))
+                return snapshot_view(snapshot, filters, quota_status(self.engine, self.limits), cached=True, reason=str(exc))
             raise
         # Do not replace a useful snapshot with an interrupted empty response.
         if payload["cars"] or not payload["warnings"]:
@@ -363,7 +381,7 @@ class RiaSearch:
                 if not filters.onlyDeals or (car["market"] and car["price_usd"] <= car["market"] * .85):
                     cars.append(car)
             return {"cars": cars, "source_total": results["total"], "inspected": inspected,
-                    "quota": quota_status(self.engine),
+                    "quota": quota_status(self.engine, self.limits),
                     "limited": True, "warnings": sorted(set(warnings)), "checked_at": self.observed_at,
                     "source": "AUTO.RIA", "source_url": "https://auto.ria.com/"}
         finally:
