@@ -335,3 +335,12 @@ test('changing filters from the review form preserves the typed subscription nam
   assert.equal(ui.ids.savedName.value,'Для роботи');assert.match(ui.ids.draftSummary.textContent,/18000/);
   assert.equal(ui.searches.length,0);
 });
+
+test('a live monitor cannot display successful monitoring when AUTO.RIA discovery fails',async()=>{
+  const ui=setup({notificationStatus:async()=>({available:true,telegram_ready:true,test_sent:true,
+    discovery:{needs_attention:true,successful_groups:0},
+    activity:{enabled_subscriptions:1,new_listings:0,evaluated:0,unknown:0,pending:0,messages_accepted:0}})},'subscriptions');
+  await ui.nav.settings.listeners.click();
+  assert.equal(ui.ids.notificationStatus.textContent,'Перевірка AUTO.RIA затримується');
+  assert.match(ui.ids.launchProgress.textContent,/помилка отримання оголошень/);
+});

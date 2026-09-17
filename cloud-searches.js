@@ -10,6 +10,8 @@ function renderNotificationStatus() {
     !state.telegram_ready?"Підключи чат бота":
     !state.test_sent?"Перевір зв’язок тестовим повідомленням":
     !state.available?"Тест надіслано · моніторинг ще не ввімкнено":
+    state.discovery?.needs_attention?"Перевірка AUTO.RIA затримується":
+    state.activity?.enabled_subscriptions>0&&state.discovery?.successful_groups===0?"Чекаємо першої успішної перевірки AUTO.RIA":
     state.activity?.enabled_subscriptions>0?"Моніторинг працює":"Готові до ввімкнення";
   const activity=state?.activity;
   $("launchProgress").textContent=!activity?"Увійди через Telegram, щоб побачити стан перевірок.":
@@ -17,6 +19,7 @@ function renderNotificationStatus() {
     "Активних підписок: "+activity.enabled_subscriptions+". Нових авто: "+activity.new_listings+
     ". Оцінено: "+activity.evaluated+". Бракує даних: "+activity.unknown+". У черзі: "+activity.pending+
     ". Повідомлень прийнято Telegram: "+activity.messages_accepted+"."+
+    (state.discovery?.needs_attention?" Є затримка або помилка отримання оголошень. Деталі — у картці підписки.":"")+
     (Number.isFinite(activity.last_delivery?.discovery_to_telegram_seconds)?
       " Остання доставка після виявлення: "+Math.ceil(activity.last_delivery.discovery_to_telegram_seconds)+" с.":"");
   $("testNotification").disabled=cloudBusy||!testAvailable||!state?.telegram_ready;
@@ -66,7 +69,9 @@ async function loadCloud() {
       coverage_changed:"список AUTO.RIA змінюється · повторюємо перевірку",
       quota_exceeded:"пауза: ліміт запитів AUTO.RIA",busy:"очікуємо завершення іншого запиту",
       search_limit:"перевірку продовжимо наступним циклом",
-      unsupported_filter:"фільтр не підтверджено AUTO.RIA: зміни пошук",invalid_response:"пауза: некоректна відповідь AUTO.RIA"};
+      unsupported_filter:"фільтр не підтверджено AUTO.RIA: зміни пошук",invalid_response:"пауза: некоректна відповідь AUTO.RIA",
+      connection_error:"AUTO.RIA не відповідає · повторимо перевірку",upstream_error:"помилка AUTO.RIA · повторимо перевірку",
+      key_rejected:"AUTO.RIA відхилила API-ключ",access_denied:"AUTO.RIA обмежила доступ"};
     let status=item.enabled?
       (notificationState?.available?(statuses[item.monitor_status]||"очікуємо перевірку джерела"):"Моніторинг тимчасово недоступний"):"На паузі · сповіщення вимкнені";
     if(item.enabled&&notificationState?.available&&item.pending_count>0) status+=" · у черзі: "+item.pending_count;

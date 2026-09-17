@@ -537,3 +537,42 @@ def test_uncertain_valuation_is_recorded_without_fake_deal(p):
         assert db.get(MonitorJob, "124").state == "unvalued"
         assert db.get(MonitorSeen, (1, "124")).state == "unvalued"
         assert db.get(MonitorJob, "124").result["rating"]["valuation"] != "sample_median"
+
+
+def test_live_heartbeat_cannot_hide_failed_discovery_or_expose_other_users(p):
+    drain(p)
+    add_search(p, sid=2, uid=222, region='')
+    p.runner.tick()
+    with Session(p.engine) as db:
+        feeds = list(db.scalars(select(MonitorFeed)))
+        own = next(feed for feed in feeds if feed.filters['region'])
+        other = next(feed for feed in feeds if not feed.filters['region'])
+        own.status, own.checked_at = 'invalid_response', 0
+        other.status, other.checked_at = 'watching', p.clock[0]
+        db.commit()
+    first = runtime_status(p.engine, True, 111)
+    second = runtime_status(p.engine, True, 222)
+    assert first['running'] and first['discovery']['needs_attention']
+    assert first['discovery']['successful_groups'] == 0
+    assert first['discovery']['last_success_at'] is None
+    assert first['discovery']['state_counts'] == {'invalid_response': 1}
+    assert not second['discovery']['needs_attention']
+    assert second['discovery']['successful_groups'] == 1
+    assert second['discovery']['state_counts'] == {'watching': 1}
+    assert not runtime_status(p.engine, True, 999)['discovery']['state_counts']
+    assert 'Volkswagen' not in str(first['discovery'])
+    before = len(p.calls)
+    runtime_status(p.engine, True)
+    assert len(p.calls) == before
+
+
+def test_discovery_progress_detects_stale_checkpoint_even_with_live_process(p):
+    drain(p)
+    first = runtime_status(p.engine, True)['discovery']
+    assert first['successful_groups'] == 1 and not first['needs_attention']
+    p.clock[0] += 10000
+    with Session(p.engine) as db:
+        db.get(MonitorControl, 'pilot').heartbeat = p.clock[0]
+        db.commit()
+    current = runtime_status(p.engine, True)['discovery']
+    assert current['needs_attention'] and current['lag_seconds'] >= 10000

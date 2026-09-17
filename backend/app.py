@@ -237,7 +237,7 @@ def create_app(settings: Settings, engine=None):
     @app.get("/api/notifications/status")
     def notification_status(uid=Depends(identity), db=Depends(session)):
         user, test = db.get(User, uid), db.get(TelegramTest, uid)
-        runtime = monitor.runtime_status(engine, settings.monitor_enabled)
+        runtime = monitor.runtime_status(engine, settings.monitor_enabled, uid)
         telegram = telegram_status()
         connected = telegram["status"] == "configured"
         return {**runtime, "available": settings.live and runtime["running"] and connected,
