@@ -178,6 +178,7 @@ h1 { font-weight: 400; letter-spacing: -.3px; }
 .subscription-more { min-width:40px; height:44px; padding:0; border:0; background:transparent; color:#a3a3a8; font-size:29px; line-height:1; cursor:pointer; }
 .subscription-bell { width:16px; height:16px; }
 #savedDialog #newSavedSearch { position:fixed; z-index:11; left:50%; transform:translateX(-50%); bottom:calc(80px + env(safe-area-inset-bottom)); width:auto; max-width:calc(100vw - 48px); min-width:164px; min-height:48px; margin:0; padding:12px 30px; border:0; border-radius:30px; background:#bd2c34; color:white; font-size:16px; font-weight:600; white-space:nowrap; box-shadow:0 4px 20px #0007; cursor:pointer; }
+.app:has(#savedDialog:not([hidden])) ~ .toast { bottom:calc(142px + env(safe-area-inset-bottom)); z-index:12; }
 .subscription-sheet { position:fixed; inset:auto 0 0; width:100%; max-width:520px; max-height:85dvh; overflow:auto; overscroll-behavior:contain; margin:0 auto; padding:10px 20px max(20px,env(safe-area-inset-bottom)); border:1px solid #343437; border-bottom:0; border-radius:24px 24px 0 0; background:#1c1c1e; color:#e5e5e7; }
 .subscription-sheet::backdrop { background:#0009; }
 body:has(.subscription-sheet[open]) { overflow:hidden; }
