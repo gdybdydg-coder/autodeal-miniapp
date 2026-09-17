@@ -52,10 +52,10 @@
     }
     return {
       startScan:(filters,restart=false)=>request("/api/cars/scans"+(restart?"?restart=true":""),"POST",filters),
-      scan:(id,after=0,onlyDeals=false)=>{
-        if(!/^[a-f0-9]{32}$/.test(id)||!Number.isSafeInteger(after)||after<0)
+      scan:(id,after=0,onlyDeals=false,cacheAfter=0)=>{
+        if(!/^[a-f0-9]{32}$/.test(id)||!Number.isSafeInteger(after)||after<0||!Number.isSafeInteger(cacheAfter)||cacheAfter<0)
           return Promise.reject(Error("Онови результати пошуку."));
-        return request("/api/cars/scans/"+id+"?after="+after+"&only_deals="+!!onlyDeals);
+        return request("/api/cars/scans/"+id+"?after="+after+"&only_deals="+!!onlyDeals+"&cache_after="+cacheAfter);
       },
       controlScan:(id,enabled)=>{
         if(!/^[a-f0-9]{32}$/.test(id)||typeof enabled!=="boolean")

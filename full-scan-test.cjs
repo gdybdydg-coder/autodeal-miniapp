@@ -75,3 +75,28 @@ test('large result sets display fifty at a time while all cards remain available
   await s.window.AutoDealLive.loadMore();assert.equal(s.ids.resultsList.children.length,100);
   await s.window.AutoDealLive.loadMore();assert.equal(s.ids.resultsList.children.length,120);
 });
+
+test('cached cars appear before any scan progress and refresh removes invalid matches',async()=>{
+  const s=setup({startScan:async()=>data({cache:{cars:[car(1)],after:17,total:1,more:false}}),
+    scan:async(scanId,after,only,cacheAfter)=>{
+      assert.equal(after,0);assert.equal(cacheAfter,17);
+      return data({removed:[{id:'1',checked_at:Date.now()/1000+1}],after:1,inspected:1,status:'completed',complete:true,
+        cache:{cars:[],after:17,total:0,more:false}});
+    }});
+  await s.window.AutoDealLive.search({onlyDeals:true});
+  assert.equal(s.ids.resultsList.children[0].className,'car');
+  assert.equal(s.ids.scanBar.value,0);assert.match(s.ids.sourceNote.textContent,/ще не охоплює всі/);
+  await s.tick();
+  assert.equal(s.ids.resultsList.children[0].className,'empty');
+  assert.equal(s.ids.count.textContent,'Показано: 0');
+});
+
+test('older cached copies cannot overwrite a fresher result or create duplicates',async()=>{
+  const fresh=car(1,{checked_at:Date.now()/1000,price_usd:8500});
+  const old=car(1,{checked_at:fresh.checked_at-100,price_usd:8700});
+  const s=setup({startScan:async()=>data({cars:[fresh],cache:{cars:[old],after:1,total:1}}),
+    scan:async()=>data({status:'completed',removed:[{id:'1',checked_at:old.checked_at}],cache:{cars:[old],after:1,total:1}})});
+  await s.window.AutoDealLive.search({onlyDeals:true});await s.tick();
+  assert.equal(s.ids.resultsList.children.length,1);
+  assert.equal(s.ids.resultsList.children[0].children[0].children[1].textContent,'$8,500');
+});

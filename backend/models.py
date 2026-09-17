@@ -151,6 +151,27 @@ class ScanItem(Base):
     checked_at: Mapped[float] = mapped_column(Float, default=0)
 
 
+class MarketCar(Base):
+    """Shared public listing data only: no account, subscription or Telegram data."""
+    __tablename__ = "market_cars"
+    __table_args__ = (Index("market_brand_model", "brand_id", "model_id", "id"), {"sqlite_autoincrement": True})
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    source_id: Mapped[str] = mapped_column(String(100), unique=True)
+    car: Mapped[dict] = mapped_column(JSON)
+    checked_at: Mapped[float] = mapped_column(Float, index=True)
+    active: Mapped[bool] = mapped_column(Boolean, default=True)
+    deal: Mapped[bool] = mapped_column(Boolean, index=True)
+    brand_id: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    model_id: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    region_id: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    body_id: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    fuel_id: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    gear_id: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    price: Mapped[float] = mapped_column(Float)
+    year: Mapped[int] = mapped_column(Integer)
+    mileage: Mapped[int] = mapped_column(Integer)
+
+
 class User(Base):
     __tablename__ = "users"
     id: Mapped[int] = mapped_column(BigInteger, primary_key=True, autoincrement=False)

@@ -1,23 +1,37 @@
 # AUTODeal backend — full manual search and one-search notification pilot
 
-## Full search scans (release 20260917-28)
+## Full search scans with a shared local index (release 20260917-29)
 
 The Mini App starts a durable scan with authenticated `POST /api/cars/scans`.
-It captures **every returned ID page** (`countpage=50`) before evaluating the
-candidate cards, then checks each unique ID and estimates its price using the
-existing strict peer rules. The old eight-card `/api/cars/search` remains only for
+It captures **every returned ID page** (`countpage=50`) and checks an early
+candidate in each worker step before collecting the remaining pages. It then
+checks every queued unique ID and estimates its price using the existing strict
+peer rules. The old eight-card `/api/cars/search` remains only for
 older clients; the new UI does not use it or require manual continuation clicks.
 
-`full_scans` and `scan_items` are new tables created on startup; no deployed table
-is altered. The API process runs short scan steps under a DB lease. Progress and
+`full_scans` and `scan_items` store scan progress; the new `market_cars` table
+indexes checked public cars across searches. Tables are created on startup;
+no deployed table is altered. The API process runs short scan steps under a DB lease. Progress and
 completed cards survive client closure, server restarts and quota waits. Only one
 scan per user runs at a time; a different filter pauses their previous scan.
 Switching onlyDeals reuses the same scan and provider work. Up to 20 result sets
 are retained per user; an oldest inactive derived result set can be evicted.
 Saved subscriptions and delivery tables are unaffected.
 
-- `GET /api/cars/scans/{id}?after=0&only_deals=true` reads owned progress/results;
-  the numeric result offset pages stored cards, spending no AUTO.RIA requests.
+- `GET /api/cars/scans/{id}?after=0&only_deals=true&cache_after=0` reads owned
+  progress/results and a separate page of previously checked public cars. Both
+  numeric offsets page stored data, spending no AUTO.RIA requests. Scan results
+  include removed IDs so a price change or unavailable car cannot remain as an
+  old cached match in the UI. All known dimensions and ranges are applied to
+  the index; an uncached dictionary returns no cars until the worker resolves it.
+- Start/progress responses include up to 50 cached cars without waiting on the
+  provider. Cache counts are separate from scan coverage. This index is partial,
+  not a downloaded AUTO.RIA database or a guarantee of current listing status.
+  Results retain their original check time; valuations expire after 15 minutes,
+  and cached cars are retained for one day. Fresh results are reused in later
+  scan jobs. Up to 200 pre-index results are backfilled per minute of active
+  scanning under the provider lease, without network calls. Removal tombstones
+  prevent older results from resurrecting unavailable cars.
 - `PATCH /api/cars/scans/{id}` with `{enabled:false/true}` pauses/resumes an owned
   scan. The next network operation finishes before the worker observes a pause.
 - Starting the same filters restores progress. Completed scans older than 15
