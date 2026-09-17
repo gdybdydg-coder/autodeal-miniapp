@@ -8,7 +8,9 @@ import time
 from decimal import Decimal
 
 VERSION = "asking-v4"
-PRICE_ONLY_VERSION = "listing-price-v1"
+PRICE_ONLY_VERSION = "listing-price-v2"
+INFORMATION_REASONS = {"incomplete_details", "insufficient_comparables", "mixed_sample",
+                       "unverified_condition", "missing_valuation_details"}
 MAX_AGE = 900
 MIN_PEERS = 5
 DIMENSIONS = ("brand_id", "model_id", "generation_id", "modification_id", "body_id", "fuel_id", "gear_id")
@@ -177,16 +179,17 @@ def evidence_valid(car, now):
             and result["comparables"] == car.comparables)
 
 
-def price_only_evidence(candidate, evaluated_at):
-    """Minimal proof for an incomplete listing notification.
+def price_only_evidence(candidate, evaluated_at, uncertainty_reasons=None):
+    """Proof for a clearly labelled informational (not verified-deal) alert.
 
     The price is still mandatory and freshly retrieved from the official detail
     endpoint. This proof never claims a market value or discount.
     """
     return {"version": PRICE_ONLY_VERSION, "basis": "fresh_listing_price",
             "evaluated_at": evaluated_at,
+            "uncertainty_reasons": sorted(set(uncertainty_reasons or ["incomplete_details"])),
             "candidate": {key: candidate.get(key) for key in
-                          ("id", "price_usd", "year", "mileage", "observed_at")}}
+                          ("id", "price_usd", "year", "mileage", "observed_at", "condition_exclusions")}}
 
 
 def price_only_evidence_valid(car, now):
@@ -195,6 +198,11 @@ def price_only_evidence_valid(car, now):
         return False
     candidate = evidence.get("candidate")
     if not isinstance(candidate, dict):
+        return False
+    uncertainty = evidence.get("uncertainty_reasons")
+    if (not isinstance(uncertainty, list) or not uncertainty
+            or any(not isinstance(reason, str) or reason not in INFORMATION_REASONS for reason in uncertainty)
+            or candidate.get("condition_exclusions") != []):
         return False
     return (candidate.get("id") == car.source_id
             and candidate.get("price_usd") == car.price
@@ -213,6 +221,7 @@ def policy():
             "minimum_comparables": MIN_PEERS, "dimensions": list(DIMENSIONS),
             "missing_modification_fallback": "same_generation_body_fuel_gear_and_explicit_engine_capacity",
             "missing_modification_fallback_scope": "candidate_or_peer",
+            "unknown_valuation_notification": "informational_without_market_or_discount",
             "condition_basis": "no_source_damage_parts_abroad_or_custom_flags",
             "year_tolerance": 1, "mileage_tolerance_percent": 20, "mileage_tolerance_min_km": 30000,
             "maximum_detail_age_seconds": MAX_AGE, "sample_max_price_ratio": 2,

@@ -666,3 +666,20 @@ The incomplete-details notification policy now has its own version marker.
 Previously discovered active unvalued jobs with missing optional details are
 rechecked once even if their asking-price valuation version has not changed.
 Stopped epochs and already delivered listings remain protected by normal checks.
+
+### Informational alerts when valuation is unavailable (2026-09-17)
+
+At the owner's request, matching freshly priced listings are no longer silently
+withheld because optional data or suitable comparables are missing. The monitor
+sends an explicitly informational card with no market value or percentage, using
+versioned `listing-price-v2` evidence. Unknown condition is labelled; explicit
+damage/parts/abroad/custom or adverse technical condition remains excluded, even
+on an incomplete card. A confirmed valuation still applies the saved discount
+threshold. Comparison timeouts/limits can yield information-only alerts after
+fresh details have succeeded; failed listing-price retrieval cannot.
+
+Active unvalued interests from the previous notification policy are refreshed
+once, never replaying sent or uncertain deliveries. `launch.activity` separates
+informational outcomes and condition exclusions from verified valuations; unknown
+valuation counts remain visible even after an information-only alert. Missing
+mileage on a comparison candidate no longer raises an exception in peer search.

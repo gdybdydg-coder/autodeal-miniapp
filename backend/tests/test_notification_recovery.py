@@ -49,9 +49,9 @@ def test_recovery_does_not_fabricate_market_price_when_peers_are_missing(p):
         return source
     p.runner.search_factory = insufficient
     drain(p)
-    assert not p.sent
+    assert len(p.sent) == 1 and p.sent[0][1].market is None
     with Session(p.engine) as db:
-        assert db.get(MonitorJob, "123").state == "unvalued"
+        assert db.get(MonitorJob, "123").state == "informational"
         assert db.get(SourceProbe, probe_id("123")).result["report"]["valuation_reasons"] == ["insufficient_comparables"]
 
 

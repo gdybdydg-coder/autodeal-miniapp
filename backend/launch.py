@@ -22,7 +22,8 @@ PEER_CODES = UNKNOWN_CODES | set(DIMENSIONS) | {"engine_cc", "year", "mileage", 
 def unknown_breakdown(db, conditions):
     """Only fixed reason codes and counts leave the stored valuation evidence."""
     reasons, peers, samples = Counter(), Counter(), Counter()
-    query = select(MonitorJob.result["rating"]).where(*conditions, MonitorJob.state == "unvalued")
+    query = select(MonitorJob.result["rating"]).where(*conditions,
+        MonitorJob.state.in_(("unvalued", "informational")))
     for rating in db.scalars(query).yield_per(100):
         if not isinstance(rating, dict):
             continue
@@ -85,7 +86,8 @@ def activity(db, uid=None):
     enabled = count(Search, Search.id.in_(subscriptions), Search.enabled.is_(True))
     rating = MonitorJob.result["rating"]["valuation"].as_string()
     latest_unknown = db.scalar(select(MonitorJob.result["rating"]).where(
-        *jobs, MonitorJob.state == "unvalued").order_by(MonitorJob.last_attempt.desc()).limit(1))
+        *jobs, MonitorJob.state.in_(("unvalued", "informational")))
+        .order_by(MonitorJob.last_attempt.desc()).limit(1))
     unknown_reason = None
     if isinstance(latest_unknown, dict):
         codes = [code for code in latest_unknown.get("valuation_reasons", []) if code in UNKNOWN_CODES]
@@ -109,7 +111,9 @@ def activity(db, uid=None):
             "new_listings": count(MonitorJob, *jobs),
             "pending": count(MonitorJob, *jobs, MonitorJob.state == "pending"),
             "evaluated": count(MonitorJob, *jobs, rating == "sample_median"),
-            "unknown": count(MonitorJob, *jobs, MonitorJob.state == "unvalued"),
+            "unknown": count(MonitorJob, *jobs, MonitorJob.state.in_(("unvalued", "informational"))),
+            "informational": count(MonitorJob, *jobs, MonitorJob.state == "informational"),
+            "excluded_condition": count(MonitorJob, *jobs, MonitorJob.state == "excluded"),
             "latest_unknown_reason": unknown_reason,
             "unknown_breakdown": unknown_breakdown(db, jobs),
             "messages_accepted": sent, "last_delivery": last, "receipt_basis": "telegram_api_acceptance"}

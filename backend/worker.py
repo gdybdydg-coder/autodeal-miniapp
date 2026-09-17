@@ -139,7 +139,14 @@ class TelegramSender:
             benefit = f"{discount:.1f}".rstrip("0").rstrip(".").replace(".", ",")
             pricing.extend((f"📊 Ринкова ціна: ≈ {market}", f"🔥 Вигода: {benefit}%"))
         else:
-            pricing.append("⚡ Неповні характеристики — перевірте оголошення")
+            pricing.append("ℹ️ Ринкову оцінку не підтверджено — це не підтверджена вигода")
+            reasons = (car.valuation_evidence or {}).get("uncertainty_reasons", [])
+            if "incomplete_details" in reasons:
+                pricing.append("Неповні характеристики — перевірте оголошення")
+            if "insufficient_comparables" in reasons:
+                pricing.append("Недостатньо зіставних авто для оцінки")
+            if "unverified_condition" in reasons:
+                pricing.append("⚠️ Стан авто не підтверджено даними джерела")
         sections = [f"🚘 {car.brand} {car.model} · {car.year}"]
         if details:
             sections.append("\n".join(details))

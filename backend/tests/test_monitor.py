@@ -577,10 +577,11 @@ def test_uncertain_valuation_is_recorded_without_fake_deal(p):
     p.runner.search_factory = incomplete
     wake(p)
     drain(p)
-    assert not p.sent
+    assert len(p.sent) == 1
+    assert p.sent[0][1].market is None and p.sent[0][1].comparables == 0
     with Session(p.engine) as db:
-        assert db.get(MonitorJob, "124").state == "unvalued"
-        assert db.get(MonitorSeen, (1, "124")).state == "unvalued"
+        assert db.get(MonitorJob, "124").state == "informational"
+        assert db.get(MonitorSeen, (1, "124")).state == "informational"
         assert db.get(MonitorJob, "124").result["rating"]["valuation"] != "sample_median"
 
 

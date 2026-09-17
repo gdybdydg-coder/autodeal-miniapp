@@ -9,7 +9,7 @@ from backend.ria_search import RiaSearch, engine_capacity, matches, parse_car
 from backend.ria_validation import comparison_report
 from backend.tests.test_monitor import p, drain, wake
 from backend.tests.test_ria_search import engine, fixture_fetch, raw
-from backend.valuation import estimate
+from backend.valuation import PRICE_ONLY_VERSION, estimate
 
 
 def sparse(source_id="123", price=10000, capacity="1.9", modification=None):
@@ -153,7 +153,7 @@ def test_monitor_sends_fresh_price_when_optional_details_are_missing(p):
     assert car.source_id == "124" and car.price == 10000
     assert car.market is None and car.comparables == 0 and car.mileage is None
     assert car.fuel == "" and car.transmission == "" and car.body == ""
-    assert car.valuation_evidence["version"] == "listing-price-v1"
+    assert car.valuation_evidence["version"] == PRICE_ONLY_VERSION
     # No peer-price search is needed before the urgent partial notification.
     assert not any(path == "search" and "generation_id[0][0]" in params for path, params in p.calls)
     discovery = [params for path, params in p.calls if path == "search" and "published_after" in params]

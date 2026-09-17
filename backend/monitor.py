@@ -21,7 +21,7 @@ from .models import (Car, Filters, Listing, MonitorControl, MonitorFeed, Monitor
                      MonitorMatch, MonitorMembership, MonitorSeen, MonitorWatch, Search, User)
 from .ria_budget import BudgetLimits
 from .ria_search import RiaSearch, estimate, matches, parse_ids, quota_status
-from .valuation import MAX_AGE, VERSION, is_deal, price_only_evidence
+from .valuation import MAX_AGE, VERSION, PeerBatch, is_deal, price_only_evidence
 
 INTERVAL = 60
 LEASE = 120
@@ -30,7 +30,7 @@ WINDOW_SECONDS = 3600
 INDEX_OVERLAP = 600
 EVIDENCE_SECONDS = 60
 OPTIONAL_DETAIL_FIELDS = ("body_id", "fuel_id", "gear_id", "mileage")
-NOTIFICATION_VERSION = "optional-details-v1"
+NOTIFICATION_VERSION = "informational-v2"
 log = logging.getLogger(__name__)
 
 
@@ -189,10 +189,8 @@ class Monitor:
                        MonitorSeen.epoch == MonitorWatch.epoch,
                        MonitorJob.first_seen >= time.time() - 86400)).all()
             for job, seen in outdated:
-                candidate = job.result.get("candidate")
-                optional_upgrade = bool(candidate and incomplete_optional_details(candidate)
-                    and job.result.get("notification_version") != NOTIFICATION_VERSION)
-                if job.result.get("rating", {}).get("valuation_version") != VERSION or optional_upgrade:
+                if (job.result.get("rating", {}).get("valuation_version") != VERSION
+                        or job.result.get("notification_version") != NOTIFICATION_VERSION):
                     job.state, job.next_run, job.result = "pending", 0, {}
                     seen.state = "pending"
             db.commit()
@@ -335,13 +333,14 @@ class Monitor:
                 candidate, rating = evidence.get("candidate"), evidence.get("rating")
                 resolved = evidence.get("filters", {}).get(fingerprint)
                 filters = Filters.model_validate(search.filters)
-                partial = evidence.get("partial_notification") is True
+                partial = evidence.get("informational_notification") is True
                 strict_deal = bool(rating and rating.get("valuation") == "sample_median"
                     and is_deal(candidate["price_usd"], rating["market"], filters.minDiscount))
-                if (not candidate or resolved is None or not matches(candidate, filters, resolved)
+                if (not candidate or candidate.get("condition_exclusions") or resolved is None
+                        or not matches(candidate, filters, resolved)
                         or not (partial or strict_deal)):
                     continue
-                proof = (price_only_evidence(candidate, evidence["evaluated_at"])
+                proof = (price_only_evidence(candidate, evidence["evaluated_at"], evidence["uncertainty_reasons"])
                          if partial else rating["valuation_evidence"])
                 car = Car(source="auto_ria", source_id=source_id, url=candidate["url"],
                     photo=candidate["image"], brand=candidate["brand"][:100], model=candidate["model"][:100],
@@ -378,7 +377,8 @@ class Monitor:
             self.complete(source_id, {}, "cancelled")
             return
         candidate = evidence.get("candidate")
-        reusable = bool(candidate and 0 <= time.time() - candidate["observed_at"] <= EVIDENCE_SECONDS)
+        reusable = bool(candidate and "condition_exclusions" in candidate
+                        and 0 <= time.time() - candidate["observed_at"] <= EVIDENCE_SECONDS)
         if not reusable:
             candidate = source.car(source_id, force=True)
             evidence = {"candidate": candidate, "filters": {}}
@@ -391,16 +391,39 @@ class Monitor:
                 evidence["filters"][fingerprint] = resolved
             any_match |= matches(candidate, filters, evidence["filters"][fingerprint])
         partial = incomplete_optional_details(candidate)
-        evidence["partial_notification"] = partial
+        excluded = bool(candidate.get("condition_exclusions"))
         rating = evidence.get("rating", {})
         proof_peers = rating.get("valuation_evidence", {}).get("peers", [])
         if (rating.get("valuation_version") != VERSION or
                 any(not -30 <= time.time() - peer["observed_at"] <= MAX_AGE for peer in proof_peers)):
             evidence.pop("rating", None)
-        if any_match and not partial and "rating" not in evidence:
-            evidence["rating"] = estimate(candidate, source.comparisons(candidate))
+        if any_match and not partial and not excluded and "rating" not in evidence:
+            try:
+                peers = source.comparisons(candidate)
+            except RiaError as exc:
+                if str(exc) not in {"search_limit", "quota_exceeded", "connection_error", "upstream_error"}:
+                    raise
+                # The listing price was already freshly retrieved. A bounded
+                # peer-search failure must not discard that verified candidate.
+                peers = PeerBatch(limited=True, unavailable=str(exc))
+            evidence["rating"] = estimate(candidate, peers)
         rating = evidence.get("rating", {})
-        outcome = "checked" if (not any_match or partial or rating.get("valuation") == "sample_median") else "unvalued"
+        uncertainty = []
+        if any_match and not excluded:
+            if partial:
+                uncertainty.append("incomplete_details")
+            elif rating.get("valuation") in {"insufficient_data", "mixed_sample"}:
+                for reason in ("insufficient_comparables", "mixed_sample", "unverified_condition"):
+                    if reason in rating.get("valuation_reasons", []):
+                        uncertainty.append(reason)
+                if not uncertainty:
+                    uncertainty.append("missing_valuation_details")
+            if uncertainty and not candidate.get("comparable_condition"):
+                uncertainty.append("unverified_condition")
+        evidence["uncertainty_reasons"] = sorted(set(uncertainty))
+        evidence["informational_notification"] = bool(uncertainty)
+        outcome = ("excluded" if excluded else "informational" if uncertainty else "checked"
+                   if not any_match or rating.get("valuation") == "sample_median" else "unvalued")
         self.complete(source_id, evidence, outcome)
 
     def defer(self, kind, key, reason, limits):

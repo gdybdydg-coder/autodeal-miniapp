@@ -20,7 +20,7 @@ from .auto_ria import RiaError, fetch_json, listing_preview
 from .models import Filters, SourceBudget, SourceCache, SourceProbe
 from .ria_budget import BudgetLimits, peer_scan_limit
 from . import peer_cache
-from .valuation import DIMENSIONS, VERSION, PeerBatch, comparison_dimensions, estimate, is_deal, reasons, vehicle_key
+from .valuation import DIMENSIONS, VERSION, PeerBatch, comparison_dimensions, estimate, is_deal, number, reasons, vehicle_key
 from .launch import source_added_at
 
 FRESH_SECONDS = 900
@@ -97,6 +97,18 @@ def comparable_condition(data):
     if technical is None or (isinstance(technical, dict) and technical.get("id") is None):
         return True
     return isinstance(technical, dict) and type(technical.get("id")) is int and technical["id"] == 1
+
+
+def condition_exclusions(data):
+    """Keep explicit adverse source statements separate from missing metadata."""
+    flags = data.get("autoInfoBar")
+    excluded = [key for key in ("damage", "onRepairParts", "abroad", "custom")
+                if isinstance(flags, dict) and flags.get(key) is True]
+    technical = data.get("technicalCondition")
+    if (isinstance(technical, dict) and type(technical.get("id")) is int
+            and technical["id"] > 1):
+        excluded.append("technical_condition")
+    return excluded
 
 
 def initialize_budget(engine):
@@ -212,6 +224,7 @@ def parse_car(data, source_id):
             "mileage": round(mileage * 1000) if mileage is not None else None,
             "image": photo, "vehicle_key": vehicle_key(data.get("VIN")),
             "comparable_condition": comparable_condition(data),
+            "condition_exclusions": condition_exclusions(data),
             "source_added_at": source_added_at(data.get("addDate")), "observed_at": time.time()}
 
 
@@ -246,7 +259,7 @@ class RiaSearch:
 
     def request(self, path, params, parser, ttl=900, *, force=False):
         self.stage = path
-        cache_key = [path, params, "car-v4"] if path == "info" else [path, params]
+        cache_key = [path, params, "car-v5"] if path == "info" else [path, params]
         digest = hashlib.sha256(json.dumps(cache_key, sort_keys=True).encode()).hexdigest()
         with Session(self.engine) as db:
             cached = db.get(SourceCache, digest)
@@ -457,6 +470,7 @@ class RiaSearch:
                 # loading the candidate cards and checking every known attribute.
                 if (all(peer.get(key) == candidate[key] for key in required if key != "modification_id")
                         and abs(peer["year"] - candidate["year"]) <= 1
+                        and number(peer.get("mileage"))
                         and abs(peer["mileage"] - candidate["mileage"]) <= tolerance):
                     self.resolve_modification(peer)
                 # Pool only actual comparison observations, not every monitored
