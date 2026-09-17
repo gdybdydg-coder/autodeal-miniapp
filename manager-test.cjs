@@ -70,11 +70,12 @@ test('account failure does not erase device searches and refresh recovers',async
 
 test('active subscription shows saved queue and unvalued cars without a one-search cap',async()=>{
   const ui=setup({list:async()=>[{id:7,name:'Golf',filters:ui.filters(),enabled:true,
-    monitor_status:'catching_up',pending_count:117,unvalued_count:4}],
+    monitor_status:'catching_up',pending_count:117,unvalued_count:4,latest_valuation_reason:'missing_details'}],
     notificationStatus:async()=>({available:true,telegram_ready:true,test_sent:true})},'subscriptions');
   await ui.nav.saved.listeners.click();
   const status=part(ui.ids.cloudSearchList.children[0],'subscription-state is-active').textContent;
   assert.match(status,/черга збережена/);assert.match(status,/117/);assert.match(status,/бракує даних.*4/);
+  assert.match(status,/остання оцінка: неповні характеристики авто/);
   assert.doesNotMatch(ui.ids.subscriptionsHint.textContent,/одна активна/);
 });
 

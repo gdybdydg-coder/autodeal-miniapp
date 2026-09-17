@@ -10,11 +10,13 @@ from sqlalchemy.orm import Session
 from .app import Settings
 from .models import (Car, Delivery, Filters, Listing, MonitorJob, MonitorMatch,
                      MonitorSeen, MonitorWatch, Search, User)
+from .valuation import evidence_valid, is_deal
+from .peer_cache import evidence_current
 
 
 def matches(car: Car, filters: Filters):
     # Alerts always require >=15% below supplied valuation, even for broad searches.
-    if car.price > car.market * 0.85:
+    if not is_deal(car.price, car.market):
         return False
     for key in ("brand", "model", "region"):
         if getattr(filters, key) and getattr(filters, key) != getattr(car, key):
@@ -31,8 +33,10 @@ def matches(car: Car, filters: Filters):
     return True
 
 
-def fresh(car, now):
-    return -30 <= now - car.observed_at <= (300 if car.source == "auto_ria" else 86400)
+def fresh(car, now, db=None):
+    return (-30 <= now - car.observed_at <= (300 if car.source == "auto_ria" else 86400)
+            and (car.source != "auto_ria" or (evidence_valid(car, now)
+                 and (db is None or evidence_current(db, car.valuation_evidence)))))
 
 
 def ingest(engine, cars: list[Car], now=None):
@@ -59,10 +63,10 @@ def matching_searches(user_id, listing_id):
 
 def eligible(db, user_id, listing, now):
     car = Car.model_validate(listing.car)
-    if not fresh(car, now):
+    if not fresh(car, now, db):
         return False
     if car.source == "auto_ria":
-        if car.price > car.market * .85:
+        if not is_deal(car.price, car.market):
             return False
         # Production matches use official catalog IDs, not translated labels.
         # The trusted monitor records the filter fingerprint and enable epoch.
@@ -82,7 +86,10 @@ def enqueue(engine, now=None):
             for listing in db.scalars(select(Listing).where(
                     or_(Listing.source != "auto_ria", Listing.id.in_(matched)),
                     Listing.id.not_in(already_queued))):
-                if not eligible(db, user.id, listing, now):
+                refreshable = (listing.source == "auto_ria"
+                    and not fresh(Car.model_validate(listing.car), now, db)
+                    and db.scalar(matching_searches(user.id, listing.id).limit(1)) is not None)
+                if not refreshable and not eligible(db, user.id, listing, now):
                     continue
                 exists = db.scalar(select(Delivery.id).where(Delivery.user_id == user.id, Delivery.listing_id == listing.id))
                 if exists:
@@ -155,7 +162,7 @@ def deliver_one(engine, settings: Settings, sender, now=None):
         user = db.scalar(select(User).where(User.id == row.user_id).with_for_update())
         listing = db.get(Listing, row.listing_id)
         refresh = []
-        if user and user.ready and listing and listing.source == "auto_ria" and not fresh(Car.model_validate(listing.car), now):
+        if user and user.ready and listing and listing.source == "auto_ria" and not fresh(Car.model_validate(listing.car), now, db):
             refresh = list(db.scalars(matching_searches(user.id, listing.id)))
         if refresh:
             # A long Telegram queue is not grounds to send an old price or silently

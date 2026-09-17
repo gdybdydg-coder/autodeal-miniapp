@@ -20,6 +20,7 @@ from .models import (Car, Filters, Listing, MonitorControl, MonitorFeed, Monitor
                      MonitorMatch, MonitorMembership, MonitorSeen, MonitorWatch, Search, User)
 from .ria_budget import BudgetLimits
 from .ria_search import RiaSearch, estimate, matches, parse_ids, quota_status
+from .valuation import MAX_AGE, VERSION, is_deal
 
 INTERVAL = 60
 LEASE = 120
@@ -287,14 +288,15 @@ class Monitor:
                 if (not candidate or not rating or resolved is None
                         or not matches(candidate, Filters.model_validate(search.filters), resolved)
                         or rating["valuation"] != "sample_median"
-                        or candidate["price_usd"] > rating["market"] * .85):
+                        or not is_deal(candidate["price_usd"], rating["market"])):
                     continue
                 car = Car(source="auto_ria", source_id=source_id, url=candidate["url"],
                     photo=candidate["image"], brand=candidate["brand"][:100], model=candidate["model"][:100],
                     region=candidate["region"], body=candidate["body"][:100], fuel=candidate["fuel"][:100],
                     transmission=candidate["transmission"][:100], year=candidate["year"],
                     mileage=candidate["mileage"], price=candidate["price_usd"], market=rating["market"],
-                    comparables=rating["comparables"], observed_at=candidate["observed_at"])
+                    comparables=rating["comparables"], observed_at=candidate["observed_at"],
+                    valuation_evidence=rating["valuation_evidence"])
                 if listing is None:
                     listing = Listing(source="auto_ria", source_id=source_id)
                     db.add(listing)
@@ -332,6 +334,11 @@ class Monitor:
                 _, resolved = source.parameters(filters)
                 evidence["filters"][fingerprint] = resolved
             any_match |= matches(candidate, filters, evidence["filters"][fingerprint])
+        rating = evidence.get("rating", {})
+        proof_peers = rating.get("valuation_evidence", {}).get("peers", [])
+        if (rating.get("valuation_version") != VERSION or
+                any(not -30 <= time.time() - peer["observed_at"] <= MAX_AGE for peer in proof_peers)):
+            evidence.pop("rating", None)
         if any_match and "rating" not in evidence:
             evidence["rating"] = estimate(candidate, source.comparisons(candidate))
         rating = evidence.get("rating", {})

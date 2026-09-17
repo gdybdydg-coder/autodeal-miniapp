@@ -36,6 +36,19 @@ independent Telegram dispatch. The production flags remain off for this release;
 valuation verification and a real opted-in delivery test are still required.
 See [implementation and acceptance evidence](docs/notification-first-strategy.md#durable-monitor-release-20260917-32).
 
+## Auditable price evaluation (release 20260917-33)
+
+Step 3 adds explicit deal/ordinary/unknown outcomes, retained comparable evidence,
+freshness checks, exact decimal threshold decisions and known-vehicle deduplication.
+An additive `valuation_peers` table shares recent peer observations across nearby
+candidate searches without building a source-market mirror. Candidate price and
+valuation proof are rechecked before delivery, including known peer-price changes.
+The Mini App explains the comparison rules and the latest unvalued outcome.
+See [the retained-data review and its limitations](docs/valuation-review-2026-09-17.md).
+178 backend tests and 59 frontend checks pass. No new live AUTO.RIA audit is run;
+fresh coverage, latency and Telegram delivery remain the step-4 launch test.
+Production monitoring, delivery, mass-scan flags and request caps are unchanged.
+
 ## Retiring mass scans (release 20260917-30)
 
 `FULL_SCAN_ENABLED` defaults to false. Startup pauses queued, running and waiting

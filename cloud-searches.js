@@ -63,6 +63,11 @@ async function loadCloud() {
       (notificationState?.available?(statuses[item.monitor_status]||"очікуємо перевірку джерела"):"Моніторинг тимчасово недоступний"):"На паузі · сповіщення вимкнені";
     if(item.enabled&&notificationState?.available&&item.pending_count>0) status+=" · у черзі: "+item.pending_count;
     if(item.enabled&&notificationState?.available&&item.unvalued_count>0) status+=" · бракує даних для оцінки: "+item.unvalued_count;
+    const reasons={missing_details:"неповні характеристики авто",insufficient_comparables:"замало схожих авто",
+      comparison_limit:"не вистачило перевірених аналогів у межах ліміту",mixed_sample:"ціни аналогів надто різняться",
+      stale_details:"потрібні свіжі ціни"};
+    if(item.enabled&&notificationState?.available&&item.unvalued_count>0&&reasons[item.latest_valuation_reason])
+      status+=" · остання оцінка: "+reasons[item.latest_valuation_reason];
     return subscriptionCard({...item,filters},{cloud:true,status,active:item.enabled&&notificationState?.available,
       canToggle:item.enabled||!!(notificationState?.available&&notificationState.telegram_ready&&notificationState.test_sent),
       toggle:window.AutoDealCloud.enable?()=>cloudAction(async()=>{

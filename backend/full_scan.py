@@ -17,6 +17,7 @@ from .auto_ria import RiaError
 from . import market_cache
 from .models import Filters, FullScan, MarketCar, ScanItem
 from .ria_search import FRESH_SECONDS, PAGE_REQUEST_LIMIT, RiaSearch, estimate, matches, parse_ids, quota_status
+from .valuation import is_deal
 
 log = logging.getLogger(__name__)
 ACTIVE = ("queued", "running", "waiting")
@@ -258,7 +259,7 @@ class Scanner:
                 item = db.scalar(select(ScanItem).where(ScanItem.scan_id == scan_id, ScanItem.source_id == source_id))
                 item.car, item.state = car, state
                 item.checked_at = cached[1] if cached else min(time.time(), source.observed_at)
-                item.deal = bool(car and car["valuation"] == "sample_median" and car["price_usd"] <= car["market"] * .85)
+                item.deal = bool(car and car["valuation"] == "sample_median" and is_deal(car["price_usd"], car["market"]))
                 item.valued = bool(car and car["valuation"] == "sample_median")
                 if car:
                     market_cache.put(db, car, item.checked_at)

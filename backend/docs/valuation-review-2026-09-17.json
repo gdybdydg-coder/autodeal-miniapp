@@ -1,0 +1,787 @@
+{
+  "release": "20260917-33",
+  "mode": "historical_replay",
+  "provider_requests_this_review": 0,
+  "fresh_live_valuation_performed": false,
+  "policy": {
+    "version": "strict-v2",
+    "basis": "asking_prices",
+    "threshold_percent": 15,
+    "minimum_comparables": 5,
+    "dimensions": [
+      "brand_id",
+      "model_id",
+      "generation_id",
+      "modification_id",
+      "body_id",
+      "fuel_id",
+      "gear_id"
+    ],
+    "year_tolerance": 1,
+    "mileage_tolerance_percent": 20,
+    "mileage_tolerance_min_km": 30000,
+    "maximum_detail_age_seconds": 900,
+    "sample_max_price_ratio": 2,
+    "user_price_and_region_affect_median": false
+  },
+  "audits": [
+    {
+      "file": "valuation-audit-2026-09-17.json",
+      "sha256": "6ed9127d177975864dfdf9ba8d23e2bc5add2ce44b619f5fa8132b9bf24fb563",
+      "historical_requests_used": 55,
+      "cars": 24,
+      "assessments": {
+        "unknown": 23,
+        "not_deal": 1
+      },
+      "unfinished_prior_checks": 1,
+      "results": [
+        {
+          "id": "40305688",
+          "title": "Volkswagen Passat",
+          "price_usd": 7999,
+          "prior_valuation": "insufficient_data",
+          "assessment": "unknown",
+          "replayed": true,
+          "as_of": 1789649569.2262654,
+          "market": null,
+          "comparables": 0,
+          "reasons": [
+            "unverified_condition"
+          ],
+          "accepted_ids": [],
+          "independently_recalculated": true
+        },
+        {
+          "id": "37874547",
+          "title": "Volkswagen Passat",
+          "price_usd": 14500,
+          "prior_valuation": "insufficient_data",
+          "assessment": "unknown",
+          "replayed": true,
+          "as_of": 1789649569.3507237,
+          "market": null,
+          "comparables": 0,
+          "reasons": [
+            "unverified_condition",
+            "missing_modification_id",
+            "missing_gear_id"
+          ],
+          "accepted_ids": [],
+          "independently_recalculated": true
+        },
+        {
+          "id": "40244416",
+          "title": "Volkswagen Passat",
+          "price_usd": 5500,
+          "prior_valuation": "insufficient_data",
+          "assessment": "unknown",
+          "replayed": true,
+          "as_of": 1789649569.462023,
+          "market": null,
+          "comparables": 0,
+          "reasons": [
+            "unverified_condition"
+          ],
+          "accepted_ids": [],
+          "independently_recalculated": true
+        },
+        {
+          "id": "39378439",
+          "title": "Volkswagen Passat",
+          "price_usd": 14400,
+          "prior_valuation": "sample_median",
+          "assessment": "not_deal",
+          "replayed": true,
+          "as_of": 1789649571.2075229,
+          "market": 13300.0,
+          "comparables": 5,
+          "reasons": [],
+          "accepted_ids": [
+            "39486944",
+            "35409415",
+            "39045572",
+            "40423820",
+            "35637479"
+          ],
+          "independently_recalculated": true
+        },
+        {
+          "id": "40183208",
+          "title": "Volkswagen Passat",
+          "price_usd": 18500,
+          "prior_valuation": "insufficient_data",
+          "assessment": "unknown",
+          "replayed": true,
+          "as_of": 1789649569.6475759,
+          "market": null,
+          "comparables": 0,
+          "reasons": [
+            "unverified_condition"
+          ],
+          "accepted_ids": [],
+          "independently_recalculated": true
+        },
+        {
+          "id": "40443768",
+          "title": "Volkswagen Passat",
+          "price_usd": 1100,
+          "prior_valuation": "insufficient_data",
+          "assessment": "unknown",
+          "replayed": true,
+          "as_of": 1789649569.740114,
+          "market": null,
+          "comparables": 0,
+          "reasons": [
+            "unverified_condition",
+            "missing_generation_id",
+            "missing_modification_id"
+          ],
+          "accepted_ids": [],
+          "independently_recalculated": true
+        },
+        {
+          "id": "40226560",
+          "title": "Volkswagen Passat",
+          "price_usd": 9500,
+          "prior_valuation": "insufficient_data",
+          "assessment": "unknown",
+          "replayed": true,
+          "as_of": 1789649572.36394,
+          "market": null,
+          "comparables": 4,
+          "reasons": [
+            "insufficient_comparables"
+          ],
+          "accepted_ids": [
+            "37625557",
+            "39264220",
+            "39660900",
+            "39753287"
+          ],
+          "independently_recalculated": true
+        },
+        {
+          "id": "40443746",
+          "title": "Volkswagen Passat",
+          "price_usd": 10600,
+          "prior_valuation": "pending",
+          "assessment": "unknown",
+          "replayed": false,
+          "reasons": [
+            "unfinished_prior_check"
+          ],
+          "market": null
+        },
+        {
+          "id": "40443927",
+          "title": "Audi A6",
+          "price_usd": 7600,
+          "prior_valuation": "insufficient_data",
+          "assessment": "unknown",
+          "replayed": true,
+          "as_of": 1789649573.1419866,
+          "market": null,
+          "comparables": 0,
+          "reasons": [
+            "unverified_condition",
+            "missing_modification_id"
+          ],
+          "accepted_ids": [],
+          "independently_recalculated": true
+        },
+        {
+          "id": "40312380",
+          "title": "Audi A6",
+          "price_usd": 11800,
+          "prior_valuation": "insufficient_data",
+          "assessment": "unknown",
+          "replayed": true,
+          "as_of": 1789649573.2314997,
+          "market": null,
+          "comparables": 0,
+          "reasons": [
+            "unverified_condition",
+            "missing_modification_id"
+          ],
+          "accepted_ids": [],
+          "independently_recalculated": true
+        },
+        {
+          "id": "40443888",
+          "title": "Audi A6",
+          "price_usd": 6200,
+          "prior_valuation": "insufficient_data",
+          "assessment": "unknown",
+          "replayed": true,
+          "as_of": 1789649573.3373485,
+          "market": null,
+          "comparables": 0,
+          "reasons": [
+            "unverified_condition"
+          ],
+          "accepted_ids": [],
+          "independently_recalculated": true
+        },
+        {
+          "id": "40443843",
+          "title": "Audi A6",
+          "price_usd": 1999,
+          "prior_valuation": "insufficient_data",
+          "assessment": "unknown",
+          "replayed": true,
+          "as_of": 1789649573.4402828,
+          "market": null,
+          "comparables": 0,
+          "reasons": [
+            "unverified_condition",
+            "missing_modification_id"
+          ],
+          "accepted_ids": [],
+          "independently_recalculated": true
+        },
+        {
+          "id": "39976378",
+          "title": "Audi A6",
+          "price_usd": 16900,
+          "prior_valuation": "insufficient_data",
+          "assessment": "unknown",
+          "replayed": true,
+          "as_of": 1789649573.5294938,
+          "market": null,
+          "comparables": 0,
+          "reasons": [
+            "unverified_condition"
+          ],
+          "accepted_ids": [],
+          "independently_recalculated": true
+        },
+        {
+          "id": "39183365",
+          "title": "Audi A6",
+          "price_usd": 17499,
+          "prior_valuation": "insufficient_data",
+          "assessment": "unknown",
+          "replayed": true,
+          "as_of": 1789649573.6306949,
+          "market": null,
+          "comparables": 0,
+          "reasons": [
+            "unverified_condition"
+          ],
+          "accepted_ids": [],
+          "independently_recalculated": true
+        },
+        {
+          "id": "39235084",
+          "title": "Audi A6",
+          "price_usd": 6500,
+          "prior_valuation": "insufficient_data",
+          "assessment": "unknown",
+          "replayed": true,
+          "as_of": 1789649573.72599,
+          "market": null,
+          "comparables": 0,
+          "reasons": [
+            "unverified_condition",
+            "missing_modification_id"
+          ],
+          "accepted_ids": [],
+          "independently_recalculated": true
+        },
+        {
+          "id": "40443824",
+          "title": "Audi A6",
+          "price_usd": 2850,
+          "prior_valuation": "insufficient_data",
+          "assessment": "unknown",
+          "replayed": true,
+          "as_of": 1789649573.8083274,
+          "market": null,
+          "comparables": 0,
+          "reasons": [
+            "unverified_condition",
+            "missing_modification_id"
+          ],
+          "accepted_ids": [],
+          "independently_recalculated": true
+        },
+        {
+          "id": "40443745",
+          "title": "Mercedes-Benz E-Class",
+          "price_usd": 31000,
+          "prior_valuation": "insufficient_data",
+          "assessment": "unknown",
+          "replayed": true,
+          "as_of": 1789649574.132566,
+          "market": null,
+          "comparables": 0,
+          "reasons": [
+            "unverified_condition"
+          ],
+          "accepted_ids": [],
+          "independently_recalculated": true
+        },
+        {
+          "id": "40443711",
+          "title": "Mercedes-Benz E-Class",
+          "price_usd": 4725,
+          "prior_valuation": "insufficient_data",
+          "assessment": "unknown",
+          "replayed": true,
+          "as_of": 1789649574.248041,
+          "market": null,
+          "comparables": 0,
+          "reasons": [
+            "unverified_condition"
+          ],
+          "accepted_ids": [],
+          "independently_recalculated": true
+        },
+        {
+          "id": "40310964",
+          "title": "Mercedes-Benz E-Class",
+          "price_usd": 12000,
+          "prior_valuation": "insufficient_data",
+          "assessment": "unknown",
+          "replayed": true,
+          "as_of": 1789649575.0886772,
+          "market": null,
+          "comparables": 0,
+          "reasons": [
+            "insufficient_comparables"
+          ],
+          "accepted_ids": [],
+          "independently_recalculated": true
+        },
+        {
+          "id": "40175448",
+          "title": "Mercedes-Benz E-Class",
+          "price_usd": 6900,
+          "prior_valuation": "insufficient_data",
+          "assessment": "unknown",
+          "replayed": true,
+          "as_of": 1789649574.4292862,
+          "market": null,
+          "comparables": 0,
+          "reasons": [
+            "unverified_condition"
+          ],
+          "accepted_ids": [],
+          "independently_recalculated": true
+        },
+        {
+          "id": "40443663",
+          "title": "Mercedes-Benz E-Class",
+          "price_usd": 4200,
+          "prior_valuation": "insufficient_data",
+          "assessment": "unknown",
+          "replayed": true,
+          "as_of": 1789649574.5327659,
+          "market": null,
+          "comparables": 0,
+          "reasons": [
+            "unverified_condition"
+          ],
+          "accepted_ids": [],
+          "independently_recalculated": true
+        },
+        {
+          "id": "40174950",
+          "title": "Mercedes-Benz E-Class",
+          "price_usd": 1200,
+          "prior_valuation": "insufficient_data",
+          "assessment": "unknown",
+          "replayed": true,
+          "as_of": 1789649574.6171923,
+          "market": null,
+          "comparables": 0,
+          "reasons": [
+            "unverified_condition",
+            "missing_modification_id",
+            "missing_gear_id"
+          ],
+          "accepted_ids": [],
+          "independently_recalculated": true
+        },
+        {
+          "id": "39161731",
+          "title": "Mercedes-Benz E-Class",
+          "price_usd": 5300,
+          "prior_valuation": "insufficient_data",
+          "assessment": "unknown",
+          "replayed": true,
+          "as_of": 1789649574.7083044,
+          "market": null,
+          "comparables": 0,
+          "reasons": [
+            "unverified_condition"
+          ],
+          "accepted_ids": [],
+          "independently_recalculated": true
+        },
+        {
+          "id": "38345811",
+          "title": "Mercedes-Benz E-Class",
+          "price_usd": 3100,
+          "prior_valuation": "insufficient_data",
+          "assessment": "unknown",
+          "replayed": true,
+          "as_of": 1789649574.7939947,
+          "market": null,
+          "comparables": 0,
+          "reasons": [
+            "insufficient_comparables"
+          ],
+          "accepted_ids": [],
+          "independently_recalculated": true
+        }
+      ]
+    },
+    {
+      "file": "valuation-audit-eligible-2026-09-17.json",
+      "sha256": "4f5ff6b70e88ff1994a32821e47acc0a0250ddfd676e5e8a71d9d73c574cf99e",
+      "historical_requests_used": 96,
+      "cars": 24,
+      "assessments": {
+        "deal": 1,
+        "unknown": 23
+      },
+      "unfinished_prior_checks": 16,
+      "results": [
+        {
+          "id": "40444164",
+          "title": "Volkswagen Passat",
+          "price_usd": 8700,
+          "prior_valuation": "sample_median",
+          "assessment": "deal",
+          "replayed": true,
+          "as_of": 1789652163.429877,
+          "market": 11700.0,
+          "comparables": 5,
+          "reasons": [],
+          "accepted_ids": [
+            "38493060",
+            "40301155",
+            "40108995",
+            "37229849",
+            "39040100"
+          ],
+          "independently_recalculated": true
+        },
+        {
+          "id": "39550754",
+          "title": "Volkswagen Passat",
+          "price_usd": 9500,
+          "prior_valuation": "pending",
+          "assessment": "unknown",
+          "replayed": false,
+          "reasons": [
+            "unfinished_prior_check"
+          ],
+          "market": null
+        },
+        {
+          "id": "40444036",
+          "title": "Volkswagen Passat",
+          "price_usd": 11800,
+          "prior_valuation": "pending",
+          "assessment": "unknown",
+          "replayed": false,
+          "reasons": [
+            "unfinished_prior_check"
+          ],
+          "market": null
+        },
+        {
+          "id": "39958892",
+          "title": "Volkswagen Passat",
+          "price_usd": 18200,
+          "prior_valuation": "pending",
+          "assessment": "unknown",
+          "replayed": false,
+          "reasons": [
+            "unfinished_prior_check"
+          ],
+          "market": null
+        },
+        {
+          "id": "40158247",
+          "title": "Volkswagen Passat",
+          "price_usd": 37000,
+          "prior_valuation": "pending",
+          "assessment": "unknown",
+          "replayed": false,
+          "reasons": [
+            "unfinished_prior_check"
+          ],
+          "market": null
+        },
+        {
+          "id": "39378439",
+          "title": "Volkswagen Passat",
+          "price_usd": 14400,
+          "prior_valuation": "pending",
+          "assessment": "unknown",
+          "replayed": false,
+          "reasons": [
+            "unfinished_prior_check"
+          ],
+          "market": null
+        },
+        {
+          "id": "40226560",
+          "title": "Volkswagen Passat",
+          "price_usd": 9500,
+          "prior_valuation": "pending",
+          "assessment": "unknown",
+          "replayed": false,
+          "reasons": [
+            "unfinished_prior_check"
+          ],
+          "market": null
+        },
+        {
+          "id": "40443746",
+          "title": "Volkswagen Passat",
+          "price_usd": 10600,
+          "prior_valuation": "pending",
+          "assessment": "unknown",
+          "replayed": false,
+          "reasons": [
+            "unfinished_prior_check"
+          ],
+          "market": null
+        },
+        {
+          "id": "37907463",
+          "title": "Audi A6",
+          "price_usd": 4500,
+          "prior_valuation": "insufficient_data",
+          "assessment": "unknown",
+          "replayed": true,
+          "as_of": 1789652164.7882614,
+          "market": null,
+          "comparables": 0,
+          "reasons": [
+            "missing_modification_id"
+          ],
+          "accepted_ids": [],
+          "independently_recalculated": true
+        },
+        {
+          "id": "40443603",
+          "title": "Audi A6",
+          "price_usd": 7500,
+          "prior_valuation": "insufficient_data",
+          "assessment": "unknown",
+          "replayed": true,
+          "as_of": 1789652170.117813,
+          "market": null,
+          "comparables": 4,
+          "reasons": [
+            "insufficient_comparables"
+          ],
+          "accepted_ids": [
+            "40428575",
+            "40422223",
+            "40103605",
+            "39839442"
+          ],
+          "independently_recalculated": true
+        },
+        {
+          "id": "40310604",
+          "title": "Audi A6",
+          "price_usd": 36000,
+          "prior_valuation": "insufficient_data",
+          "assessment": "unknown",
+          "replayed": true,
+          "as_of": 1789652165.0195162,
+          "market": null,
+          "comparables": 0,
+          "reasons": [
+            "missing_modification_id"
+          ],
+          "accepted_ids": [],
+          "independently_recalculated": true
+        },
+        {
+          "id": "40112367",
+          "title": "Audi A6",
+          "price_usd": 16900,
+          "prior_valuation": "pending",
+          "assessment": "unknown",
+          "replayed": false,
+          "reasons": [
+            "unfinished_prior_check"
+          ],
+          "market": null
+        },
+        {
+          "id": "40308929",
+          "title": "Audi A6",
+          "price_usd": 28500,
+          "prior_valuation": "pending",
+          "assessment": "unknown",
+          "replayed": false,
+          "reasons": [
+            "unfinished_prior_check"
+          ],
+          "market": null
+        },
+        {
+          "id": "40191309",
+          "title": "Audi A6",
+          "price_usd": 15800,
+          "prior_valuation": "pending",
+          "assessment": "unknown",
+          "replayed": false,
+          "reasons": [
+            "unfinished_prior_check"
+          ],
+          "market": null
+        },
+        {
+          "id": "40268743",
+          "title": "Audi A6",
+          "price_usd": 8200,
+          "prior_valuation": "pending",
+          "assessment": "unknown",
+          "replayed": false,
+          "reasons": [
+            "unfinished_prior_check"
+          ],
+          "market": null
+        },
+        {
+          "id": "40442111",
+          "title": "Audi A6",
+          "price_usd": 22500,
+          "prior_valuation": "pending",
+          "assessment": "unknown",
+          "replayed": false,
+          "reasons": [
+            "unfinished_prior_check"
+          ],
+          "market": null
+        },
+        {
+          "id": "40175869",
+          "title": "Mercedes-Benz E-Class",
+          "price_usd": 4000,
+          "prior_valuation": "insufficient_data",
+          "assessment": "unknown",
+          "replayed": true,
+          "as_of": 1789652170.504932,
+          "market": null,
+          "comparables": 0,
+          "reasons": [
+            "missing_generation_id",
+            "missing_modification_id"
+          ],
+          "accepted_ids": [],
+          "independently_recalculated": true
+        },
+        {
+          "id": "40131634",
+          "title": "Mercedes-Benz E-Class",
+          "price_usd": 15990,
+          "prior_valuation": "insufficient_data",
+          "assessment": "unknown",
+          "replayed": true,
+          "as_of": 1789652172.0001552,
+          "market": null,
+          "comparables": 1,
+          "reasons": [
+            "insufficient_comparables"
+          ],
+          "accepted_ids": [
+            "39355581"
+          ],
+          "independently_recalculated": true
+        },
+        {
+          "id": "40310964",
+          "title": "Mercedes-Benz E-Class",
+          "price_usd": 12000,
+          "prior_valuation": "insufficient_data",
+          "assessment": "unknown",
+          "replayed": true,
+          "as_of": 1789652173.6587496,
+          "market": null,
+          "comparables": 0,
+          "reasons": [
+            "insufficient_comparables"
+          ],
+          "accepted_ids": [],
+          "independently_recalculated": true
+        },
+        {
+          "id": "38345811",
+          "title": "Mercedes-Benz E-Class",
+          "price_usd": 3100,
+          "prior_valuation": "insufficient_data",
+          "assessment": "unknown",
+          "replayed": true,
+          "as_of": 1789652170.7809007,
+          "market": null,
+          "comparables": 0,
+          "reasons": [
+            "insufficient_comparables"
+          ],
+          "accepted_ids": [],
+          "independently_recalculated": true
+        },
+        {
+          "id": "37513484",
+          "title": "Mercedes-Benz E-Class",
+          "price_usd": 15899,
+          "prior_valuation": "pending",
+          "assessment": "unknown",
+          "replayed": false,
+          "reasons": [
+            "unfinished_prior_check"
+          ],
+          "market": null
+        },
+        {
+          "id": "39493978",
+          "title": "Mercedes-Benz E-Class",
+          "price_usd": 7350,
+          "prior_valuation": "pending",
+          "assessment": "unknown",
+          "replayed": false,
+          "reasons": [
+            "unfinished_prior_check"
+          ],
+          "market": null
+        },
+        {
+          "id": "40443242",
+          "title": "Mercedes-Benz E-Class",
+          "price_usd": 6500,
+          "prior_valuation": "pending",
+          "assessment": "unknown",
+          "replayed": false,
+          "reasons": [
+            "unfinished_prior_check"
+          ],
+          "market": null
+        },
+        {
+          "id": "39421203",
+          "title": "Mercedes-Benz E-Class",
+          "price_usd": 45000,
+          "prior_valuation": "pending",
+          "assessment": "unknown",
+          "replayed": false,
+          "reasons": [
+            "unfinished_prior_check"
+          ],
+          "market": null
+        }
+      ]
+    }
+  ]
+}

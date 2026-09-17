@@ -8,7 +8,6 @@ import hashlib
 import json
 import math
 import re
-import statistics
 import time
 import uuid
 from urllib.parse import urlsplit
@@ -20,12 +19,14 @@ from sqlalchemy.orm import Session
 from .auto_ria import RiaError, fetch_json, listing_preview
 from .models import Filters, SourceBudget, SourceCache, SourceProbe
 from .ria_budget import BudgetLimits, peer_scan_limit
+from . import peer_cache
+from .valuation import DIMENSIONS, VERSION, PeerBatch, estimate, is_deal, reasons, vehicle_key
 
 FRESH_SECONDS = 900
 SNAPSHOT_SECONDS = 86400
 PAGE_SIZE = 8
 PAGE_REQUEST_LIMIT = 32
-COMPARABLE_DIMENSIONS = ("brand_id", "model_id", "generation_id", "modification_id", "body_id", "fuel_id", "gear_id")
+COMPARABLE_DIMENSIONS = DIMENSIONS
 CATALOG_PATHS = {"brands": "categories/1/marks", "regions": "states",
                  "body": "categories/1/bodystyles", "fuel": "type",
                  "transmission": "categories/1/gearboxes"}
@@ -36,7 +37,7 @@ def snapshot_key(filters, cursor=None):
     criteria = filters.canonical()
     # Switching the deals toggle only filters the already checked candidate cards.
     criteria["onlyDeals"] = False
-    return hashlib.sha256(json.dumps(["search-snapshot-v3", PAGE_SIZE, criteria, cursor], sort_keys=True).encode()).hexdigest()
+    return hashlib.sha256(json.dumps(["search-snapshot-v4", VERSION, PAGE_SIZE, criteria, cursor], sort_keys=True).encode()).hexdigest()
 
 
 def snapshot_view(payload, filters, quota, cached=False, reason=None):
@@ -55,7 +56,7 @@ def snapshot_view(payload, filters, quota, cached=False, reason=None):
             car.update(market=None, discount=None, comparables=0, valuation="stale")
     if filters.onlyDeals:
         result["cars"] = [car for car in result["cars"]
-                          if car["market"] and car["price_usd"] <= car["market"] * .85]
+                          if is_deal(car["price_usd"], car["market"])]
     return result
 
 
@@ -184,34 +185,11 @@ def parse_car(data, source_id):
             "generation_id": ident(auto.get("generationId")), "modification_id": ident(auto.get("modificationId")),
             "modification_name": modification_name(auto.get("modificationName")),
             "modification_source": "listing" if valid_id(auto.get("modificationId")) else None,
-            "mileage": round(mileage * 1000), "image": photo,
-            "comparable_condition": (data.get("technicalCondition") or {}).get("id") == 1
+            "mileage": round(mileage * 1000), "image": photo, "vehicle_key": vehicle_key(data.get("VIN")),
+            "comparable_condition": type((data.get("technicalCondition") or {}).get("id")) is int
+                and (data.get("technicalCondition") or {}).get("id") == 1
                 and all(flags.get(k) is False for k in ("damage", "onRepairParts", "abroad", "custom")),
             "observed_at": time.time()}
-
-
-def estimate(candidate, peers):
-    keys = COMPARABLE_DIMENSIONS
-    reasons = (["unverified_condition"] if not candidate["comparable_condition"] else [])
-    reasons += ["missing_" + key for key in keys if not candidate.get(key)]
-    result = {"market": None, "discount": None, "comparables": 0, "valuation": "insufficient_data",
-              "valuation_reasons": reasons}
-    if reasons:
-        return result
-    unique = {p["id"]: p for p in peers if p["id"] != candidate["id"]}
-    prices = [p["price_usd"] for p in unique.values()
-              if p["comparable_condition"] and all(p.get(k) == candidate[k] for k in keys)
-              and abs(p["year"] - candidate["year"]) <= 1
-              and abs(p["mileage"] - candidate["mileage"]) <= max(30000, candidate["mileage"] * .2)]
-    result["comparables"] = len(prices)
-    if len(prices) < 5:
-        return {**result, "valuation_reasons": ["insufficient_comparables"]}
-    market = statistics.median(prices)
-    # A very mixed sample must not produce a confident-looking discount.
-    if max(prices) / min(prices) > 2:
-        return {**result, "valuation": "mixed_sample", "valuation_reasons": ["mixed_sample"]}
-    return {"market": market, "discount": round((1 - candidate["price_usd"] / market) * 100, 1),
-            "comparables": len(prices), "valuation": "sample_median", "valuation_reasons": []}
 
 
 class RiaSearch:
@@ -245,7 +223,7 @@ class RiaSearch:
 
     def request(self, path, params, parser, ttl=900, *, force=False):
         self.stage = path
-        cache_key = [path, params, "car-v2"] if path == "info" else [path, params]
+        cache_key = [path, params, "car-v3"] if path == "info" else [path, params]
         digest = hashlib.sha256(json.dumps(cache_key, sort_keys=True).encode()).hexdigest()
         with Session(self.engine) as db:
             cached = db.get(SourceCache, digest)
@@ -268,6 +246,11 @@ class RiaSearch:
         try:
             payload = parser(self.fetch(self.key, path, params))
         except RiaError as exc:
+            if path == "info" and str(exc) in {"listing_unavailable", "invalid_response"}:
+                peer_cache.invalidate(self.engine, params["auto_id"])
+                with Session(self.engine) as db:
+                    db.execute(delete(SourceCache).where(SourceCache.id == digest))
+                    db.commit()
             if str(exc) in {"quota_exceeded", "key_rejected", "access_denied"}:
                 with Session(self.engine) as db:
                     row = db.scalar(select(SourceBudget).where(SourceBudget.id == "auto_ria").with_for_update())
@@ -373,7 +356,8 @@ class RiaSearch:
         return params, ids
 
     def car(self, source_id, *, force=False):
-        return self.request("info", {"auto_id": source_id}, lambda raw: parse_car(raw, source_id), force=force)
+        car = self.request("info", {"auto_id": source_id}, lambda raw: parse_car(raw, source_id), force=force)
+        return peer_cache.observe(self.engine, copy.deepcopy(car))
 
     def resolve_modification(self, car):
         """Recover only a unique full catalog label within the same generation/body."""
@@ -394,12 +378,18 @@ class RiaSearch:
             car["modification_resolution"] = "resolved"
         else:
             car["modification_resolution"] = "ambiguous" if ids else "not_found"
+        peer_cache.observe(self.engine, car)
 
     def comparisons(self, candidate):
         self.resolve_modification(candidate)
         required = COMPARABLE_DIMENSIONS
-        if not candidate["comparable_condition"] or not all(candidate.get(k) for k in required):
-            return []
+        if reasons(candidate, time.time()):
+            return PeerBatch()
+        start_requests = self.requests_made
+        peers = PeerBatch(peer_cache.candidates(self.engine, candidate, self.peer_scan_limit))
+        peers.diagnostics = {"cached_peers": len(peers), "details_inspected": 0, "requests_used": 0, "limited": False}
+        if estimate(candidate, peers)["valuation"] in {"sample_median", "mixed_sample"}:
+            return peers
         # Independent of the user's budget and region, preventing a price-capped median.
         tolerance = max(30000, candidate["mileage"] * .2)
         params = {"category_id": 1, "searchType": 4, "status_id": 0, "page": 0, "countpage": self.peer_scan_limit + 1,
@@ -411,9 +401,12 @@ class RiaSearch:
                   "raceFrom": math.floor(max(0, candidate["mileage"] - tolerance) / 1000),
                   "raceTo": math.ceil((candidate["mileage"] + tolerance) / 1000),
                   "technicalCondition[0]": 1, "damage": 1, "abroad": 2, "custom": 1}
-        ids = self.request("search", params, parse_ids)["ids"]
-        peers = []
-        for source_id in [i for i in ids if i != candidate["id"]][:self.peer_scan_limit]:
+        result = self.request("search", params, parse_ids)
+        known_ids = {peer["id"] for peer in peers} | {candidate["id"]}
+        ids = [sid for sid in result["ids"] if sid not in known_ids]
+        inspected = 0
+        for source_id in ids[:self.peer_scan_limit]:
+            inspected += 1
             try:
                 peer = self.car(source_id)
                 # Spend catalog calls only on otherwise comparable peers, after
@@ -422,7 +415,9 @@ class RiaSearch:
                         and abs(peer["year"] - candidate["year"]) <= 1
                         and abs(peer["mileage"] - candidate["mileage"]) <= tolerance):
                     self.resolve_modification(peer)
-                peers.append(peer)
+                # Pool only actual comparison observations, not every monitored
+                # low-price candidate. The sample must not follow a user's budget.
+                peers.append(peer_cache.observe(self.engine, peer, create=True))
                 # Recheck details even if the provider ignores a query parameter.
                 # Once five suitable peers establish a result, stop spending calls.
                 if estimate(candidate, peers)["valuation"] in {"sample_median", "mixed_sample"}:
@@ -430,6 +425,10 @@ class RiaSearch:
             except RiaError as exc:
                 if str(exc) not in {"listing_unavailable", "invalid_response"}:
                     raise
+        incomplete = estimate(candidate, peers)["valuation"] == "insufficient_data"
+        peers.diagnostics.update(details_inspected=inspected, source_total=result["total"],
+            requests_used=self.requests_made - start_requests,
+            limited=incomplete and (len(ids) > inspected or result["total"] > len(result["ids"])))
         return peers
 
     def search(self, filters, cursor=None):
@@ -524,7 +523,7 @@ class RiaSearch:
                 raise RiaError(warnings[0])
             token = self.continuation(filters, next_state)
             if filters.onlyDeals:
-                cars = [car for car in cars if car["market"] and car["price_usd"] <= car["market"] * .85]
+                cars = [car for car in cars if is_deal(car["price_usd"], car["market"])]
             return {"cars": cars, "source_total": results["total"], "inspected": inspected,
                     "quota": quota_status(self.engine, self.limits),
                     "next_cursor": token, "page_size": PAGE_SIZE, "requests_used": self.requests_made,

@@ -80,6 +80,7 @@ class Car(StrictModel):
     # A trusted future source/valuation process must supply these, not Mini App.
     comparables: int = Field(ge=5)
     observed_at: float = Field(gt=0)
+    valuation_evidence: dict | None = None
 
     @model_validator(mode="after")
     def https_only(self):
@@ -116,6 +117,17 @@ class SourceCache(Base):
     id: Mapped[str] = mapped_column(String(64), primary_key=True)
     expires_at: Mapped[float] = mapped_column(Float, index=True)
     payload: Mapped[dict] = mapped_column(JSON)
+
+
+class ValuationPeer(Base):
+    """Short-lived, sanitized comparable observations; not a source-market mirror."""
+    __tablename__ = "valuation_peers"
+    __table_args__ = (Index("valuation_peer_group_age", "group_key", "observed_at"),)
+    source_id: Mapped[str] = mapped_column(String(100), primary_key=True)
+    group_key: Mapped[str] = mapped_column(String(64), default="")
+    car: Mapped[dict] = mapped_column(JSON)
+    observed_at: Mapped[float] = mapped_column(Float)
+    available: Mapped[bool] = mapped_column(Boolean, default=True)
 
 
 class FullScan(Base):
