@@ -1,6 +1,7 @@
 import asyncio
 import hmac
 import os
+import time
 from contextlib import asynccontextmanager
 from dataclasses import dataclass, field
 
@@ -18,7 +19,9 @@ from .auto_ria import RiaError
 from .ria_search import RiaSearch, initialize_budget, verify_search_once, quota_status, budget_usage
 from .ria_budget import BudgetLimits, peer_scan_limit
 from .ria_validation import validate_once, validate_run_id, validation_status
-from .models import Base, Delivery, EnabledRequest, Filters, Listing, Search, SearchRequest, User
+from .models import (Base, Delivery, EnabledRequest, Filters, Listing, MonitorControl,
+                     MonitorSeen, MonitorWatch, Search, SearchRequest, TelegramTest, User)
+from . import monitor, telegram_setup
 
 
 @dataclass(frozen=True)
@@ -31,6 +34,8 @@ class Settings:
     origin: str = "https://gdybdydg-coder.github.io"
     auto_ria_api_key: str = field(default="", repr=False)
     ria_validation_run_id: str = ""
+    monitor_enabled: bool = False
+    configure_webhook: bool = False
 
     @classmethod
     def env(cls):
@@ -42,6 +47,8 @@ class Settings:
             source_ready=os.getenv("SOURCE_READY") == "true",
             auto_ria_api_key=os.getenv("AUTO_RIA_API_KEY", "").strip(),
             ria_validation_run_id=os.getenv("RIA_VALIDATION_RUN_ID", ""),
+            monitor_enabled=os.getenv("MONITOR_ENABLED") == "true",
+            configure_webhook=os.getenv("TELEGRAM_CONFIGURE_WEBHOOK") == "true",
         )
 
     @property
@@ -62,10 +69,19 @@ def create_app(settings: Settings, engine=None):
         # Initial schema only. Use versioned migrations before altering deployed tables.
         Base.metadata.create_all(engine)
         initialize_budget(engine)
+        monitor.initialize(engine)
         await asyncio.to_thread(probe_once, engine, settings.auto_ria_api_key)
         await asyncio.to_thread(verify_search_once, engine, settings.auto_ria_api_key)
         await asyncio.to_thread(validate_once, engine, settings.auto_ria_api_key, settings.ria_validation_run_id)
-        yield
+        await asyncio.to_thread(telegram_setup.configure, engine, settings)
+        stop = asyncio.Event()
+        task = asyncio.create_task(monitor.run(engine, settings, stop)) if settings.monitor_enabled else None
+        try:
+            yield
+        finally:
+            stop.set()
+            if task:
+                await task
 
     app = FastAPI(lifespan=lifespan)
     app.add_middleware(CORSMiddleware, allow_origins=[settings.origin],
@@ -108,18 +124,41 @@ def create_app(settings: Settings, engine=None):
                     raise
         return user
 
-    def check_enable(user):
+    def check_enable(user, db, search_id=None):
         if not settings.live:
             raise HTTPException(503, "Delivery/source not connected")
         if not user.ready:
             raise HTTPException(409, "Send /start to the bot first")
+        if settings.monitor_enabled:
+            if not settings.auto_ria_api_key or telegram_setup.webhook_status(engine)["status"] != "configured":
+                raise HTTPException(503, "Delivery/source not connected")
+            # Serialize the global pilot slot across different Telegram users.
+            control = db.scalar(select(MonitorControl).where(MonitorControl.id == "pilot").with_for_update())
+            if not control or time.time() - control.heartbeat >= monitor.LEASE + 60:
+                raise HTTPException(503, "Monitor is offline")
+            test = db.get(TelegramTest, user.id)
+            if not test or test.state != "sent":
+                raise HTTPException(409, "Send a test notification first")
+            other = db.scalar(select(Search.id).where(Search.enabled.is_(True), Search.id != (search_id or -1)).limit(1))
+            if other:
+                raise HTTPException(409, "Pilot allows one active search")
 
     def latest(db):
         return db.scalar(select(func.max(Listing.id))) or 0
 
-    def view(search):
+    def view(search, db):
+        watch = db.get(MonitorWatch, search.id)
+        status = watch.status if watch else "off"
+        if watch and status == "watching":
+            states = set(db.scalars(select(MonitorSeen.state).where(MonitorSeen.search_id == search.id).distinct()))
+            if "expired" in states:
+                status = "coverage_limited"
+            elif "pending" in states:
+                status = "checking"
         return {"id": search.id, "name": search.name, "filters": search.filters,
-                "enabled": search.enabled, "delivery_available": settings.live}
+                "enabled": search.enabled, "delivery_available": settings.live,
+                "monitor_status": status,
+                "last_checked_at": watch.checked_at if watch else None}
 
     @app.get("/health")
     def health():
@@ -136,14 +175,50 @@ def create_app(settings: Settings, engine=None):
 
     @app.get("/api/subscriptions")
     def subscriptions(uid=Depends(identity), db=Depends(session)):
-        return [view(row) for row in db.scalars(select(Search).where(Search.user_id == uid))]
+        return [view(row, db) for row in db.scalars(select(Search).where(Search.user_id == uid))]
 
     @app.get("/api/source-status")
     def source_status():
         # Cached public diagnostic only; refreshing NEVER spends API requests.
         return {**probe_status(engine, bool(settings.auto_ria_api_key)), "quota": quota_status(engine),
                 "budget": budget_usage(engine),
-                "valuation_check": validation_status(engine, settings.ria_validation_run_id)}
+                "valuation_check": validation_status(engine, settings.ria_validation_run_id),
+                "monitor": monitor.runtime_status(engine, settings.monitor_enabled),
+                "telegram": telegram_setup.webhook_status(engine)}
+
+    @app.get("/api/notifications/status")
+    def notification_status(uid=Depends(identity), db=Depends(session)):
+        user, test = db.get(User, uid), db.get(TelegramTest, uid)
+        runtime = monitor.runtime_status(engine, settings.monitor_enabled)
+        connected = telegram_setup.webhook_status(engine)["status"] == "configured"
+        return {**runtime, "available": settings.live and runtime["running"] and connected,
+                "telegram_ready": bool(user and user.ready),
+                "test_sent": bool(test and test.state == "sent"),
+                "bot_url": "https://t.me/" + telegram_setup.BOT_USERNAME + "?start=notifications"}
+
+    @app.post("/api/notifications/test")
+    def notification_test(uid=Depends(identity), db=Depends(session)):
+        user = user_row(db, uid)
+        if not settings.monitor_enabled or telegram_setup.webhook_status(engine)["status"] != "configured":
+            raise HTTPException(503, "Telegram is not connected")
+        if not user.ready:
+            raise HTTPException(409, "Send /start to the bot first")
+        row = db.get(TelegramTest, uid)
+        if row and time.time() - row.attempted_at < 600:
+            raise HTTPException(429, "Wait ten minutes before another test")
+        if row is None:
+            row = TelegramTest(user_id=uid)
+            db.add(row)
+        row.attempted_at, row.state = time.time(), "sending"
+        db.commit()  # Persist before network I/O; a timeout must not duplicate a test.
+        user = user_row(db, uid)
+        if not user.ready:
+            row.state = "cancelled"
+        else:
+            result = telegram_setup.send_test(settings.bot_token, uid)
+            row.state = "sent" if result.get("ok") is True and type((result.get("result") or {}).get("message_id")) is int else "uncertain"
+        db.commit()
+        return {"state": row.state}
 
     @app.post("/api/cars/search")
     def search_cars(payload: Filters, uid=Depends(identity)):
@@ -161,10 +236,11 @@ def create_app(settings: Settings, engine=None):
         user = user_row(db, uid)
         if not payload.name.strip():
             raise HTTPException(422, "Name is required")
-        if payload.enabled:
-            check_enable(user)
         fingerprint = payload.filters.fingerprint()
         row = db.scalar(select(Search).where(Search.user_id == uid, Search.fingerprint == fingerprint))
+        if payload.enabled:
+            check_enable(user, db, row.id if row else None)
+        was_enabled = bool(row and row.enabled)
         if row is None:
             count = db.scalar(select(func.count()).select_from(Search).where(Search.user_id == uid))
             if count >= 20:
@@ -176,8 +252,11 @@ def create_app(settings: Settings, engine=None):
         row.name = payload.name.strip()
         row.filters = payload.filters.canonical()
         row.enabled = payload.enabled
+        db.flush()
+        if row.enabled != was_enabled:
+            monitor.reset_watch(db, row.id, row.enabled)
         db.commit()
-        return view(row)
+        return view(row, db)
 
     @app.patch("/api/subscriptions/{search_id}")
     def enable(search_id: int, payload: EnabledRequest, uid=Depends(identity), db=Depends(session)):
@@ -186,12 +265,14 @@ def create_app(settings: Settings, engine=None):
         if row is None:
             raise HTTPException(404, "Subscription not found")
         if payload.enabled:
-            check_enable(user)
+            check_enable(user, db, row.id)
             if not row.enabled:
                 row.after_listing = latest(db)
+        if row.enabled != payload.enabled:
+            monitor.reset_watch(db, row.id, payload.enabled)
         row.enabled = payload.enabled
         db.commit()
-        return view(row)
+        return view(row, db)
 
     @app.delete("/api/subscriptions/{search_id}", status_code=204)
     def delete(search_id: int, uid=Depends(identity), db=Depends(session)):
@@ -199,6 +280,7 @@ def create_app(settings: Settings, engine=None):
         row = db.scalar(select(Search).where(Search.id == search_id, Search.user_id == uid))
         if row is None:
             raise HTTPException(404, "Subscription not found")
+        monitor.reset_watch(db, row.id, False)
         db.delete(row)
         db.commit()
 
@@ -241,10 +323,12 @@ def create_app(settings: Settings, engine=None):
             user.last_command_at = command_at
             user.ready = command == "/start"
             if command == "/stop":
+                for sid in db.scalars(select(Search.id).where(Search.user_id == uid)):
+                    monitor.reset_watch(db, sid, False)
                 db.execute(update(Search).where(Search.user_id == uid).values(enabled=False))
                 db.execute(update(Delivery).where(Delivery.user_id == uid, Delivery.state == "pending").values(state="cancelled"))
             db.commit()
-        # No outbound messages or webhook registration as an API startup side effect.
+        # /start records consent only; the explicit Mini App test confirms delivery.
         return {"ok": True}
 
     return app

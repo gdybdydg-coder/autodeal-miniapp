@@ -1,4 +1,4 @@
-# AUTODeal backend — staging, delivery disabled
+# AUTODeal backend — one-search notification pilot
 
 The GitHub Pages Mini App retains device-local drafts and now offers explicit
 server saving through https://autodeal-api.onrender.com. The Telegram SDK supplies
@@ -6,10 +6,10 @@ raw initData; the API validates the signature and user ownership. No automatic
 import occurs. Cloud saves always use enabled=false. A separate cloud list supports
 read-back, restoring filters, and confirmed deletion. Open from a Telegram Mini App
 button, not a normal browser link. No session data or bot token is persisted by the
-client. Render hosting and authenticated cloud saving have been verified. No
-webhook or worker is configured by this integration. Bounded AUTO.RIA search is
+client. Render hosting and authenticated cloud saving have been verified. Bounded AUTO.RIA search is
 connected; peer valuation is tested with fixtures and one live five-comparable
-sample. Wider accuracy checks and end-to-end notification delivery remain pending.
+sample. The paid API can run the explicit opt-in monitor described below. A real
+notification to the owner's phone and wider accuracy checks remain launch checks.
 
 Frontend checks: `node --test cloud-test.cjs`, `node filter-test.cjs`,
 `node storage-test.cjs`. The DOM harness checks behavior, not rendered visual layout.
@@ -30,7 +30,8 @@ the filter form without saving or searching. Opening a saved card restores its
 filters and explicitly searches, unless another search is still running. Closing
 the manager restores the previous navigation tab. A late cloud-save response
 cannot hide a newly opened draft. Deletion still requires confirmation and saves
-remain without notifications. Run `node --test manager-test.cjs` for these flows.
+remain without notifications until the separate enable button is pressed.
+Run `node --test manager-test.cjs` for these flows.
 
 ## Components
 
@@ -39,8 +40,8 @@ remain without notifications. Run `node --test manager-test.cjs` for these flows
 - Private /start and /stop webhook with a secret header; no unsolicited startup messages.
 - Trusted internal delivery ingestion, separate from authenticated AUTO.RIA search.
 - Matching of body, fuel, transmission, price/year and mileage, minimum 15% below
-  the supplied market estimate. At least five comparables must be declared by the
-  future trusted valuation adapter. This is a guard, not a valuation model.
+  sample median. The monitoring adapter requires five comparable real listings
+  using the production estimator and official catalog IDs.
 - Delivery deduplication per Telegram user and source listing, across all searches.
 - Pending messages recheck consent/filters/freshness immediately before sending.
 - 429 retry scheduling, 403 disables delivery. Ambiguous network outcomes are
@@ -78,31 +79,63 @@ Authenticated requests supply raw Telegram.WebApp.initData in the
 - PATCH /api/subscriptions/{id} — {enabled: true/false}.
 - DELETE /api/subscriptions/{id} — owner-only deletion.
 - POST /telegram/webhook — Telegram-only, secret header required.
+- GET /api/notifications/status — authenticated runtime, private /start and test status.
+- POST /api/notifications/test — explicitly sends one test to the authenticated
+  user's verified private chat; at most once per ten minutes, including failures.
 
-Enabling requires both server flags and a verified private /start. /start never
-re-enables old searches after /stop. A new/re-enabled search only considers
-listings ingested after activation, preventing a flood of old advertisements.
+Enabling requires both server flags and a verified private /start. The monitor
+pilot additionally requires a current heartbeat, configured webhook, successful
+test message and a free global pilot slot. /start never re-enables old searches
+after /stop. A new/re-enabled search baselines the latest 50 IDs without alerts.
 No silent import of device-local notification preferences is implemented.
 
-## Deployment gates — approval required
+## Deployment and pilot limits
 
 1. Choose/authorize hosting and review its current costs before resource creation.
 2. Provision PostgreSQL and an HTTPS API. Add secrets through the provider UI,
    never chat, source control, front-end JS or request logs.
-3. Review existing bot webhook/polling before any change; do not replace an existing
-   bot integration without approval. Register this webhook deliberately with
-   secret_token and allowed_updates=["message"]. No registration happens on boot.
-4. Verify live valuation and freshness before connecting search data to delivery.
-   The current AUTO.RIA search does not feed the notification pipeline.
+3. `TELEGRAM_CONFIGURE_WEBHOOK=true` explicitly opts into setup at API startup.
+   It first verifies the expected bot username and getWebhookInfo. A different
+   webhook is a conflict and is never replaced. Empty/our URL can be configured
+   with secret_token and allowed_updates=["message"], preserving pending updates.
+4. Verify live valuation and freshness before setting SOURCE_READY=true.
+   Manual search remains separate and never feeds delivery.
 5. Connect Mini App to API: load official Telegram SDK, validate initData server-side,
    explicitly confirm each cloud subscription and request write access/start as needed.
-6. Run a single approved test to the owner's verified private bot chat.
-7. Only then enable flags and configure a worker schedule/rate budget.
+6. Set MONITOR_ENABLED=true, SOURCE_READY=true, DELIVERY_ENABLED=true only with
+   the paid always-on API and reviewed request caps. Existing saved searches stay off.
+7. In the Mini App send the explicit test to the verified private chat, then enable
+   one saved search. A successful test is enforced server-side before activation.
+
+`backend.monitor` runs as an API lifespan task, using a thread for blocking work
+and a stop event for graceful shutdown. The database lease prevents two instances
+from polling simultaneously during deployments. One active search globally is
+enforced with a PostgreSQL control-row lock. This first pilot reuses the $7 API;
+no additional worker is required. Move the loop to a separate worker and review
+the budget before expanding concurrency. All notification flags default off.
+
+Every ~60 seconds the monitor fetches up to 50 latest matching IDs, bypassing the
+manual search snapshot and source-search cache. It refreshes candidate details,
+post-filters by official IDs/ranges and estimates with cached peers no older than
+15 minutes. At most three new candidates are evaluated per cycle within the shared
+42-second request deadline. Pending IDs survive restart, but expire after five
+minutes instead of causing a delayed blast. The UI reports expired coverage and
+asks for narrower filters. This is NOT full-market coverage or instant delivery.
+A full page with no overlap pauses with window_gap; a narrower/new activation is
+required. Listing freshness is rechecked (five minutes) before Telegram delivery.
+
+Separate additive monitor tables record seen IDs, enable epochs, filter match
+evidence and heartbeat. Subscription changes or /stop invalidate old work. No
+automatic reset of quota or cursor occurs on restart. Monitor state is removed
+when its saved search is disabled/deleted; sent-delivery dedupe remains. No raw
+seller data or tokens are stored in monitor records. Source errors defer work;
+quota limits include failed calls and pause polling until capacity returns.
 
 Worker entry: `python -m backend.worker`; one invocation attempts at most one message.
 The initial implementation scans listings, intended for small-scale staging only.
-Add incremental ingestion cursors, indexes/batching and per-chat rate limits before
-large-scale use. Add reverse-proxy request/body/rate limits and database backups.
+Add indexed delivery batching and per-chat rate limits before large-scale use.
+The pilot attempts at most one queued alert per five-second loop tick.
+Add reverse-proxy request/body/rate limits and database backups.
 Use one API worker initially. User creation handles uniqueness conflicts with a
 savepoint; PostgreSQL user-row locks serialize existing-user edits.
 Production PostgreSQL/concurrency behaviour has not been tested here.
@@ -137,7 +170,7 @@ additional peers per candidate by default. `RIA_COMPARABLE_SCAN_LIMIT` can raise
 the peer scan to 20 after purchasing sufficient quota. Comparable queries include
 modification, technical condition and the candidate's mileage window; details are
 still checked independently. Scanning stops once five suitable peers establish an
-estimate or a mixed sample. There is no pagination or automatic polling.
+estimate or a mixed sample. Manual search has no pagination or automatic polling.
 Raw search IDs and sanitized details are cached for 15 minutes. The shared
 PostgreSQL budget allows at most 24 calls in a rolling hour, 60 per rolling day,
 and 900 lifetime (including a reserve of two for the first connectivity check).
@@ -170,8 +203,9 @@ A 100,000-call package therefore targets an initial ONE-filter pilot with measur
 headroom, not unlimited users. At two-minute intervals the base counts halve.
 Actual cadence also depends on provider indexing, response time and new-car volume.
 This budget configuration does not start monitoring or enable delivery. The
-current manual search still uses its bounded sample and 15-minute snapshot cache;
-a fresh-data monitoring adapter and end-to-end delivery check remain required.
+current manual search still uses its bounded sample and 15-minute snapshot cache.
+The separate monitor bypasses that cache; the owner's end-to-end delivery check
+is still required before enabling a subscription.
 
 An operator can set `RIA_VALIDATION_RUN_ID` (1–40 letters/digits/dashes/underscores)
 to request a once-only live Volkswagen Golf valuation check at the next deploy.

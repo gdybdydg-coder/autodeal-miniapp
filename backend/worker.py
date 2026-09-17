@@ -8,7 +8,7 @@ from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 from .app import Settings
-from .models import Car, Delivery, Filters, Listing, Search, User
+from .models import Car, Delivery, Filters, Listing, MonitorMatch, MonitorWatch, Search, User
 
 
 def matches(car: Car, filters: Filters):
@@ -31,7 +31,7 @@ def matches(car: Car, filters: Filters):
 
 
 def fresh(car, now):
-    return -30 <= now - car.observed_at <= 86400
+    return -30 <= now - car.observed_at <= (300 if car.source == "auto_ria" else 86400)
 
 
 def ingest(engine, cars: list[Car], now=None):
@@ -53,6 +53,16 @@ def eligible(db, user_id, listing, now):
     car = Car.model_validate(listing.car)
     if not fresh(car, now):
         return False
+    if car.source == "auto_ria":
+        if car.price > car.market * .85:
+            return False
+        # Production matches use official catalog IDs, not translated labels.
+        # The trusted monitor records the filter fingerprint and enable epoch.
+        return db.scalar(select(MonitorMatch.search_id).join(Search, Search.id == MonitorMatch.search_id)
+            .join(MonitorWatch, MonitorWatch.search_id == Search.id).where(
+                MonitorMatch.listing_id == listing.id, Search.user_id == user_id,
+                Search.enabled.is_(True), MonitorMatch.epoch == MonitorWatch.epoch,
+                MonitorMatch.fingerprint == Search.fingerprint).limit(1)) is not None
     return any(matches(car, Filters.model_validate(row.filters)) for row in db.scalars(
         select(Search).where(Search.user_id == user_id, Search.enabled.is_(True),
                              Search.after_listing < listing.id)))
@@ -91,7 +101,7 @@ class TelegramSender:
             f"{car.year} · {car.fuel} · {car.mileage / 1000:g} тис. км\n"
             f"{car.transmission} · {car.region}\n"
             f"Ціна: ${car.price:,.0f}\n"
-            f"Орієнтир ринку: ${car.market:,.0f} · нижче на {discount:.1f}%\n"
+            f"Медіана {car.comparables} схожих оголошень: ${car.market:,.0f} · нижче на {discount:.1f}%\n"
             "Це оцінка, не гарантія стану або вигоди. Перевір авто перед купівлею.\n"
             "/stop — вимкнути всі сповіщення"
         )
@@ -126,7 +136,7 @@ def deliver_one(engine, settings: Settings, sender, now=None):
             return "empty"
         delivery_id = row.id
         claimed = db.execute(update(Delivery).where(
-            Delivery.id == delivery_id, Delivery.state == "pending").values(state="sending"))
+            Delivery.id == delivery_id, Delivery.state == "pending").values(state="sending", retry_at=now))
         db.commit()
         if claimed.rowcount != 1:
             return "busy"

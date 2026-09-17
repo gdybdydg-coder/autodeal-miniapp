@@ -16,14 +16,22 @@
         if(!response.ok) {
           if(path==="/api/cars/search" && response.status!==401) {
             const reasons={unsupported_filter:"AUTO.RIA не підтвердила один із фільтрів. Зміни вибір: фільтр не буде проігноровано.",
-              busy:"Інший пошук ще виконується. Спробуй за хвилину.",quota_exceeded:"Досягнуто ліміт тестових запитів AUTO.RIA. Спробуй пізніше.",
+              busy:"Інший пошук ще виконується. Спробуй за хвилину.",quota_exceeded:"Досягнуто ліміт запитів AUTO.RIA. Спробуй пізніше.",
               search_limit:"Перевірка зайняла забагато часу. Спробуй пізніше.",not_configured:"Джерело AUTO.RIA ще не налаштоване."};
             let code="",quota=null;try {const error=await response.json();code=error.detail;quota=error.quota;}catch(_){}
             if(code==="quota_exceeded" && quota?.reason==="total")
-              throw Error("Досягнуто загальну межу тестових запитів. Потрібно перевірити залишок пакета AUTO.RIA.");
+              throw Error("Досягнуто загальну межу запитів. Потрібно перевірити залишок пакета AUTO.RIA.");
             if(code==="quota_exceeded" && Number.isFinite(quota?.retry_after_seconds) && quota.retry_after_seconds>0)
               throw Error("Ліміт запитів AUTO.RIA. Спробуй знову приблизно через "+Math.ceil(quota.retry_after_seconds/60)+" хв.");
             throw Error(reasons[code]||"AUTO.RIA зараз не відповідає. Спробуй пізніше.");
+          }
+          if((method==="PATCH" || path.startsWith("/api/notifications/")) && response.status!==401) {
+            let code="";try {code=(await response.json()).detail;}catch(_){}
+            const reasons={"Send /start to the bot first":"Відкрий чат бота, натисни «Розпочати» або надішли /start, потім онови список.",
+              "Send a test notification first":"Спочатку натисни «Надіслати тестове повідомлення».",
+              "Pilot allows one active search":"На першому запуску доступний один активний пошук. Вимкни попередній, щоб увімкнути цей.",
+              "Wait ten minutes before another test":"Наступне тестове повідомлення можна надіслати через 10 хвилин."};
+            if(reasons[code]) throw Error(reasons[code]);
           }
           const messages={401:"Сесія Telegram закінчилася або не підтверджена. Закрий Mini App і відкрий знову через бота.",
             409:"Ліміт: до 20 серверних пошуків. Видали непотрібний пошук.",422:"Перевір назву та фільтри пошуку.",
@@ -35,13 +43,19 @@
         if(error.name==="AbortError"||error instanceof TypeError)
           throw Error(path==="/api/cars/search"?
             "Немає відповіді сервера. Зачекай близько хвилини та повтори пошук.":
-            "Немає відповіді сервера. Free-сервер може прокидатися близько хвилини. Онови список перед повторним збереженням.");
+            "Немає відповіді сервера. Онови список перед повторною дією.");
         throw error;
       } finally {clearTimeout(timer);}
     }
     return {
       search:filters=>request("/api/cars/search","POST",filters),
       list:()=>request("/api/subscriptions"),
+      notificationStatus:()=>request("/api/notifications/status"),
+      testNotification:()=>request("/api/notifications/test","POST"),
+      enable:(id,enabled)=>{
+        if(!Number.isSafeInteger(id)||id<=0||typeof enabled!=="boolean") return Promise.reject(Error("Некоректний пошук"));
+        return request("/api/subscriptions/"+id,"PATCH",{enabled});
+      },
       save:(name,filters)=>request("/api/subscriptions","POST",{name,filters,enabled:false}),
       remove:id=>{
         if(!Number.isSafeInteger(id)||id<=0) return Promise.reject(Error("Некоректний пошук"));

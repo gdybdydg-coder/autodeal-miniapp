@@ -101,3 +101,25 @@ test('late completion of saving never hides a new draft',async()=>{
   assert.equal(ui.ids.saveSearchForm.hidden,false);
   assert.equal(ui.ids.savedName.value,'Новий чернетковий пошук');
 });
+
+test('notification controls require readiness and send only on an explicit tap',async()=>{
+  let state={available:true,telegram_ready:false,test_sent:false},enabled=false,tests=0;
+  const updates=[];
+  const ui=setup({list:async()=>[{id:8,name:'Golf',filters:ui.filters(),enabled,monitor_status:'watching'}],
+    notificationStatus:async()=>state,testNotification:async()=>{tests++;state={...state,test_sent:true};return{state:'sent'}},
+    enable:async(id,value)=>{updates.push([id,value]);enabled=value}});
+  await ui.nav.saved.listeners.click();
+  const toggle=()=>ui.ids.cloudSearchList.children[0].children[3].children[2];
+  assert.equal(ui.ids.testNotification.disabled,true);assert.equal(toggle().disabled,true);
+  assert.equal(tests,0);assert.deepEqual(updates,[]);
+  state={...state,telegram_ready:true};await ui.ids.refreshCloud.listeners.click();
+  assert.equal(ui.ids.testNotification.disabled,false);assert.equal(toggle().disabled,true);
+  await ui.ids.testNotification.listeners.click();
+  assert.equal(tests,1);assert.equal(toggle().disabled,false);
+  await toggle().listeners.click();
+  assert.deepEqual(updates,[[8,true]]);assert.match(toggle().textContent,/Вимкнути/);
+  // A source failure must not prevent the owner from revoking consent.
+  state={...state,available:false};await ui.ids.refreshCloud.listeners.click();
+  assert.equal(toggle().disabled,false);
+  await toggle().listeners.click();assert.deepEqual(updates,[[8,true],[8,false]]);
+});

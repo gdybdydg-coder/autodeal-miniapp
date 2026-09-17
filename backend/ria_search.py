@@ -209,12 +209,12 @@ class RiaSearch:
                 row.busy_until = 0
                 db.commit()
 
-    def request(self, path, params, parser, ttl=900):
+    def request(self, path, params, parser, ttl=900, *, force=False):
         self.stage = path
         digest = hashlib.sha256(json.dumps([path, params], sort_keys=True).encode()).hexdigest()
         with Session(self.engine) as db:
             cached = db.get(SourceCache, digest)
-            if cached and cached.expires_at > time.time():
+            if not force and cached and cached.expires_at > time.time():
                 if ttl == FRESH_SECONDS:
                     self.observed_at = min(self.observed_at, cached.expires_at - ttl)
                 return cached.payload
@@ -291,8 +291,8 @@ class RiaSearch:
                     params[name] = math.floor(boundary) if name == low else math.ceil(boundary)
         return params, ids
 
-    def car(self, source_id):
-        return self.request("info", {"auto_id": source_id}, lambda raw: parse_car(raw, source_id))
+    def car(self, source_id, *, force=False):
+        return self.request("info", {"auto_id": source_id}, lambda raw: parse_car(raw, source_id), force=force)
 
     def comparisons(self, candidate):
         required = ("brand_id", "model_id", "generation_id", "modification_id", "body_id", "fuel_id", "gear_id")

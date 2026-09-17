@@ -153,3 +153,47 @@ class Delivery(Base):
     state: Mapped[str] = mapped_column(String(20), default="pending", index=True)
     retry_at: Mapped[float] = mapped_column(Float, default=0)
     message_id: Mapped[int | None] = mapped_column(BigInteger, nullable=True)
+
+
+class MonitorControl(Base):
+    __tablename__ = "monitor_control"
+    id: Mapped[str] = mapped_column(String(20), primary_key=True)
+    owner: Mapped[str] = mapped_column(String(40), default="")
+    lease_until: Mapped[float] = mapped_column(Float, default=0)
+    heartbeat: Mapped[float] = mapped_column(Float, default=0)
+    status: Mapped[str] = mapped_column(String(40), default="starting")
+
+
+class MonitorWatch(Base):
+    __tablename__ = "monitor_watches"
+    search_id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=False)
+    epoch: Mapped[str] = mapped_column(String(32))
+    initialized: Mapped[bool] = mapped_column(Boolean, default=False)
+    window: Mapped[list] = mapped_column(JSON, default=list)
+    status: Mapped[str] = mapped_column(String(40), default="starting")
+    next_poll: Mapped[float] = mapped_column(Float, default=0)
+    checked_at: Mapped[float] = mapped_column(Float, default=0)
+
+
+class MonitorSeen(Base):
+    __tablename__ = "monitor_seen"
+    search_id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    source_id: Mapped[str] = mapped_column(String(100), primary_key=True)
+    epoch: Mapped[str] = mapped_column(String(32))
+    state: Mapped[str] = mapped_column(String(20))
+    first_seen: Mapped[float] = mapped_column(Float)
+
+
+class MonitorMatch(Base):
+    __tablename__ = "monitor_matches"
+    search_id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    listing_id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    epoch: Mapped[str] = mapped_column(String(32))
+    fingerprint: Mapped[str] = mapped_column(String(64))
+
+
+class TelegramTest(Base):
+    __tablename__ = "telegram_tests"
+    user_id: Mapped[int] = mapped_column(BigInteger, primary_key=True, autoincrement=False)
+    attempted_at: Mapped[float] = mapped_column(Float)
+    state: Mapped[str] = mapped_column(String(20))

@@ -60,7 +60,12 @@
 <div id="toast" class="toast" role="status"></div>
 <dialog id="savedDialog" aria-labelledby="savedTitle">
   <div class="dialog-head"><h2 id="savedTitle">Мої пошуки</h2><button id="closeSaved" class="dialog-close" type="button" aria-label="Закрити" autofocus>×</button></div>
-  <p class="delivery-status">Сповіщення вимкнені</p>
+  <p id="notificationStatus" class="delivery-status" role="status">Перевіряємо стан сповіщень…</p>
+  <p class="filter-help">Для сповіщень: відкрий чат бота та надішли /start, повернись сюди й онови список. Після тестового повідомлення ввімкни один збережений пошук. /stop у чаті вимикає всі сповіщення.</p>
+  <div class="saved-actions">
+    <a class="manager-button" href="https://t.me/auto_deal_finder1_bot?start=notifications" target="_blank" rel="noopener">Відкрити чат бота</a>
+    <button id="testNotification" class="manager-button" type="button" disabled>Надіслати тестове повідомлення</button>
+  </div>
   <button id="newSavedSearch" class="manager-button" type="button">＋ Новий пошук</button>
   <p id="savedError" class="saved-error" role="alert" hidden></p>
   <form id="saveSearchForm" hidden>
@@ -86,8 +91,8 @@
 <script src="saved-searches.js?v=6"></script>
 <script src="app.js?v=12"></script>
 <script src="search-manager.js?v=13"></script>
-<script src="cloud-api.js?v=10"></script>
+<script src="cloud-api.js?v=11"></script>
 <script src="live-search.js?v=12"></script>
-<script src="cloud-searches.js?v=13"></script>
+<script src="cloud-searches.js?v=14"></script>
 </body>
 </html>

@@ -43,3 +43,14 @@ test('search quota waits distinguish temporary and total limits',async()=>{
     quota:{reason:'total',retry_after_seconds:null}})}),()=> 'fake');
   await assert.rejects(total.search({}),/залишок пакета/);
 });
+
+test('notification opt-in uses PATCH and renders specific consent errors',async()=>{
+  const api=create(async(url,opts)=>{
+    assert.equal(url,'https://autodeal-api.onrender.com/api/subscriptions/7');
+    assert.equal(opts.method,'PATCH');assert.deepEqual(JSON.parse(opts.body),{enabled:true});
+    return {ok:false,status:409,json:async()=>({detail:'Send /start to the bot first'})};
+  },()=> 'fake');
+  await assert.rejects(api.enable(7,true),/\/start/);
+  await assert.rejects(api.enable('../7',true),/Некоректний/);
+  await assert.rejects(api.enable(7,'true'),/Некоректний/);
+});
