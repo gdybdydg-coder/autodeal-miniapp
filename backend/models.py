@@ -3,7 +3,7 @@ import json
 from typing import Annotated
 
 from pydantic import BaseModel, ConfigDict, Field, HttpUrl, model_validator
-from sqlalchemy import BigInteger, Boolean, Float, Integer, JSON, String, UniqueConstraint
+from sqlalchemy import BigInteger, Boolean, Float, Index, Integer, JSON, String, UniqueConstraint
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
 
 
@@ -113,6 +113,42 @@ class SourceCache(Base):
     id: Mapped[str] = mapped_column(String(64), primary_key=True)
     expires_at: Mapped[float] = mapped_column(Float, index=True)
     payload: Mapped[dict] = mapped_column(JSON)
+
+
+class FullScan(Base):
+    __tablename__ = "full_scans"
+    __table_args__ = (UniqueConstraint("user_id", "fingerprint"),)
+    id: Mapped[str] = mapped_column(String(32), primary_key=True)
+    user_id: Mapped[int] = mapped_column(BigInteger, index=True)
+    fingerprint: Mapped[str] = mapped_column(String(64))
+    generation: Mapped[str] = mapped_column(String(32))
+    filters: Mapped[dict] = mapped_column(JSON)
+    context: Mapped[dict] = mapped_column(JSON, default=dict)
+    status: Mapped[str] = mapped_column(String(24), default="queued")
+    error: Mapped[str] = mapped_column(String(40), default="")
+    source_total: Mapped[int] = mapped_column(Integer, default=0)
+    discovered: Mapped[int] = mapped_column(Integer, default=0)
+    checked: Mapped[int] = mapped_column(Integer, default=0)
+    unavailable: Mapped[int] = mapped_column(Integer, default=0)
+    requests: Mapped[int] = mapped_column(Integer, default=0)
+    created_at: Mapped[float] = mapped_column(Float)
+    updated_at: Mapped[float] = mapped_column(Float)
+    next_run: Mapped[float] = mapped_column(Float, default=0, index=True)
+    lease_until: Mapped[float] = mapped_column(Float, default=0)
+    owner: Mapped[str] = mapped_column(String(32), default="")
+
+
+class ScanItem(Base):
+    __tablename__ = "scan_items"
+    __table_args__ = (UniqueConstraint("scan_id", "source_id"), Index("scan_pending", "scan_id", "state", "id"))
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    scan_id: Mapped[str] = mapped_column(String(32), index=True)
+    source_id: Mapped[str] = mapped_column(String(100))
+    state: Mapped[str] = mapped_column(String(20), default="pending")
+    car: Mapped[dict | None] = mapped_column(JSON, nullable=True)
+    deal: Mapped[bool] = mapped_column(Boolean, default=False)
+    valued: Mapped[bool] = mapped_column(Boolean, default=False)
+    checked_at: Mapped[float] = mapped_column(Float, default=0)
 
 
 class User(Base):

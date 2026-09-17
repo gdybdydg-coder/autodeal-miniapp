@@ -1,0 +1,3089 @@
+{
+  "schema": "autodeal.valuation-audit.v1",
+  "run_id": "eligible-20260917-1",
+  "backend_commit": "10e444ed030430587159c7f0591fd2ec189c5af9",
+  "record_type": "historical_sanitized_observation",
+  "note": "Targeted supported-condition sample. Asking prices and provider-declared attributes observed on 2026-09-17; not an all-market coverage result or inspection. The single authorized 96-call run is complete.",
+  "valuation_check": {
+    "status": "partial",
+    "checked_at": 1789652176.2661147,
+    "requests_used": 96,
+    "request_cap": 96,
+    "profile": "eligible-v1",
+    "candidate_scope": "undamaged",
+    "per_query_request_cap": 32,
+    "models_planned": [
+      "Volkswagen Passat",
+      "Audi A6",
+      "Mercedes-Benz E-Class"
+    ],
+    "queries": [
+      {
+        "filters": {
+          "brand": "Volkswagen",
+          "model": "Passat",
+          "region": "",
+          "price": {
+            "from": null,
+            "to": null
+          },
+          "year": {
+            "from": null,
+            "to": null
+          },
+          "mileage": {
+            "from": null,
+            "to": null
+          },
+          "body": [],
+          "fuel": [],
+          "transmission": [],
+          "onlyDeals": false
+        },
+        "inspected": 8,
+        "returned": 8,
+        "valued": 1,
+        "warnings": [
+          "search_limit"
+        ],
+        "observation_at": 1789652159.9526446,
+        "pending_valuations": 7,
+        "cars": [
+          {
+            "id": "40444164",
+            "title": "Volkswagen Passat",
+            "url": "https://auto.ria.com/auto_volkswagen_passat_40444164.html",
+            "year": 2012,
+            "price_usd": 8700,
+            "mileage": 244000,
+            "market": 11700,
+            "comparables": 5,
+            "valuation": "sample_median",
+            "valuation_reasons": [],
+            "comparable_condition": true,
+            "observed_at": 1789652160.1867785,
+            "modification_name": "2.0TDI DSG (140 к.с.)",
+            "modification_source": "listing",
+            "modification_resolution": null,
+            "brand_id": 84,
+            "model_id": 39690,
+            "generation_id": 39,
+            "modification_id": 9804,
+            "body_id": 2,
+            "fuel_id": 2,
+            "gear_id": 2
+          },
+          {
+            "id": "39550754",
+            "title": "Volkswagen Passat",
+            "url": "https://auto.ria.com/auto_volkswagen_passat_39550754.html",
+            "year": 2011,
+            "price_usd": 9500,
+            "mileage": 281000,
+            "market": null,
+            "comparables": 0,
+            "valuation": "pending",
+            "valuation_reasons": [
+              "pending"
+            ],
+            "comparable_condition": true,
+            "observed_at": 1789652160.2698443,
+            "modification_name": "2.0TDI MT (140 к.с.)",
+            "modification_source": "listing",
+            "modification_resolution": null,
+            "brand_id": 84,
+            "model_id": 39690,
+            "generation_id": 39,
+            "modification_id": 9617,
+            "body_id": 3,
+            "fuel_id": 2,
+            "gear_id": 1
+          },
+          {
+            "id": "40444036",
+            "title": "Volkswagen Passat",
+            "url": "https://auto.ria.com/auto_volkswagen_passat_40444036.html",
+            "year": 2012,
+            "price_usd": 11800,
+            "mileage": 160000,
+            "market": null,
+            "comparables": 0,
+            "valuation": "pending",
+            "valuation_reasons": [
+              "pending"
+            ],
+            "comparable_condition": true,
+            "observed_at": 1789652160.3665648,
+            "modification_name": "1.8TSI DSG (160 к.с.)",
+            "modification_source": "listing",
+            "modification_resolution": null,
+            "brand_id": 84,
+            "model_id": 39690,
+            "generation_id": 39,
+            "modification_id": 210350,
+            "body_id": 3,
+            "fuel_id": 1,
+            "gear_id": 4
+          },
+          {
+            "id": "39958892",
+            "title": "Volkswagen Passat",
+            "url": "https://auto.ria.com/auto_volkswagen_passat_39958892.html",
+            "year": 2017,
+            "price_usd": 18200,
+            "mileage": 227000,
+            "market": null,
+            "comparables": 0,
+            "valuation": "pending",
+            "valuation_reasons": [
+              "pending"
+            ],
+            "comparable_condition": true,
+            "observed_at": 1789652160.457385,
+            "modification_name": "2.0TDI DSG (150 к.с.)",
+            "modification_source": "listing",
+            "modification_resolution": null,
+            "brand_id": 84,
+            "model_id": 39690,
+            "generation_id": 40,
+            "modification_id": 115241,
+            "body_id": 3,
+            "fuel_id": 2,
+            "gear_id": 2
+          },
+          {
+            "id": "40158247",
+            "title": "Volkswagen Passat",
+            "url": "https://auto.ria.com/auto_volkswagen_passat_40158247.html",
+            "year": 2025,
+            "price_usd": 37000,
+            "mileage": 1000,
+            "market": null,
+            "comparables": 0,
+            "valuation": "pending",
+            "valuation_reasons": [
+              "pending"
+            ],
+            "comparable_condition": true,
+            "observed_at": 1789652160.629854,
+            "modification_name": "2.0 TSI AT (186 к.с.)",
+            "modification_source": "listing",
+            "modification_resolution": null,
+            "brand_id": 84,
+            "model_id": 39690,
+            "generation_id": 16825,
+            "modification_id": 231785,
+            "body_id": 3,
+            "fuel_id": 1,
+            "gear_id": 2
+          },
+          {
+            "id": "39378439",
+            "title": "Volkswagen Passat",
+            "url": "https://auto.ria.com/auto_volkswagen_passat_39378439.html",
+            "year": 2016,
+            "price_usd": 14400,
+            "mileage": 281000,
+            "market": null,
+            "comparables": 0,
+            "valuation": "pending",
+            "valuation_reasons": [
+              "pending"
+            ],
+            "comparable_condition": true,
+            "observed_at": 1789652160.7154086,
+            "modification_name": "2.0TDI MT (150 к.с.)",
+            "modification_source": "listing",
+            "modification_resolution": null,
+            "brand_id": 84,
+            "model_id": 39690,
+            "generation_id": 40,
+            "modification_id": 115343,
+            "body_id": 2,
+            "fuel_id": 2,
+            "gear_id": 1
+          },
+          {
+            "id": "40226560",
+            "title": "Volkswagen Passat",
+            "url": "https://auto.ria.com/auto_volkswagen_passat_40226560.html",
+            "year": 2011,
+            "price_usd": 9500,
+            "mileage": 263000,
+            "market": null,
+            "comparables": 0,
+            "valuation": "pending",
+            "valuation_reasons": [
+              "pending"
+            ],
+            "comparable_condition": true,
+            "observed_at": 1789652160.8017142,
+            "modification_name": "2.0ТDІ DSG (140 к.с.)",
+            "modification_source": "listing",
+            "modification_resolution": null,
+            "brand_id": 84,
+            "model_id": 39690,
+            "generation_id": 39,
+            "modification_id": 9621,
+            "body_id": 3,
+            "fuel_id": 2,
+            "gear_id": 4
+          },
+          {
+            "id": "40443746",
+            "title": "Volkswagen Passat",
+            "url": "https://auto.ria.com/auto_volkswagen_passat_40443746.html",
+            "year": 2012,
+            "price_usd": 10600,
+            "mileage": 321000,
+            "market": null,
+            "comparables": 0,
+            "valuation": "pending",
+            "valuation_reasons": [
+              "pending"
+            ],
+            "comparable_condition": true,
+            "observed_at": 1789652160.9648361,
+            "modification_name": "2.0ТDІ DSG (140 к.с.)",
+            "modification_source": "listing",
+            "modification_resolution": null,
+            "brand_id": 84,
+            "model_id": 39690,
+            "generation_id": 39,
+            "modification_id": 9621,
+            "body_id": 3,
+            "fuel_id": 2,
+            "gear_id": 4
+          }
+        ],
+        "status": "valuation_verified",
+        "requests_used": 32,
+        "detail_checks": [
+          {
+            "id": "40444164",
+            "technical_condition_id": 1,
+            "flags": {
+              "damage": false,
+              "onRepairParts": false,
+              "abroad": false,
+              "custom": false
+            },
+            "has_modification_name": true,
+            "missing_auto_fields": []
+          },
+          {
+            "id": "39550754",
+            "technical_condition_id": 1,
+            "flags": {
+              "damage": false,
+              "onRepairParts": false,
+              "abroad": false,
+              "custom": false
+            },
+            "has_modification_name": true,
+            "missing_auto_fields": []
+          },
+          {
+            "id": "40444036",
+            "technical_condition_id": 1,
+            "flags": {
+              "damage": false,
+              "onRepairParts": false,
+              "abroad": false,
+              "custom": false
+            },
+            "has_modification_name": true,
+            "missing_auto_fields": []
+          },
+          {
+            "id": "39958892",
+            "technical_condition_id": 1,
+            "flags": {
+              "damage": false,
+              "onRepairParts": false,
+              "abroad": false,
+              "custom": false
+            },
+            "has_modification_name": true,
+            "missing_auto_fields": []
+          },
+          {
+            "id": "40158247",
+            "technical_condition_id": 1,
+            "flags": {
+              "damage": false,
+              "onRepairParts": false,
+              "abroad": false,
+              "custom": false
+            },
+            "has_modification_name": true,
+            "missing_auto_fields": []
+          },
+          {
+            "id": "39378439",
+            "technical_condition_id": 1,
+            "flags": {
+              "damage": false,
+              "onRepairParts": false,
+              "abroad": false,
+              "custom": false
+            },
+            "has_modification_name": true,
+            "missing_auto_fields": []
+          },
+          {
+            "id": "40226560",
+            "technical_condition_id": 1,
+            "flags": {
+              "damage": false,
+              "onRepairParts": false,
+              "abroad": false,
+              "custom": false
+            },
+            "has_modification_name": true,
+            "missing_auto_fields": []
+          },
+          {
+            "id": "40443746",
+            "technical_condition_id": 1,
+            "flags": {
+              "damage": false,
+              "onRepairParts": false,
+              "abroad": false,
+              "custom": false
+            },
+            "has_modification_name": true,
+            "missing_auto_fields": []
+          },
+          {
+            "id": "40443346",
+            "technical_condition_id": 1,
+            "flags": {
+              "damage": false,
+              "onRepairParts": false,
+              "abroad": false,
+              "custom": false
+            },
+            "has_modification_name": false,
+            "missing_auto_fields": [
+              "modificationId"
+            ]
+          },
+          {
+            "id": "39904447",
+            "technical_condition_id": 1,
+            "flags": {
+              "damage": false,
+              "onRepairParts": false,
+              "abroad": false,
+              "custom": false
+            },
+            "has_modification_name": true,
+            "missing_auto_fields": []
+          },
+          {
+            "id": "40392906",
+            "technical_condition_id": 1,
+            "flags": {
+              "damage": false,
+              "onRepairParts": false,
+              "abroad": false,
+              "custom": false
+            },
+            "has_modification_name": false,
+            "missing_auto_fields": [
+              "modificationId"
+            ]
+          },
+          {
+            "id": "38493060",
+            "technical_condition_id": 1,
+            "flags": {
+              "damage": false,
+              "onRepairParts": false,
+              "abroad": false,
+              "custom": false
+            },
+            "has_modification_name": true,
+            "missing_auto_fields": []
+          },
+          {
+            "id": "40301155",
+            "technical_condition_id": 1,
+            "flags": {
+              "damage": false,
+              "onRepairParts": false,
+              "abroad": false,
+              "custom": false
+            },
+            "has_modification_name": true,
+            "missing_auto_fields": []
+          },
+          {
+            "id": "40108995",
+            "technical_condition_id": 1,
+            "flags": {
+              "damage": false,
+              "onRepairParts": false,
+              "abroad": false,
+              "custom": false
+            },
+            "has_modification_name": true,
+            "missing_auto_fields": []
+          },
+          {
+            "id": "40430424",
+            "technical_condition_id": 1,
+            "flags": {
+              "damage": false,
+              "onRepairParts": false,
+              "abroad": false,
+              "custom": false
+            },
+            "has_modification_name": false,
+            "missing_auto_fields": [
+              "modificationId"
+            ]
+          },
+          {
+            "id": "40281999",
+            "technical_condition_id": 1,
+            "flags": {
+              "damage": false,
+              "onRepairParts": false,
+              "abroad": false,
+              "custom": false
+            },
+            "has_modification_name": true,
+            "missing_auto_fields": []
+          },
+          {
+            "id": "39386310",
+            "technical_condition_id": 1,
+            "flags": {
+              "damage": false,
+              "onRepairParts": false,
+              "abroad": false,
+              "custom": false
+            },
+            "has_modification_name": false,
+            "missing_auto_fields": [
+              "modificationId"
+            ]
+          },
+          {
+            "id": "38611618",
+            "technical_condition_id": 1,
+            "flags": {
+              "damage": false,
+              "onRepairParts": false,
+              "abroad": false,
+              "custom": false
+            },
+            "has_modification_name": false,
+            "missing_auto_fields": [
+              "modificationId"
+            ]
+          },
+          {
+            "id": "40157506",
+            "technical_condition_id": 1,
+            "flags": {
+              "damage": false,
+              "onRepairParts": false,
+              "abroad": false,
+              "custom": false
+            },
+            "has_modification_name": false,
+            "missing_auto_fields": [
+              "modificationId"
+            ]
+          },
+          {
+            "id": "37229849",
+            "technical_condition_id": 1,
+            "flags": {
+              "damage": false,
+              "onRepairParts": false,
+              "abroad": false,
+              "custom": false
+            },
+            "has_modification_name": true,
+            "missing_auto_fields": []
+          },
+          {
+            "id": "40424634",
+            "technical_condition_id": 1,
+            "flags": {
+              "damage": false,
+              "onRepairParts": false,
+              "abroad": false,
+              "custom": false
+            },
+            "has_modification_name": true,
+            "missing_auto_fields": []
+          },
+          {
+            "id": "39040100",
+            "technical_condition_id": 1,
+            "flags": {
+              "damage": false,
+              "onRepairParts": false,
+              "abroad": false,
+              "custom": false
+            },
+            "has_modification_name": true,
+            "missing_auto_fields": []
+          },
+          {
+            "id": "40046552",
+            "technical_condition_id": 1,
+            "flags": {
+              "damage": false,
+              "onRepairParts": false,
+              "abroad": false,
+              "custom": false
+            },
+            "has_modification_name": true,
+            "missing_auto_fields": []
+          },
+          {
+            "id": "39034070",
+            "technical_condition_id": 1,
+            "flags": {
+              "damage": false,
+              "onRepairParts": false,
+              "abroad": false,
+              "custom": false
+            },
+            "has_modification_name": false,
+            "missing_auto_fields": [
+              "modificationId"
+            ]
+          },
+          {
+            "id": "40434247",
+            "technical_condition_id": 1,
+            "flags": {
+              "damage": false,
+              "onRepairParts": false,
+              "abroad": false,
+              "custom": false
+            },
+            "has_modification_name": true,
+            "missing_auto_fields": []
+          },
+          {
+            "id": "40434229",
+            "technical_condition_id": 1,
+            "flags": {
+              "damage": false,
+              "onRepairParts": false,
+              "abroad": false,
+              "custom": false
+            },
+            "has_modification_name": true,
+            "missing_auto_fields": []
+          },
+          {
+            "id": "36285768",
+            "technical_condition_id": 1,
+            "flags": {
+              "damage": false,
+              "onRepairParts": false,
+              "abroad": false,
+              "custom": false
+            },
+            "has_modification_name": true,
+            "missing_auto_fields": []
+          },
+          {
+            "id": "38312861",
+            "technical_condition_id": 1,
+            "flags": {
+              "damage": false,
+              "onRepairParts": false,
+              "abroad": false,
+              "custom": false
+            },
+            "has_modification_name": false,
+            "missing_auto_fields": [
+              "modificationId"
+            ]
+          }
+        ],
+        "comparisons": [
+          {
+            "candidate_id": "40444164",
+            "candidate_reasons": [],
+            "peers": [
+              {
+                "id": "40443346",
+                "title": "Volkswagen Passat",
+                "url": "https://auto.ria.com/auto_volkswagen_passat_40443346.html",
+                "year": 2013,
+                "price_usd": 8900,
+                "mileage": 281000,
+                "market": null,
+                "comparables": null,
+                "valuation": null,
+                "valuation_reasons": null,
+                "comparable_condition": true,
+                "observed_at": 1789652161.2820055,
+                "modification_name": "",
+                "modification_source": null,
+                "modification_resolution": null,
+                "brand_id": 84,
+                "model_id": 39690,
+                "generation_id": 39,
+                "modification_id": null,
+                "body_id": 2,
+                "fuel_id": 2,
+                "gear_id": 2
+              },
+              {
+                "id": "39904447",
+                "title": "Volkswagen Passat",
+                "url": "https://auto.ria.com/auto_volkswagen_passat_39904447.html",
+                "year": 2011,
+                "price_usd": 9900,
+                "mileage": 270000,
+                "market": null,
+                "comparables": null,
+                "valuation": null,
+                "valuation_reasons": null,
+                "comparable_condition": true,
+                "observed_at": 1789652161.4753108,
+                "modification_name": "2.0ТDІ DSG (170 к.с.)",
+                "modification_source": "listing",
+                "modification_resolution": null,
+                "brand_id": 84,
+                "model_id": 39690,
+                "generation_id": 39,
+                "modification_id": 210406,
+                "body_id": 2,
+                "fuel_id": 2,
+                "gear_id": 2
+              },
+              {
+                "id": "40392906",
+                "title": "Volkswagen Passat",
+                "url": "https://auto.ria.com/auto_volkswagen_passat_40392906.html",
+                "year": 2012,
+                "price_usd": 12300,
+                "mileage": 240000,
+                "market": null,
+                "comparables": null,
+                "valuation": null,
+                "valuation_reasons": null,
+                "comparable_condition": true,
+                "observed_at": 1789652161.59183,
+                "modification_name": "",
+                "modification_source": null,
+                "modification_resolution": null,
+                "brand_id": 84,
+                "model_id": 39690,
+                "generation_id": 39,
+                "modification_id": null,
+                "body_id": 2,
+                "fuel_id": 2,
+                "gear_id": 2
+              },
+              {
+                "id": "38493060",
+                "title": "Volkswagen Passat",
+                "url": "https://auto.ria.com/auto_volkswagen_passat_38493060.html",
+                "year": 2013,
+                "price_usd": 9500,
+                "mileage": 256000,
+                "market": null,
+                "comparables": null,
+                "valuation": null,
+                "valuation_reasons": null,
+                "comparable_condition": true,
+                "observed_at": 1789652161.6803513,
+                "modification_name": "2.0TDI DSG (140 к.с.)",
+                "modification_source": "listing",
+                "modification_resolution": null,
+                "brand_id": 84,
+                "model_id": 39690,
+                "generation_id": 39,
+                "modification_id": 9804,
+                "body_id": 2,
+                "fuel_id": 2,
+                "gear_id": 2
+              },
+              {
+                "id": "40301155",
+                "title": "Volkswagen Passat",
+                "url": "https://auto.ria.com/auto_volkswagen_passat_40301155.html",
+                "year": 2013,
+                "price_usd": 11700,
+                "mileage": 226000,
+                "market": null,
+                "comparables": null,
+                "valuation": null,
+                "valuation_reasons": null,
+                "comparable_condition": true,
+                "observed_at": 1789652162.280115,
+                "modification_name": "2.0TDI DSG (140 к.с.)",
+                "modification_source": "listing",
+                "modification_resolution": null,
+                "brand_id": 84,
+                "model_id": 39690,
+                "generation_id": 39,
+                "modification_id": 9804,
+                "body_id": 2,
+                "fuel_id": 2,
+                "gear_id": 2
+              },
+              {
+                "id": "40108995",
+                "title": "Volkswagen Passat",
+                "url": "https://auto.ria.com/auto_volkswagen_passat_40108995.html",
+                "year": 2013,
+                "price_usd": 12900,
+                "mileage": 207000,
+                "market": null,
+                "comparables": null,
+                "valuation": null,
+                "valuation_reasons": null,
+                "comparable_condition": true,
+                "observed_at": 1789652162.455752,
+                "modification_name": "2.0TDI DSG (140 к.с.)",
+                "modification_source": "listing",
+                "modification_resolution": null,
+                "brand_id": 84,
+                "model_id": 39690,
+                "generation_id": 39,
+                "modification_id": 9804,
+                "body_id": 2,
+                "fuel_id": 2,
+                "gear_id": 2
+              },
+              {
+                "id": "40430424",
+                "title": "Volkswagen Passat",
+                "url": "https://auto.ria.com/auto_volkswagen_passat_40430424.html",
+                "year": 2013,
+                "price_usd": 11450,
+                "mileage": 280000,
+                "market": null,
+                "comparables": null,
+                "valuation": null,
+                "valuation_reasons": null,
+                "comparable_condition": true,
+                "observed_at": 1789652162.605838,
+                "modification_name": "",
+                "modification_source": null,
+                "modification_resolution": null,
+                "brand_id": 84,
+                "model_id": 39690,
+                "generation_id": 39,
+                "modification_id": null,
+                "body_id": 2,
+                "fuel_id": 2,
+                "gear_id": 2
+              },
+              {
+                "id": "40281999",
+                "title": "Volkswagen Passat",
+                "url": "https://auto.ria.com/auto_volkswagen_passat_40281999.html",
+                "year": 2013,
+                "price_usd": 13999,
+                "mileage": 249000,
+                "market": null,
+                "comparables": null,
+                "valuation": null,
+                "valuation_reasons": null,
+                "comparable_condition": true,
+                "observed_at": 1789652162.7628925,
+                "modification_name": "2.0ТDІ DSG (170 к.с.) 4Motion",
+                "modification_source": "listing",
+                "modification_resolution": null,
+                "brand_id": 84,
+                "model_id": 39690,
+                "generation_id": 39,
+                "modification_id": 210408,
+                "body_id": 2,
+                "fuel_id": 2,
+                "gear_id": 2
+              },
+              {
+                "id": "39386310",
+                "title": "Volkswagen Passat",
+                "url": "https://auto.ria.com/auto_volkswagen_passat_39386310.html",
+                "year": 2012,
+                "price_usd": 9700,
+                "mileage": 241000,
+                "market": null,
+                "comparables": null,
+                "valuation": null,
+                "valuation_reasons": null,
+                "comparable_condition": true,
+                "observed_at": 1789652162.8482325,
+                "modification_name": "",
+                "modification_source": null,
+                "modification_resolution": null,
+                "brand_id": 84,
+                "model_id": 39690,
+                "generation_id": 39,
+                "modification_id": null,
+                "body_id": 2,
+                "fuel_id": 2,
+                "gear_id": 2
+              },
+              {
+                "id": "38611618",
+                "title": "Volkswagen Passat",
+                "url": "https://auto.ria.com/auto_volkswagen_passat_38611618.html",
+                "year": 2012,
+                "price_usd": 11500,
+                "mileage": 270000,
+                "market": null,
+                "comparables": null,
+                "valuation": null,
+                "valuation_reasons": null,
+                "comparable_condition": true,
+                "observed_at": 1789652162.9372053,
+                "modification_name": "",
+                "modification_source": null,
+                "modification_resolution": null,
+                "brand_id": 84,
+                "model_id": 39690,
+                "generation_id": 39,
+                "modification_id": null,
+                "body_id": 2,
+                "fuel_id": 2,
+                "gear_id": 2
+              },
+              {
+                "id": "40157506",
+                "title": "Volkswagen Passat",
+                "url": "https://auto.ria.com/auto_volkswagen_passat_40157506.html",
+                "year": 2011,
+                "price_usd": 10300,
+                "mileage": 272000,
+                "market": null,
+                "comparables": null,
+                "valuation": null,
+                "valuation_reasons": null,
+                "comparable_condition": true,
+                "observed_at": 1789652163.0255287,
+                "modification_name": "",
+                "modification_source": null,
+                "modification_resolution": null,
+                "brand_id": 84,
+                "model_id": 39690,
+                "generation_id": 39,
+                "modification_id": null,
+                "body_id": 2,
+                "fuel_id": 2,
+                "gear_id": 2
+              },
+              {
+                "id": "37229849",
+                "title": "Volkswagen Passat",
+                "url": "https://auto.ria.com/auto_volkswagen_passat_37229849.html",
+                "year": 2013,
+                "price_usd": 10500,
+                "mileage": 210000,
+                "market": null,
+                "comparables": null,
+                "valuation": null,
+                "valuation_reasons": null,
+                "comparable_condition": true,
+                "observed_at": 1789652163.1067188,
+                "modification_name": "2.0TDI DSG (140 к.с.)",
+                "modification_source": "listing",
+                "modification_resolution": null,
+                "brand_id": 84,
+                "model_id": 39690,
+                "generation_id": 39,
+                "modification_id": 9804,
+                "body_id": 2,
+                "fuel_id": 2,
+                "gear_id": 2
+              },
+              {
+                "id": "40424634",
+                "title": "Volkswagen Passat",
+                "url": "https://auto.ria.com/auto_volkswagen_passat_40424634.html",
+                "year": 2013,
+                "price_usd": 12500,
+                "mileage": 280000,
+                "market": null,
+                "comparables": null,
+                "valuation": null,
+                "valuation_reasons": null,
+                "comparable_condition": true,
+                "observed_at": 1789652163.1950505,
+                "modification_name": "2.0ТDІ DSG (177 к.с.)",
+                "modification_source": "listing",
+                "modification_resolution": null,
+                "brand_id": 84,
+                "model_id": 39690,
+                "generation_id": 39,
+                "modification_id": 210420,
+                "body_id": 2,
+                "fuel_id": 2,
+                "gear_id": 2
+              },
+              {
+                "id": "39040100",
+                "title": "Volkswagen Passat",
+                "url": "https://auto.ria.com/auto_volkswagen_passat_39040100.html",
+                "year": 2012,
+                "price_usd": 12400,
+                "mileage": 263000,
+                "market": null,
+                "comparables": null,
+                "valuation": null,
+                "valuation_reasons": null,
+                "comparable_condition": true,
+                "observed_at": 1789652163.429877,
+                "modification_name": "2.0TDI DSG (140 к.с.)",
+                "modification_source": "listing",
+                "modification_resolution": null,
+                "brand_id": 84,
+                "model_id": 39690,
+                "generation_id": 39,
+                "modification_id": 9804,
+                "body_id": 2,
+                "fuel_id": 2,
+                "gear_id": 2
+              }
+            ],
+            "accepted_ids": [
+              "38493060",
+              "40301155",
+              "40108995",
+              "37229849",
+              "39040100"
+            ],
+            "accepted_prices_usd": [
+              9500,
+              10500,
+              11700,
+              12400,
+              12900
+            ],
+            "rejected": [
+              {
+                "id": "40443346",
+                "reasons": [
+                  "modification_id"
+                ]
+              },
+              {
+                "id": "39904447",
+                "reasons": [
+                  "modification_id"
+                ]
+              },
+              {
+                "id": "40392906",
+                "reasons": [
+                  "modification_id"
+                ]
+              },
+              {
+                "id": "40430424",
+                "reasons": [
+                  "modification_id"
+                ]
+              },
+              {
+                "id": "40281999",
+                "reasons": [
+                  "modification_id"
+                ]
+              },
+              {
+                "id": "39386310",
+                "reasons": [
+                  "modification_id"
+                ]
+              },
+              {
+                "id": "38611618",
+                "reasons": [
+                  "modification_id"
+                ]
+              },
+              {
+                "id": "40157506",
+                "reasons": [
+                  "modification_id"
+                ]
+              },
+              {
+                "id": "40424634",
+                "reasons": [
+                  "modification_id"
+                ]
+              }
+            ],
+            "duplicate_or_self_entries": 0,
+            "mixed_sample": false,
+            "recalculated_market": 11700,
+            "deal_threshold_usd": 9945.0,
+            "qualifies_as_deal": true,
+            "calculation_matches": true
+          }
+        ],
+        "catalog_resolution_checks": [
+          {
+            "candidate_id": "40444164",
+            "listing_modification_id": 9804,
+            "catalog_modification_id": 9804,
+            "status": "matched"
+          }
+        ]
+      },
+      {
+        "filters": {
+          "brand": "Audi",
+          "model": "A6",
+          "region": "",
+          "price": {
+            "from": null,
+            "to": null
+          },
+          "year": {
+            "from": null,
+            "to": null
+          },
+          "mileage": {
+            "from": null,
+            "to": null
+          },
+          "body": [],
+          "fuel": [],
+          "transmission": [],
+          "onlyDeals": false
+        },
+        "inspected": 8,
+        "returned": 8,
+        "valued": 0,
+        "warnings": [
+          "search_limit"
+        ],
+        "observation_at": 1789652164.5629842,
+        "pending_valuations": 5,
+        "cars": [
+          {
+            "id": "37907463",
+            "title": "Audi A6",
+            "url": "https://auto.ria.com/auto_audi_a6_37907463.html",
+            "year": 2000,
+            "price_usd": 4500,
+            "mileage": 167000,
+            "market": null,
+            "comparables": 0,
+            "valuation": "insufficient_data",
+            "valuation_reasons": [
+              "missing_modification_id"
+            ],
+            "comparable_condition": true,
+            "observed_at": 1789652164.7882614,
+            "modification_name": "",
+            "modification_source": null,
+            "modification_resolution": null,
+            "brand_id": 6,
+            "model_id": 49,
+            "generation_id": 10030,
+            "modification_id": null,
+            "body_id": 2,
+            "fuel_id": 2,
+            "gear_id": 1
+          },
+          {
+            "id": "40443603",
+            "title": "Audi A6",
+            "url": "https://auto.ria.com/auto_audi_a6_40443603.html",
+            "year": 2010,
+            "price_usd": 7500,
+            "mileage": 360000,
+            "market": null,
+            "comparables": 4,
+            "valuation": "insufficient_data",
+            "valuation_reasons": [
+              "insufficient_comparables"
+            ],
+            "comparable_condition": true,
+            "observed_at": 1789652164.8769212,
+            "modification_name": "2.7 TDI AT (190 к.с.)",
+            "modification_source": "listing",
+            "modification_resolution": null,
+            "brand_id": 6,
+            "model_id": 49,
+            "generation_id": 3230,
+            "modification_id": 164629,
+            "body_id": 2,
+            "fuel_id": 2,
+            "gear_id": 2
+          },
+          {
+            "id": "40310604",
+            "title": "Audi A6",
+            "url": "https://auto.ria.com/auto_audi_a6_40310604.html",
+            "year": 2020,
+            "price_usd": 36000,
+            "mileage": 57000,
+            "market": null,
+            "comparables": 0,
+            "valuation": "insufficient_data",
+            "valuation_reasons": [
+              "missing_modification_id"
+            ],
+            "comparable_condition": true,
+            "observed_at": 1789652165.0195162,
+            "modification_name": "",
+            "modification_source": null,
+            "modification_resolution": null,
+            "brand_id": 6,
+            "model_id": 49,
+            "generation_id": 5110,
+            "modification_id": null,
+            "body_id": 3,
+            "fuel_id": 2,
+            "gear_id": 2
+          },
+          {
+            "id": "40112367",
+            "title": "Audi A6",
+            "url": "https://auto.ria.com/auto_audi_a6_40112367.html",
+            "year": 2012,
+            "price_usd": 16900,
+            "mileage": 177000,
+            "market": null,
+            "comparables": 0,
+            "valuation": "pending",
+            "valuation_reasons": [
+              "pending"
+            ],
+            "comparable_condition": true,
+            "observed_at": 1789652165.105425,
+            "modification_name": "3.0 TDI AT (204 к.с.)",
+            "modification_source": "listing",
+            "modification_resolution": null,
+            "brand_id": 6,
+            "model_id": 49,
+            "generation_id": 525,
+            "modification_id": 164665,
+            "body_id": 2,
+            "fuel_id": 2,
+            "gear_id": 2
+          },
+          {
+            "id": "40308929",
+            "title": "Audi A6",
+            "url": "https://auto.ria.com/auto_audi_a6_40308929.html",
+            "year": 2019,
+            "price_usd": 28500,
+            "mileage": 270000,
+            "market": null,
+            "comparables": 0,
+            "valuation": "pending",
+            "valuation_reasons": [
+              "pending"
+            ],
+            "comparable_condition": true,
+            "observed_at": 1789652165.290693,
+            "modification_name": "40 TFSI 2.0 S-tronic (190 к.с.)",
+            "modification_source": "listing",
+            "modification_resolution": null,
+            "brand_id": 6,
+            "model_id": 49,
+            "generation_id": 5110,
+            "modification_id": 143218,
+            "body_id": 3,
+            "fuel_id": 1,
+            "gear_id": 2
+          },
+          {
+            "id": "40191309",
+            "title": "Audi A6",
+            "url": "https://auto.ria.com/auto_audi_a6_40191309.html",
+            "year": 2014,
+            "price_usd": 15800,
+            "mileage": 189000,
+            "market": null,
+            "comparables": 0,
+            "valuation": "pending",
+            "valuation_reasons": [
+              "pending"
+            ],
+            "comparable_condition": true,
+            "observed_at": 1789652165.3974664,
+            "modification_name": "3.0 TDI S tronic (245 к.с.) Quattro",
+            "modification_source": "listing",
+            "modification_resolution": null,
+            "brand_id": 6,
+            "model_id": 49,
+            "generation_id": 525,
+            "modification_id": 164648,
+            "body_id": 3,
+            "fuel_id": 2,
+            "gear_id": 2
+          },
+          {
+            "id": "40268743",
+            "title": "Audi A6",
+            "url": "https://auto.ria.com/auto_audi_a6_40268743.html",
+            "year": 2008,
+            "price_usd": 8200,
+            "mileage": 290000,
+            "market": null,
+            "comparables": 0,
+            "valuation": "pending",
+            "valuation_reasons": [
+              "pending"
+            ],
+            "comparable_condition": true,
+            "observed_at": 1789652165.4947722,
+            "modification_name": "2.0 TDI AT (140 к.с.)",
+            "modification_source": "listing",
+            "modification_resolution": null,
+            "brand_id": 6,
+            "model_id": 49,
+            "generation_id": 10032,
+            "modification_id": 164563,
+            "body_id": 3,
+            "fuel_id": 2,
+            "gear_id": 2
+          },
+          {
+            "id": "40442111",
+            "title": "Audi A6",
+            "url": "https://auto.ria.com/auto_audi_a6_40442111.html",
+            "year": 2017,
+            "price_usd": 22500,
+            "mileage": 276000,
+            "market": null,
+            "comparables": 0,
+            "valuation": "pending",
+            "valuation_reasons": [
+              "pending"
+            ],
+            "comparable_condition": true,
+            "observed_at": 1789652165.5835056,
+            "modification_name": "3.0 TDI S tronic (218 к.с.)",
+            "modification_source": "listing",
+            "modification_resolution": null,
+            "brand_id": 6,
+            "model_id": 49,
+            "generation_id": 527,
+            "modification_id": 164701,
+            "body_id": 2,
+            "fuel_id": 2,
+            "gear_id": 2
+          }
+        ],
+        "status": "insufficient_comparables",
+        "requests_used": 32,
+        "detail_checks": [
+          {
+            "id": "37907463",
+            "technical_condition_id": 1,
+            "flags": {
+              "damage": false,
+              "onRepairParts": false,
+              "abroad": false,
+              "custom": false
+            },
+            "has_modification_name": false,
+            "missing_auto_fields": [
+              "modificationId"
+            ]
+          },
+          {
+            "id": "40443603",
+            "technical_condition_id": 1,
+            "flags": {
+              "damage": false,
+              "onRepairParts": false,
+              "abroad": false,
+              "custom": false
+            },
+            "has_modification_name": true,
+            "missing_auto_fields": []
+          },
+          {
+            "id": "40310604",
+            "technical_condition_id": 1,
+            "flags": {
+              "damage": false,
+              "onRepairParts": false,
+              "abroad": false,
+              "custom": false
+            },
+            "has_modification_name": false,
+            "missing_auto_fields": [
+              "modificationId"
+            ]
+          },
+          {
+            "id": "40112367",
+            "technical_condition_id": 1,
+            "flags": {
+              "damage": false,
+              "onRepairParts": false,
+              "abroad": false,
+              "custom": false
+            },
+            "has_modification_name": true,
+            "missing_auto_fields": []
+          },
+          {
+            "id": "40308929",
+            "technical_condition_id": 1,
+            "flags": {
+              "damage": false,
+              "onRepairParts": false,
+              "abroad": false,
+              "custom": false
+            },
+            "has_modification_name": true,
+            "missing_auto_fields": []
+          },
+          {
+            "id": "40191309",
+            "technical_condition_id": 1,
+            "flags": {
+              "damage": false,
+              "onRepairParts": false,
+              "abroad": false,
+              "custom": false
+            },
+            "has_modification_name": true,
+            "missing_auto_fields": []
+          },
+          {
+            "id": "40268743",
+            "technical_condition_id": 1,
+            "flags": {
+              "damage": false,
+              "onRepairParts": false,
+              "abroad": false,
+              "custom": false
+            },
+            "has_modification_name": true,
+            "missing_auto_fields": []
+          },
+          {
+            "id": "40442111",
+            "technical_condition_id": 1,
+            "flags": {
+              "damage": false,
+              "onRepairParts": false,
+              "abroad": false,
+              "custom": false
+            },
+            "has_modification_name": true,
+            "missing_auto_fields": []
+          },
+          {
+            "id": "40434741",
+            "technical_condition_id": 1,
+            "flags": {
+              "damage": false,
+              "onRepairParts": false,
+              "abroad": false,
+              "custom": false
+            },
+            "has_modification_name": true,
+            "missing_auto_fields": []
+          },
+          {
+            "id": "40042087",
+            "technical_condition_id": 1,
+            "flags": {
+              "damage": false,
+              "onRepairParts": false,
+              "abroad": false,
+              "custom": false
+            },
+            "has_modification_name": true,
+            "missing_auto_fields": []
+          },
+          {
+            "id": "40428575",
+            "technical_condition_id": 1,
+            "flags": {
+              "damage": false,
+              "onRepairParts": false,
+              "abroad": false,
+              "custom": false
+            },
+            "has_modification_name": true,
+            "missing_auto_fields": []
+          },
+          {
+            "id": "40021526",
+            "technical_condition_id": 1,
+            "flags": {
+              "damage": false,
+              "onRepairParts": false,
+              "abroad": false,
+              "custom": false
+            },
+            "has_modification_name": false,
+            "missing_auto_fields": [
+              "modificationId"
+            ]
+          },
+          {
+            "id": "40422223",
+            "technical_condition_id": 1,
+            "flags": {
+              "damage": false,
+              "onRepairParts": false,
+              "abroad": false,
+              "custom": false
+            },
+            "has_modification_name": true,
+            "missing_auto_fields": []
+          },
+          {
+            "id": "40418313",
+            "technical_condition_id": 1,
+            "flags": {
+              "damage": false,
+              "onRepairParts": false,
+              "abroad": false,
+              "custom": false
+            },
+            "has_modification_name": true,
+            "missing_auto_fields": []
+          },
+          {
+            "id": "39876453",
+            "technical_condition_id": 1,
+            "flags": {
+              "damage": false,
+              "onRepairParts": false,
+              "abroad": false,
+              "custom": false
+            },
+            "has_modification_name": false,
+            "missing_auto_fields": [
+              "modificationId"
+            ]
+          },
+          {
+            "id": "40408854",
+            "technical_condition_id": 1,
+            "flags": {
+              "damage": false,
+              "onRepairParts": false,
+              "abroad": false,
+              "custom": false
+            },
+            "has_modification_name": true,
+            "missing_auto_fields": []
+          },
+          {
+            "id": "39993451",
+            "technical_condition_id": 1,
+            "flags": {
+              "damage": false,
+              "onRepairParts": false,
+              "abroad": false,
+              "custom": false
+            },
+            "has_modification_name": true,
+            "missing_auto_fields": []
+          },
+          {
+            "id": "40103605",
+            "technical_condition_id": 1,
+            "flags": {
+              "damage": false,
+              "onRepairParts": false,
+              "abroad": false,
+              "custom": false
+            },
+            "has_modification_name": true,
+            "missing_auto_fields": []
+          },
+          {
+            "id": "40055400",
+            "technical_condition_id": 1,
+            "flags": {
+              "damage": false,
+              "onRepairParts": false,
+              "abroad": false,
+              "custom": false
+            },
+            "has_modification_name": true,
+            "missing_auto_fields": []
+          },
+          {
+            "id": "39146672",
+            "technical_condition_id": 1,
+            "flags": {
+              "damage": false,
+              "onRepairParts": false,
+              "abroad": false,
+              "custom": false
+            },
+            "has_modification_name": false,
+            "missing_auto_fields": [
+              "modificationId"
+            ]
+          },
+          {
+            "id": "35375564",
+            "technical_condition_id": 1,
+            "flags": {
+              "damage": false,
+              "onRepairParts": false,
+              "abroad": false,
+              "custom": false
+            },
+            "has_modification_name": false,
+            "missing_auto_fields": [
+              "modificationId"
+            ]
+          },
+          {
+            "id": "40249578",
+            "technical_condition_id": 1,
+            "flags": {
+              "damage": false,
+              "onRepairParts": false,
+              "abroad": false,
+              "custom": false
+            },
+            "has_modification_name": true,
+            "missing_auto_fields": []
+          },
+          {
+            "id": "34004456",
+            "technical_condition_id": 1,
+            "flags": {
+              "damage": false,
+              "onRepairParts": false,
+              "abroad": false,
+              "custom": false
+            },
+            "has_modification_name": true,
+            "missing_auto_fields": []
+          },
+          {
+            "id": "40373018",
+            "technical_condition_id": 1,
+            "flags": {
+              "damage": false,
+              "onRepairParts": false,
+              "abroad": false,
+              "custom": false
+            },
+            "has_modification_name": true,
+            "missing_auto_fields": []
+          },
+          {
+            "id": "37965005",
+            "technical_condition_id": 1,
+            "flags": {
+              "damage": false,
+              "onRepairParts": false,
+              "abroad": false,
+              "custom": false
+            },
+            "has_modification_name": false,
+            "missing_auto_fields": [
+              "modificationId"
+            ]
+          },
+          {
+            "id": "39839442",
+            "technical_condition_id": 1,
+            "flags": {
+              "damage": false,
+              "onRepairParts": false,
+              "abroad": false,
+              "custom": false
+            },
+            "has_modification_name": true,
+            "missing_auto_fields": []
+          },
+          {
+            "id": "39667606",
+            "technical_condition_id": 1,
+            "flags": {
+              "damage": false,
+              "onRepairParts": false,
+              "abroad": false,
+              "custom": false
+            },
+            "has_modification_name": true,
+            "missing_auto_fields": []
+          },
+          {
+            "id": "39934097",
+            "technical_condition_id": 1,
+            "flags": {
+              "damage": false,
+              "onRepairParts": false,
+              "abroad": false,
+              "custom": false
+            },
+            "has_modification_name": true,
+            "missing_auto_fields": []
+          }
+        ],
+        "comparisons": [
+          {
+            "candidate_id": "37907463",
+            "candidate_reasons": [
+              "missing_modification_id"
+            ],
+            "peers": [],
+            "accepted_ids": [],
+            "accepted_prices_usd": [],
+            "rejected": [],
+            "duplicate_or_self_entries": 0,
+            "mixed_sample": false,
+            "recalculated_market": null,
+            "deal_threshold_usd": null,
+            "qualifies_as_deal": false,
+            "calculation_matches": true
+          },
+          {
+            "candidate_id": "40443603",
+            "candidate_reasons": [],
+            "peers": [
+              {
+                "id": "40434741",
+                "title": "Audi A6",
+                "url": "https://auto.ria.com/auto_audi_a6_40434741.html",
+                "year": 2010,
+                "price_usd": 10500,
+                "mileage": 355000,
+                "market": null,
+                "comparables": null,
+                "valuation": null,
+                "valuation_reasons": null,
+                "comparable_condition": true,
+                "observed_at": 1789652166.611132,
+                "modification_name": "2.0 TDI AT (136 к.с.)",
+                "modification_source": "listing",
+                "modification_resolution": null,
+                "brand_id": 6,
+                "model_id": 49,
+                "generation_id": 3230,
+                "modification_id": 164624,
+                "body_id": 2,
+                "fuel_id": 2,
+                "gear_id": 2
+              },
+              {
+                "id": "40042087",
+                "title": "Audi A6",
+                "url": "https://auto.ria.com/auto_audi_a6_40042087.html",
+                "year": 2011,
+                "price_usd": 10100,
+                "mileage": 290000,
+                "market": null,
+                "comparables": null,
+                "valuation": null,
+                "valuation_reasons": null,
+                "comparable_condition": true,
+                "observed_at": 1789652166.7076814,
+                "modification_name": "2.0 TDI AT (170 к.с.)",
+                "modification_source": "listing",
+                "modification_resolution": null,
+                "brand_id": 6,
+                "model_id": 49,
+                "generation_id": 3230,
+                "modification_id": 164627,
+                "body_id": 2,
+                "fuel_id": 2,
+                "gear_id": 2
+              },
+              {
+                "id": "40428575",
+                "title": "Audi A6",
+                "url": "https://auto.ria.com/auto_audi_a6_40428575.html",
+                "year": 2010,
+                "price_usd": 10500,
+                "mileage": 330000,
+                "market": null,
+                "comparables": null,
+                "valuation": null,
+                "valuation_reasons": null,
+                "comparable_condition": true,
+                "observed_at": 1789652167.0322518,
+                "modification_name": "2.7 TDI AT (190 к.с.)",
+                "modification_source": "listing",
+                "modification_resolution": null,
+                "brand_id": 6,
+                "model_id": 49,
+                "generation_id": 3230,
+                "modification_id": 164629,
+                "body_id": 2,
+                "fuel_id": 2,
+                "gear_id": 2
+              },
+              {
+                "id": "40021526",
+                "title": "Audi A6",
+                "url": "https://auto.ria.com/auto_audi_a6_40021526.html",
+                "year": 2009,
+                "price_usd": 8240,
+                "mileage": 425000,
+                "market": null,
+                "comparables": null,
+                "valuation": null,
+                "valuation_reasons": null,
+                "comparable_condition": true,
+                "observed_at": 1789652167.2376523,
+                "modification_name": "",
+                "modification_source": null,
+                "modification_resolution": null,
+                "brand_id": 6,
+                "model_id": 49,
+                "generation_id": 3230,
+                "modification_id": null,
+                "body_id": 2,
+                "fuel_id": 2,
+                "gear_id": 2
+              },
+              {
+                "id": "40422223",
+                "title": "Audi A6",
+                "url": "https://auto.ria.com/auto_audi_a6_40422223.html",
+                "year": 2009,
+                "price_usd": 8500,
+                "mileage": 340000,
+                "market": null,
+                "comparables": null,
+                "valuation": null,
+                "valuation_reasons": null,
+                "comparable_condition": true,
+                "observed_at": 1789652167.4445965,
+                "modification_name": "2.7 TDI AT (190 к.с.)",
+                "modification_source": "listing",
+                "modification_resolution": null,
+                "brand_id": 6,
+                "model_id": 49,
+                "generation_id": 3230,
+                "modification_id": 164629,
+                "body_id": 2,
+                "fuel_id": 2,
+                "gear_id": 2
+              },
+              {
+                "id": "40418313",
+                "title": "Audi A6",
+                "url": "https://auto.ria.com/auto_audi_a6_40418313.html",
+                "year": 2009,
+                "price_usd": 9700,
+                "mileage": 304000,
+                "market": null,
+                "comparables": null,
+                "valuation": null,
+                "valuation_reasons": null,
+                "comparable_condition": true,
+                "observed_at": 1789652167.631062,
+                "modification_name": "3.0 TDI MT (240 к.с.) Quattro",
+                "modification_source": "listing",
+                "modification_resolution": null,
+                "brand_id": 6,
+                "model_id": 49,
+                "generation_id": 3230,
+                "modification_id": 164634,
+                "body_id": 2,
+                "fuel_id": 2,
+                "gear_id": 2
+              },
+              {
+                "id": "39876453",
+                "title": "Audi A6",
+                "url": "https://auto.ria.com/auto_audi_a6_39876453.html",
+                "year": 2009,
+                "price_usd": 11158,
+                "mileage": 340000,
+                "market": null,
+                "comparables": null,
+                "valuation": null,
+                "valuation_reasons": null,
+                "comparable_condition": true,
+                "observed_at": 1789652167.786098,
+                "modification_name": "",
+                "modification_source": null,
+                "modification_resolution": null,
+                "brand_id": 6,
+                "model_id": 49,
+                "generation_id": 3230,
+                "modification_id": null,
+                "body_id": 2,
+                "fuel_id": 2,
+                "gear_id": 2
+              },
+              {
+                "id": "40408854",
+                "title": "Audi A6",
+                "url": "https://auto.ria.com/auto_audi_a6_40408854.html",
+                "year": 2011,
+                "price_usd": 11950,
+                "mileage": 361000,
+                "market": null,
+                "comparables": null,
+                "valuation": null,
+                "valuation_reasons": null,
+                "comparable_condition": true,
+                "observed_at": 1789652167.9589443,
+                "modification_name": "3.0 TDI Tiptronic (240 к.с.) Quattro",
+                "modification_source": "listing",
+                "modification_resolution": null,
+                "brand_id": 6,
+                "model_id": 49,
+                "generation_id": 3230,
+                "modification_id": 133171,
+                "body_id": 2,
+                "fuel_id": 2,
+                "gear_id": 2
+              },
+              {
+                "id": "39993451",
+                "title": "Audi A6",
+                "url": "https://auto.ria.com/auto_audi_a6_39993451.html",
+                "year": 2009,
+                "price_usd": 13750,
+                "mileage": 288000,
+                "market": null,
+                "comparables": null,
+                "valuation": null,
+                "valuation_reasons": null,
+                "comparable_condition": true,
+                "observed_at": 1789652168.1092622,
+                "modification_name": "3.0 TDI Tiptronic (240 к.с.) Quattro",
+                "modification_source": "listing",
+                "modification_resolution": null,
+                "brand_id": 6,
+                "model_id": 49,
+                "generation_id": 3230,
+                "modification_id": 133171,
+                "body_id": 2,
+                "fuel_id": 2,
+                "gear_id": 2
+              },
+              {
+                "id": "40103605",
+                "title": "Audi A6",
+                "url": "https://auto.ria.com/auto_audi_a6_40103605.html",
+                "year": 2009,
+                "price_usd": 9400,
+                "mileage": 302000,
+                "market": null,
+                "comparables": null,
+                "valuation": null,
+                "valuation_reasons": null,
+                "comparable_condition": true,
+                "observed_at": 1789652168.2696807,
+                "modification_name": "2.7 TDI AT (190 к.с.)",
+                "modification_source": "listing",
+                "modification_resolution": null,
+                "brand_id": 6,
+                "model_id": 49,
+                "generation_id": 3230,
+                "modification_id": 164629,
+                "body_id": 2,
+                "fuel_id": 2,
+                "gear_id": 2
+              },
+              {
+                "id": "40055400",
+                "title": "Audi A6",
+                "url": "https://auto.ria.com/auto_audi_a6_40055400.html",
+                "year": 2009,
+                "price_usd": 13990,
+                "mileage": 308000,
+                "market": null,
+                "comparables": null,
+                "valuation": null,
+                "valuation_reasons": null,
+                "comparable_condition": true,
+                "observed_at": 1789652168.4028752,
+                "modification_name": "3.0 TDI Tiptronic (240 к.с.) Quattro",
+                "modification_source": "listing",
+                "modification_resolution": null,
+                "brand_id": 6,
+                "model_id": 49,
+                "generation_id": 3230,
+                "modification_id": 133171,
+                "body_id": 2,
+                "fuel_id": 2,
+                "gear_id": 2
+              },
+              {
+                "id": "39146672",
+                "title": "Audi A6",
+                "url": "https://auto.ria.com/auto_audi_a6_39146672.html",
+                "year": 2009,
+                "price_usd": 10100,
+                "mileage": 290000,
+                "market": null,
+                "comparables": null,
+                "valuation": null,
+                "valuation_reasons": null,
+                "comparable_condition": true,
+                "observed_at": 1789652168.8135974,
+                "modification_name": "",
+                "modification_source": null,
+                "modification_resolution": null,
+                "brand_id": 6,
+                "model_id": 49,
+                "generation_id": 3230,
+                "modification_id": null,
+                "body_id": 2,
+                "fuel_id": 2,
+                "gear_id": 2
+              },
+              {
+                "id": "35375564",
+                "title": "Audi A6",
+                "url": "https://auto.ria.com/auto_audi_a6_35375564.html",
+                "year": 2009,
+                "price_usd": 8700,
+                "mileage": 359000,
+                "market": null,
+                "comparables": null,
+                "valuation": null,
+                "valuation_reasons": null,
+                "comparable_condition": true,
+                "observed_at": 1789652168.953864,
+                "modification_name": "",
+                "modification_source": null,
+                "modification_resolution": null,
+                "brand_id": 6,
+                "model_id": 49,
+                "generation_id": 3230,
+                "modification_id": null,
+                "body_id": 2,
+                "fuel_id": 2,
+                "gear_id": 2
+              },
+              {
+                "id": "40249578",
+                "title": "Audi A6",
+                "url": "https://auto.ria.com/auto_audi_a6_40249578.html",
+                "year": 2010,
+                "price_usd": 10600,
+                "mileage": 322000,
+                "market": null,
+                "comparables": null,
+                "valuation": null,
+                "valuation_reasons": null,
+                "comparable_condition": true,
+                "observed_at": 1789652169.1016312,
+                "modification_name": "2.0 TDI AT (170 к.с.)",
+                "modification_source": "listing",
+                "modification_resolution": null,
+                "brand_id": 6,
+                "model_id": 49,
+                "generation_id": 3230,
+                "modification_id": 164627,
+                "body_id": 2,
+                "fuel_id": 2,
+                "gear_id": 2
+              },
+              {
+                "id": "34004456",
+                "title": "Audi A6",
+                "url": "https://auto.ria.com/auto_audi_a6_34004456.html",
+                "year": 2010,
+                "price_usd": 13600,
+                "mileage": 319000,
+                "market": null,
+                "comparables": null,
+                "valuation": null,
+                "valuation_reasons": null,
+                "comparable_condition": true,
+                "observed_at": 1789652169.2677433,
+                "modification_name": "2.7 TDI Tiptronic (190 к.с.) Quattro",
+                "modification_source": "listing",
+                "modification_resolution": null,
+                "brand_id": 6,
+                "model_id": 49,
+                "generation_id": 3230,
+                "modification_id": 164630,
+                "body_id": 2,
+                "fuel_id": 2,
+                "gear_id": 2
+              },
+              {
+                "id": "40373018",
+                "title": "Audi A6",
+                "url": "https://auto.ria.com/auto_audi_a6_40373018.html",
+                "year": 2010,
+                "price_usd": 9999,
+                "mileage": 290000,
+                "market": null,
+                "comparables": null,
+                "valuation": null,
+                "valuation_reasons": null,
+                "comparable_condition": true,
+                "observed_at": 1789652169.4820473,
+                "modification_name": "2.0 TDI AT (170 к.с.)",
+                "modification_source": "listing",
+                "modification_resolution": null,
+                "brand_id": 6,
+                "model_id": 49,
+                "generation_id": 3230,
+                "modification_id": 164627,
+                "body_id": 2,
+                "fuel_id": 2,
+                "gear_id": 2
+              },
+              {
+                "id": "37965005",
+                "title": "Audi A6",
+                "url": "https://auto.ria.com/auto_audi_a6_37965005.html",
+                "year": 2010,
+                "price_usd": 13800,
+                "mileage": 296000,
+                "market": null,
+                "comparables": null,
+                "valuation": null,
+                "valuation_reasons": null,
+                "comparable_condition": true,
+                "observed_at": 1789652169.628498,
+                "modification_name": "",
+                "modification_source": null,
+                "modification_resolution": null,
+                "brand_id": 6,
+                "model_id": 49,
+                "generation_id": 3230,
+                "modification_id": null,
+                "body_id": 2,
+                "fuel_id": 2,
+                "gear_id": 2
+              },
+              {
+                "id": "39839442",
+                "title": "Audi A6",
+                "url": "https://auto.ria.com/auto_audi_a6_39839442.html",
+                "year": 2011,
+                "price_usd": 10700,
+                "mileage": 308000,
+                "market": null,
+                "comparables": null,
+                "valuation": null,
+                "valuation_reasons": null,
+                "comparable_condition": true,
+                "observed_at": 1789652169.7242835,
+                "modification_name": "2.7 TDI AT (190 к.с.)",
+                "modification_source": "listing",
+                "modification_resolution": null,
+                "brand_id": 6,
+                "model_id": 49,
+                "generation_id": 3230,
+                "modification_id": 164629,
+                "body_id": 2,
+                "fuel_id": 2,
+                "gear_id": 2
+              },
+              {
+                "id": "39667606",
+                "title": "Audi A6",
+                "url": "https://auto.ria.com/auto_audi_a6_39667606.html",
+                "year": 2010,
+                "price_usd": 12499,
+                "mileage": 368000,
+                "market": null,
+                "comparables": null,
+                "valuation": null,
+                "valuation_reasons": null,
+                "comparable_condition": true,
+                "observed_at": 1789652169.9163325,
+                "modification_name": "3.0 TDI Tiptronic (240 к.с.) Quattro",
+                "modification_source": "listing",
+                "modification_resolution": null,
+                "brand_id": 6,
+                "model_id": 49,
+                "generation_id": 3230,
+                "modification_id": 133171,
+                "body_id": 2,
+                "fuel_id": 2,
+                "gear_id": 2
+              },
+              {
+                "id": "39934097",
+                "title": "Audi A6",
+                "url": "https://auto.ria.com/auto_audi_a6_39934097.html",
+                "year": 2010,
+                "price_usd": 9500,
+                "mileage": 364000,
+                "market": null,
+                "comparables": null,
+                "valuation": null,
+                "valuation_reasons": null,
+                "comparable_condition": true,
+                "observed_at": 1789652170.117813,
+                "modification_name": "3.0 TDI Tiptronic (240 к.с.) Quattro",
+                "modification_source": "listing",
+                "modification_resolution": null,
+                "brand_id": 6,
+                "model_id": 49,
+                "generation_id": 3230,
+                "modification_id": 133171,
+                "body_id": 2,
+                "fuel_id": 2,
+                "gear_id": 2
+              }
+            ],
+            "accepted_ids": [
+              "40428575",
+              "40422223",
+              "40103605",
+              "39839442"
+            ],
+            "accepted_prices_usd": [
+              8500,
+              9400,
+              10500,
+              10700
+            ],
+            "rejected": [
+              {
+                "id": "40434741",
+                "reasons": [
+                  "modification_id"
+                ]
+              },
+              {
+                "id": "40042087",
+                "reasons": [
+                  "modification_id"
+                ]
+              },
+              {
+                "id": "40021526",
+                "reasons": [
+                  "modification_id"
+                ]
+              },
+              {
+                "id": "40418313",
+                "reasons": [
+                  "modification_id"
+                ]
+              },
+              {
+                "id": "39876453",
+                "reasons": [
+                  "modification_id"
+                ]
+              },
+              {
+                "id": "40408854",
+                "reasons": [
+                  "modification_id"
+                ]
+              },
+              {
+                "id": "39993451",
+                "reasons": [
+                  "modification_id"
+                ]
+              },
+              {
+                "id": "40055400",
+                "reasons": [
+                  "modification_id"
+                ]
+              },
+              {
+                "id": "39146672",
+                "reasons": [
+                  "modification_id"
+                ]
+              },
+              {
+                "id": "35375564",
+                "reasons": [
+                  "modification_id"
+                ]
+              },
+              {
+                "id": "40249578",
+                "reasons": [
+                  "modification_id"
+                ]
+              },
+              {
+                "id": "34004456",
+                "reasons": [
+                  "modification_id"
+                ]
+              },
+              {
+                "id": "40373018",
+                "reasons": [
+                  "modification_id"
+                ]
+              },
+              {
+                "id": "37965005",
+                "reasons": [
+                  "modification_id"
+                ]
+              },
+              {
+                "id": "39667606",
+                "reasons": [
+                  "modification_id"
+                ]
+              },
+              {
+                "id": "39934097",
+                "reasons": [
+                  "modification_id"
+                ]
+              }
+            ],
+            "duplicate_or_self_entries": 0,
+            "mixed_sample": false,
+            "recalculated_market": null,
+            "deal_threshold_usd": null,
+            "qualifies_as_deal": false,
+            "calculation_matches": true
+          },
+          {
+            "candidate_id": "40310604",
+            "candidate_reasons": [
+              "missing_modification_id"
+            ],
+            "peers": [],
+            "accepted_ids": [],
+            "accepted_prices_usd": [],
+            "rejected": [],
+            "duplicate_or_self_entries": 0,
+            "mixed_sample": false,
+            "recalculated_market": null,
+            "deal_threshold_usd": null,
+            "qualifies_as_deal": false,
+            "calculation_matches": true
+          }
+        ],
+        "catalog_resolution_checks": [
+          {
+            "candidate_id": "40443603",
+            "listing_modification_id": 164629,
+            "catalog_modification_id": 164629,
+            "status": "matched"
+          }
+        ]
+      },
+      {
+        "filters": {
+          "brand": "Mercedes-Benz",
+          "model": "E-Class",
+          "region": "",
+          "price": {
+            "from": null,
+            "to": null
+          },
+          "year": {
+            "from": null,
+            "to": null
+          },
+          "mileage": {
+            "from": null,
+            "to": null
+          },
+          "body": [],
+          "fuel": [],
+          "transmission": [],
+          "onlyDeals": false
+        },
+        "inspected": 8,
+        "returned": 8,
+        "valued": 0,
+        "warnings": [
+          "search_limit"
+        ],
+        "observation_at": 1789652170.2939181,
+        "pending_valuations": 4,
+        "cars": [
+          {
+            "id": "40175869",
+            "title": "Mercedes-Benz E-Class",
+            "url": "https://auto.ria.com/auto_mercedes_benz_e_class_40175869.html",
+            "year": 1996,
+            "price_usd": 4000,
+            "mileage": 193000,
+            "market": null,
+            "comparables": 0,
+            "valuation": "insufficient_data",
+            "valuation_reasons": [
+              "missing_generation_id",
+              "missing_modification_id"
+            ],
+            "comparable_condition": true,
+            "observed_at": 1789652170.504932,
+            "modification_name": "",
+            "modification_source": null,
+            "modification_resolution": null,
+            "brand_id": 48,
+            "model_id": 428,
+            "generation_id": null,
+            "modification_id": null,
+            "body_id": 3,
+            "fuel_id": 1,
+            "gear_id": 2
+          },
+          {
+            "id": "40131634",
+            "title": "Mercedes-Benz E-Class",
+            "url": "https://auto.ria.com/auto_mercedes_benz_e_class_40131634.html",
+            "year": 2012,
+            "price_usd": 15990,
+            "mileage": 145000,
+            "market": null,
+            "comparables": 1,
+            "valuation": "insufficient_data",
+            "valuation_reasons": [
+              "insufficient_comparables"
+            ],
+            "comparable_condition": true,
+            "observed_at": 1789652170.5989523,
+            "modification_name": "250 CDI BE 7G-tronic (204 к.с.) 4Matic",
+            "modification_source": "listing",
+            "modification_resolution": null,
+            "brand_id": 48,
+            "model_id": 428,
+            "generation_id": 193,
+            "modification_id": 157924,
+            "body_id": 3,
+            "fuel_id": 2,
+            "gear_id": 2
+          },
+          {
+            "id": "40310964",
+            "title": "Mercedes-Benz E-Class",
+            "url": "https://auto.ria.com/auto_mercedes_benz_e_class_40310964.html",
+            "year": 2012,
+            "price_usd": 12000,
+            "mileage": 283000,
+            "market": null,
+            "comparables": 0,
+            "valuation": "insufficient_data",
+            "valuation_reasons": [
+              "insufficient_comparables"
+            ],
+            "comparable_condition": true,
+            "observed_at": 1789652170.6950405,
+            "modification_name": "200 CDI BE 7G-tronic (136 к.с.)",
+            "modification_source": "listing",
+            "modification_resolution": null,
+            "brand_id": 48,
+            "model_id": 428,
+            "generation_id": 193,
+            "modification_id": 157912,
+            "body_id": 3,
+            "fuel_id": 2,
+            "gear_id": 3
+          },
+          {
+            "id": "38345811",
+            "title": "Mercedes-Benz E-Class",
+            "url": "https://auto.ria.com/auto_mercedes_benz_e_class_38345811.html",
+            "year": 1991,
+            "price_usd": 3100,
+            "mileage": 349000,
+            "market": null,
+            "comparables": 0,
+            "valuation": "insufficient_data",
+            "valuation_reasons": [
+              "insufficient_comparables"
+            ],
+            "comparable_condition": true,
+            "observed_at": 1789652170.7809007,
+            "modification_name": "200TE MT (118 к.с.)",
+            "modification_source": "listing",
+            "modification_resolution": null,
+            "brand_id": 48,
+            "model_id": 428,
+            "generation_id": 9647,
+            "modification_id": 157107,
+            "body_id": 2,
+            "fuel_id": 4,
+            "gear_id": 1
+          },
+          {
+            "id": "37513484",
+            "title": "Mercedes-Benz E-Class",
+            "url": "https://auto.ria.com/auto_mercedes_benz_e_class_37513484.html",
+            "year": 2011,
+            "price_usd": 15899,
+            "mileage": 295000,
+            "market": null,
+            "comparables": 0,
+            "valuation": "pending",
+            "valuation_reasons": [
+              "pending"
+            ],
+            "comparable_condition": true,
+            "observed_at": 1789652170.8710897,
+            "modification_name": "250 CDI BE 7G-tronic (204 к.с.) 4Matic",
+            "modification_source": "listing",
+            "modification_resolution": null,
+            "brand_id": 48,
+            "model_id": 428,
+            "generation_id": 193,
+            "modification_id": 157924,
+            "body_id": 3,
+            "fuel_id": 2,
+            "gear_id": 2
+          },
+          {
+            "id": "39493978",
+            "title": "Mercedes-Benz E-Class",
+            "url": "https://auto.ria.com/auto_mercedes_benz_e_class_39493978.html",
+            "year": 2006,
+            "price_usd": 7350,
+            "mileage": 396000,
+            "market": null,
+            "comparables": 0,
+            "valuation": "pending",
+            "valuation_reasons": [
+              "pending"
+            ],
+            "comparable_condition": true,
+            "observed_at": 1789652170.9584806,
+            "modification_name": "",
+            "modification_source": null,
+            "modification_resolution": null,
+            "brand_id": 48,
+            "model_id": 428,
+            "generation_id": 9665,
+            "modification_id": null,
+            "body_id": 2,
+            "fuel_id": 2,
+            "gear_id": 2
+          },
+          {
+            "id": "40443242",
+            "title": "Mercedes-Benz E-Class",
+            "url": "https://auto.ria.com/auto_mercedes_benz_e_class_40443242.html",
+            "year": 2005,
+            "price_usd": 6500,
+            "mileage": 431000,
+            "market": null,
+            "comparables": 0,
+            "valuation": "pending",
+            "valuation_reasons": [
+              "pending"
+            ],
+            "comparable_condition": true,
+            "observed_at": 1789652171.0461028,
+            "modification_name": "200 CDI MT (122 к.с.)",
+            "modification_source": "listing",
+            "modification_resolution": null,
+            "brand_id": 48,
+            "model_id": 428,
+            "generation_id": 9662,
+            "modification_id": 157374,
+            "body_id": 3,
+            "fuel_id": 2,
+            "gear_id": 1
+          },
+          {
+            "id": "39421203",
+            "title": "Mercedes-Benz E-Class",
+            "url": "https://auto.ria.com/auto_mercedes_benz_e_class_39421203.html",
+            "year": 2020,
+            "price_usd": 45000,
+            "mileage": 156000,
+            "market": null,
+            "comparables": 0,
+            "valuation": "pending",
+            "valuation_reasons": [
+              "pending"
+            ],
+            "comparable_condition": true,
+            "observed_at": 1789652171.133197,
+            "modification_name": "220d 9G-Tronic (194 к.с.)",
+            "modification_source": "listing",
+            "modification_resolution": null,
+            "brand_id": 48,
+            "model_id": 428,
+            "generation_id": 8629,
+            "modification_id": 148319,
+            "body_id": 3,
+            "fuel_id": 2,
+            "gear_id": 2
+          }
+        ],
+        "status": "insufficient_comparables",
+        "requests_used": 32,
+        "detail_checks": [
+          {
+            "id": "40175869",
+            "technical_condition_id": 1,
+            "flags": {
+              "damage": false,
+              "onRepairParts": false,
+              "abroad": false,
+              "custom": false
+            },
+            "has_modification_name": false,
+            "missing_auto_fields": [
+              "generationId",
+              "modificationId"
+            ]
+          },
+          {
+            "id": "40131634",
+            "technical_condition_id": 1,
+            "flags": {
+              "damage": false,
+              "onRepairParts": false,
+              "abroad": false,
+              "custom": false
+            },
+            "has_modification_name": true,
+            "missing_auto_fields": []
+          },
+          {
+            "id": "40310964",
+            "technical_condition_id": 1,
+            "flags": {
+              "damage": false,
+              "onRepairParts": false,
+              "abroad": false,
+              "custom": false
+            },
+            "has_modification_name": true,
+            "missing_auto_fields": []
+          },
+          {
+            "id": "38345811",
+            "technical_condition_id": 1,
+            "flags": {
+              "damage": false,
+              "onRepairParts": false,
+              "abroad": false,
+              "custom": false
+            },
+            "has_modification_name": true,
+            "missing_auto_fields": []
+          },
+          {
+            "id": "37513484",
+            "technical_condition_id": 1,
+            "flags": {
+              "damage": false,
+              "onRepairParts": false,
+              "abroad": false,
+              "custom": false
+            },
+            "has_modification_name": true,
+            "missing_auto_fields": []
+          },
+          {
+            "id": "39493978",
+            "technical_condition_id": 1,
+            "flags": {
+              "damage": false,
+              "onRepairParts": false,
+              "abroad": false,
+              "custom": false
+            },
+            "has_modification_name": false,
+            "missing_auto_fields": [
+              "modificationId"
+            ]
+          },
+          {
+            "id": "40443242",
+            "technical_condition_id": 1,
+            "flags": {
+              "damage": false,
+              "onRepairParts": false,
+              "abroad": false,
+              "custom": false
+            },
+            "has_modification_name": true,
+            "missing_auto_fields": []
+          },
+          {
+            "id": "39421203",
+            "technical_condition_id": 1,
+            "flags": {
+              "damage": false,
+              "onRepairParts": false,
+              "abroad": false,
+              "custom": false
+            },
+            "has_modification_name": true,
+            "missing_auto_fields": []
+          },
+          {
+            "id": "39899336",
+            "technical_condition_id": 1,
+            "flags": {
+              "damage": false,
+              "onRepairParts": false,
+              "abroad": false,
+              "custom": false
+            },
+            "has_modification_name": false,
+            "missing_auto_fields": [
+              "modificationId"
+            ]
+          },
+          {
+            "id": "40152482",
+            "technical_condition_id": 1,
+            "flags": {
+              "damage": false,
+              "onRepairParts": false,
+              "abroad": false,
+              "custom": false
+            },
+            "has_modification_name": false,
+            "missing_auto_fields": [
+              "modificationId"
+            ]
+          },
+          {
+            "id": "39355581",
+            "technical_condition_id": 1,
+            "flags": {
+              "damage": false,
+              "onRepairParts": false,
+              "abroad": false,
+              "custom": false
+            },
+            "has_modification_name": true,
+            "missing_auto_fields": []
+          },
+          {
+            "id": "37408463",
+            "technical_condition_id": 1,
+            "flags": {
+              "damage": false,
+              "onRepairParts": false,
+              "abroad": false,
+              "custom": false
+            },
+            "has_modification_name": true,
+            "missing_auto_fields": []
+          },
+          {
+            "id": "39792796",
+            "technical_condition_id": 1,
+            "flags": {
+              "damage": false,
+              "onRepairParts": false,
+              "abroad": false,
+              "custom": false
+            },
+            "has_modification_name": true,
+            "missing_auto_fields": []
+          },
+          {
+            "id": "40407004",
+            "technical_condition_id": 1,
+            "flags": {
+              "damage": false,
+              "onRepairParts": false,
+              "abroad": false,
+              "custom": false
+            },
+            "has_modification_name": true,
+            "missing_auto_fields": []
+          },
+          {
+            "id": "40302982",
+            "technical_condition_id": 1,
+            "flags": {
+              "damage": false,
+              "onRepairParts": false,
+              "abroad": false,
+              "custom": false
+            },
+            "has_modification_name": false,
+            "missing_auto_fields": [
+              "modificationId"
+            ]
+          },
+          {
+            "id": "37793506",
+            "technical_condition_id": 1,
+            "flags": {
+              "damage": false,
+              "onRepairParts": false,
+              "abroad": false,
+              "custom": false
+            },
+            "has_modification_name": false,
+            "missing_auto_fields": [
+              "modificationId"
+            ]
+          },
+          {
+            "id": "40299698",
+            "technical_condition_id": 1,
+            "flags": {
+              "damage": false,
+              "onRepairParts": false,
+              "abroad": false,
+              "custom": false
+            },
+            "has_modification_name": false,
+            "missing_auto_fields": [
+              "modificationId"
+            ]
+          },
+          {
+            "id": "40291335",
+            "technical_condition_id": 1,
+            "flags": {
+              "damage": false,
+              "onRepairParts": false,
+              "abroad": false,
+              "custom": false
+            },
+            "has_modification_name": true,
+            "missing_auto_fields": []
+          },
+          {
+            "id": "38606811",
+            "technical_condition_id": 1,
+            "flags": {
+              "damage": false,
+              "onRepairParts": false,
+              "abroad": false,
+              "custom": false
+            },
+            "has_modification_name": true,
+            "missing_auto_fields": []
+          },
+          {
+            "id": "34384719",
+            "technical_condition_id": 1,
+            "flags": {
+              "damage": false,
+              "onRepairParts": false,
+              "abroad": false,
+              "custom": false
+            },
+            "has_modification_name": false,
+            "missing_auto_fields": [
+              "modificationId"
+            ]
+          },
+          {
+            "id": "35463857",
+            "technical_condition_id": 1,
+            "flags": {
+              "damage": false,
+              "onRepairParts": false,
+              "abroad": false,
+              "custom": false
+            },
+            "has_modification_name": true,
+            "missing_auto_fields": []
+          },
+          {
+            "id": "39443485",
+            "technical_condition_id": 1,
+            "flags": {
+              "damage": false,
+              "onRepairParts": false,
+              "abroad": false,
+              "custom": false
+            },
+            "has_modification_name": false,
+            "missing_auto_fields": [
+              "modificationId"
+            ]
+          },
+          {
+            "id": "39988091",
+            "technical_condition_id": 1,
+            "flags": {
+              "damage": false,
+              "onRepairParts": false,
+              "abroad": false,
+              "custom": false
+            },
+            "has_modification_name": false,
+            "missing_auto_fields": [
+              "modificationId"
+            ]
+          },
+          {
+            "id": "40406438",
+            "technical_condition_id": 1,
+            "flags": {
+              "damage": false,
+              "onRepairParts": false,
+              "abroad": false,
+              "custom": false
+            },
+            "has_modification_name": true,
+            "missing_auto_fields": []
+          },
+          {
+            "id": "39584293",
+            "technical_condition_id": 1,
+            "flags": {
+              "damage": false,
+              "onRepairParts": false,
+              "abroad": false,
+              "custom": false
+            },
+            "has_modification_name": true,
+            "missing_auto_fields": []
+          },
+          {
+            "id": "40270467",
+            "technical_condition_id": 1,
+            "flags": {
+              "damage": false,
+              "onRepairParts": false,
+              "abroad": false,
+              "custom": false
+            },
+            "has_modification_name": true,
+            "missing_auto_fields": []
+          }
+        ],
+        "comparisons": [
+          {
+            "candidate_id": "40175869",
+            "candidate_reasons": [
+              "missing_generation_id",
+              "missing_modification_id"
+            ],
+            "peers": [],
+            "accepted_ids": [],
+            "accepted_prices_usd": [],
+            "rejected": [],
+            "duplicate_or_self_entries": 0,
+            "mixed_sample": false,
+            "recalculated_market": null,
+            "deal_threshold_usd": null,
+            "qualifies_as_deal": false,
+            "calculation_matches": true
+          },
+          {
+            "candidate_id": "40131634",
+            "candidate_reasons": [],
+            "peers": [
+              {
+                "id": "39899336",
+                "title": "Mercedes-Benz E-Class",
+                "url": "https://auto.ria.com/auto_mercedes_benz_e_class_39899336.html",
+                "year": 2012,
+                "price_usd": 17500,
+                "mileage": 149000,
+                "market": null,
+                "comparables": null,
+                "valuation": null,
+                "valuation_reasons": null,
+                "comparable_condition": true,
+                "observed_at": 1789652171.4425483,
+                "modification_name": "",
+                "modification_source": null,
+                "modification_resolution": null,
+                "brand_id": 48,
+                "model_id": 428,
+                "generation_id": 193,
+                "modification_id": null,
+                "body_id": 3,
+                "fuel_id": 2,
+                "gear_id": 2
+              },
+              {
+                "id": "40152482",
+                "title": "Mercedes-Benz E-Class",
+                "url": "https://auto.ria.com/auto_mercedes_benz_e_class_40152482.html",
+                "year": 2011,
+                "price_usd": 13850,
+                "mileage": 150000,
+                "market": null,
+                "comparables": null,
+                "valuation": null,
+                "valuation_reasons": null,
+                "comparable_condition": true,
+                "observed_at": 1789652171.5811174,
+                "modification_name": "",
+                "modification_source": null,
+                "modification_resolution": null,
+                "brand_id": 48,
+                "model_id": 428,
+                "generation_id": 193,
+                "modification_id": null,
+                "body_id": 3,
+                "fuel_id": 2,
+                "gear_id": 2
+              },
+              {
+                "id": "39355581",
+                "title": "Mercedes-Benz E-Class",
+                "url": "https://auto.ria.com/auto_mercedes_benz_e_class_39355581.html",
+                "year": 2012,
+                "price_usd": 15065,
+                "mileage": 165000,
+                "market": null,
+                "comparables": null,
+                "valuation": null,
+                "valuation_reasons": null,
+                "comparable_condition": true,
+                "observed_at": 1789652171.7159095,
+                "modification_name": "250 CDI BE 7G-tronic (204 к.с.) 4Matic",
+                "modification_source": "listing",
+                "modification_resolution": null,
+                "brand_id": 48,
+                "model_id": 428,
+                "generation_id": 193,
+                "modification_id": 157924,
+                "body_id": 3,
+                "fuel_id": 2,
+                "gear_id": 2
+              },
+              {
+                "id": "37408463",
+                "title": "Mercedes-Benz E-Class",
+                "url": "https://auto.ria.com/auto_mercedes_benz_e_class_37408463.html",
+                "year": 2011,
+                "price_usd": 12800,
+                "mileage": 162000,
+                "market": null,
+                "comparables": null,
+                "valuation": null,
+                "valuation_reasons": null,
+                "comparable_condition": true,
+                "observed_at": 1789652172.0001552,
+                "modification_name": "200 CDI BE 7G-tronic (136 к.с.)",
+                "modification_source": "listing",
+                "modification_resolution": null,
+                "brand_id": 48,
+                "model_id": 428,
+                "generation_id": 193,
+                "modification_id": 157912,
+                "body_id": 3,
+                "fuel_id": 2,
+                "gear_id": 2
+              }
+            ],
+            "accepted_ids": [
+              "39355581"
+            ],
+            "accepted_prices_usd": [
+              15065
+            ],
+            "rejected": [
+              {
+                "id": "39899336",
+                "reasons": [
+                  "modification_id"
+                ]
+              },
+              {
+                "id": "40152482",
+                "reasons": [
+                  "modification_id"
+                ]
+              },
+              {
+                "id": "37408463",
+                "reasons": [
+                  "modification_id"
+                ]
+              }
+            ],
+            "duplicate_or_self_entries": 0,
+            "mixed_sample": false,
+            "recalculated_market": null,
+            "deal_threshold_usd": null,
+            "qualifies_as_deal": false,
+            "calculation_matches": true
+          },
+          {
+            "candidate_id": "40310964",
+            "candidate_reasons": [],
+            "peers": [
+              {
+                "id": "39792796",
+                "title": "Mercedes-Benz E-Class",
+                "url": "https://auto.ria.com/auto_mercedes_benz_e_class_39792796.html",
+                "year": 2011,
+                "price_usd": 11300,
+                "mileage": 340000,
+                "market": null,
+                "comparables": null,
+                "valuation": null,
+                "valuation_reasons": null,
+                "comparable_condition": true,
+                "observed_at": 1789652173.6587496,
+                "modification_name": "200 CDI BE 5G-tronic (136 к.с.)",
+                "modification_source": "listing",
+                "modification_resolution": null,
+                "brand_id": 48,
+                "model_id": 428,
+                "generation_id": 193,
+                "modification_id": 157911,
+                "body_id": 3,
+                "fuel_id": 2,
+                "gear_id": 3
+              }
+            ],
+            "accepted_ids": [],
+            "accepted_prices_usd": [],
+            "rejected": [
+              {
+                "id": "39792796",
+                "reasons": [
+                  "modification_id",
+                  "mileage"
+                ]
+              }
+            ],
+            "duplicate_or_self_entries": 0,
+            "mixed_sample": false,
+            "recalculated_market": null,
+            "deal_threshold_usd": null,
+            "qualifies_as_deal": false,
+            "calculation_matches": true
+          },
+          {
+            "candidate_id": "38345811",
+            "candidate_reasons": [],
+            "peers": [],
+            "accepted_ids": [],
+            "accepted_prices_usd": [],
+            "rejected": [],
+            "duplicate_or_self_entries": 0,
+            "mixed_sample": false,
+            "recalculated_market": null,
+            "deal_threshold_usd": null,
+            "qualifies_as_deal": false,
+            "calculation_matches": true
+          }
+        ],
+        "catalog_resolution_checks": [
+          {
+            "candidate_id": "40131634",
+            "listing_modification_id": 157924,
+            "catalog_modification_id": 157924,
+            "status": "matched"
+          }
+        ]
+      }
+    ],
+    "provider_quota": {},
+    "valued": 1,
+    "returned": 24
+  }
+}

@@ -212,3 +212,13 @@ body:has(.subscription-sheet[open]) { overflow:hidden; }
 .brand-option[aria-pressed="true"]::after { content:"✓"; flex-shrink:0; }
 .brand-option:active { background:var(--field); }
 @media(hover:hover) { .brand-option:hover { background:var(--field); } }
+/* Durable search progress uses the same surfaces and accent as the filter form. */
+.scan-progress{background:#121216;border:1px solid #2b2b33;border-radius:18px;padding:16px;margin:18px 0}
+.scan-progress-head{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.scan-progress-head strong{font-size:16px;line-height:1.4}
+.scan-progress-head .manager-button{padding:10px 12px;font-size:13px;flex-shrink:0}
+.scan-progress progress{display:block;width:100%;height:7px;margin:16px 0 10px;accent-color:#ff1526;border:0;border-radius:8px;overflow:hidden;background:#292930}
+.scan-progress progress::-webkit-progress-bar{background:#292930}
+.scan-progress progress::-webkit-progress-value{background:#ff1526}
+.scan-progress .filter-help{margin:0;font-size:13px;line-height:1.5}
+@media(max-width:360px){.scan-progress-head{align-items:flex-start;flex-direction:column}}

@@ -1,4 +1,48 @@
-# AUTODeal backend — one-search notification pilot
+# AUTODeal backend — full manual search and one-search notification pilot
+
+## Full search scans (release 20260917-28)
+
+The Mini App starts a durable scan with authenticated `POST /api/cars/scans`.
+It captures **every returned ID page** (`countpage=50`) before evaluating the
+candidate cards, then checks each unique ID and estimates its price using the
+existing strict peer rules. The old eight-card `/api/cars/search` remains only for
+older clients; the new UI does not use it or require manual continuation clicks.
+
+`full_scans` and `scan_items` are new tables created on startup; no deployed table
+is altered. The API process runs short scan steps under a DB lease. Progress and
+completed cards survive client closure, server restarts and quota waits. Only one
+scan per user runs at a time; a different filter pauses their previous scan.
+Switching onlyDeals reuses the same scan and provider work. Up to 20 result sets
+are retained per user; an oldest inactive derived result set can be evicted.
+Saved subscriptions and delivery tables are unaffected.
+
+- `GET /api/cars/scans/{id}?after=0&only_deals=true` reads owned progress/results;
+  the numeric result offset pages stored cards, spending no AUTO.RIA requests.
+- `PATCH /api/cars/scans/{id}` with `{enabled:false/true}` pauses/resumes an owned
+  scan. The next network operation finishes before the worker observes a pause.
+- Starting the same filters restores progress. Completed scans older than 15
+  minutes restart on an explicit start; `?restart=true` explicitly starts over.
+- Each step still has a 32-request/42-second allowance. That limits one worker
+  step, not total coverage. Hourly/daily waits resume automatically. Exhaustion
+  of the absolute package ceiling requires operator attention; no cap is raised
+  and no package is bought automatically.
+- The UI reports discovered, checked, valued, unavailable and deal counts. It
+  renders 50 cards at a time while the server checks the whole captured queue.
+  Old matches show their check time and require price rechecking, without an
+  old percentage being advertised as a current discount.
+- A repeated/truncated source page or a final gap between discovered IDs and
+  source count ends as **incomplete**, never “all checked”. AUTO.RIA's offset
+  pages are not an atomic market snapshot; new/deleted ads can change coverage.
+  Every captured ID is still attempted. Missing eligible peers/vehicle data do
+  not produce a fabricated market price.
+
+No new Render service, database, paid product or Telegram message is needed.
+The worker is idle until a user explicitly starts a scan. Existing notification
+flags and the one-time validation run ID must stay unchanged during this release.
+Verification: `pytest backend/tests -q` and `node --test *test.cjs`. Fixtures cover
+123 candidates, multiple pages, a qualifying car beyond page one, quota waits
+across a day boundary, restart/lease recovery, owner isolation, cancellation,
+stale prices and incomplete provider pagination, without live provider calls.
 
 The GitHub Pages Mini App retains device-local drafts and now offers explicit
 server saving through https://autodeal-api.onrender.com. The Telegram SDK supplies
@@ -270,7 +314,15 @@ At most one real candidate per model also checks the catalog resolver against it
 existing listing-provided modification ID using a separate copy; the production
 candidate is never modified by that diagnostic. Inspect `catalog_resolution_checks`
 alongside medians. Any disagreement requires investigation before relying on the
-resolver. Use a new explicit run ID, such as `eligible-20260917-1`, only deliberately.
+resolver. Use a new explicit run ID only deliberately.
+
+The approved `eligible-20260917-1` run has now completed: 96 calls, 24 candidate
+cards, three matching catalog diagnostics and one qualifying Passat price sample
+($8,700 versus a $11,700 five-peer median). Sixteen valuations remained pending
+at the cap; the overall result is partial. This ID must not be reused to request
+another run. See the [supported-condition report and evidence](docs/valuation-audit-eligible-2026-09-17.md).
+The Mini App release 20260917-27 and backend were deployed; monitoring and
+automatic delivery remain disabled.
 
 The `popular-v1` check `popular-20260917-1` completed on 2026-09-17 with status
 `partial`: 24 candidates, one median and 55 provider requests. The
