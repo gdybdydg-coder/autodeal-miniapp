@@ -1,13 +1,14 @@
 from dataclasses import replace
 
+import pytest
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from backend import active_window
-from backend.models import (MonitorActiveWindow, MonitorControl, MonitorJob, MonitorSeen,
-                            MonitorWatch, Search, SourceBudget)
+from backend.models import (Delivery, MonitorActiveWindow, MonitorControl, MonitorFeed,
+                            MonitorJob, MonitorSeen, MonitorWatch, Range, Search, SourceBudget)
 from backend.monitor import Monitor, reset_watch, runtime_status
-from backend.tests.test_monitor import p, drain, wake, details
+from backend.tests.test_monitor import p, drain, wake, details, add_search
 
 
 def enable_window(p, monkeypatch):
@@ -130,3 +131,57 @@ def test_stop_during_supplemental_fetch_cannot_create_interest(p, monkeypatch):
     assert not p.sent and not details(p, "123")
     with Session(p.engine) as db:
         assert db.get(MonitorJob, "123") is None
+
+
+@pytest.mark.parametrize("first_delivery", ["sent", "uncertain"])
+@pytest.mark.parametrize("second_active", [True, False])
+def test_shared_informational_job_refreshes_only_unsent_current_interests(
+        p, monkeypatch, first_delivery, second_active):
+    enable_window(p, monkeypatch)
+    p.stock = ["124"]
+    add_search(p, sid=2, uid=222, price=Range.model_validate({"to": 5000}))
+    p.ads["124"] = p.clock[0] + 1
+    p.clock[0] += 2
+    factory, sender = p.runner.search_factory, p.runner.sender
+    def information_only(engine, key):
+        source = factory(engine, key)
+        source.comparisons = lambda _: []
+        return source
+    def send(uid, car):
+        result = sender(uid, car)
+        return {"uncertain": True} if uid == 111 and first_delivery == "uncertain" else result
+    p.runner.search_factory, p.runner.sender = information_only, send
+    # Both searches observed the same ID before evaluation. Search indexing can
+    # lag the fresh detail price, so the second search must reject USD 10,000.
+    assert p.runner.claim()
+    try:
+        p.runner.sync()
+        with Session(p.engine) as db:
+            feeds = list(db.scalars(select(MonitorFeed.id)))
+        for feed_id in feeds:
+            source = p.runner.search_factory(p.engine, "test-only")
+            source.acquire()
+            try:
+                p.runner.discover(feed_id, source, 60)
+            finally:
+                source.release()
+    finally:
+        p.runner.release("discover")
+    drain(p)
+    assert [(uid, car.price) for uid, car in p.sent] == [(111, 10000)]
+    with Session(p.engine) as db:
+        assert db.get(MonitorJob, "124").state == "informational"
+        assert db.get(MonitorSeen, (2, "124")).state == "informational"
+        assert db.scalar(select(Delivery).where(Delivery.user_id == 111)).state == first_delivery
+        if not second_active:
+            db.get(Search, 2).enabled = False
+            reset_watch(db, 2, False)
+            db.commit()
+    p.prices["124"] = 4000
+    wake(p, 1801)
+    drain(p)
+    expected = [(111, 10000), (222, 4000)] if second_active else [(111, 10000)]
+    assert [(uid, car.price) for uid, car in p.sent] == expected
+    wake(p, 1801)
+    drain(p)
+    assert [(uid, car.price) for uid, car in p.sent] == expected

@@ -100,8 +100,10 @@ def discover(monitor, feed_id, source):
                 seen = db.get(MonitorSeen, (sid, source_id))
                 if seen is None:
                     new_members.append((sid, epoch))
-                elif (seen.epoch == epoch and job and job.state in {"checked", "unvalued"}
-                      and seen.state in {"checked", "unvalued"}
+                # A shared informational outcome does not mean this recipient
+                # received anything. Delivery records above remain authoritative.
+                elif (seen.epoch == epoch and job and job.state in {"checked", "unvalued", "informational"}
+                      and seen.state in {"checked", "unvalued", "informational"}
                       and job.last_attempt <= now - RECHECK_SECONDS):
                     old_members.append((sid, epoch))
             if new_members:

@@ -696,6 +696,12 @@ After unseen candidates, checked non-deals in the window may be refreshed after
 30 minutes to notice a price change on the same ID. Sent/uncertain deliveries
 are never replayed. Cards explicitly identify this supplemental discovery path.
 
+Shared `informational` jobs are also eligible for that bounded 30-minute refresh,
+but only for current interests with no delivery record for that user/listing.
+An information-only alert to one user must not suppress another user's newly
+matching price drop. Regression tests cover both sent and uncertain first-user
+deliveries, an active versus stopped second subscription, and repeated checks.
+
 Primary publication discovery and its jobs take priority. Supplemental work
 starts only if a full 32-call bounded step fits below half of both rolling
 hour/day allowances and within the existing absolute cap. Otherwise it pauses
