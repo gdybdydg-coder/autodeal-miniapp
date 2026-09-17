@@ -100,6 +100,8 @@ def create_app(settings: Settings, engine=None):
         await asyncio.to_thread(telegram_setup.configure_menu, engine, settings)
         await asyncio.to_thread(notification_diagnostic.check_once, engine,
                                settings.auto_ria_api_key, settings.ria_diagnostic_listing_id)
+        await asyncio.to_thread(notification_diagnostic.check_dates_once, engine,
+                               settings.auto_ria_api_key, settings.ria_diagnostic_listing_id)
         stop = asyncio.Event()
         task = asyncio.create_task(monitor.run(engine, settings, stop)) if settings.monitor_enabled else None
         scan_task = asyncio.create_task(full_scan.run(engine, settings.auto_ria_api_key, stop)) if settings.auto_ria_api_key and settings.full_scan_enabled else None

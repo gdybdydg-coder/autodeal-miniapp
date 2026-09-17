@@ -67,6 +67,28 @@ def test_filter_dictionaries_share_three_request_cap(engine, monkeypatch):
         assert db.get(SourceBudget, "auto_ria").total == 5
 
 
+def test_date_comparison_uses_only_remaining_incident_calls(engine, monkeypatch):
+    monkeypatch.setattr(diagnostic, "active_members", lambda db: [
+        (SimpleNamespace(filters=Filters().canonical()), None, SimpleNamespace(started_at=1))])
+    diagnostic.check_once(engine, "key", "123", lambda *args: raw())
+    calls = []
+    def dates(key, path, params):
+        calls.append(params)
+        assert params["auto_ids[0]"] == "123" and params["countpage"] == 1
+        ids = ["123"] if "published_after" in params else []
+        return {"result": {"search_result": {"ids": ids, "count": len(ids)}}}
+    diagnostic.check_dates_once(engine, "key", "123", dates)
+    diagnostic.check_dates_once(engine, "key", "123", dates)
+    with Session(engine) as db:
+        probe = db.get(SourceProbe, "notification-diagnostic-v1-123")
+        assert probe.requests == probe.result["requests_used"] == 3
+        assert probe.result["date_check"]["created"] is False
+        assert probe.result["date_check"]["published"] is True
+        assert db.get(SourceBudget, "auto_ria").total == 5
+        assert db.scalar(select(func.count()).select_from(MonitorJob)) == 0
+    assert len(calls) == 2
+
+
 @pytest.mark.parametrize("value", ["../info", "12?api_key=x", "0", "１", "1" * 13])
 def test_diagnostic_id_cannot_change_request_path(value):
     with pytest.raises(ValueError):

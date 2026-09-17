@@ -10,8 +10,8 @@ from sqlalchemy.orm import Session
 
 from .auto_ria import RiaError, fetch_json
 from .models import Filters, MonitorJob, MonitorSeen, SourceProbe
-from .monitor import active_members
-from .ria_search import RiaSearch, matches
+from .monitor import active_members, stamp
+from .ria_search import RiaSearch, matches, parse_ids
 from .valuation import reasons
 
 CALL_CAP = 3
@@ -107,5 +107,75 @@ def check_once(engine, key, source_id, fetch=fetch_json):
             probe.status, probe.result, probe.checked_at = state, result, time.time()
             db.commit()
         logging.warning("Notification diagnostic %s", json.dumps(result, sort_keys=True))
+    finally:
+        source.release()
+
+
+def check_dates_once(engine, key, source_id, fetch=fetch_json):
+    """Use only the unspent portion of the same three-call incident allowance.
+
+    A listing matching subscriptions but never seen needs its creation and
+    publication windows compared. This phase never repeats details or resets
+    counters; a durable claim prevents retries after an interrupted check.
+    """
+    if not source_id or not key:
+        return
+    validate_id(source_id)
+    probe_id = "notification-diagnostic-v1-" + source_id
+    with Session(engine) as db:
+        probe = db.get(SourceProbe, probe_id)
+        if (not probe or "date_check" in probe.result or probe.requests > CALL_CAP - 2
+                or probe.result.get("monitor_job") is not None
+                or not probe.result.get("subscriptions", {}).get("matching")):
+            return
+    source = RiaSearch(engine, key, fetch)
+    try:
+        source.acquire()
+    except RiaError:
+        return
+    try:
+        with Session(engine) as db:
+            probe = db.scalar(select(SourceProbe).where(SourceProbe.id == probe_id).with_for_update())
+            if "date_check" in probe.result or probe.requests > CALL_CAP - 2:
+                return
+            members = active_members(db)
+            if not members:
+                return
+            after, before = min(member.started_at for _, _, member in members), time.time()
+            result = dict(probe.result)
+            result["date_check"] = {"status": "checking", "after": stamp(after), "before": stamp(before)}
+            probe.result = result
+            source.request_limit = CALL_CAP - probe.requests
+            db.commit()
+
+        def bounded_fetch(api_key, path, params):
+            with Session(engine) as db:
+                probe = db.get(SourceProbe, probe_id)
+                if probe.requests >= CALL_CAP:
+                    raise RiaError("search_limit")
+                probe.requests += 1
+                db.commit()
+            return fetch(api_key, path, params)
+        source.fetch = bounded_fetch
+        try:
+            for field in ("created", "published"):
+                params = {"category_id": 1, "searchType": 4, "status_id": 0,
+                          "auto_ids[0]": source_id, "countpage": 1, "page": 0,
+                          field + "_after": stamp(after), field + "_before": stamp(before + 1)}
+                data = source.request("search", params, parse_ids, force=True)
+                if data["total"] > 1 or any(value != source_id for value in data["ids"]):
+                    raise RiaError("invalid_response")
+                result["date_check"][field] = source_id in data["ids"]
+            result["date_check"]["status"] = "checked"
+        except RiaError:
+            result["date_check"]["status"] = "incomplete"
+        except Exception:
+            result["date_check"]["status"] = "failed"
+        with Session(engine) as db:
+            probe = db.get(SourceProbe, probe_id)
+            result["requests_used"] = probe.requests
+            probe.result, probe.checked_at = result, time.time()
+            db.commit()
+        logging.warning("Notification date diagnostic %s", json.dumps(result, sort_keys=True))
     finally:
         source.release()
