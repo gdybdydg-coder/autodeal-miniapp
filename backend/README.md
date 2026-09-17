@@ -186,6 +186,13 @@ small same-origin manifest without cache on foregrounding and offers an explicit
 reload button; reload preserves Telegram's URL fragment and device storage.
 It never reloads automatically while the user is editing filters.
 
+For an incident involving a specific public listing, `RIA_DIAGNOSTIC_LISTING_ID`
+enables a once-per-ID check at startup. It logs only condition primitives,
+valuation blockers, monitor presence and aggregate subscription matches to
+operator logs. It shares the existing quota and is capped at three provider calls,
+including dictionaries. It cannot create listings, deliveries or subscriptions,
+and has no public trigger/reset route. Leave empty during normal operation.
+
 After Pages has published a release, the operator can set `MINIAPP_RELEASE` to
 that identifier. Startup verifies the bot identity and its existing default menu,
 updates only our app's launch URL to `?v=<release>`, and verifies the result.
