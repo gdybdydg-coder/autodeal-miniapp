@@ -9,6 +9,7 @@ import logging
 import math
 import time
 import uuid
+from collections import Counter
 from datetime import datetime, timezone
 
 from sqlalchemy import delete, func, select, update
@@ -83,16 +84,32 @@ def active_members(db):
                MonitorWatch.epoch == MonitorMembership.epoch).order_by(Search.user_id, Search.id)))
 
 
-def runtime_status(engine, enabled):
+def runtime_status(engine, enabled, uid=None):
     with Session(engine) as db:
         row = db.get(MonitorControl, "pilot")
         healthy = bool(enabled and row and time.time() - row.heartbeat < LEASE + 60)
-        groups = len({member.feed_id for _, _, member in active_members(db)})
+        members = active_members(db)
+        groups = len({member.feed_id for _, _, member in members})
+        own_groups = {member.feed_id for search, _, member in members
+                      if uid is None or search.user_id == uid}
+        feeds = list(db.scalars(select(MonitorFeed).where(MonitorFeed.id.in_(own_groups))))
+        states = Counter(feed.status for feed in feeds)
+        states["starting"] += len(own_groups) - len(feeds)
+        states = {state: count for state, count in states.items() if count}
+        successful = [feed.checked_at for feed in feeds if feed.checked_at > 0]
+        oldest_cursor = min((feed.cursor for feed in feeds), default=None)
+        errors = set(states) - {"starting", "watching", "catching_up", "busy", "search_limit"}
+        lag = max(0, round(time.time() - oldest_cursor)) if oldest_cursor is not None else None
+        discovery = {"state_counts": states, "successful_groups": len(successful),
+                     "last_success_at": max(successful, default=None),
+                     "oldest_cursor_at": oldest_cursor, "lag_seconds": lag,
+                     "needs_attention": bool(errors or (lag is not None and lag > max(300, poll_interval(groups) * 3)))}
         return {"running": healthy, "status": row.status if healthy else "offline",
                 "interval_seconds": poll_interval(groups), "minimum_interval_seconds": INTERVAL,
                 "active_filter_groups": groups, "shared_polling": True,
                 "pending_jobs": db.scalar(select(func.count()).select_from(MonitorJob)
-                    .where(MonitorJob.state == "pending")), "strategy": "new_listings_v2"}
+                    .where(MonitorJob.state == "pending")), "strategy": "new_listings_v2",
+                "discovery": discovery}
 
 
 def stamp(value):
