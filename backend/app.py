@@ -25,7 +25,7 @@ from .valuation import policy as valuation_policy, reason_category
 from .models import (Base, Delivery, EnabledRequest, Filters, Listing, MonitorControl,
                      MonitorFeed, MonitorJob, MonitorMembership, MonitorSeen, MonitorWatch,
                      Search, SearchEditRequest, SearchRequest, TelegramTest, User)
-from . import monitor, telegram_setup, ria_rollout, full_scan, launch
+from . import monitor, telegram_setup, ria_rollout, full_scan, launch, notification_diagnostic
 
 
 @dataclass(frozen=True)
@@ -45,6 +45,7 @@ class Settings:
     catalog_rollout_check: bool = False
     ria_validation_profile: str = "golf"
     full_scan_enabled: bool = False
+    ria_diagnostic_listing_id: str = ""
 
     @classmethod
     def env(cls):
@@ -63,6 +64,7 @@ class Settings:
             catalog_rollout_check=os.getenv("RIA_CATALOG_ROLLOUT_CHECK") == "true",
             ria_validation_profile=os.getenv("RIA_VALIDATION_PROFILE", "golf"),
             full_scan_enabled=os.getenv("FULL_SCAN_ENABLED") == "true",
+            ria_diagnostic_listing_id=os.getenv("RIA_DIAGNOSTIC_LISTING_ID", ""),
         )
 
     @property
@@ -75,6 +77,7 @@ def create_app(settings: Settings, engine=None):
     peer_scan_limit()
     validate_run_id(settings.ria_validation_run_id)
     validate_profile(settings.ria_validation_profile)
+    notification_diagnostic.validate_id(settings.ria_diagnostic_listing_id)
     if settings.miniapp_release and not re.fullmatch(r"[a-z0-9-]{1,40}", settings.miniapp_release):
         raise ValueError("Invalid Mini App release")
     if not settings.bot_token or len(settings.webhook_secret) < 32:
@@ -95,6 +98,8 @@ def create_app(settings: Settings, engine=None):
         await asyncio.to_thread(ria_rollout.check_once, engine, settings.auto_ria_api_key, settings.catalog_rollout_check)
         await asyncio.to_thread(telegram_setup.configure, engine, settings)
         await asyncio.to_thread(telegram_setup.configure_menu, engine, settings)
+        await asyncio.to_thread(notification_diagnostic.check_once, engine,
+                               settings.auto_ria_api_key, settings.ria_diagnostic_listing_id)
         stop = asyncio.Event()
         task = asyncio.create_task(monitor.run(engine, settings, stop)) if settings.monitor_enabled else None
         scan_task = asyncio.create_task(full_scan.run(engine, settings.auto_ria_api_key, stop)) if settings.auto_ria_api_key and settings.full_scan_enabled else None
