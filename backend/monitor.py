@@ -30,6 +30,7 @@ WINDOW_SECONDS = 3600
 INDEX_OVERLAP = 600
 EVIDENCE_SECONDS = 60
 OPTIONAL_DETAIL_FIELDS = ("body_id", "fuel_id", "gear_id", "mileage")
+NOTIFICATION_VERSION = "optional-details-v1"
 log = logging.getLogger(__name__)
 
 
@@ -188,7 +189,10 @@ class Monitor:
                        MonitorSeen.epoch == MonitorWatch.epoch,
                        MonitorJob.first_seen >= time.time() - 86400)).all()
             for job, seen in outdated:
-                if job.result.get("rating", {}).get("valuation_version") != VERSION:
+                candidate = job.result.get("candidate")
+                optional_upgrade = bool(candidate and incomplete_optional_details(candidate)
+                    and job.result.get("notification_version") != NOTIFICATION_VERSION)
+                if job.result.get("rating", {}).get("valuation_version") != VERSION or optional_upgrade:
                     job.state, job.next_run, job.result = "pending", 0, {}
                     seen.state = "pending"
             db.commit()
@@ -309,7 +313,8 @@ class Monitor:
             if not self.owned(db):
                 return
             job = db.get(MonitorJob, source_id)
-            evidence = {**evidence, "discovered_at": job.first_seen, "evaluated_at": time.time()}
+            evidence = {**evidence, "discovered_at": job.first_seen, "evaluated_at": time.time(),
+                        "notification_version": NOTIFICATION_VERSION}
             for sid, uid, epoch, _ in self.interests(db, source_id):
                 state = self.current(db, sid, uid, epoch)
                 if not state:
@@ -426,6 +431,10 @@ class Monitor:
                 status = "telegram_unavailable"
                 return False
             self.sync()
+            if self.settings.ria_recovery_listing_id:
+                from .notification_recovery import recover_once, report
+                recover_once(self, self.settings.ria_recovery_listing_id)
+                report(self.engine, self.settings.ria_recovery_listing_id)
             with Session(self.engine) as db:
                 groups = {member.feed_id for _, _, member in active_members(db)}
                 feed = db.scalar(select(MonitorFeed).where(MonitorFeed.id.in_(groups),

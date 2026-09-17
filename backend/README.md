@@ -649,3 +649,20 @@ about 5,760 daily discovery requests before pagination, comparisons and other AP
 usage; the purchased package consequently lasts less time. No new paid service
 or automatic package purchase is introduced. API indexing, valuation work and
 quota pauses still affect real arrival time.
+
+### Reported listing recovery (2026-09-17)
+
+The operator can set `RIA_RECOVERY_LISTING_ID` to one reported numeric AUTO.RIA ID.
+This is separate from the read-only `RIA_DIAGNOSTIC_LISTING_ID` check. Recovery
+queues the ID once for currently active interests under the monitor lease; it
+does not scan a catalog, change filters, bypass valuation, reset quota, or send
+directly. Already queued/attempted deliveries, including uncertain sends, are not
+replayed. The normal worker fetches fresh details and applies subscription rules.
+Logs named `Notification recovery` record public listing price, valuation reasons,
+and aggregate delivery states, never recipient IDs or seller data. An accepted
+Telegram message is not proof that a phone displayed a notification.
+
+The incomplete-details notification policy now has its own version marker.
+Previously discovered active unvalued jobs with missing optional details are
+rechecked once even if their asking-price valuation version has not changed.
+Stopped epochs and already delivered listings remain protected by normal checks.

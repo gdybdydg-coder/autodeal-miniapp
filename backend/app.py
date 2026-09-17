@@ -46,6 +46,7 @@ class Settings:
     ria_validation_profile: str = "golf"
     full_scan_enabled: bool = False
     ria_diagnostic_listing_id: str = ""
+    ria_recovery_listing_id: str = ""
 
     @classmethod
     def env(cls):
@@ -65,6 +66,7 @@ class Settings:
             ria_validation_profile=os.getenv("RIA_VALIDATION_PROFILE", "golf"),
             full_scan_enabled=os.getenv("FULL_SCAN_ENABLED") == "true",
             ria_diagnostic_listing_id=os.getenv("RIA_DIAGNOSTIC_LISTING_ID", ""),
+            ria_recovery_listing_id=os.getenv("RIA_RECOVERY_LISTING_ID", ""),
         )
 
     @property
@@ -78,6 +80,7 @@ def create_app(settings: Settings, engine=None):
     validate_run_id(settings.ria_validation_run_id)
     validate_profile(settings.ria_validation_profile)
     notification_diagnostic.validate_id(settings.ria_diagnostic_listing_id)
+    notification_diagnostic.validate_id(settings.ria_recovery_listing_id)
     if settings.miniapp_release and not re.fullmatch(r"[a-z0-9-]{1,40}", settings.miniapp_release):
         raise ValueError("Invalid Mini App release")
     if not settings.bot_token or len(settings.webhook_secret) < 32:
