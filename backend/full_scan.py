@@ -110,6 +110,8 @@ def view(db, uid, scan_id, after=0, only_deals=False, cache_after=0):
                 car = None
         else:
             car, checked_at, deal = item.car if item.state == "checked" else None, item.checked_at, item.deal
+        deal = bool(car and car["valuation"] == "sample_median" and
+                    is_deal(car["price_usd"], car["market"], filters.minDiscount))
         if car is None or (only_deals and not deal):
             removed.append({"id": item.source_id, "checked_at": checked_at})
             continue
@@ -259,7 +261,8 @@ class Scanner:
                 item = db.scalar(select(ScanItem).where(ScanItem.scan_id == scan_id, ScanItem.source_id == source_id))
                 item.car, item.state = car, state
                 item.checked_at = cached[1] if cached else min(time.time(), source.observed_at)
-                item.deal = bool(car and car["valuation"] == "sample_median" and is_deal(car["price_usd"], car["market"]))
+                item.deal = bool(car and car["valuation"] == "sample_median" and
+                                 is_deal(car["price_usd"], car["market"], Filters.model_validate(row.filters).minDiscount))
                 item.valued = bool(car and car["valuation"] == "sample_median")
                 if car:
                     market_cache.put(db, car, item.checked_at)

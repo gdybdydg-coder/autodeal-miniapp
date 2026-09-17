@@ -57,7 +57,7 @@ def snapshot_view(payload, filters, quota, cached=False, reason=None):
             car.update(market=None, discount=None, comparables=0, valuation="stale")
     if filters.onlyDeals:
         result["cars"] = [car for car in result["cars"]
-                          if is_deal(car["price_usd"], car["market"])]
+                          if is_deal(car["price_usd"], car["market"], filters.minDiscount)]
     return result
 
 
@@ -549,7 +549,7 @@ class RiaSearch:
                 raise RiaError(warnings[0])
             token = self.continuation(filters, next_state)
             if filters.onlyDeals:
-                cars = [car for car in cars if is_deal(car["price_usd"], car["market"])]
+                cars = [car for car in cars if is_deal(car["price_usd"], car["market"], filters.minDiscount)]
             return {"cars": cars, "source_total": results["total"], "inspected": inspected,
                     "quota": quota_status(self.engine, self.limits),
                     "next_cursor": token, "page_size": PAGE_SIZE, "requests_used": self.requests_made,

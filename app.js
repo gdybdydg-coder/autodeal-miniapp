@@ -4,6 +4,14 @@ Object.keys(catalog).forEach(value=>brand.add(new Option(value,value)));regions.
 brand.addEventListener("change",()=>{model.innerHTML='<option value="">Всі моделі</option>';const models=catalog[brand.value]||[];models.forEach(value=>model.add(new Option(value,value)));model.disabled=!models.length});
 let onlyDeals=true;marketButton.addEventListener("click",()=>{onlyDeals=!onlyDeals;marketButton.querySelector(".switch").classList.toggle("active",onlyDeals);marketButton.setAttribute("aria-checked",String(onlyDeals))});
 const numberValue=id=>$(id).value===""?null:Number($(id).value);
+if($("minDiscount").value==="") $("minDiscount").value="15";
+function readMinDiscount() {
+  const input=$("minDiscount"),text=input.value.trim(),value=Number(text.replace(",","."));
+  if(!/^(?:\d+(?:[.,]\d*)?|[.,]\d+)$/.test(text)||!Number.isFinite(value)||value<0||value>100) {
+    input.focus();throw Error("Вигода: введи відсоток від 0 до 100");
+  }
+  return value;
+}
 
 const advancedGroups = [
   {name:"body",options:bodyTypes},
@@ -95,7 +103,7 @@ function matchesFilters(car,filters) {
     && (!filters.body.length||filters.body.includes(car.body))
     && (!filters.fuel.length||filters.fuel.includes(car.fuel))
     && (!filters.transmission.length||filters.transmission.includes(car.transmission))
-    && (!filters.onlyDeals||(Number.isFinite(car.market)&&car.market>0&&car.price<=car.market*.85));
+    && (!filters.onlyDeals||(Number.isFinite(car.market)&&car.market>0&&car.price*100<=car.market*(100-(filters.minDiscount??15))));
 }
 function readCurrentFilters() {
   if(window.AutoDealCatalog?.isBusy?.()) throw Error("Зачекай, завантажуємо моделі вибраної марки.");
@@ -106,7 +114,8 @@ function readCurrentFilters() {
     year:readRange("yearFrom","yearTo","Рік"),
     mileage:readRange("mileageFrom","mileageTo","Пробіг"),
     body:selectedValues("body"),fuel:selectedValues("fuel"),
-    transmission:selectedValues("transmission"),onlyDeals:document.documentElement?.dataset?.mode==="subscriptions"||onlyDeals
+    transmission:selectedValues("transmission"),onlyDeals:document.documentElement?.dataset?.mode==="subscriptions"||onlyDeals,
+    minDiscount:readMinDiscount()
   };
 }
 let resultsTab=null,currentScreen="search";

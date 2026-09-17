@@ -36,9 +36,13 @@ class Filters(StrictModel):
     fuel: list[Choice] = Field(default_factory=list, max_length=30)
     transmission: list[Choice] = Field(default_factory=list, max_length=30)
     onlyDeals: bool = True
+    minDiscount: float = Field(default=15, ge=0, le=100, strict=True)
 
     def canonical(self):
         data = self.model_dump(by_alias=True)
+        # Preserve existing subscription fingerprints and activation checkpoints.
+        if data["minDiscount"] == 15:
+            data.pop("minDiscount")
         for key in ("body", "fuel", "transmission"):
             data[key] = sorted(set(data[key]))
         if "Електро" not in data["fuel"]:

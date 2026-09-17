@@ -96,7 +96,9 @@ def query(db, filters, after=0):
         if span.to is not None:
             criteria.append(getattr(MarketCar, name) <= span.to * scale)
     if filters.onlyDeals:
-        criteria.append(MarketCar.deal.is_(True))
+        criteria.extend([MarketCar.car["valuation"].as_string() == "sample_median",
+                         MarketCar.car["market"].as_float() > 0,
+                         MarketCar.price * 100 <= MarketCar.car["market"].as_float() * (100 - filters.minDiscount)])
     count = db.scalar(select(func.count()).select_from(MarketCar).where(*criteria))
     records = list(db.scalars(select(MarketCar).where(*criteria, MarketCar.id > after)
                              .order_by(MarketCar.id).limit(51)))
@@ -104,7 +106,8 @@ def query(db, filters, after=0):
     for row in records[:50]:
         car = copy.deepcopy(row.car)
         stale = time.time() - row.checked_at >= FRESH_SECONDS
-        car.update(checked_at=row.checked_at, stale=stale, historical_match=bool(stale and row.deal), from_cache=True)
+        deal = bool(car["valuation"] == "sample_median" and is_deal(car["price_usd"], car["market"], filters.minDiscount))
+        car.update(checked_at=row.checked_at, stale=stale, historical_match=bool(stale and deal), from_cache=True)
         if stale:
             car.update(market=None, discount=None, comparables=0, valuation="stale")
         cars.append(car)
