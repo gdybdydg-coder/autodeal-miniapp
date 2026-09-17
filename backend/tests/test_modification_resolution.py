@@ -126,10 +126,11 @@ def test_retained_live_evidence_keeps_medians_and_all_rejected_conditions():
         cars = {car["id"]: car for car in query["cars"]}
         for report in query["comparisons"]:
             candidate = copy.deepcopy(cars[report["candidate_id"]])
-            replay = estimate(candidate, report["peers"])
+            as_of = max(car["observed_at"] for car in [candidate, *report["peers"]])
+            replay = estimate(candidate, report["peers"], now=as_of)
             assert replay["market"] == report["recalculated_market"]
             assert replay["comparables"] == len(report["accepted_ids"])
-            assert comparison_report(candidate, report["peers"])["calculation_matches"]
+            assert comparison_report(candidate, report["peers"], now=as_of)["calculation_matches"]
             valued += replay["market"] is not None
     assert valued == 1
 

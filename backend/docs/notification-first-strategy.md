@@ -104,6 +104,10 @@ Acceptance: defensible bargains and ordinary/uncertain prices are distinguished,
 with traceable comparable evidence. The multi-user scheduler, shared valuation
 jobs, deduplication and independent dispatch are implemented as part of step 2.
 
+Step 3 implementation is recorded in [release 33's review](valuation-review-2026-09-17.md).
+It verifies archived real outcomes without spending another provider request;
+fresh coverage and production savings must still be measured in step 4.
+
 ### 4. Measure and enable a real monitored subscription
 
 Use the owner's explicit subscription for an end-to-end live test. Record source

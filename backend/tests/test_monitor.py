@@ -9,7 +9,7 @@ from sqlalchemy.orm import Session
 
 from backend.app import Settings
 from backend.auto_ria import RiaError
-from backend.models import (Base, Delivery, Filters, MonitorControl, MonitorFeed, MonitorJob,
+from backend.models import (Base, Delivery, Filters, Listing, MonitorControl, MonitorFeed, MonitorJob,
                             MonitorMatch, MonitorMembership, MonitorSeen, MonitorWatch,
                             Search, SourceBudget, SourceProbe, User)
 from backend.monitor import Monitor, initialize, poll_interval, reset_watch, runtime_status
@@ -417,6 +417,88 @@ def test_old_telegram_queue_rechecks_price_before_dispatch(p, new_price, deliver
     assert len(details(p, "124")) == 2
     with Session(p.engine) as db:
         assert db.scalar(select(Delivery)).state == ("sent" if delivered else "cancelled")
+
+
+def test_ageing_comparisons_refresh_even_when_candidate_price_is_still_fresh(p):
+    drain(p)
+    # Seed genuine peer-search observations with 10 seconds of useful life left
+    # by the time the next candidate is evaluated.
+    source = p.runner.search_factory(p.engine, "test")
+    source.acquire()
+    try:
+        source.comparisons(source.car("777"))
+    finally:
+        source.release()
+    p.ads["124"] = p.clock[0] + 1
+    wake(p, 890)
+    p.runner.tick()
+    p.runner.tick()
+    with Session(p.engine) as db:
+        listing = db.scalar(select(Listing))
+        assert listing and listing.car["market"] == 15000
+        assert listing.car["valuation_evidence"]["version"] == "strict-v2"
+    # The candidate is only 11 seconds old; its peers are now too old. This also
+    # covers stale evidence before the first enqueue, not just an existing queue.
+    p.clock[0] += 11
+    for sid in range(90000, 90005):
+        p.prices[str(sid)] = 10000
+    p.runner.deliver_tick()
+    assert not p.sent
+    with Session(p.engine) as db:
+        assert db.get(MonitorJob, "124").state == "pending"
+        assert db.scalar(select(Delivery)).state == "pending"
+    drain(p)
+    p.clock[0] += 6
+    p.runner.deliver_tick()
+    assert not p.sent
+    with Session(p.engine) as db:
+        assert db.get(MonitorJob, "124").result["rating"]["assessment"] == "not_deal"
+        assert db.scalar(select(Delivery)).state == "cancelled"
+
+
+def test_legacy_listing_without_comparable_proof_is_rechecked_instead_of_sent(p):
+    drain(p)
+    p.ads["124"] = p.clock[0] + 1
+    wake(p)
+    p.runner.tick()
+    p.runner.tick()
+    with Session(p.engine) as db:
+        listing = db.scalar(select(Listing))
+        listing.car = {key: value for key, value in listing.car.items() if key != "valuation_evidence"}
+        db.commit()
+    p.runner.deliver_tick()
+    assert not p.sent
+    drain(p)
+    p.clock[0] += 6
+    p.runner.deliver_tick()
+    assert len(p.sent) == 1 and len(details(p, "124")) == 2
+    assert p.sent[0][1].valuation_evidence["version"] == "strict-v2"
+
+
+def test_known_changed_peer_price_invalidates_unexpired_evidence(p):
+    drain(p)
+    p.ads["124"] = p.clock[0] + 1
+    wake(p)
+    p.runner.tick()
+    p.runner.tick()
+    p.clock[0] += 1
+    source = p.runner.search_factory(p.engine, "test")
+    source.acquire()
+    try:
+        for sid in range(90000, 90005):
+            p.prices[str(sid)] = 10000
+            source.car(str(sid), force=True)
+    finally:
+        source.release()
+    p.runner.deliver_tick()
+    assert not p.sent
+    drain(p)
+    p.clock[0] += 6
+    p.runner.deliver_tick()
+    assert not p.sent
+    with Session(p.engine) as db:
+        assert db.get(MonitorJob, "124").result["rating"]["assessment"] == "not_deal"
+        assert db.scalar(select(Delivery)).state == "cancelled"
 
 
 def test_repeated_provider_page_preserves_progress_and_surfaces_error(p):

@@ -21,6 +21,7 @@ from .auto_ria import RiaError
 from .ria_search import RiaSearch, initialize_budget, verify_search_once, quota_status, budget_usage
 from .ria_budget import BudgetLimits, peer_scan_limit
 from .ria_validation import validate_once, validate_run_id, validate_profile, validation_status
+from .valuation import policy as valuation_policy, reason_category
 from .models import (Base, Delivery, EnabledRequest, Filters, Listing, MonitorControl,
                      MonitorFeed, MonitorJob, MonitorMembership, MonitorSeen, MonitorWatch,
                      Search, SearchEditRequest, SearchRequest, TelegramTest, User)
@@ -183,6 +184,9 @@ def create_app(settings: Settings, engine=None):
             MonitorSeen.search_id == search.id, MonitorSeen.state == "pending")) or 0
         unvalued = db.scalar(select(func.count()).select_from(MonitorSeen).where(
             MonitorSeen.search_id == search.id, MonitorSeen.state == "unvalued")) or 0
+        last_unvalued = db.scalar(select(MonitorJob.result).join(MonitorSeen, MonitorSeen.source_id == MonitorJob.source_id)
+            .where(MonitorSeen.search_id == search.id, MonitorSeen.state == "unvalued")
+            .order_by(MonitorJob.last_attempt.desc()).limit(1)) if unvalued else None
         if watch and status == "watching" and pending:
             reason = db.scalar(select(MonitorJob.reason).join(MonitorSeen, MonitorSeen.source_id == MonitorJob.source_id)
                 .where(MonitorSeen.search_id == search.id, MonitorSeen.state == "pending",
@@ -194,6 +198,7 @@ def create_app(settings: Settings, engine=None):
                 "enabled": search.enabled, "delivery_available": settings.live,
                 "monitor_status": status,
                 "pending_count": pending, "unvalued_count": unvalued,
+                "latest_valuation_reason": reason_category(last_unvalued.get("rating", {})) if last_unvalued else None,
                 "checked_through": feed.cursor if feed and watch and watch.initialized else None,
                 "last_checked_at": watch.checked_at if watch else None}
 
@@ -219,6 +224,7 @@ def create_app(settings: Settings, engine=None):
         # Cached public diagnostic only; refreshing NEVER spends API requests.
         return {**probe_status(engine, bool(settings.auto_ria_api_key)), "quota": quota_status(engine),
                 "budget": budget_usage(engine),
+                "valuation_policy": valuation_policy(),
                 "valuation_check": validation_status(engine, settings.ria_validation_run_id, settings.ria_validation_profile),
                 "catalog_check": ria_rollout.status(engine),
                 "monitor": monitor.runtime_status(engine, settings.monitor_enabled),

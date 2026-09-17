@@ -13,6 +13,7 @@ from sqlalchemy import delete, func, select
 from .auto_ria import RiaError
 from .models import MarketCar, ScanItem, SourceCache
 from .ria_search import FRESH_SECONDS, RiaSearch
+from .valuation import is_deal
 
 HISTORY_SECONDS = 86400
 DIMENSIONS = ("brand_id", "model_id", "region_id", "body_id", "fuel_id", "gear_id")
@@ -28,7 +29,7 @@ def put(db, car, checked_at):
     row.car, row.checked_at = copy.deepcopy(car), checked_at
     row.active = True
     row.price, row.year, row.mileage = car["price_usd"], car["year"], car["mileage"]
-    row.deal = bool(car["valuation"] == "sample_median" and car["price_usd"] <= car["market"] * .85)
+    row.deal = bool(car["valuation"] == "sample_median" and is_deal(car["price_usd"], car["market"]))
     for key in DIMENSIONS:
         setattr(row, key, car.get(key))
 

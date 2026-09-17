@@ -1,7 +1,9 @@
 """Explicit operator-requested, once-only live check. Never enables delivery."""
 import re
+import math
 import statistics
 import time
+from decimal import Decimal
 
 from sqlalchemy import select
 from sqlalchemy.exc import IntegrityError
@@ -34,42 +36,66 @@ def validate_profile(profile):
 def car_summary(car):
     fields = ("id", "title", "url", "year", "price_usd", "mileage", "market",
               "comparables", "valuation", "valuation_reasons", "comparable_condition", "observed_at",
-              "modification_name", "modification_source", "modification_resolution", *DIMENSIONS)
+              "modification_name", "modification_source", "modification_resolution", "vehicle_key", *DIMENSIONS)
     return {field: car.get(field) for field in fields}
 
 
-def comparison_report(candidate, peers):
+def comparison_report(candidate, peers, *, now=None):
     """Independently explain/recalculate the production estimate from sanitized details."""
-    missing = [key for key in DIMENSIONS if not candidate.get(key)]
-    candidate_reasons = (["unverified_condition"] if not candidate["comparable_condition"] else [])
-    candidate_reasons += ["missing_" + key for key in missing]
-    # The estimator uses the last observation for a repeated ID and excludes self.
-    unique = {peer["id"]: peer for peer in peers if peer["id"] != candidate["id"]}
+    now = time.time() if now is None else now
+    def detail_errors(car):
+        errors = []
+        if type(car.get("price_usd")) not in (int, float) or not math.isfinite(car["price_usd"]) or car["price_usd"] <= 0:
+            errors.append("invalid_price")
+        if type(car.get("year")) is not int or not 1900 <= car["year"] <= 2100:
+            errors.append("invalid_year")
+        if type(car.get("mileage")) not in (int, float) or not math.isfinite(car["mileage"]) or car["mileage"] < 0:
+            errors.append("invalid_mileage")
+        stamp = car.get("observed_at")
+        if type(stamp) not in (int, float) or not math.isfinite(stamp) or stamp <= 0 or not -30 <= now - stamp <= 900:
+            errors.append("stale_details")
+        return errors
+    missing = [key for key in DIMENSIONS if type(candidate.get(key)) is not int or candidate[key] <= 0]
+    candidate_reasons = (["unverified_condition"] if candidate["comparable_condition"] is not True else [])
+    candidate_reasons += ["missing_" + key for key in missing] + detail_errors(candidate)
+    unique = {}
+    for peer in peers:
+        if peer["id"] != candidate["id"] and (peer["id"] not in unique or
+                peer.get("observed_at", 0) >= unique[peer["id"]].get("observed_at", 0)):
+            unique[peer["id"]] = peer
+    vehicles = {candidate["vehicle_key"]} if candidate.get("vehicle_key") else set()
     accepted, rejected = [], []
     for peer in unique.values():
         reasons = (["candidate_ineligible"] if candidate_reasons else [])
-        if not peer["comparable_condition"]:
+        if peer["comparable_condition"] is not True:
             reasons.append("unverified_condition")
+        reasons += ["missing_" + key for key in DIMENSIONS if type(peer.get(key)) is not int or peer[key] <= 0]
+        reasons += detail_errors(peer)
         reasons += [key for key in DIMENSIONS if peer.get(key) != candidate.get(key)]
         if abs(peer["year"] - candidate["year"]) > 1:
             reasons.append("year")
         if abs(peer["mileage"] - candidate["mileage"]) > max(30000, candidate["mileage"] * .2):
             reasons.append("mileage")
+        if peer.get("vehicle_key") and peer["vehicle_key"] in vehicles:
+            reasons.append("duplicate_vehicle")
         if reasons:
             rejected.append({"id": peer["id"], "reasons": reasons})
         else:
             accepted.append(peer)
+            if peer.get("vehicle_key"):
+                vehicles.add(peer["vehicle_key"])
     prices = sorted(peer["price_usd"] for peer in accepted)
     mixed = len(prices) >= 5 and max(prices) / min(prices) > 2
-    market = statistics.median(prices) if len(prices) >= 5 and not mixed else None
-    actual = estimate(candidate, peers)
+    market = float(statistics.median(Decimal(str(price)) for price in prices)) if len(prices) >= 5 and not mixed else None
+    threshold = Decimal(str(market)) * Decimal("0.85") if market is not None else None
+    actual = estimate(candidate, peers, now=now)
     return {"candidate_id": candidate["id"], "candidate_reasons": candidate_reasons,
             "peers": [car_summary(peer) for peer in peers],
             "accepted_ids": [peer["id"] for peer in accepted], "accepted_prices_usd": prices,
             "rejected": rejected, "duplicate_or_self_entries": len(peers) - len(unique),
             "mixed_sample": mixed, "recalculated_market": market,
-            "deal_threshold_usd": market * .85 if market is not None else None,
-            "qualifies_as_deal": market is not None and candidate["price_usd"] <= market * .85,
+            "deal_threshold_usd": float(threshold) if threshold is not None else None,
+            "qualifies_as_deal": threshold is not None and Decimal(str(candidate["price_usd"])) <= threshold,
             "calculation_matches": actual["market"] == market and actual["comparables"] == len(accepted)}
 
 
