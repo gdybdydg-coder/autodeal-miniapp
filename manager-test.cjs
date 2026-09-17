@@ -79,6 +79,21 @@ test('active subscription shows saved queue and unvalued cars without a one-sear
   assert.doesNotMatch(ui.ids.subscriptionsHint.textContent,/одна активна/);
 });
 
+test('settings show measured Telegram acceptance without inventing publication or phone latency',async()=>{
+  let sends=0;
+  const ui=setup({notificationStatus:async()=>({available:true,telegram_ready:true,test_sent:true,
+    activity:{enabled_subscriptions:1,new_listings:12,evaluated:9,unknown:2,pending:1,messages_accepted:3,
+      last_delivery:{discovery_to_telegram_seconds:6.5,source_added_to_telegram_seconds:null}}}),
+    testNotification:async()=>{sends++}},'subscriptions');
+  await ui.nav.settings.listeners.click();
+  assert.equal(ui.ids.notificationStatus.textContent,'Моніторинг працює');
+  assert.match(ui.ids.launchProgress.textContent,/Нових авто: 12/);
+  assert.match(ui.ids.launchProgress.textContent,/Повідомлень прийнято Telegram: 3/);
+  assert.match(ui.ids.launchProgress.textContent,/після виявлення: 7 с/);
+  assert.doesNotMatch(ui.ids.launchProgress.textContent,/null|undefined|на телефон|після публікації/);
+  assert.equal(sends,0);
+});
+
 test('saved card restores full criteria, waits for active search and starts one explicit search',async()=>{
   let stored;
   const ui=setup({list:async()=>[{id:9,name:'Golf',filters:stored,enabled:false}]});stored=ui.filters();

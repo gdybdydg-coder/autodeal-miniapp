@@ -21,6 +21,7 @@ from .models import Filters, SourceBudget, SourceCache, SourceProbe
 from .ria_budget import BudgetLimits, peer_scan_limit
 from . import peer_cache
 from .valuation import DIMENSIONS, VERSION, PeerBatch, estimate, is_deal, reasons, vehicle_key
+from .launch import source_added_at
 
 FRESH_SECONDS = 900
 SNAPSHOT_SECONDS = 86400
@@ -189,7 +190,7 @@ def parse_car(data, source_id):
             "comparable_condition": type((data.get("technicalCondition") or {}).get("id")) is int
                 and (data.get("technicalCondition") or {}).get("id") == 1
                 and all(flags.get(k) is False for k in ("damage", "onRepairParts", "abroad", "custom")),
-            "observed_at": time.time()}
+            "source_added_at": source_added_at(data.get("addDate")), "observed_at": time.time()}
 
 
 class RiaSearch:

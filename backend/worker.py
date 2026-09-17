@@ -8,7 +8,7 @@ from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 from .app import Settings
-from .models import (Car, Delivery, Filters, Listing, MonitorJob, MonitorMatch,
+from .models import (Car, Delivery, DeliveryTiming, Filters, Listing, MonitorJob, MonitorMatch,
                      MonitorSeen, MonitorWatch, Search, User)
 from .valuation import evidence_valid, is_deal
 from .peer_cache import evidence_current
@@ -96,8 +96,10 @@ def enqueue(engine, now=None):
                     continue
                 try:
                     with db.begin_nested():
-                        db.add(Delivery(user_id=user.id, listing_id=listing.id, state="pending", retry_at=0))
+                        delivery = Delivery(user_id=user.id, listing_id=listing.id, state="pending", retry_at=0)
+                        db.add(delivery)
                         db.flush()
+                        db.add(DeliveryTiming(delivery_id=delivery.id, queued_at=now))
                 except IntegrityError:
                     pass  # Unique (user, source listing) is the final dedupe authority.
         db.commit()
@@ -178,13 +180,24 @@ def deliver_one(engine, settings: Settings, sender, now=None):
         elif not user or not user.ready or not listing or not eligible(db, row.user_id, listing, now):
             row.state = "cancelled"
         else:
+            car = Car.model_validate(listing.car)
+            timing = db.get(DeliveryTiming, delivery_id)
+            if timing is None:
+                timing = DeliveryTiming(delivery_id=delivery_id, queued_at=now)
+                db.add(timing)
+            for field in ("discovered_at", "evaluated_at", "source_added_at"):
+                setattr(timing, field, (car.pipeline or {}).get(field))
+            timing.send_started_at = time.time()
             try:
-                result = sender(row.user_id, Car.model_validate(listing.car))
+                result = sender(row.user_id, car)
             except Exception:
                 result = {"uncertain": True}
             if result.get("ok") is True and type(result.get("result", {}).get("message_id")) is int:
                 row.state = "sent"
                 row.message_id = result["result"]["message_id"]
+                timing.accepted_at = time.time()
+                stamp = result["result"].get("date")
+                timing.telegram_date = stamp if type(stamp) is int and stamp > 0 else None
             elif result.get("error_code") == 429:
                 retry = result.get("parameters", {}).get("retry_after", 60)
                 row.retry_at = now + max(1, min(int(retry), 86400))

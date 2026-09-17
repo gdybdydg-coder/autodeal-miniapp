@@ -25,7 +25,7 @@ from .valuation import policy as valuation_policy, reason_category
 from .models import (Base, Delivery, EnabledRequest, Filters, Listing, MonitorControl,
                      MonitorFeed, MonitorJob, MonitorMembership, MonitorSeen, MonitorWatch,
                      Search, SearchEditRequest, SearchRequest, TelegramTest, User)
-from . import monitor, telegram_setup, ria_rollout, full_scan
+from . import monitor, telegram_setup, ria_rollout, full_scan, launch
 
 
 @dataclass(frozen=True)
@@ -87,6 +87,7 @@ def create_app(settings: Settings, engine=None):
         Base.metadata.create_all(engine)
         initialize_budget(engine)
         monitor.initialize(engine)
+        launch.initialize(engine, settings.live and settings.monitor_enabled)
         if not settings.full_scan_enabled:
             full_scan.pause_all(engine)
         await asyncio.to_thread(probe_once, engine, settings.auto_ria_api_key)
@@ -225,6 +226,7 @@ def create_app(settings: Settings, engine=None):
         return {**probe_status(engine, bool(settings.auto_ria_api_key)), "quota": quota_status(engine),
                 "budget": budget_usage(engine),
                 "valuation_policy": valuation_policy(),
+                "launch": launch.status(engine, settings.live and settings.monitor_enabled),
                 "valuation_check": validation_status(engine, settings.ria_validation_run_id, settings.ria_validation_profile),
                 "catalog_check": ria_rollout.status(engine),
                 "monitor": monitor.runtime_status(engine, settings.monitor_enabled),
@@ -242,6 +244,7 @@ def create_app(settings: Settings, engine=None):
                 "test_available": telegram["test_available"],
                 "telegram_ready": bool(user and user.ready),
                 "test_sent": bool(test and test.state == "sent"),
+                "activity": launch.activity(db, uid),
                 "bot_url": "https://t.me/" + telegram_setup.BOT_USERNAME + "?start=notifications"}
 
     @app.post("/api/notifications/test")

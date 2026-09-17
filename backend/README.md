@@ -5,8 +5,8 @@
 > A full-market catalog and bulk database acquisition are no longer launch goals.
 > See [the notification-first transition plan](docs/notification-first-strategy.md).
 > Release 20260917-30 makes subscription creation the main action and disables
-> mass scans by default. The notification pilot remains disabled pending the
-> monitoring and delivery work described in that plan.
+> mass scans by default. Release 34 adds measurements for the explicitly
+> authorized notification rollout; each subscription still requires activation.
 
 ## Subscription management (release 20260917-31)
 
@@ -48,6 +48,37 @@ See [the retained-data review and its limitations](docs/valuation-review-2026-09
 178 backend tests and 59 frontend checks pass. No new live AUTO.RIA audit is run;
 fresh coverage, latency and Telegram delivery remain the step-4 launch test.
 Production monitoring, delivery, mass-scan flags and request caps are unchanged.
+
+## Measured subscription rollout (release 20260917-34)
+
+Step 4 adds `delivery_timings`, an additive table recording discovery, valuation,
+queueing, send start and Telegram API acceptance. The provider's `addDate` is used
+only when it includes an explicit timezone; missing/naive dates produce unknown
+publication latency. Telegram acceptance does not prove a phone push was shown.
+
+Authenticated notification status and Settings show the owner's last-24-hour
+new/evaluated/unvalued/queued cars, accepted alerts and last measured delivery.
+Public source status exposes aggregate readiness and counters, without recipient
+identities, filters or listing IDs. These reads make no provider calls or sends.
+A first-enabled baseline records cumulative provider usage once, survives
+restarts and counts all server provider calls since activation; it is not an
+estimate of monitor-only usage. Existing quota counters are never reset.
+
+Publish with notification flags off, verify readiness and no active subscriptions
+or queued deliveries, then enable `MONITOR_ENABLED`, `SOURCE_READY` and
+`DELIVERY_ENABLED` on the existing paid API. Keep `FULL_SCAN_ENABLED=false`, the
+900/hour, 3000/day and 90027 cumulative caps, and the exhausted audit unchanged.
+The owner already confirmed the test message. The owner must activate one chosen
+subscription through Telegram's authenticated Mini App; never impersonate that
+session or enable another user's search. Observe a genuinely new qualifying car
+before declaring the live delivery/latency check complete. Idle readiness alone
+does not establish source coverage or production delivery speed.
+
+185 backend tests and 60 frontend checks pass. Synthetic tests verify timing,
+owner isolation, no duplicate delivery, no success count for timeout/429/403,
+and no provider spending when reading progress. Synthetic timings are not live
+latency measurements. See the official [AUTO.RIA listing fields](https://docs-developers.ria.com/en/used-cars/auto_search_and_info/auto_info)
+and [Telegram sendMessage result](https://core.telegram.org/bots/api#sendmessage).
 
 ## Retiring mass scans (release 20260917-30)
 
