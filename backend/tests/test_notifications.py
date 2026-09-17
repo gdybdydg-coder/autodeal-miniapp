@@ -117,7 +117,7 @@ def api(db, monkeypatch):
         yield client
 
 
-def test_verified_private_start_test_and_pilot_slot_required(db, api, monkeypatch):
+def test_verified_private_start_test_required_for_each_user_and_multiple_searches_allowed(db, api, monkeypatch):
     sent = []
     def send(token, uid):
         sent.append(uid)
@@ -132,10 +132,10 @@ def test_verified_private_start_test_and_pilot_slot_required(db, api, monkeypatc
     assert sent == [111]
     assert api.get("/api/notifications/status", headers=headers()).json()["test_sent"] is True
     first = subscribe(api, brand="Volkswagen").json()["id"]
-    assert subscribe(api, brand="BMW").json()["detail"] == "Pilot allows one active search"
+    assert subscribe(api, brand="BMW").status_code == 200
     command(api, "/start", uid=222)
     assert api.post("/api/notifications/test", headers=headers(222)).json()["state"] == "sent"
-    assert subscribe(api, uid=222).json()["detail"] == "Pilot allows one active search"
+    assert subscribe(api, uid=222).status_code == 200
     assert api.patch(f"/api/subscriptions/{first}", headers=headers(222), json={"enabled": False}).status_code == 404
     assert api.patch(f"/api/subscriptions/{first}", headers=headers(), json={"enabled": False}).status_code == 200
     assert subscribe(api, uid=222).status_code == 200

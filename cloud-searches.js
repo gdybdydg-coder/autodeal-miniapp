@@ -10,13 +10,13 @@ function renderNotificationStatus() {
     !state.telegram_ready?"Підключи чат бота":
     !state.test_sent?"Перевір зв’язок тестовим повідомленням":
     !state.available?"Тест надіслано · моніторинг ще не ввімкнено":
-    "Готові до ввімкнення · один пошук";
+    "Готові до ввімкнення";
   $("testNotification").disabled=cloudBusy||!testAvailable||!state?.telegram_ready;
   $("subscriptionsHint").textContent=!state?(cloudBusy?"Перевіряємо стан сповіщень…":"Стан сповіщень не підтверджено. Онови список, щоб перевірити підключення."):
     !state.available?"Підписки збережені. Сповіщення ще готуються до запуску.":
     !state.telegram_ready?"Для сповіщень відкрий чат бота й надішли /start.":
     !state.test_sent?"Перевір зв’язок тестовим повідомленням у налаштуваннях.":
-    "Вмикай сповіщення в меню ⋯ потрібної підписки. Зараз доступна одна активна підписка.";
+    "Вмикай сповіщення в меню ⋯ потрібних підписок. Однакові фільтри перевіряються разом.";
 }
 function cloudMessage(message) {
   $("cloudStatus").textContent=message;
@@ -53,13 +53,16 @@ async function loadCloud() {
   renderNotificationStatus();
   const cards=items.map(item=>{
     const filters=savedAPI.normalize(item.filters);
-    const statuses={starting:"готуємо початковий список, попередні авто не розсилаємо",watching:"моніторинг працює",
-      checking:"оцінюємо нові авто",coverage_limited:"частину авто не встигли оцінити: звузь фільтри пошуку",
+    const statuses={starting:"починаємо стежити за новими оголошеннями",watching:"моніторинг працює",
+      checking:"оцінюємо нові авто",catching_up:"дочитуємо нові оголошення · черга збережена",
+      coverage_changed:"список AUTO.RIA змінюється · повторюємо перевірку",
       quota_exceeded:"пауза: ліміт запитів AUTO.RIA",busy:"очікуємо завершення іншого запиту",
-      search_limit:"перевірку продовжимо наступним циклом",window_gap:"забагато нових результатів: звузь фільтри та ввімкни пошук знову",
+      search_limit:"перевірку продовжимо наступним циклом",
       unsupported_filter:"фільтр не підтверджено AUTO.RIA: зміни пошук",invalid_response:"пауза: некоректна відповідь AUTO.RIA"};
-    const status=item.enabled?
+    let status=item.enabled?
       (notificationState?.available?(statuses[item.monitor_status]||"очікуємо перевірку джерела"):"Моніторинг тимчасово недоступний"):"На паузі · сповіщення вимкнені";
+    if(item.enabled&&notificationState?.available&&item.pending_count>0) status+=" · у черзі: "+item.pending_count;
+    if(item.enabled&&notificationState?.available&&item.unvalued_count>0) status+=" · бракує даних для оцінки: "+item.unvalued_count;
     return subscriptionCard({...item,filters},{cloud:true,status,active:item.enabled&&notificationState?.available,
       canToggle:item.enabled||!!(notificationState?.available&&notificationState.telegram_ready&&notificationState.test_sent),
       toggle:window.AutoDealCloud.enable?()=>cloudAction(async()=>{

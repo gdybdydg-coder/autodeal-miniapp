@@ -3,12 +3,13 @@ import logging
 import time
 
 import httpx
-from sqlalchemy import select, update
+from sqlalchemy import or_, select, update
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 from .app import Settings
-from .models import Car, Delivery, Filters, Listing, MonitorMatch, MonitorWatch, Search, User
+from .models import (Car, Delivery, Filters, Listing, MonitorJob, MonitorMatch,
+                     MonitorSeen, MonitorWatch, Search, User)
 
 
 def matches(car: Car, filters: Filters):
@@ -49,6 +50,13 @@ def ingest(engine, cars: list[Car], now=None):
         db.commit()
 
 
+def matching_searches(user_id, listing_id):
+    return select(MonitorMatch.search_id).join(Search, Search.id == MonitorMatch.search_id).join(
+        MonitorWatch, MonitorWatch.search_id == Search.id).where(
+        MonitorMatch.listing_id == listing_id, Search.user_id == user_id, Search.enabled.is_(True),
+        MonitorMatch.epoch == MonitorWatch.epoch, MonitorMatch.fingerprint == Search.fingerprint)
+
+
 def eligible(db, user_id, listing, now):
     car = Car.model_validate(listing.car)
     if not fresh(car, now):
@@ -58,11 +66,7 @@ def eligible(db, user_id, listing, now):
             return False
         # Production matches use official catalog IDs, not translated labels.
         # The trusted monitor records the filter fingerprint and enable epoch.
-        return db.scalar(select(MonitorMatch.search_id).join(Search, Search.id == MonitorMatch.search_id)
-            .join(MonitorWatch, MonitorWatch.search_id == Search.id).where(
-                MonitorMatch.listing_id == listing.id, Search.user_id == user_id,
-                Search.enabled.is_(True), MonitorMatch.epoch == MonitorWatch.epoch,
-                MonitorMatch.fingerprint == Search.fingerprint).limit(1)) is not None
+        return db.scalar(matching_searches(user_id, listing.id).limit(1)) is not None
     return any(matches(car, Filters.model_validate(row.filters)) for row in db.scalars(
         select(Search).where(Search.user_id == user_id, Search.enabled.is_(True),
                              Search.after_listing < listing.id)))
@@ -72,7 +76,12 @@ def enqueue(engine, now=None):
     now = time.time() if now is None else now
     with Session(engine) as db:
         for user in db.scalars(select(User).where(User.ready.is_(True))):
-            for listing in db.scalars(select(Listing)):
+            matched = select(MonitorMatch.listing_id).join(Search, Search.id == MonitorMatch.search_id).where(
+                Search.user_id == user.id, Search.enabled.is_(True))
+            already_queued = select(Delivery.listing_id).where(Delivery.user_id == user.id)
+            for listing in db.scalars(select(Listing).where(
+                    or_(Listing.source != "auto_ria", Listing.id.in_(matched)),
+                    Listing.id.not_in(already_queued))):
                 if not eligible(db, user.id, listing, now):
                     continue
                 exists = db.scalar(select(Delivery.id).where(Delivery.user_id == user.id, Delivery.listing_id == listing.id))
@@ -145,7 +154,21 @@ def deliver_one(engine, settings: Settings, sender, now=None):
         # Same lock as /stop and subscription edits; recheck immediately before send.
         user = db.scalar(select(User).where(User.id == row.user_id).with_for_update())
         listing = db.get(Listing, row.listing_id)
-        if not user or not user.ready or not listing or not eligible(db, row.user_id, listing, now):
+        refresh = []
+        if user and user.ready and listing and listing.source == "auto_ria" and not fresh(Car.model_validate(listing.car), now):
+            refresh = list(db.scalars(matching_searches(user.id, listing.id)))
+        if refresh:
+            # A long Telegram queue is not grounds to send an old price or silently
+            # discard the opportunity. Revalidate through the normal budgeted job.
+            job = db.get(MonitorJob, listing.source_id)
+            if job is None:
+                db.add(MonitorJob(source_id=listing.source_id, first_seen=now))
+            elif job.state != "pending":
+                job.state, job.next_run, job.result = "pending", 0, {}
+            db.execute(update(MonitorSeen).where(MonitorSeen.search_id.in_(refresh),
+                MonitorSeen.source_id == listing.source_id).values(state="pending"))
+            row.state, row.retry_at = "pending", now + 5
+        elif not user or not user.ready or not listing or not eligible(db, row.user_id, listing, now):
             row.state = "cancelled"
         else:
             try:
