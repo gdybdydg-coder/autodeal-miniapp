@@ -1,6 +1,6 @@
 """Subscription-only discovery, durable valuation jobs and independent delivery.
 
-Each provider request covers a frozen creation-time window. Checkpoints advance
+Each provider request covers a frozen publication-time window. Checkpoints advance
 only after its pages are saved. No full-market scan or in-memory work queue.
 """
 import asyncio
@@ -27,7 +27,7 @@ INTERVAL = 60
 LEASE = 120
 PAGE_SIZE = 50
 WINDOW_SECONDS = 3600
-INDEX_OVERLAP = 120
+INDEX_OVERLAP = 600
 EVIDENCE_SECONDS = 60
 log = logging.getLogger(__name__)
 
@@ -108,7 +108,8 @@ def runtime_status(engine, enabled, uid=None):
                 "interval_seconds": poll_interval(groups), "minimum_interval_seconds": INTERVAL,
                 "active_filter_groups": groups, "shared_polling": True,
                 "pending_jobs": db.scalar(select(func.count()).select_from(MonitorJob)
-                    .where(MonitorJob.state == "pending")), "strategy": "new_listings_v2",
+                    .where(MonitorJob.state == "pending")), "strategy": "new_publications_v3",
+                "index_overlap_seconds": INDEX_OVERLAP,
                 "discovery": discovery}
 
 
@@ -196,6 +197,10 @@ class Monitor:
                        if m.feed_id == feed_id]
             if not members:
                 return None
+            if feed.context and feed.context.get("clock") != "published":
+                # Keep the checkpoint and recipient epochs. Only discard an
+                # unfinished old-clock page sequence; never restart the catalog.
+                feed.context = {}
             if feed.context:
                 valid = {(sid, uid, epoch) for sid, uid, epoch, _ in members}
                 if not any(tuple(member) in valid for part in feed.context["slices"] for member in part["members"]):
@@ -216,6 +221,7 @@ class Monitor:
                            "members": [list(m[:3]) for m in members if m[3] <= a]}
                           for a, b in zip(boundaries, boundaries[1:])]
                 feed.context = {"slices": slices, "finish_at": end, "page": 0,
+                                "clock": "published",
                                 "last_ids": [], "multi": False, "added": False, "passes": 0,
                                 "catchup": end < target}
                 db.commit()
@@ -229,8 +235,8 @@ class Monitor:
         current_slice = context["slices"][0]
         params, _ = source.parameters(filters)
         params.update(countpage=PAGE_SIZE, page=context["page"], order_by=7,
-                      created_after=stamp(current_slice["after"]),
-                      created_before=stamp(current_slice["before"] + 1))
+                      published_after=stamp(current_slice["after"]),
+                      published_before=stamp(current_slice["before"] + 1))
         result = source.request("search", params, parse_ids, ttl=INTERVAL, force=True)
         ids, total = result["ids"], result["total"]
         if ((context["page"] and ids and ids == context["last_ids"])

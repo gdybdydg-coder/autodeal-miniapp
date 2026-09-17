@@ -333,10 +333,10 @@ with threads for blocking calls and a shared stop event. A database lease preven
 parallel source work across deploys. No additional paid worker is created; the
 existing $7 API is reused. All notification flags still default off.
 
-Creation-time windows use official `created_after`, `created_before`, `order_by=7`
+Publication-time windows use official `published_after`, `published_before`, `order_by=7`
 and 50-ID pages. Each response is committed before evaluation. Multi-page windows
 are verified with another pass, recovering page shifts due to removals. Fixed
-upper bounds avoid moving new heads; a two-minute overlap recovers short indexing
+upper bounds avoid moving new heads; a ten-minute overlap recovers short indexing
 delays. Repeated/inconsistent pages remain visibly paused, without advancing the
 checkpoint. Restarts resume the saved window and page. Activation boundaries split
 shared windows so a new subscriber never inherits an earlier subscriber's backlog.
@@ -619,3 +619,33 @@ Both flags must remain false during integration. Source attribution:
 Official API contracts:
 - https://docs-developers.ria.com/en/used-cars/auto_search_and_info/search_auto
 - https://docs-developers.ria.com/en/used-cars/auto_search_and_info/auto_info
+
+
+### Alert coverage and latency (20260917-44)
+
+Incident diagnostics found six unvalued arrivals due to insufficient peers (three
+also reached the comparison scan cap), and five rejected on source condition.
+`launch.activity.unknown_breakdown` now reports fixed aggregate reason codes,
+rejected-peer reasons and sample sizes, with no listing or subscriber identifiers.
+
+Valuation `asking-v4` accepts a peer with no modification ID when explicit engine
+capacity matches and generation, body, fuel, transmission, year, mileage, freshness
+and condition checks pass. Conflicting known modification IDs remain excluded.
+At least five distinct eligible cars are still required. Peer queries use engine
+capacity when known so optional missing modification IDs cannot hide candidates.
+Previously discovered active unvalued interests are re-evaluated once under the
+new policy; already delivered cars and stopped subscription epochs are not replayed.
+
+Discovery follows publication time, including a first publication of an older
+draft, rather than creation time. A ten-minute overlapping window recovers delayed
+index entries. Listing-ID deduplication prevents repeated publication from sending
+another alert for an already seen ID. Unfinished creation-clock page contexts restart
+from the existing checkpoint without resetting subscription activation boundaries.
+
+For the user's priority of faster delivery, the operational daily allowance is
+12,000 requests with the existing 900/hour and 90,027 absolute ceilings unchanged.
+Four distinct subscriptions therefore target 60 seconds between polls. That is
+about 5,760 daily discovery requests before pagination, comparisons and other API
+usage; the purchased package consequently lasts less time. No new paid service
+or automatic package purchase is introduced. API indexing, valuation work and
+quota pauses still affect real arrival time.
