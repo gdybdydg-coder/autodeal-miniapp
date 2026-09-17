@@ -77,7 +77,7 @@ vm.runInContext(fs.readFileSync(__dirname+'/saved-searches.js','utf8'),context);
 vm.runInContext(fs.readFileSync(__dirname+'/search-manager.js','utf8'),context);
 byId.brand.value='BMW';byId.model.value='3 Series';byId.priceTo.value='20000';
 byId.saveSearchBtn.listeners.click();
-assert.equal(byId.savedDialog.open,true);assert.equal(byId.saveSearchForm.hidden,false);
+assert.equal(byId.savedDialog.hidden,false);assert.equal(byId.saveSearchForm.hidden,false);
 assert.match(byId.draftSummary.textContent,/BMW/);
 byId.savedName.value='My BMW';
 byId.saveSearchForm.listeners.submit({preventDefault(){}});

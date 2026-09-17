@@ -14,6 +14,13 @@ notification to the owner's phone and wider accuracy checks remain launch checks
 Frontend checks: `node --test cloud-test.cjs`, `node filter-test.cjs`,
 `node storage-test.cjs`. The DOM harness checks behavior, not rendered visual layout.
 
+«Пошук», «Вигідні» and «Мої пошуки» now switch separate in-app screens. Filters
+are hidden on the deals screen; the saved-search manager is a full page, not a
+modal. The bottom navigation stays available. Screen switches start at the top
+without an animated scroll down the filter form, and retain entered filters.
+Deals loading/completion never scrolls the page. Returning to search or opening
+saved searches also cancels a pending ordinary search's completion scroll.
+
 The bottom «Вигідні» navigation runs the same authenticated search with the current
 form filters and `onlyDeals=true`, without changing the regular search preference.
 Its heading and criteria identify the request. The client also checks the exact
@@ -28,7 +35,7 @@ requests blocked while loading. This does not call AUTO.RIA. Device searches sta
 available if the server fails; each list shows its count. «Новий пошук» returns to
 the filter form without saving or searching. Opening a saved card restores its
 filters and explicitly searches, unless another search is still running. Closing
-the manager restores the previous navigation tab. A late cloud-save response
+the manager with its back arrow restores the previous navigation tab. A late cloud-save response
 cannot hide a newly opened draft. Deletion still requires confirmation and saves
 remain without notifications until the separate enable button is pressed.
 Run `node --test manager-test.cjs` for these flows.

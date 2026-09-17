@@ -59,7 +59,6 @@ function openSavedSearch(filters) {
   }
   try {
     applySavedFilters(filters);
-    $("savedDialog").close();
     return searchCars();
   } catch(error) { explain(error.message); }
 }
@@ -89,7 +88,7 @@ function openSearchManager(compose) {
     $("savedName").value=[draftFilters.brand||"Мій пошук",draftFilters.model].filter(Boolean).join(" ");
     $("draftSummary").textContent=summarizeFilters(draftFilters);
   }
-  if(!$("savedDialog").open) {
+  if($("savedDialog").hidden) {
     const active=[...document.querySelectorAll(".nav")].find(item=>item.classList.contains("active"));
     managerReturnTab=active?.dataset.tab==="deals"?"deals":"search";
   }
@@ -100,20 +99,14 @@ function openSearchManager(compose) {
   $("newSavedSearch").hidden=compose;
   $("saveSearchForm").hidden=!compose;
   renderSavedSearches();
-  if(!$("savedDialog").open) $("savedDialog").showModal();
-  $("savedDialog").scrollTop=0;
-  $("closeSaved").focus();
+  $("savedTitle").focus({preventScroll:true});
   if(!compose) return window.AutoDealCloudSearches?.refresh();
 }
 $("saveSearchBtn").addEventListener("click",()=>openSearchManager(true));
 $("settingsBtn").addEventListener("click",()=>openSearchManager(false));
-$("closeSaved").addEventListener("click",()=>$("savedDialog").close());
-$("savedDialog").addEventListener("close",()=>{
-  if([...document.querySelectorAll(".nav")].some(item=>item.dataset.tab==="saved"&&item.classList.contains("active")))
-    setSearchTab(managerReturnTab);
-});
+$("closeSaved").addEventListener("click",()=>setSearchTab(managerReturnTab));
 $("newSavedSearch").addEventListener("click",()=>{
-  $("savedDialog").close();showSearchForm();
+  showSearchForm();
   toast("Обери фільтри та натисни «Зберегти пошук».");
 });
 $("saveSearchForm").addEventListener("submit",event=>{
@@ -134,5 +127,5 @@ document.querySelectorAll(".nav").forEach(item=>item.addEventListener("click",()
   showSearchForm();
 }));
 window.addEventListener("storage",event=>{
-  if((event.key===savedAPI.KEY||event.key===null)&&$("savedDialog").open) renderSavedSearches();
+  if((event.key===savedAPI.KEY||event.key===null)&&!$("savedDialog").hidden) renderSavedSearches();
 });

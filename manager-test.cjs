@@ -43,7 +43,8 @@ test('opening My searches reads account once, keeps local cards and restores nav
   ui.run('savedAPI.save(window.localStorage,readCurrentFilters(),"Локальний",false)');
   ui.run('setSearchTab("deals")');
   const pending=ui.nav.saved.listeners.click();ui.nav.saved.listeners.click();
-  assert.equal(lists,1);assert.equal(ui.ids.savedDialog.open,true);
+  assert.equal(lists,1);assert.equal(ui.ids.savedDialog.hidden,false);
+  assert.equal(ui.ids.searchFilters.hidden,true);assert.equal(ui.ids.results.hidden,true);
   assert.equal(ui.nav.saved.attributes['aria-current'],'page');
   assert.equal(ui.ids.localTitle.textContent,'На цьому пристрої (1)');
   assert.equal(ui.ids.savedSearchList.children.length,1);
@@ -73,10 +74,10 @@ test('saved card restores full criteria, waits for active search and starts one 
   await ui.nav.saved.listeners.click();
   const open=ui.ids.cloudSearchList.children[0].children[3].children[0];
   ui.setBusy(true);await open.listeners.click();
-  assert.equal(ui.ids.savedDialog.open,true);assert.match(ui.ids.savedError.textContent,/ще виконується/);
+  assert.equal(ui.ids.savedDialog.hidden,false);assert.match(ui.ids.savedError.textContent,/ще виконується/);
   assert.equal(ui.ids.brand.value,'BMW');assert.equal(ui.searches.length,0);
   ui.setBusy(false);await open.listeners.click();
-  assert.equal(ui.ids.savedDialog.open,false);assert.equal(ui.searches.length,1);
+  assert.equal(ui.ids.savedDialog.hidden,true);assert.equal(ui.searches.length,1);
   assert.equal(ui.searches[0].brand,'Volkswagen');assert.equal(ui.searches[0].model,'Golf');
   assert.equal(ui.searches[0].region,'Хмельницька область');assert.equal(ui.searches[0].price.to,20000);
   assert.equal(ui.searches[0].mileage.to,180);assert.deepEqual(Array.from(ui.searches[0].fuel),['Дизель']);
@@ -86,8 +87,9 @@ test('saved card restores full criteria, waits for active search and starts one 
 test('new search goes to filters without sending or deleting anything',async()=>{
   let writes=0;const ui=setup({save:async()=>writes++,remove:async()=>writes++});
   await ui.nav.saved.listeners.click();ui.ids.newSavedSearch.listeners.click();
-  assert.equal(ui.ids.savedDialog.open,false);assert.equal(ui.nav.search.attributes['aria-current'],'page');
-  assert.equal(ui.ids.searchFilters.scrolled,true);assert.equal(writes,0);assert.equal(ui.searches.length,0);
+  assert.equal(ui.ids.savedDialog.hidden,true);assert.equal(ui.nav.search.attributes['aria-current'],'page');
+  assert.equal(ui.ids.searchFilters.hidden,false);assert.equal(ui.ids.searchTitle.focused,true);
+  assert.equal(writes,0);assert.equal(ui.searches.length,0);
 });
 
 test('late completion of saving never hides a new draft',async()=>{

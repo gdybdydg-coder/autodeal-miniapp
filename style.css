@@ -82,9 +82,9 @@ h1 { font-weight: 400; letter-spacing: -.3px; }
 .reset-filters { min-height: 44px; padding: 8px 0; margin-top: 6px; border: 0; background: transparent; color: #babac3; font-size: 13px; text-decoration: underline; cursor: pointer; }
 .demo-note { margin-bottom: 12px; }
 .save-search-button { width:100%; min-height:44px; border:1px solid #393940; border-radius:10px; margin-top:10px; background:transparent; color:#ddd; font-size:14px; cursor:pointer; }
-#savedDialog { box-sizing:border-box; width:calc(100% - 24px); max-width:480px; max-height:85dvh; overflow:auto; border:1px solid #393940; border-radius:18px; background:#141417; color:#f7f7f8; padding:16px; }
-#savedDialog::backdrop { background:rgba(0,0,0,.75); }
-.dialog-head { display:flex; align-items:center; justify-content:space-between; gap:12px; position:sticky; top:-16px; z-index:2; background:#141417; padding:8px 0; }
+[hidden] { display:none!important; }
+#savedDialog { width:100%; color:var(--text); padding:0; }
+.dialog-head { display:flex; align-items:center; justify-content:space-between; gap:12px; padding:0 0 12px; }
 .dialog-head h2 { font-size:20px; font-weight:500; margin:0; }
 .dialog-close { width:44px; height:44px; border:0; background:transparent; color:white; font-size:28px; cursor:pointer; }
 .delivery-status { font-size:13px; color:#f7c57b; padding:10px; background:#30271b; border-radius:10px; }
@@ -96,7 +96,8 @@ h1 { font-weight: 400; letter-spacing: -.3px; }
 .saved-search-card h3 { margin:0 0 8px; font-size:16px; font-weight:500; }
 .saved-actions { display:flex; flex-wrap:wrap; gap:8px; margin-top:8px; }
 .manager-button { min-height:44px; padding:8px 12px; border:1px solid #44444c; border-radius:9px; color:#eee; background:#222228; font-size:13px; cursor:pointer; }
-#savedDialog { max-height:calc(100dvh - 32px); overscroll-behavior:contain; scroll-padding-top:64px; }
+#savedDialog .dialog-head h2 { font-size:24px; }
+#searchIntro[hidden] ~ .results { padding-top:0; }
 #savedDialog .input { font-size:16px; }
 #savedDialog .search-button, #savedDialog .save-search-button { min-height:48px; padding:12px; font-size:16px; white-space:normal; }
 #savedDialog button:disabled { opacity:.55; cursor:wait; }

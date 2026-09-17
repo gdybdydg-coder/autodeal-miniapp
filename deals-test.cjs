@@ -50,9 +50,13 @@ test('deals navigation uses selected filters, exact threshold and preserves regu
   assert.equal(ids.count.textContent,'Показано: 1');assert.equal(ids.resultsTitle.textContent,'Вигідні авто');
   assert.match(ids.resultsCriteria.textContent,/Volkswagen.*Golf.*Хмельницька/);
   assert.equal(nav.deals.attributes['aria-current'],'page');assert.ok(nav.deals.classList.contains('active'));
+  assert.equal(ids.searchFilters.hidden,true);assert.equal(ids.searchIntro.hidden,true);
+  assert.equal(ids.results.hidden,false);assert.equal(ids.savedDialog.hidden,true);
+  assert.equal(ids.results.scrolls,undefined);
   ids.editResultsFilters.listeners.click();
   assert.equal(nav.search.attributes['aria-current'],'page');assert.equal(calls.length,1);
-  assert.equal(ids.brand.value,'Volkswagen');assert.ok(ids.searchFilters.scrolls);
+  assert.equal(ids.brand.value,'Volkswagen');assert.equal(ids.searchFilters.hidden,false);
+  assert.equal(ids.results.hidden,true);assert.equal(ids.searchTitle.focused,true);
   await ids.searchBtn.listeners.click();
   assert.equal(calls[1].onlyDeals,false);assert.equal(ids.resultsTitle.textContent,'Результати пошуку');
 });
@@ -65,6 +69,7 @@ test('rapid taps do not duplicate search and returning to form prevents a late s
   nav.search.listeners.click();const scrolls=ids.results.scrolls;
   done(result());await pending;
   assert.equal(ids.results.scrolls,scrolls);assert.equal(nav.search.attributes['aria-current'],'page');
+  assert.equal(ids.results.hidden,true);assert.equal(ids.searchFilters.hidden,false);
   assert.equal(ids.searchBtn.disabled,false);
 });
 

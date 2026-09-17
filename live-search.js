@@ -57,7 +57,7 @@
   }
   async function search(filters,options={}) {
     if(busy) return;
-    busy=true;scrollOnFinish=true;
+    busy=true;scrollOnFinish=!options.dealsView;
     const button=document.getElementById("searchBtn"),label=button.textContent;
     const section=document.getElementById("results"),list=document.getElementById("resultsList");
     button.disabled=true;button.textContent="Перевіряю AUTO.RIA…";
@@ -67,7 +67,6 @@
     document.getElementById("count").textContent="";
     document.getElementById("sourceNote").textContent="Завантажую оголошення та перевіряю ціни. Це може тривати близько хвилини.";
     list.replaceChildren();
-    if(options.dealsView) section.scrollIntoView({behavior:"smooth",block:"start"});
     try {renderResults(await root.AutoDealCloud.search(filters),filters,options);}
     catch(error) {
       document.getElementById("sourceNote").textContent="Пошук не завершено.";
