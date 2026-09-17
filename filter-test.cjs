@@ -116,7 +116,7 @@ console.log('PASS: manager open/save/restore, draft notification preference, con
  assert.equal(saves,1);assert.equal(savedRaw,localBefore);
  assert.equal(byId.cloudSearchList.children[0].children[0].children[1].children[0].textContent,byId.savedName.value);
  byId.cloudSearchList.children[0].children[1].children[0].listeners.click();
- assert.match(byId.subscriptionMenuStatus.textContent,/Сповіщення вимкнені/);
+ assert.match(byId.subscriptionMenuStatus.textContent,/сповіщення вимкнені/i);
  byId.subscriptionMenuActions.children[1].listeners.click();assert.equal(deletes,0);
  byId.subscriptionMenuActions.children[0].listeners.click();
  await new Promise(resolve=>setImmediate(resolve));

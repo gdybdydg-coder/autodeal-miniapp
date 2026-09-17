@@ -29,12 +29,16 @@
               throw Error("Оновлення повної перевірки ще недоступне або цей пошук уже видалено. Онови застосунок і повтори пошук.");
             throw Error(reasons[code]||"AUTO.RIA зараз не відповідає. Спробуй пізніше.");
           }
-          if((method==="PATCH" || path.startsWith("/api/notifications/")) && response.status!==401) {
+          if((path.startsWith("/api/subscriptions") || path.startsWith("/api/notifications/")) && response.status!==401) {
             let code="";try {code=(await response.json()).detail;}catch(_){}
             const reasons={"Send /start to the bot first":"Відкрий чат бота, натисни «Розпочати» або надішли /start, потім онови список.",
               "Send a test notification first":"Спочатку натисни «Надіслати тестове повідомлення».",
               "Pilot allows one active search":"На першому запуску доступний один активний пошук. Вимкни попередній, щоб увімкнути цей.",
-              "Wait ten minutes before another test":"Наступне тестове повідомлення можна надіслати через 10 хвилин."};
+              "Wait ten minutes before another test":"Наступне тестове повідомлення можна надіслати через 10 хвилин.",
+              "Subscription filters already exist":"Підписка з такими фільтрами вже є. Відкрий її у списку або зміни фільтри.",
+              "Name is required":"Введи назву підписки.",
+              "Delivery/source not connected":"Сповіщення ще готуються до запуску. Підписку збережено, але ввімкнути її поки неможливо.",
+              "Monitor is offline":"Моніторинг тимчасово недоступний. Підписка залишається на паузі."};
             if(reasons[code]) throw Error(reasons[code]);
           }
           const messages={401:"Сесія Telegram закінчилася або не підтверджена. Закрий Mini App і відкрий знову через бота.",
@@ -76,6 +80,10 @@
         return request("/api/subscriptions/"+id,"PATCH",{enabled});
       },
       save:(name,filters)=>request("/api/subscriptions","POST",{name,filters,enabled:false}),
+      update:(id,name,filters)=>{
+        if(!Number.isSafeInteger(id)||id<=0) return Promise.reject(Error("Некоректна підписка"));
+        return request("/api/subscriptions/"+id,"PUT",{name,filters});
+      },
       remove:id=>{
         if(!Number.isSafeInteger(id)||id<=0) return Promise.reject(Error("Некоректний пошук"));
         return request("/api/subscriptions/"+id,"DELETE");

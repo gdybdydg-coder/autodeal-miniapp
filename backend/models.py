@@ -49,9 +49,12 @@ class Filters(StrictModel):
         return hashlib.sha256(json.dumps(self.canonical(), sort_keys=True).encode()).hexdigest()
 
 
-class SearchRequest(StrictModel):
+class SearchEditRequest(StrictModel):
     name: str = Field(min_length=1, max_length=60)
     filters: Filters
+
+
+class SearchRequest(SearchEditRequest):
     enabled: bool = False
 
 

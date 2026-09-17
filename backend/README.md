@@ -8,6 +8,27 @@
 > mass scans by default. The notification pilot remains disabled pending the
 > monitoring and delivery work described in that plan.
 
+## Subscription management (release 20260917-31)
+
+Users can save up to 20 distinct subscriptions, open a card to edit its name and
+all filters, cancel changes, pause/resume through the existing consent gates,
+and delete with confirmation. The compact list shows each subscription's state;
+readiness and save failures are visible instead of being hidden behind a panel.
+Device-local drafts remain separate and can also be edited in place.
+
+Authenticated `PUT /api/subscriptions/{id}` accepts `name` and `filters`, updates
+only the owner's existing row and rejects duplicate criteria with a specific
+409 response. Canonically unchanged filters preserve activation and the monitor
+checkpoint, so a rename does not restart monitoring. Changed filters pause the
+subscription and invalidate its old watch/matches under the same user lock used
+by delivery and /stop. Explicit activation creates a fresh baseline. Editing does
+not consume a new subscription slot, opt in to messages, or start a catalog scan.
+Creating a duplicate draft cannot silently pause an existing active subscription.
+
+Monitoring, delivery and provider-budget settings are unchanged. The global
+one-active-subscription pilot cap remains until transition step 2; this release
+completes subscription management, not the live notification rollout.
+
 ## Retiring mass scans (release 20260917-30)
 
 `FULL_SCAN_ENABLED` defaults to false. Startup pauses queued, running and waiting

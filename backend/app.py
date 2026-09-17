@@ -22,7 +22,7 @@ from .ria_search import RiaSearch, initialize_budget, verify_search_once, quota_
 from .ria_budget import BudgetLimits, peer_scan_limit
 from .ria_validation import validate_once, validate_run_id, validate_profile, validation_status
 from .models import (Base, Delivery, EnabledRequest, Filters, Listing, MonitorControl,
-                     MonitorSeen, MonitorWatch, Search, SearchRequest, TelegramTest, User)
+                     MonitorSeen, MonitorWatch, Search, SearchEditRequest, SearchRequest, TelegramTest, User)
 from . import monitor, telegram_setup, ria_rollout, full_scan
 
 
@@ -114,7 +114,7 @@ def create_app(settings: Settings, engine=None):
 
     app = FastAPI(lifespan=lifespan)
     app.add_middleware(CORSMiddleware, allow_origins=[settings.origin],
-                       allow_methods=["GET", "POST", "PATCH", "DELETE"],
+                       allow_methods=["GET", "POST", "PUT", "PATCH", "DELETE"],
                        allow_headers=["Content-Type", "X-Telegram-Init-Data"])
 
     @app.middleware("http")
@@ -320,6 +320,9 @@ def create_app(settings: Settings, engine=None):
             raise HTTPException(422, "Name is required")
         fingerprint = payload.filters.fingerprint()
         row = db.scalar(select(Search).where(Search.user_id == uid, Search.fingerprint == fingerprint))
+        if row is not None and row.enabled and not payload.enabled:
+            # Creating the same draft must not silently pause an active subscription.
+            raise HTTPException(409, "Subscription filters already exist")
         if payload.enabled:
             check_enable(user, db, row.id if row else None)
         was_enabled = bool(row and row.enabled)
@@ -353,6 +356,31 @@ def create_app(settings: Settings, engine=None):
         if row.enabled != payload.enabled:
             monitor.reset_watch(db, row.id, payload.enabled)
         row.enabled = payload.enabled
+        db.commit()
+        return view(row, db)
+
+    @app.put("/api/subscriptions/{search_id}")
+    def edit(search_id: int, payload: SearchEditRequest, uid=Depends(identity), db=Depends(session)):
+        user_row(db, uid)
+        row = db.scalar(select(Search).where(Search.id == search_id, Search.user_id == uid))
+        if row is None:
+            raise HTTPException(404, "Subscription not found")
+        if not payload.name.strip():
+            raise HTTPException(422, "Name is required")
+        fingerprint = payload.filters.fingerprint()
+        duplicate = db.scalar(select(Search.id).where(
+            Search.user_id == uid, Search.id != search_id, Search.fingerprint == fingerprint))
+        if duplicate is not None:
+            raise HTTPException(409, "Subscription filters already exist")
+        if fingerprint != row.fingerprint:
+            # New criteria require explicit activation and a fresh discovery baseline.
+            # The same user lock used by delivery and /stop protects this transition.
+            monitor.reset_watch(db, row.id, False)
+            row.enabled = False
+            row.after_listing = latest(db)
+        row.name = payload.name.strip()
+        row.filters = payload.filters.canonical()
+        row.fingerprint = fingerprint
         db.commit()
         return view(row, db)
 
