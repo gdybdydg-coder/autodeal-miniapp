@@ -54,9 +54,9 @@ def p(tmp_path, monkeypatch):
                 ids = [str(n) for n in range(90000, 90005)]
                 total = len(ids)
             else:
-                assert "created_after" in params and "created_before" in params
-                after = datetime.fromisoformat(params["created_after"]).timestamp()
-                before = datetime.fromisoformat(params["created_before"]).timestamp()
+                assert "published_after" in params and "published_before" in params
+                after = datetime.fromisoformat(params["published_after"]).timestamp()
+                before = datetime.fromisoformat(params["published_before"]).timestamp()
                 ids = sorted((sid for sid, created in ads.items() if after < created < before),
                              key=lambda sid: (ads[sid], sid), reverse=True)
                 total = len(ids)
@@ -102,7 +102,7 @@ def drain(p, limit=600):
 
 
 def searches(p):
-    return [params for path, params in p.calls if path == "search" and "created_after" in params]
+    return [params for path, params in p.calls if path == "search" and "published_after" in params]
 
 
 def details(p, sid):
@@ -156,6 +156,31 @@ def test_manual_cached_price_cannot_authorize_a_notification(p):
     wake(p)
     drain(p)
     assert not p.sent and len(details(p, "124")) == 2
+
+
+def test_known_modification_can_deliver_using_peers_with_verified_engine_only(p):
+    factory = p.runner.search_factory
+    def sparse_factory(engine, key):
+        source = factory(engine, key)
+        original = source.fetch
+        def fetch(key, path, params):
+            data = original(key, path, params)
+            if path == "info" and int(params["auto_id"]) >= 90000:
+                data["autoData"]["modificationId"] = None
+            return data
+        source.fetch = fetch
+        return source
+    p.runner.search_factory = sparse_factory
+    drain(p)
+    p.ads["124"] = p.clock[0] + 1
+    wake(p)
+    drain(p)
+    assert len(p.sent) == 1 and p.sent[0][1].source_id == "124"
+    assert p.sent[0][1].comparables == 5 and p.sent[0][1].market == 15000
+    assert p.sent[0][1].valuation_evidence["comparison_basis"] == "modification_with_engine_fallback"
+    query = next(params for path, params in p.calls if path == "search" and "generation_id[0][0]" in params)
+    assert query["engineVolumeFrom"] == query["engineVolumeTo"] == 2
+    assert "modifications[0][0][0]" not in query
 
 
 def test_pending_job_older_than_five_minutes_is_retained_and_price_rechecked(p):
@@ -245,7 +270,7 @@ def test_identical_filters_share_one_poll_and_valuation_for_two_users(p):
     assert {uid for uid, _ in p.sent} == {111, 222}
     assert len(details(p, "124")) == 1
     # Activation boundaries require temporary extra slices during the lookback.
-    wake(p, 181)
+    wake(p, 661)
     drain(p)
     wake(p)
     p.calls.clear()
@@ -331,6 +356,25 @@ def test_recent_late_indexing_is_recovered_by_overlap(p):
     assert [car.source_id for _, car in p.sent] == ["124"]
 
 
+def test_publication_after_an_old_draft_and_five_minute_index_delay_is_not_lost(p):
+    drain(p)
+    published = p.clock[0] + 1
+    # A draft can have been created hours earlier. Discovery must constrain its
+    # publication timestamp, as the provider does, not its creation timestamp.
+    wake(p, 300)
+    drain(p)
+    p.ads["124"] = published
+    wake(p)
+    drain(p)
+    assert [car.source_id for _, car in p.sent] == ["124"]
+    assert all("published_after" in params and "created_after" not in params for params in searches(p))
+    # Re-publishing a previously delivered ID cannot send it again.
+    p.ads["124"] = p.clock[0] + 1
+    wake(p)
+    drain(p)
+    assert len(p.sent) == 1
+
+
 def test_lease_and_flags_prevent_parallel_or_disabled_provider_work(p):
     assert p.runner.claim()
     other = Monitor(p.engine, p.settings, p.runner.search_factory, p.runner.sender)
@@ -363,6 +407,7 @@ def test_interval_adapts_to_distinct_groups_without_increasing_caps():
     assert poll_interval(1, caps) == 60
     assert poll_interval(2, caps) == 116
     assert poll_interval(20, caps) == 1152
+    assert poll_interval(4, BudgetLimits(900, 12000, 90000)) == 60
 
 
 def test_delivery_can_run_while_provider_lease_is_held(p):
@@ -436,7 +481,7 @@ def test_ageing_comparisons_refresh_even_when_candidate_price_is_still_fresh(p):
     with Session(p.engine) as db:
         listing = db.scalar(select(Listing))
         assert listing and listing.car["market"] == 15000
-        assert listing.car["valuation_evidence"]["version"] == "asking-v3"
+        assert listing.car["valuation_evidence"]["version"] == "asking-v4"
     # The candidate is only 11 seconds old; its peers are now too old. This also
     # covers stale evidence before the first enqueue, not just an existing queue.
     p.clock[0] += 11
@@ -472,7 +517,7 @@ def test_legacy_listing_without_comparable_proof_is_rechecked_instead_of_sent(p)
     p.clock[0] += 6
     p.runner.deliver_tick()
     assert len(p.sent) == 1 and len(details(p, "124")) == 2
-    assert p.sent[0][1].valuation_evidence["version"] == "asking-v3"
+    assert p.sent[0][1].valuation_evidence["version"] == "asking-v4"
 
 
 def test_known_changed_peer_price_invalidates_unexpired_evidence(p):
@@ -509,7 +554,7 @@ def test_repeated_provider_page_preserves_progress_and_surfaces_error(p):
         source = factory(engine, key)
         original = source.fetch
         def fetch(key, path, params):
-            return original(key, path, {**params, "page": 0} if "created_after" in params else params)
+            return original(key, path, {**params, "page": 0} if "published_after" in params else params)
         source.fetch = fetch
         return source
     p.runner.search_factory = repeated

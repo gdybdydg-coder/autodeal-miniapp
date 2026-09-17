@@ -88,6 +88,23 @@ def test_mixed_sample_is_unknown_even_with_a_low_candidate_price():
     assert rating["valuation_reasons"] == ["mixed_sample"]
 
 
+def test_missing_peer_modification_uses_verified_engine_without_accepting_conflicts():
+    candidate, peers = sample()
+    candidate["engine_cc"] = 2000
+    for peer in peers:
+        peer.update(modification_id=None, engine_cc=2000)
+    result = estimate(candidate, peers)
+    assert result["comparables"] == 5 and result["market"] == 10000
+    assert result["valuation_evidence"]["comparison_basis"] == "modification_with_engine_fallback"
+    for change in ({"engine_cc": None}, {"engine_cc": 1600}, {"modification_id": 999},
+                   {"generation_id": 999}, {"fuel_id": 1}, {"gear_id": 1}):
+        changed = [*peers[:-1], {**peers[-1], **change}]
+        rating = estimate(candidate, changed)
+        assert rating["market"] is None and rating["comparables"] == 4
+    candidate["engine_cc"] = None
+    assert estimate(candidate, peers)["market"] is None
+
+
 def test_delivery_requires_consistent_evidence_and_fresh_peer_prices():
     candidate, peers = sample()
     now = time.time()

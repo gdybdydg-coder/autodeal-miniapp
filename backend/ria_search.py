@@ -422,11 +422,13 @@ class RiaSearch:
                   "raceFrom": math.floor(max(0, candidate["mileage"] - tolerance) / 1000),
                   "raceTo": math.ceil((candidate["mileage"] + tolerance) / 1000),
                   "damage": 1, "abroad": 2, "custom": 1}
-        if "modification_id" in required:
-            params["modifications[0][0][0]"] = candidate["modification_id"]
-        else:
+        if valid_id(candidate.get("engine_cc")):
+            # Do not exclude peers merely because their optional modification ID
+            # is absent. The estimator still rejects conflicting known IDs.
             params.update(engineVolumeFrom=candidate["engine_cc"] / 1000,
                           engineVolumeTo=candidate["engine_cc"] / 1000)
+        else:
+            params["modifications[0][0][0]"] = candidate["modification_id"]
         result = self.request("search", params, parse_ids)
         known_ids = {peer["id"] for peer in peers} | {candidate["id"]}
         ids = [sid for sid in result["ids"] if sid not in known_ids]

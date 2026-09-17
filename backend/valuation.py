@@ -7,7 +7,7 @@ import statistics
 import time
 from decimal import Decimal
 
-VERSION = "asking-v3"
+VERSION = "asking-v4"
 MAX_AGE = 900
 MIN_PEERS = 5
 DIMENSIONS = ("brand_id", "model_id", "generation_id", "modification_id", "body_id", "fuel_id", "gear_id")
@@ -77,11 +77,19 @@ def reasons(car, now, dimensions=None):
 
 def comparable(candidate, peer, now):
     dimensions = comparison_dimensions(candidate)
+    # Some listings have a modification ID while otherwise equivalent peers do
+    # not. Use the explicit engine size in that case; never accept a conflicting
+    # known modification or guess an engine from seller text.
+    if ("modification_id" in dimensions and not peer.get("modification_id")
+            and type(candidate.get("engine_cc")) is int and candidate["engine_cc"] > 0):
+        dimensions = (*BASE_DIMENSIONS, "engine_cc")
     rejected = reasons(peer, now, dimensions)
     rejected.extend(key for key in dimensions if peer.get(key) != candidate.get(key))
     # Even in engine comparisons, conflicting known modifications stay apart.
     if candidate.get("modification_id") and peer.get("modification_id") and candidate["modification_id"] != peer["modification_id"]:
         rejected.append("modification_id")
+    if candidate.get("engine_cc") and peer.get("engine_cc") and candidate["engine_cc"] != peer["engine_cc"]:
+        rejected.append("engine_cc")
     if type(peer.get("year")) is int and abs(peer["year"] - candidate["year"]) > 1:
         rejected.append("year")
     if number(peer.get("mileage")) and abs(peer["mileage"] - candidate["mileage"]) > max(30000, candidate["mileage"] * .2):
@@ -129,6 +137,8 @@ def estimate(candidate, peers, *, now=None):
             fingerprints.add(fingerprint)
         accepted.append(peer)
     evidence["peers"] = [{key: peer.get(key) for key in FIELDS} for peer in accepted]
+    if candidate.get("modification_id") and any(not peer.get("modification_id") for peer in accepted):
+        evidence["comparison_basis"] = "modification_with_engine_fallback"
     prices = [peer["price_usd"] for peer in accepted]
     result["comparables"] = len(prices)
     if len(prices) < MIN_PEERS:
@@ -172,6 +182,7 @@ def policy():
             "fractional_thresholds": True,
             "minimum_comparables": MIN_PEERS, "dimensions": list(DIMENSIONS),
             "missing_modification_fallback": "same_generation_body_fuel_gear_and_explicit_engine_capacity",
+            "missing_modification_fallback_scope": "candidate_or_peer",
             "condition_basis": "no_source_damage_parts_abroad_or_custom_flags",
             "year_tolerance": 1, "mileage_tolerance_percent": 20, "mileage_tolerance_min_km": 30000,
             "maximum_detail_age_seconds": MAX_AGE, "sample_max_price_ratio": 2,
