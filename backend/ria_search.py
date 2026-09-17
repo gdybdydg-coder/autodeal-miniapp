@@ -190,7 +190,7 @@ def parse_car(data, source_id):
     auto = data["autoData"]
     state = data.get("stateData") or {}
     mileage = auto.get("raceInt")
-    if type(mileage) not in (int, float) or not math.isfinite(mileage) or mileage < 0:
+    if mileage is not None and (type(mileage) not in (int, float) or not math.isfinite(mileage) or mileage < 0):
         raise RiaError("invalid_response")
     def label(value):
         return value[:150] if isinstance(value, str) else ""
@@ -209,7 +209,8 @@ def parse_car(data, source_id):
             "modification_name": modification_name(auto.get("modificationName")),
             "modification_source": "listing" if valid_id(auto.get("modificationId")) else None,
             "engine_cc": engine_capacity(auto.get("fuelName")),
-            "mileage": round(mileage * 1000), "image": photo, "vehicle_key": vehicle_key(data.get("VIN")),
+            "mileage": round(mileage * 1000) if mileage is not None else None,
+            "image": photo, "vehicle_key": vehicle_key(data.get("VIN")),
             "comparable_condition": comparable_condition(data),
             "source_added_at": source_added_at(data.get("addDate")), "observed_at": time.time()}
 
@@ -375,6 +376,21 @@ class RiaSearch:
                     if field == "year" and boundary != int(boundary):
                         raise RiaError("unsupported_filter")
                     params[name] = math.floor(boundary) if name == low else math.ceil(boundary)
+        return params, ids
+
+    def discovery_parameters(self, filters):
+        """Broaden optional fields so incomplete new ads reach post-filtering.
+
+        AUTO.RIA can omit body/fuel/gearbox/mileage from a fresh listing. Sending
+        those constraints upstream would hide the listing before we can apply
+        the intended rule: an unknown optional value is allowed, while a known
+        conflicting value is rejected.
+        """
+        params, ids = self.parameters(filters)
+        for key in list(params):
+            if (key.startswith(("bodystyle[", "type[", "gearbox["))
+                    or key in {"raceFrom", "raceTo"}):
+                params.pop(key)
         return params, ids
 
     def car(self, source_id, *, force=False):
@@ -565,12 +581,16 @@ class RiaSearch:
 def matches(car, filters, ids):
     for key, value in ids.items():
         if isinstance(value, list):
-            if value and car.get(key) not in value:
+            # Missing optional details are unknown, not a contradiction.
+            if value and car.get(key) is not None and car.get(key) not in value:
                 return False
         elif car.get(key) != value:
             return False
-    for value, span in ((car["price_usd"], filters.price), (car["year"], filters.year),
-                        (car["mileage"] / 1000, filters.mileage)):
+    for value, span in ((car["price_usd"], filters.price), (car["year"], filters.year)):
+        if (span.from_ is not None and value < span.from_) or (span.to is not None and value > span.to):
+            return False
+    if car.get("mileage") is not None:
+        value, span = car["mileage"] / 1000, filters.mileage
         if (span.from_ is not None and value < span.from_) or (span.to is not None and value > span.to):
             return False
     return True

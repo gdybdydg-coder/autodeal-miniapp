@@ -10,7 +10,7 @@ from sqlalchemy.orm import Session
 from .app import Settings
 from .models import (Car, Delivery, DeliveryTiming, Filters, Listing, MonitorJob, MonitorMatch,
                      MonitorSeen, MonitorWatch, Search, User)
-from .valuation import evidence_valid, is_deal
+from .valuation import evidence_valid, is_deal, price_only_evidence_valid
 from .peer_cache import evidence_current
 
 
@@ -21,10 +21,17 @@ def matches(car: Car, filters: Filters):
         if getattr(filters, key) and getattr(filters, key) != getattr(car, key):
             return False
     for key in ("body", "fuel", "transmission"):
-        if getattr(filters, key) and getattr(car, key) not in getattr(filters, key):
+        value = getattr(car, key)
+        if getattr(filters, key) and value and value not in getattr(filters, key):
             return False
-    for key, value in (("price", car.price), ("year", car.year), ("mileage", car.mileage / 1000)):
+    for key, value in (("price", car.price), ("year", car.year)):
         bounds = getattr(filters, key)
+        if bounds.from_ is not None and value < bounds.from_:
+            return False
+        if bounds.to is not None and value > bounds.to:
+            return False
+    if car.mileage is not None:
+        bounds, value = filters.mileage, car.mileage / 1000
         if bounds.from_ is not None and value < bounds.from_:
             return False
         if bounds.to is not None and value > bounds.to:
@@ -34,8 +41,9 @@ def matches(car: Car, filters: Filters):
 
 def fresh(car, now, db=None):
     return (-30 <= now - car.observed_at <= (300 if car.source == "auto_ria" else 86400)
-            and (car.source != "auto_ria" or (evidence_valid(car, now)
-                 and (db is None or evidence_current(db, car.valuation_evidence)))))
+            and (car.source != "auto_ria" or price_only_evidence_valid(car, now)
+                 or (evidence_valid(car, now)
+                     and (db is None or evidence_current(db, car.valuation_evidence)))))
 
 
 def ingest(engine, cars: list[Car], now=None):
@@ -67,7 +75,8 @@ def eligible(db, user_id, listing, now):
     if car.source == "auto_ria":
         # Production matches use official catalog IDs, not translated labels.
         # The trusted monitor records the filter fingerprint and enable epoch.
-        return any(is_deal(car.price, car.market, Filters.model_validate(search.filters).minDiscount)
+        price_only = price_only_evidence_valid(car, now)
+        return any(price_only or is_deal(car.price, car.market, Filters.model_validate(search.filters).minDiscount)
                    for search in db.scalars(select(Search).where(
                        Search.id.in_(matching_searches(user_id, listing.id)))))
     return any(matches(car, Filters.model_validate(row.filters)) for row in db.scalars(
@@ -112,22 +121,30 @@ class TelegramSender:
         logging.getLogger("httpcore").setLevel(logging.WARNING)
 
     def __call__(self, user_id, car):
-        discount = (1 - car.price / car.market) * 100
         price = f"${car.price:,.0f}".replace(",", " ")
-        market = f"${car.market:,.0f}".replace(",", " ")
-        benefit = f"{discount:.1f}".rstrip("0").rstrip(".").replace(".", ",")
-        mileage = f"{car.mileage / 1000:g}".replace(".", ",")
-        text = (
-            f"🚘 {car.brand} {car.model} · {car.year}\n\n"
-            f"⛽️ {car.fuel}\n"
-            f"⚙️ {car.transmission}\n"
-            f"🛣️ Пробіг: {mileage} тис. км\n"
-            f"📍 {car.region}\n\n"
-            f"💰 Ціна: {price}\n"
-            f"📊 Ринкова ціна: ≈ {market}\n"
-            f"🔥 Вигода: {benefit}%\n\n"
-            "/stop — вимкнути сповіщення"
-        )
+        details = []
+        if car.fuel:
+            details.append(f"⛽️ {car.fuel}")
+        if car.transmission:
+            details.append(f"⚙️ {car.transmission}")
+        if car.mileage is not None:
+            mileage = f"{car.mileage / 1000:g}".replace(".", ",")
+            details.append(f"🛣️ Пробіг: {mileage} тис. км")
+        if car.region:
+            details.append(f"📍 {car.region}")
+        pricing = [f"💰 Ціна: {price}"]
+        if car.market is not None:
+            discount = (1 - car.price / car.market) * 100
+            market = f"${car.market:,.0f}".replace(",", " ")
+            benefit = f"{discount:.1f}".rstrip("0").rstrip(".").replace(".", ",")
+            pricing.extend((f"📊 Ринкова ціна: ≈ {market}", f"🔥 Вигода: {benefit}%"))
+        else:
+            pricing.append("⚡ Неповні характеристики — перевірте оголошення")
+        sections = [f"🚘 {car.brand} {car.model} · {car.year}"]
+        if details:
+            sections.append("\n".join(details))
+        sections.extend(("\n".join(pricing), "/stop — вимкнути сповіщення"))
+        text = "\n\n".join(sections)
         payload = {"chat_id": user_id, "reply_markup": {"inline_keyboard": [
             [{"text": "🔗 Відкрити оголошення", "url": str(car.url)}]]}}
         if car.photo:

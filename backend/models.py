@@ -78,11 +78,11 @@ class Car(StrictModel):
     fuel: str = Field(max_length=100)
     transmission: str = Field(max_length=100)
     year: int = Field(ge=1900, le=2100)
-    mileage: int = Field(ge=0)
+    mileage: int | None = Field(default=None, ge=0)
     price: float = Field(gt=0)
-    market: float = Field(gt=0)
+    market: float | None = Field(default=None, gt=0)
     # A trusted future source/valuation process must supply these, not Mini App.
-    comparables: int = Field(ge=5)
+    comparables: int = Field(ge=0)
     observed_at: float = Field(gt=0)
     valuation_evidence: dict | None = None
     pipeline: dict | None = None

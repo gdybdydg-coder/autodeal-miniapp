@@ -8,6 +8,7 @@ import time
 from decimal import Decimal
 
 VERSION = "asking-v4"
+PRICE_ONLY_VERSION = "listing-price-v1"
 MAX_AGE = 900
 MIN_PEERS = 5
 DIMENSIONS = ("brand_id", "model_id", "generation_id", "modification_id", "body_id", "fuel_id", "gear_id")
@@ -174,6 +175,35 @@ def evidence_valid(car, now):
     # Valuation proof is shared; each subscription applies its own threshold.
     return (result["valuation"] == "sample_median" and result["market"] == car.market
             and result["comparables"] == car.comparables)
+
+
+def price_only_evidence(candidate, evaluated_at):
+    """Minimal proof for an incomplete listing notification.
+
+    The price is still mandatory and freshly retrieved from the official detail
+    endpoint. This proof never claims a market value or discount.
+    """
+    return {"version": PRICE_ONLY_VERSION, "basis": "fresh_listing_price",
+            "evaluated_at": evaluated_at,
+            "candidate": {key: candidate.get(key) for key in
+                          ("id", "price_usd", "year", "mileage", "observed_at")}}
+
+
+def price_only_evidence_valid(car, now):
+    evidence = car.valuation_evidence
+    if not evidence or evidence.get("version") != PRICE_ONLY_VERSION or car.market is not None or car.comparables != 0:
+        return False
+    candidate = evidence.get("candidate")
+    if not isinstance(candidate, dict):
+        return False
+    return (candidate.get("id") == car.source_id
+            and candidate.get("price_usd") == car.price
+            and candidate.get("year") == car.year
+            and candidate.get("mileage") == car.mileage
+            and candidate.get("observed_at") == car.observed_at
+            and number(car.price, positive=True)
+            and number(car.observed_at, positive=True)
+            and -30 <= now - car.observed_at <= 300)
 
 
 def policy():

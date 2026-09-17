@@ -21,7 +21,7 @@ from .models import (Car, Filters, Listing, MonitorControl, MonitorFeed, Monitor
                      MonitorMatch, MonitorMembership, MonitorSeen, MonitorWatch, Search, User)
 from .ria_budget import BudgetLimits
 from .ria_search import RiaSearch, estimate, matches, parse_ids, quota_status
-from .valuation import MAX_AGE, VERSION, is_deal
+from .valuation import MAX_AGE, VERSION, is_deal, price_only_evidence
 
 INTERVAL = 60
 LEASE = 120
@@ -29,6 +29,7 @@ PAGE_SIZE = 50
 WINDOW_SECONDS = 3600
 INDEX_OVERLAP = 600
 EVIDENCE_SECONDS = 60
+OPTIONAL_DETAIL_FIELDS = ("body_id", "fuel_id", "gear_id", "mileage")
 log = logging.getLogger(__name__)
 
 
@@ -45,6 +46,10 @@ def initialize(engine):
 def source_filters(filters):
     # Percentages filter shared valuations, never provider discovery or pricing.
     return Filters.model_validate(filters).model_copy(update={"onlyDeals": True, "minDiscount": 15})
+
+
+def incomplete_optional_details(candidate):
+    return any(candidate.get(field) is None for field in OPTIONAL_DETAIL_FIELDS)
 
 
 def reset_watch(db, search_id, enabled):
@@ -233,7 +238,7 @@ class Monitor:
             return
         context, filters = prepared
         current_slice = context["slices"][0]
-        params, _ = source.parameters(filters)
+        params, _ = source.discovery_parameters(filters)
         params.update(countpage=PAGE_SIZE, page=context["page"], order_by=7,
                       published_after=stamp(current_slice["after"]),
                       published_before=stamp(current_slice["before"] + 1))
@@ -324,19 +329,23 @@ class Monitor:
                                                          MonitorMatch.listing_id == listing.id))
                 candidate, rating = evidence.get("candidate"), evidence.get("rating")
                 resolved = evidence.get("filters", {}).get(fingerprint)
-                if (not candidate or not rating or resolved is None
-                        or not matches(candidate, Filters.model_validate(search.filters), resolved)
-                        or rating["valuation"] != "sample_median"
-                        or not is_deal(candidate["price_usd"], rating["market"],
-                                       Filters.model_validate(search.filters).minDiscount)):
+                filters = Filters.model_validate(search.filters)
+                partial = evidence.get("partial_notification") is True
+                strict_deal = bool(rating and rating.get("valuation") == "sample_median"
+                    and is_deal(candidate["price_usd"], rating["market"], filters.minDiscount))
+                if (not candidate or resolved is None or not matches(candidate, filters, resolved)
+                        or not (partial or strict_deal)):
                     continue
+                proof = (price_only_evidence(candidate, evidence["evaluated_at"])
+                         if partial else rating["valuation_evidence"])
                 car = Car(source="auto_ria", source_id=source_id, url=candidate["url"],
                     photo=candidate["image"], brand=candidate["brand"][:100], model=candidate["model"][:100],
                     region=candidate["region"], body=candidate["body"][:100], fuel=candidate["fuel"][:100],
                     transmission=candidate["transmission"][:100], year=candidate["year"],
-                    mileage=candidate["mileage"], price=candidate["price_usd"], market=rating["market"],
-                    comparables=rating["comparables"], observed_at=candidate["observed_at"],
-                    valuation_evidence=rating["valuation_evidence"],
+                    mileage=candidate["mileage"], price=candidate["price_usd"],
+                    market=None if partial else rating["market"],
+                    comparables=0 if partial else rating["comparables"], observed_at=candidate["observed_at"],
+                    valuation_evidence=proof,
                     pipeline={"discovered_at": job.first_seen, "evaluated_at": evidence["evaluated_at"],
                               "source_added_at": candidate.get("source_added_at")})
                 if listing is None:
@@ -376,15 +385,17 @@ class Monitor:
                 _, resolved = source.parameters(filters)
                 evidence["filters"][fingerprint] = resolved
             any_match |= matches(candidate, filters, evidence["filters"][fingerprint])
+        partial = incomplete_optional_details(candidate)
+        evidence["partial_notification"] = partial
         rating = evidence.get("rating", {})
         proof_peers = rating.get("valuation_evidence", {}).get("peers", [])
         if (rating.get("valuation_version") != VERSION or
                 any(not -30 <= time.time() - peer["observed_at"] <= MAX_AGE for peer in proof_peers)):
             evidence.pop("rating", None)
-        if any_match and "rating" not in evidence:
+        if any_match and not partial and "rating" not in evidence:
             evidence["rating"] = estimate(candidate, source.comparisons(candidate))
         rating = evidence.get("rating", {})
-        outcome = "checked" if not any_match or rating.get("valuation") == "sample_median" else "unvalued"
+        outcome = "checked" if (not any_match or partial or rating.get("valuation") == "sample_median") else "unvalued"
         self.complete(source_id, evidence, outcome)
 
     def defer(self, kind, key, reason, limits):

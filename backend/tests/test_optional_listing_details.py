@@ -4,11 +4,11 @@ import pytest
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from backend.models import MonitorJob, MonitorSeen, User
-from backend.ria_search import RiaSearch, engine_capacity, parse_car
+from backend.models import Filters, MonitorJob, MonitorSeen, User
+from backend.ria_search import RiaSearch, engine_capacity, matches, parse_car
 from backend.ria_validation import comparison_report
-from backend.tests.test_monitor import p, drain
-from backend.tests.test_ria_search import engine, raw
+from backend.tests.test_monitor import p, drain, wake
+from backend.tests.test_ria_search import engine, fixture_fetch, raw
 from backend.valuation import estimate
 
 
@@ -95,3 +95,66 @@ def test_policy_rechecks_only_active_previous_monitor_interests(p, ready):
     with Session(p.engine) as db:
         assert db.get(MonitorJob, "124").state == ("pending" if ready else "unvalued")
         assert db.scalar(select(MonitorSeen).where(MonitorSeen.source_id == "124")).state == ("pending" if ready else "unvalued")
+
+
+def test_unknown_optional_values_match_but_known_conflicts_do_not():
+    filters = Filters(body=["Універсал"], fuel=["Дизель"], transmission=["Автомат"],
+                      mileage={"from": 50, "to": 200})
+    ids = {"body_id": [4], "fuel_id": [2], "gear_id": [2]}
+    candidate = parse_car(raw(), "123")
+    candidate.update(body_id=None, fuel_id=None, gear_id=None, mileage=None)
+    assert matches(candidate, filters, ids)
+    for field, value in (("body_id", 99), ("fuel_id", 99), ("gear_id", 99)):
+        assert not matches({**candidate, field: value}, filters, ids)
+    assert not matches({**candidate, "mileage": 201000}, filters, ids)
+
+
+def test_monitor_discovery_does_not_hide_ads_with_missing_optional_fields(engine):
+    calls = []
+    source = RiaSearch(engine, "fake", fixture_fetch(calls))
+    source.acquire()
+    try:
+        filters = Filters(brand="Volkswagen", model="Golf", body=["Хетчбек"], fuel=["Дизель"],
+                          transmission=["Автомат"], mileage={"from": 50, "to": 200}, price={"to": 20000})
+        params, ids = source.discovery_parameters(filters)
+    finally:
+        source.release()
+    assert ids["body_id"] and ids["fuel_id"] and ids["gear_id"]
+    assert not any(key.startswith(("bodystyle[", "type[", "gearbox[")) for key in params)
+    assert "raceFrom" not in params and "raceTo" not in params
+    assert params["price_do"] == 20000
+
+
+def test_monitor_sends_fresh_price_when_optional_details_are_missing(p):
+    factory = p.runner.search_factory
+
+    def incomplete_factory(engine, key):
+        source = factory(engine, key)
+        original = source.fetch
+
+        def fetch(api_key, path, params):
+            data = original(api_key, path, params)
+            if path == "info" and params["auto_id"] == "124":
+                data["autoData"].update(bodyId=None, fuelId=None, gearBoxId=None,
+                                        raceInt=None, fuelName=None, gearboxName=None)
+                data["subCategoryName"] = None
+            return data
+
+        source.fetch = fetch
+        return source
+
+    p.runner.search_factory = incomplete_factory
+    drain(p)
+    p.ads["124"] = p.clock[0] + 1
+    wake(p)
+    drain(p)
+    assert len(p.sent) == 1
+    car = p.sent[0][1]
+    assert car.source_id == "124" and car.price == 10000
+    assert car.market is None and car.comparables == 0 and car.mileage is None
+    assert car.fuel == "" and car.transmission == "" and car.body == ""
+    assert car.valuation_evidence["version"] == "listing-price-v1"
+    # No peer-price search is needed before the urgent partial notification.
+    assert not any(path == "search" and "generation_id[0][0]" in params for path, params in p.calls)
+    discovery = [params for path, params in p.calls if path == "search" and "published_after" in params]
+    assert discovery and all("type[0]" not in params for params in discovery)
