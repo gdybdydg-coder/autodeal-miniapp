@@ -1,6 +1,26 @@
-# AUTODeal backend — full manual search and one-search notification pilot
+# AUTODeal backend — subscriptions for new worthwhile cars
 
-## Full search scans with a shared local index (release 20260917-29)
+> Product direction changed on 2026-09-17: AUTODeal will monitor new, qualifying
+> listings for saved subscriptions and notify users in their private bot chat.
+> A full-market catalog and bulk database acquisition are no longer launch goals.
+> See [the notification-first transition plan](docs/notification-first-strategy.md).
+> Release 20260917-30 makes subscription creation the main action and disables
+> mass scans by default. The notification pilot remains disabled pending the
+> monitoring and delivery work described in that plan.
+
+## Retiring mass scans (release 20260917-30)
+
+`FULL_SCAN_ENABLED` defaults to false. Startup pauses queued, running and waiting
+full scans without deleting saved filters or results, and does not start the
+full-scan worker. Both scan-start APIs and resume requests return
+`409 full_scan_disabled`; owned progress/results remain readable. Public
+`/api/source-status` reports `full_scan.enabled` and `full_scan.active_jobs` so
+deployment can verify that the old workers have stopped. Delivery and monitoring
+flags are unchanged. The Mini App uses the existing saved-search flow to create
+subscriptions, with the 15% deal threshold; enabling alerts still requires the
+existing readiness and consent checks.
+
+## Historical full search scans (release 20260917-29, disabled by default)
 
 The Mini App starts a durable scan with authenticated `POST /api/cars/scans`.
 It captures **every returned ID page** (`countpage=50`) and checks an early

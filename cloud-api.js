@@ -16,6 +16,7 @@
         if(!response.ok) {
           if((path.startsWith("/api/cars/")||path.startsWith("/api/catalog")) && response.status!==401) {
             const reasons={unsupported_filter:"AUTO.RIA не підтвердила один із фільтрів. Зміни вибір: фільтр не буде проігноровано.",
+              full_scan_disabled:"AUTODeal переходить на сповіщення про нові вигідні авто. Онови застосунок і збережи фільтри як підписку.",
               busy:"Інший пошук ще виконується. Спробуй за хвилину.",quota_exceeded:"Досягнуто ліміт запитів AUTO.RIA. Спробуй пізніше.",
               search_limit:"Перевірка зайняла забагато часу. Спробуй пізніше.",not_configured:"Джерело AUTO.RIA ще не налаштоване.",
               search_expired:"Результати застаріли. Натисни «Показати авто», щоб почати свіжий пошук."};

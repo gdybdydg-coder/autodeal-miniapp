@@ -196,7 +196,7 @@ def test_deal_beyond_first_page_is_found_and_old_discounts_are_not_current(engin
 
 
 def test_scan_api_requires_telegram_ownership_and_get_never_launches_work(engine):
-    settings = Settings(str(engine.url), TOKEN, SECRET, auto_ria_api_key="test-only")
+    settings = Settings(str(engine.url), TOKEN, SECRET, auto_ria_api_key="test-only", full_scan_enabled=True)
     # No lifespan here: injected local worker is driven by tests, never real HTTP.
     client = TestClient(create_app(settings, engine))
     assert client.post("/api/cars/scans", json={}).status_code == 401
@@ -312,3 +312,22 @@ def test_old_scan_uses_newer_shared_details_and_cannot_resurrect_removed_cars(en
         market_cache.discard(db, "100")
         db.commit()
     assert status(engine, scan_id)["cars"] == []
+
+
+def test_retiring_full_scans_stops_workers_preserves_results_and_blocks_old_clients(engine):
+    scan_id = start(engine)
+    scanner = runner(engine, provider([], 500))
+    scanner.tick()
+    before = status(engine, scan_id)
+    assert before["inspected"] > 0 and before["status"] in full_scan.ACTIVE
+    full_scan.pause_all(engine)
+    assert scanner.claim() is None
+    settings = Settings(str(engine.url), TOKEN, SECRET, auto_ria_api_key="test-only")
+    client = TestClient(create_app(settings, engine))
+    assert client.post("/api/cars/scans", json={}, headers=headers()).json()["detail"] == "full_scan_disabled"
+    assert client.post("/api/cars/search", json={}, headers=headers()).status_code == 409
+    assert client.patch("/api/cars/scans/"+scan_id, json={"enabled": True}, headers=headers()).status_code == 409
+    data = client.get("/api/cars/scans/"+scan_id, headers=headers()).json()
+    assert data["status"] == "paused" and data["inspected"] == before["inspected"]
+    assert data["cars"] == before["cars"]
+    assert client.get("/api/source-status").json()["full_scan"] == {"enabled": False, "active_jobs": 0}

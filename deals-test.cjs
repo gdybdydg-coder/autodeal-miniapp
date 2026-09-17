@@ -1,6 +1,6 @@
 const {test}=require('node:test'),assert=require('node:assert/strict');
 const fs=require('node:fs'),vm=require('node:vm');
-function setup(fetchSearch) {
+function setup(fetchSearch,mode='legacy') {
   const html=fs.readFileSync(__dirname+'/index.html','utf8'),nodes=[];
   function element(tag='div') {
     const classes=new Set();
@@ -16,7 +16,7 @@ function setup(fetchSearch) {
   const ids=Object.fromEntries([...html.matchAll(/id="([^"]+)"/g)].map(m=>[m[1],element()]));
   const nav=Object.fromEntries(['search','deals','saved','settings'].map(tab=>{const n=element('button');n.dataset={tab};return [tab,n]}));
   nav.search.classList.add('active');
-  const document={getElementById:id=>{assert.ok(ids[id],id);return ids[id]},createElement:element,
+  const document={documentElement:{dataset:{mode}},getElementById:id=>{assert.ok(ids[id],id);return ids[id]},createElement:element,
     querySelectorAll(selector){
       if(selector==='.nav')return Object.values(nav);
       const m=selector.match(/^input\[name="([^"]+)"\](:checked)?$/);assert.ok(m,selector);
@@ -36,6 +36,15 @@ const result=(cars=[],extra={})=>({cars,warnings:[],inspected:3,source_total:500
 const car=(price=8500,extra={})=>({title:'Golf',price_usd:price,market:10000,discount:15,comparables:5,
   valuation:'sample_median',year:2017,mileage:100000,fuel:'Дизель',body:'Хетчбек',transmission:'Автомат',
   region:'Хмельницька',url:'https://auto.ria.com/auto_volkswagen_golf_123.html',...extra});
+
+test('subscription mode keeps restored filters and never starts a manual catalog scan',async()=>{
+  let calls=0;const {context,ids,nav}=setup(async()=>{calls++;return result()},'subscriptions');
+  await ids.searchBtn.listeners.click();await nav.deals.listeners.click();
+  assert.equal(calls,0);assert.equal(ids.searchFilters.hidden,false);assert.equal(ids.results.hidden,true);
+  assert.equal(ids.brand.value,'Volkswagen');assert.equal(ids.priceTo.value,'20000');
+  assert.equal(vm.runInContext('readCurrentFilters().onlyDeals',context),true);
+  assert.match(ids.toast.textContent,/Створити підписку/);
+});
 
 test('deals navigation uses selected filters, exact threshold and preserves regular search preference',async()=>{
   const calls=[];
