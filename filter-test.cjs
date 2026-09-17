@@ -5,7 +5,7 @@ assert.equal(new Set(ids).size,ids.length);
 const nodes=[];
 function element(tag='div') {
  const node={tag,value:'',checked:false,style:{},validity:{badInput:false},children:[],listeners:{},classList:{add(){},remove(){},toggle(){}},textContent:'',innerHTML:'',
- add(option){this.children.push(option)},append(...children){this.children.push(...children)},addEventListener(type,fn){this.listeners[type]=fn},setAttribute(){},focus(){this.focused=true},scrollIntoView(){},querySelector(){return element()}};
+ add(option){this.children.push(option)},append(...children){this.children.push(...children)},replaceChildren(...children){this.children=children},addEventListener(type,fn){this.listeners[type]=fn},setAttribute(){},focus(){this.focused=true},scrollIntoView(){},querySelector(){return element()}};
  nodes.push(node);return node;
 }
 const byId=Object.fromEntries(ids.map(id=>[id,element()]));

@@ -23,24 +23,32 @@ from .ria_budget import BudgetLimits, peer_scan_limit
 
 FRESH_SECONDS = 900
 SNAPSHOT_SECONDS = 86400
+PAGE_SIZE = 8
+PAGE_REQUEST_LIMIT = 32
+CATALOG_PATHS = {"brands": "categories/1/marks", "regions": "states",
+                 "body": "categories/1/bodystyles", "fuel": "type",
+                 "transmission": "categories/1/gearboxes"}
 TRANSIENT_ERRORS = {"quota_exceeded", "busy", "search_limit", "connection_error", "upstream_error"}
 
 
-def snapshot_key(filters):
+def snapshot_key(filters, cursor=None):
     criteria = filters.canonical()
     # Switching the deals toggle only filters the already checked candidate cards.
     criteria["onlyDeals"] = False
-    return hashlib.sha256(json.dumps(["search-snapshot-v1", criteria], sort_keys=True).encode()).hexdigest()
+    return hashlib.sha256(json.dumps(["search-snapshot-v2", PAGE_SIZE, criteria, cursor], sort_keys=True).encode()).hexdigest()
 
 
 def snapshot_view(payload, filters, quota, cached=False, reason=None):
     result = copy.deepcopy(payload)
     result["cached"] = cached
+    if cached:
+        result["requests_used"] = 0
     result["stale"] = time.time() - result["checked_at"] >= FRESH_SECONDS
     result["quota"] = quota
     if reason:
         result["warnings"] = sorted(set(result["warnings"] + [reason]))
     if result["stale"]:
+        result["next_cursor"] = None
         # Historical prices are useful; an old discount must not look current.
         for car in result["cars"]:
             car.update(market=None, discount=None, comparables=0, valuation="stale")
@@ -191,6 +199,8 @@ class RiaSearch:
         self.deadline = time.monotonic() + 42
         self.stage = "acquire"
         self.observed_at = time.time()
+        self.requests_made = 0
+        self.request_limit = None
 
     def acquire(self):
         if not self.key:
@@ -223,10 +233,13 @@ class RiaSearch:
             calls = [t for t in row.calls if t > now - 86400]
             if row.owner != self.owner or time.monotonic() > self.deadline:
                 raise RiaError("search_limit")
+            if self.request_limit is not None and self.requests_made >= self.request_limit:
+                raise RiaError("search_limit")
             if budget_state(row, now, self.limits)["reason"] != "available":
                 raise RiaError("quota_exceeded")
             row.calls, row.total = calls + [now], row.total + 1
             db.commit()  # Failed calls consume budget too, even on a process crash.
+            self.requests_made += 1
         try:
             payload = parser(self.fetch(self.key, path, params))
         except RiaError as exc:
@@ -246,6 +259,49 @@ class RiaSearch:
             db.commit()
         return payload
 
+    def catalog(self, brand=""):
+        """Shared official dictionaries. A cached UI read spends no provider calls."""
+        cache_id = hashlib.sha256(json.dumps(["ui-catalog-v1", brand]).encode()).hexdigest()
+        with Session(self.engine) as db:
+            row = db.get(SourceCache, cache_id)
+            if row and row.expires_at > time.time():
+                return copy.deepcopy(row.payload)
+        self.acquire()
+        self.request_limit = 6
+        try:
+            if brand:
+                brand_id = self.resolve(CATALOG_PATHS["brands"], [brand])[0]
+                result = {"brand": brand, "models": self.request(
+                    f"categories/1/marks/{brand_id}/models", {}, parse_catalog, ttl=7 * 86400)["items"]}
+            else:
+                result = {name: self.request(path, {}, parse_catalog, ttl=7 * 86400)["items"]
+                          for name, path in CATALOG_PATHS.items()}
+            result["source"] = "AUTO.RIA"
+            with Session(self.engine) as db:
+                db.merge(SourceCache(id=cache_id, payload=result, expires_at=time.time() + 86400))
+                db.commit()
+            return result
+        finally:
+            self.release()
+
+    def continuation(self, filters, state):
+        if not state:
+            return None
+        token = uuid.uuid4().hex
+        state = {**state, "filters": snapshot_key(filters), "checked_at": self.observed_at}
+        with Session(self.engine) as db:
+            db.add(SourceCache(id="cursor-" + token, payload=state,
+                               expires_at=self.observed_at + FRESH_SECONDS))
+            db.commit()
+        return token
+
+    def resume(self, filters, token):
+        with Session(self.engine) as db:
+            row = db.get(SourceCache, "cursor-" + token)
+            if not row or row.expires_at <= time.time() or row.payload.get("filters") != snapshot_key(filters):
+                raise RiaError("search_expired")
+            return copy.deepcopy(row.payload)
+
     def resolve(self, path, names):
         if not names:
             return []
@@ -260,7 +316,7 @@ class RiaSearch:
 
     def parameters(self, filters):
         params = {"category_id": 1, "searchType": 4, "status_id": 0, "page": 0,
-                  "order_by": 7, "countpage": 3, "currency": 1}
+                  "order_by": 7, "countpage": PAGE_SIZE, "currency": 1}
         ids = {}
         if filters.model and not filters.brand:
             raise RiaError("unsupported_filter")
@@ -323,10 +379,11 @@ class RiaSearch:
                     raise
         return peers
 
-    def search(self, filters):
+    def search(self, filters, cursor=None):
         if not self.key:
             raise RiaError("not_configured")
-        key = snapshot_key(filters)
+        context = self.resume(filters, cursor) if cursor else None
+        key = snapshot_key(filters, cursor)
         with Session(self.engine) as db:
             row = db.get(SourceCache, key)
             snapshot = copy.deepcopy(row.payload) if row and row.expires_at > time.time() else None
@@ -337,7 +394,7 @@ class RiaSearch:
             if quota["reason"] != "available":
                 return snapshot_view(snapshot, filters, quota, cached=True, reason="quota_exceeded")
         try:
-            payload = self.search_uncached(filters.model_copy(update={"onlyDeals": False}))
+            payload = self.search_uncached(filters.model_copy(update={"onlyDeals": False}), context)
         except RiaError as exc:
             if snapshot and str(exc) in TRANSIENT_ERRORS:
                 return snapshot_view(snapshot, filters, quota_status(self.engine, self.limits), cached=True, reason=str(exc))
@@ -361,37 +418,64 @@ class RiaSearch:
                 db.commit()
         return snapshot_view(payload, filters, payload["quota"])
 
-    def search_uncached(self, filters):
+    def search_uncached(self, filters, context=None):
         self.acquire()
+        self.request_limit = PAGE_REQUEST_LIMIT
         try:
             params, ids = self.parameters(filters)
-            results = self.request("search", params, parse_ids)
-            candidates, cars, warnings = [], [], []
+            context = context or {"page": 0, "offset": 0}
+            self.observed_at = min(self.observed_at, context.get("checked_at", self.observed_at))
+            page, offset = context["page"], context["offset"]
+            params["page"] = page
+            results = context.get("results") or self.request("search", params, parse_ids)
+            source_ids = results["ids"][:PAGE_SIZE]
+            candidates = copy.deepcopy(context.get("pending", []))
+            cars, warnings, pending = [], [], []
             inspected = 0
-            for source_id in results["ids"][:3]:
-                try:
-                    car = self.car(source_id)
-                    inspected += 1
-                    if not matches(car, filters, ids):
-                        continue
-                    candidates.append(car)
-                except RiaError as exc:
-                    warnings.append(str(exc))
-                    if str(exc) not in {"listing_unavailable", "invalid_response"}:
-                        break
+            # Finish interrupted valuations before advancing to new candidate IDs.
+            if not candidates:
+                for source_id in source_ids[offset:]:
+                    try:
+                        car = self.car(source_id)
+                        inspected += 1
+                        offset += 1
+                        if matches(car, filters, ids):
+                            candidates.append(car)
+                    except RiaError as exc:
+                        warnings.append(str(exc))
+                        if str(exc) not in {"listing_unavailable", "invalid_response"}:
+                            break
+                        offset += 1
             # Fetch candidate cards first so peer valuation cannot starve results.
-            for car in candidates:
+            for position, car in enumerate(candidates):
                 rating = estimate(car, [])
                 try:
                     rating = estimate(car, self.comparisons(car))
                 except RiaError as exc:
                     warnings.append(str(exc))
+                    if str(exc) in TRANSIENT_ERRORS:
+                        pending = candidates[position:]
+                        for waiting in pending:
+                            waiting.update(market=None, discount=None, comparables=0, valuation="pending")
+                        cars.extend(pending)
+                        break
                 car.update(rating)
-                if not filters.onlyDeals or (car["market"] and car["price_usd"] <= car["market"] * .85):
-                    cars.append(car)
+                cars.append(car)
+            next_state = None
+            if pending or offset < len(source_ids):
+                next_state = {"page": page, "offset": offset, "results": results, "pending": pending}
+            elif source_ids and (page + 1) * PAGE_SIZE < results["total"]:
+                next_state = {"page": page + 1, "offset": 0}
+            if not inspected and not cars and warnings:
+                raise RiaError(warnings[0])
+            token = self.continuation(filters, next_state)
+            if filters.onlyDeals:
+                cars = [car for car in cars if car["market"] and car["price_usd"] <= car["market"] * .85]
             return {"cars": cars, "source_total": results["total"], "inspected": inspected,
                     "quota": quota_status(self.engine, self.limits),
-                    "limited": True, "warnings": sorted(set(warnings)), "checked_at": self.observed_at,
+                    "next_cursor": token, "page_size": PAGE_SIZE, "requests_used": self.requests_made,
+                    "pending_valuations": len(pending),
+                    "limited": bool(token or warnings), "warnings": sorted(set(warnings)), "checked_at": self.observed_at,
                     "source": "AUTO.RIA", "source_url": "https://auto.ria.com/"}
         finally:
             self.release()

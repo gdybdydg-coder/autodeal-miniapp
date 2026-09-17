@@ -30,7 +30,14 @@ function updateAdvancedCount() {
   total+=["mileageFrom","mileageTo"].filter(id=>$(id).value!=="").length;
   $("advancedCount").textContent=total ? String(total) : "";
 }
+function renderAdvancedOptions() {
+const previous=Object.fromEntries(advancedGroups.map(group=>[group.name,selectedValues(group.name)]));
+reducerChoice=null;
 for (const group of advancedGroups) {
+  $(group.name+"Options").replaceChildren();
+  const legend=document.createElement("legend");legend.className="sr-only";
+  legend.textContent={body:"Тип кузова",fuel:"Тип палива",transmission:"Коробка передач"}[group.name];
+  $(group.name+"Options").append(legend);
   for (const value of group.options) {
     const label=document.createElement("label");
     label.className="choice";
@@ -38,6 +45,7 @@ for (const group of advancedGroups) {
     input.type="checkbox";
     input.name=group.name;
     input.value=value;
+    input.checked=previous[group.name].includes(value);
     input.addEventListener("change",updateAdvancedCount);
     const span=document.createElement("span");
     span.textContent=value;
@@ -49,6 +57,8 @@ for (const group of advancedGroups) {
   }
 }
 updateAdvancedCount();
+}
+renderAdvancedOptions();
 ["mileageFrom","mileageTo"].forEach(id=>$(id).addEventListener("input",updateAdvancedCount));
 $("resetAdvanced").addEventListener("click",()=>{
   for (const group of advancedGroups) document.querySelectorAll('input[name="'+group.name+'"]').forEach(input=>input.checked=false);
@@ -88,6 +98,7 @@ function matchesFilters(car,filters) {
     && (!filters.onlyDeals||(Number.isFinite(car.market)&&car.market>0&&car.price<=car.market*.85));
 }
 function readCurrentFilters() {
+  if(window.AutoDealCatalog?.isBusy?.()) throw Error("Зачекай, завантажуємо моделі вибраної марки.");
   updateAdvancedCount();
   return {
     brand:brand.value,model:model.value,region:region.value,

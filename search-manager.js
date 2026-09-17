@@ -126,12 +126,13 @@ function renderSavedSearches() {
     }}));
   }
 }
-function openSavedSearch(filters) {
+async function openSavedSearch(filters) {
   function explain(message) {$("savedError").hidden=false;$("savedError").textContent=message;}
   if(window.AutoDealLive?.isBusy?.()) {
     explain("Пошук ще виконується. Зачекай, щоб відкрити збережений.");return;
   }
   try {
+    if(window.AutoDealCatalog) await window.AutoDealCatalog.ensureFilters(filters);
     applySavedFilters(filters);
     return searchCars();
   } catch(error) { explain(error.message); }

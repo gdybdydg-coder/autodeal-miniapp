@@ -195,12 +195,18 @@ cached for seven days. Unknown/ambiguous filters return 422, never a wider searc
 Result details are checked again against selected IDs and ranges. Mileage is
 converted from the provider's thousands of kilometres into kilometres.
 
-The test search inspects at most three candidate listings, with at most six
+Manual search loads up to eight candidate listings per page, with at most six
 additional peers per candidate by default. `RIA_COMPARABLE_SCAN_LIMIT` can raise
 the peer scan to 20 after purchasing sufficient quota. Comparable queries include
 modification, technical condition and the candidate's mileage window; details are
 still checked independently. Scanning stops once five suitable peers establish an
-estimate or a mixed sample. Manual search has no pagination or automatic polling.
+estimate or a mixed sample. `next_cursor` continues through further pages. Each
+action spends at most 32 provider requests and has the existing 42-second deadline.
+Interrupted details and valuations resume before advancing to further IDs. Cursor
+records expire with the original 15-minute observation window and are bound to
+the same filters (the deals toggle shares a snapshot). Replaying a cursor uses
+its cached response; a stale cursor requires a new search. The UI merges listing
+IDs and preserves existing results if loading more fails. There is no automatic polling.
 Raw search IDs and sanitized details are cached for 15 minutes. The shared
 PostgreSQL budget allows at most 24 calls in a rolling hour, 60 per rolling day,
 and 900 lifetime (including a reserve of two for the first connectivity check).
@@ -208,6 +214,20 @@ Errors count toward the budget; 401/403/429 block further calls for one hour.
 Limits persist across deployment. Only one search can spend quota at a time;
 a lease recovers after 90 seconds if the process crashes. Calls made elsewhere
 with the same key are not known to this budget. No paid APIs are called.
+
+`GET /api/catalog` returns official makes, regions, body, fuel and gearbox lists;
+`?brand=Peugeot` returns that make's full model dictionary. Telegram authentication
+is required before any catalog work. Official lists share the seven-day source
+cache; aggregated UI dictionaries are cached for one day. Model loads are lazy
+and serialized in the UI, and an old response cannot replace a newer selection.
+Saved searches load their missing dictionaries before restoring all filters.
+
+`RIA_CATALOG_ROLLOUT_CHECK=true` opts into the once-only `catalog-pagination-v1`
+startup check: warm the dictionaries, check Peugeot models and two Volkswagen /
+Khmelnytskyi pages. It uses at most 32 calls within the existing global budget.
+Peer valuation is deliberately skipped in this coverage check; it never caches
+unvalued UI snapshots or writes to the notification pipeline. Its sanitized result
+is available in `/api/source-status` as `catalog_check`.
 
 ### Moving beyond the free test allowance
 

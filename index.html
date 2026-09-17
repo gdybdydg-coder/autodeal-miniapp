@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
   <meta name="theme-color" content="#070709">
-  <meta name="autodeal-version" content="20260917-23">
+  <meta name="autodeal-version" content="20260917-24">
   <title>AUTODEAL</title>
   <link rel="stylesheet" href="style.css?v=20260917-22">
 </head>
@@ -21,6 +21,7 @@
       <div><label class="label" for="brand">Марка</label><select id="brand" class="input"><option value="">Всі марки</option></select></div>
       <div><label class="label" for="model">Модель</label><select id="model" class="input" disabled><option value="">Всі моделі</option></select></div>
     </div>
+    <div class="catalog-help"><p id="catalogStatus" class="filter-help" role="status">Завантажуємо марки та моделі AUTO.RIA…</p><button id="retryCatalog" class="manager-button" type="button" hidden>Оновити списки</button></div>
     <div class="row range-grid group">
       <fieldset><legend class="label">Ціна, $</legend><div class="range"><input id="priceFrom" class="input" type="number" inputmode="numeric" min="0" placeholder="Від" aria-label="Ціна від"><input id="priceTo" class="input" type="number" inputmode="numeric" min="0" placeholder="До" aria-label="Ціна до"></div></fieldset>
       <fieldset><legend class="label">Рік</legend><div class="range"><input id="yearFrom" class="input" type="number" inputmode="numeric" placeholder="Від" aria-label="Рік від"><input id="yearTo" class="input" type="number" inputmode="numeric" placeholder="До" aria-label="Рік до"></div></fieldset>
@@ -51,6 +52,7 @@
     <p class="filter-help" id="sourceNote">Оголошення завантажуються з AUTO.RIA.</p>
     <p class="filter-help">Джерело: <a href="https://auto.ria.com/" target="_blank" rel="noopener">AUTO.RIA</a></p>
     <div id="resultsList" class="results-list"></div>
+    <button id="loadMore" class="save-search-button" type="button" hidden>Показати ще</button>
   </section>
 
   <nav class="navbar" aria-label="Головна навігація">
@@ -113,7 +115,7 @@
     <p class="filter-help notification-footnote">/stop у чаті — вимкнути всі сповіщення.</p>
   </section>
   <details class="save-privacy"><summary>Про збереження</summary><p class="filter-help">Збереження в акаунті передає назву, фільтри та підтверджений Telegram ID на сервер AUTODeal у Render. Видалити пошук можна в його картці. Локальні пошуки залишаються в цьому браузері й автоматично не переносяться. Для пошуку сервер передає фільтри до AUTO.RIA без твого Telegram ID.</p></details>
-  <div class="app-release"><span>Версія 20260917-23</span><button id="reloadApp" class="manager-button" type="button">Оновити застосунок</button></div>
+  <div class="app-release"><span>Версія 20260917-24</span><button id="reloadApp" class="manager-button" type="button">Оновити застосунок</button></div>
 </section>
 </main>
 <dialog id="subscriptionMenu" class="subscription-sheet" aria-labelledby="subscriptionMenuTitle" aria-describedby="subscriptionMenuSummary">
@@ -129,10 +131,11 @@
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
 <script src="data/cars.js?v=4"></script>
 <script src="saved-searches.js?v=6"></script>
-<script src="app.js?v=15"></script>
-<script src="search-manager.js?v=17"></script>
-<script src="cloud-api.js?v=11"></script>
-<script src="live-search.js?v=13"></script>
+<script src="app.js?v=20260917-24"></script>
+<script src="search-manager.js?v=20260917-24"></script>
+<script src="cloud-api.js?v=20260917-24"></script>
+<script src="catalog-loader.js?v=20260917-24"></script>
+<script src="live-search.js?v=20260917-24"></script>
 <script src="cloud-searches.js?v=20260917-23"></script>
 <script src="app-version.js?v=20260917-22"></script>
 </body>

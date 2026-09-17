@@ -1,6 +1,7 @@
 (function(root) {
   "use strict";
-  let busy=false,scrollOnFinish=true;
+  let busy=false,scrollOnFinish=true,current=null;
+  const more=document.getElementById("loadMore");
   const node=(tag,cls,text)=>{
     const el=document.createElement(tag);el.className=cls;
     if(text!==undefined) el.textContent=text;
@@ -23,7 +24,7 @@
       (data.stale?"Раніше отримані дані. Ціни та наявність авто могли змінитися. ":data.cached?"Повторно показано отримані дані. ":"")+
       (checked?"Перевірено: "+checked+". ":"")+
       "Переглянуто оголошень: "+data.inspected+". На час перевірки за фільтрами: "+data.source_total+
-      ". Тестовий режим: до 3 оголошень за пошук. "+
+      ". "+(data.next_cursor?"Доступне продовження перевірки. ":"")+
       (data.warnings.length?"Частину перевірки не завершено через ліміт або недоступність даних. ":"")+
       "Оцінка — медіана цін щонайменше 5 схожих авто; це ціни пропозицій, не продажів.";
     if(data.warnings.includes("quota_exceeded") && Number.isFinite(data.quota?.retry_after_seconds) && data.quota.retry_after_seconds>0)
@@ -42,7 +43,8 @@
       const valued=!data.stale&&Number.isFinite(car.market)&&car.market>0;
       body.append(node("p","market-price",valued?
         "Медіана вибірки ≈ $"+car.market.toLocaleString("en-US")+" · "+car.comparables+" схожих авто":
-        data.stale?"Оцінка потребує оновлення":"Недостатньо схожих авто для оцінки"));
+        data.stale?"Оцінка потребує оновлення":car.valuation==="pending"?
+        "Оцінку ще не завершено — натисни «Продовжити оцінку»":"Недостатньо схожих авто для оцінки"));
       if(valued) body.append(node("p","car-meta",car.discount>=0?
         "На "+car.discount+"% нижче медіани вибірки":"На "+Math.abs(car.discount)+"% вище медіани вибірки"));
       const href=safeLink(car.url);
@@ -57,6 +59,8 @@
   }
   async function search(filters,options={}) {
     if(busy) return;
+    current={filters:JSON.parse(JSON.stringify(filters)),options,cars:new Map(),data:null,cursor:null};
+    more.hidden=true;
     busy=true;scrollOnFinish=!options.dealsView;
     const button=document.getElementById("searchBtn"),label=button.textContent;
     const section=document.getElementById("results"),list=document.getElementById("resultsList");
@@ -67,7 +71,7 @@
     document.getElementById("count").textContent="";
     document.getElementById("sourceNote").textContent="Завантажую оголошення та перевіряю ціни. Це може тривати близько хвилини.";
     list.replaceChildren();
-    try {renderResults(await root.AutoDealCloud.search(filters),filters,options);}
+    try {accept(await root.AutoDealCloud.search(current.filters));}
     catch(error) {
       document.getElementById("sourceNote").textContent="Пошук не завершено.";
       list.replaceChildren(node("div","empty",error.message));
@@ -76,5 +80,28 @@
       if(scrollOnFinish) section.scrollIntoView({behavior:"smooth",block:"start"});
     }
   }
-  root.AutoDealLive={search,isBusy:()=>busy,dismissAutoScroll:()=>{scrollOnFinish=false;}};
+  function accept(data) {
+    for(const [index,car] of data.cars.entries()) current.cars.set(car.id||car.url||car.title+index,car);
+    const previous=current.data;
+    current.data={...data,cars:[...current.cars.values()],
+      inspected:(previous?.inspected||0)+(data.inspected||0),
+      checked_at:previous?.checked_at&&data.checked_at?Math.min(previous.checked_at,data.checked_at):data.checked_at,
+      stale:!!(previous?.stale||data.stale)};
+    current.cursor=data.next_cursor||null;
+    renderResults(current.data,current.filters,current.options);
+    more.hidden=!current.cursor;more.textContent=data.pending_valuations?"Продовжити оцінку":"Показати ще";
+  }
+  async function loadMore() {
+    if(busy||!current?.cursor) return;
+    busy=true;more.disabled=true;
+    const button=document.getElementById("searchBtn");button.disabled=true;
+    const label=more.textContent;more.textContent="Перевіряємо…";
+    try {accept(await root.AutoDealCloud.search(current.filters,current.cursor));}
+    catch(error) {
+      document.getElementById("sourceNote").textContent=error.message;
+      more.textContent=label;
+    } finally {busy=false;more.disabled=false;button.disabled=false;}
+  }
+  more.addEventListener("click",loadMore);
+  root.AutoDealLive={search,loadMore,isBusy:()=>busy,dismissAutoScroll:()=>{scrollOnFinish=false;}};
 })(window);

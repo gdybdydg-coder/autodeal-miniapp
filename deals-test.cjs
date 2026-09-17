@@ -40,7 +40,7 @@ const car=(price=8500,extra={})=>({title:'Golf',price_usd:price,market:10000,dis
 test('deals navigation uses selected filters, exact threshold and preserves regular search preference',async()=>{
   const calls=[];
   const {context,ids,nav}=setup(async filters=>{calls.push(filters);return result([
-    car(),car(8501),car(7000,{market:null,valuation:'insufficient_data'}),car(7000,{comparables:4})]);});
+    car(8500,{id:'1'}),car(8501,{id:'2'}),car(7000,{id:'3',market:null,valuation:'insufficient_data'}),car(7000,{id:'4',comparables:4})]);});
   await nav.deals.listeners.click();
   assert.equal(calls.length,1);const f=calls[0];
   assert.equal(f.onlyDeals,true);assert.equal(f.brand,'Volkswagen');assert.equal(f.model,'Golf');

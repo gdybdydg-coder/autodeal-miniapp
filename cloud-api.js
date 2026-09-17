@@ -14,10 +14,11 @@
           ...(body?{body:JSON.stringify(body)}:{})
         });
         if(!response.ok) {
-          if(path==="/api/cars/search" && response.status!==401) {
+          if((path.startsWith("/api/cars/search")||path.startsWith("/api/catalog")) && response.status!==401) {
             const reasons={unsupported_filter:"AUTO.RIA не підтвердила один із фільтрів. Зміни вибір: фільтр не буде проігноровано.",
               busy:"Інший пошук ще виконується. Спробуй за хвилину.",quota_exceeded:"Досягнуто ліміт запитів AUTO.RIA. Спробуй пізніше.",
-              search_limit:"Перевірка зайняла забагато часу. Спробуй пізніше.",not_configured:"Джерело AUTO.RIA ще не налаштоване."};
+              search_limit:"Перевірка зайняла забагато часу. Спробуй пізніше.",not_configured:"Джерело AUTO.RIA ще не налаштоване.",
+              search_expired:"Результати застаріли. Натисни «Показати авто», щоб почати свіжий пошук."};
             let code="",quota=null;try {const error=await response.json();code=error.detail;quota=error.quota;}catch(_){}
             if(code==="quota_exceeded" && quota?.reason==="total")
               throw Error("Досягнуто загальну межу запитів. Потрібно перевірити залишок пакета AUTO.RIA.");
@@ -41,14 +42,18 @@
         return response.status===204?null:await response.json();
       } catch(error) {
         if(error.name==="AbortError"||error instanceof TypeError)
-          throw Error(path==="/api/cars/search"?
+          throw Error(path.startsWith("/api/cars/search")?
             "Немає відповіді сервера. Зачекай близько хвилини та повтори пошук.":
             "Немає відповіді сервера. Онови список перед повторною дією.");
         throw error;
       } finally {clearTimeout(timer);}
     }
     return {
-      search:filters=>request("/api/cars/search","POST",filters),
+      search:(filters,cursor)=>{
+        if(cursor!=null&&!/^[a-f0-9]{32}$/.test(cursor)) return Promise.reject(Error("Онови результати пошуку."));
+        return request("/api/cars/search"+(cursor?"?cursor="+cursor:""),"POST",filters);
+      },
+      catalog:(brand="")=>request("/api/catalog"+(brand?"?brand="+encodeURIComponent(brand):"")),
       list:()=>request("/api/subscriptions"),
       notificationStatus:()=>request("/api/notifications/status"),
       testNotification:()=>request("/api/notifications/test","POST"),

@@ -6,7 +6,7 @@ import time
 from contextlib import asynccontextmanager
 from dataclasses import dataclass, field
 
-from fastapi import Depends, FastAPI, Header, HTTPException, Request
+from fastapi import Depends, FastAPI, Header, HTTPException, Query, Request
 from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
@@ -22,7 +22,7 @@ from .ria_budget import BudgetLimits, peer_scan_limit
 from .ria_validation import validate_once, validate_run_id, validation_status
 from .models import (Base, Delivery, EnabledRequest, Filters, Listing, MonitorControl,
                      MonitorSeen, MonitorWatch, Search, SearchRequest, TelegramTest, User)
-from . import monitor, telegram_setup
+from . import monitor, telegram_setup, ria_rollout
 
 
 @dataclass(frozen=True)
@@ -39,6 +39,7 @@ class Settings:
     configure_webhook: bool = False
     miniapp_release: str = ""
     telegram_test_enabled: bool = False
+    catalog_rollout_check: bool = False
 
     @classmethod
     def env(cls):
@@ -54,6 +55,7 @@ class Settings:
             configure_webhook=os.getenv("TELEGRAM_CONFIGURE_WEBHOOK") == "true",
             miniapp_release=os.getenv("MINIAPP_RELEASE", ""),
             telegram_test_enabled=os.getenv("TELEGRAM_TEST_ENABLED") == "true",
+            catalog_rollout_check=os.getenv("RIA_CATALOG_ROLLOUT_CHECK") == "true",
         )
 
     @property
@@ -80,6 +82,7 @@ def create_app(settings: Settings, engine=None):
         await asyncio.to_thread(probe_once, engine, settings.auto_ria_api_key)
         await asyncio.to_thread(verify_search_once, engine, settings.auto_ria_api_key)
         await asyncio.to_thread(validate_once, engine, settings.auto_ria_api_key, settings.ria_validation_run_id)
+        await asyncio.to_thread(ria_rollout.check_once, engine, settings.auto_ria_api_key, settings.catalog_rollout_check)
         await asyncio.to_thread(telegram_setup.configure, engine, settings)
         await asyncio.to_thread(telegram_setup.configure_menu, engine, settings)
         stop = asyncio.Event()
@@ -195,6 +198,7 @@ def create_app(settings: Settings, engine=None):
         return {**probe_status(engine, bool(settings.auto_ria_api_key)), "quota": quota_status(engine),
                 "budget": budget_usage(engine),
                 "valuation_check": validation_status(engine, settings.ria_validation_run_id),
+                "catalog_check": ria_rollout.status(engine),
                 "monitor": monitor.runtime_status(engine, settings.monitor_enabled),
                 "telegram": telegram_status(),
                 "miniapp_menu": telegram_setup.menu_status(engine, settings.miniapp_release)}
@@ -236,9 +240,21 @@ def create_app(settings: Settings, engine=None):
         return {"state": row.state}
 
     @app.post("/api/cars/search")
-    def search_cars(payload: Filters, uid=Depends(identity)):
+    def search_cars(payload: Filters, cursor: str | None = Query(default=None, pattern=r"^[a-f0-9]{32}$"),
+                    uid=Depends(identity)):
         try:
-            return RiaSearch(engine, settings.auto_ria_api_key).search(payload)
+            return RiaSearch(engine, settings.auto_ria_api_key).search(payload, cursor)
+        except RiaError as exc:
+            code = str(exc)
+            status = 422 if code in {"unsupported_filter", "search_expired"} else 429 if code in {"quota_exceeded", "busy", "search_limit"} else 503
+            return JSONResponse({"detail": code, "quota": quota_status(engine)}, status_code=status)
+        except Exception:
+            return JSONResponse({"detail": "source_unavailable"}, status_code=503)
+
+    @app.get("/api/catalog")
+    def catalog(brand: str = Query(default="", max_length=150), uid=Depends(identity)):
+        try:
+            return RiaSearch(engine, settings.auto_ria_api_key).catalog(brand)
         except RiaError as exc:
             code = str(exc)
             status = 422 if code == "unsupported_filter" else 429 if code in {"quota_exceeded", "busy", "search_limit"} else 503
