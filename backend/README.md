@@ -133,7 +133,11 @@ Result details are checked again against selected IDs and ranges. Mileage is
 converted from the provider's thousands of kilometres into kilometres.
 
 The test search inspects at most three candidate listings, with at most six
-additional peers per candidate. There is no pagination or automatic polling.
+additional peers per candidate by default. `RIA_COMPARABLE_SCAN_LIMIT` can raise
+the peer scan to 20 after purchasing sufficient quota. Comparable queries include
+modification, technical condition and the candidate's mileage window; details are
+still checked independently. Scanning stops once five suitable peers establish an
+estimate or a mixed sample. There is no pagination or automatic polling.
 Raw search IDs and sanitized details are cached for 15 minutes. The shared
 PostgreSQL budget allows at most 24 calls in a rolling hour, 60 per rolling day,
 and 900 lifetime (including a reserve of two for the first connectivity check).

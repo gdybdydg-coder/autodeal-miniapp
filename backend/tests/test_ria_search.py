@@ -186,6 +186,54 @@ def test_validation_has_hard_request_cap_and_failure_never_retries(engine, monke
     assert calls.count("failed") == 1 and "private-key-in-exception" not in str(result)
 
 
+def test_paid_comparable_scan_reaches_matching_peers_and_stops_at_five(engine, monkeypatch):
+    monkeypatch.setenv("RIA_COMPARABLE_SCAN_LIMIT", "20")
+    calls = []
+    def fetch(key, path, params):
+        calls.append((path, params))
+        if path == "search":
+            assert params["modifications[0][0][0]"] == 20
+            assert params["technicalCondition[0]"] == 1
+            assert params["raceFrom"] == 70 and params["raceTo"] == 130
+            assert "price_do" not in params and "state[0]" not in params
+            return {"result": {"search_result": {"ids": list(map(str, range(1000, 1020))), "count": 20}}}
+        data = raw(params["auto_id"], USD=15000)
+        # Simulate an upstream API ignoring its modification filter.
+        if int(params["auto_id"]) < 1013:
+            data["autoData"]["modificationId"] = 999
+        return data
+    search = RiaSearch(engine, "key", fetch)
+    candidate = parse_car(raw(), "123")
+    search.acquire()
+    try:
+        peers = search.comparisons(candidate)
+    finally:
+        search.release()
+    assert len(peers) == 18 and len(calls) == 19
+    result = estimate(candidate, peers)
+    assert result["comparables"] == 5 and result["market"] == 15000
+
+
+@pytest.mark.parametrize("limit", ["6", "20"])
+def test_comparable_scan_cap_does_not_relax_condition(engine, monkeypatch, limit):
+    monkeypatch.setenv("RIA_COMPARABLE_SCAN_LIMIT", limit)
+    calls = []
+    def fetch(key, path, params):
+        calls.append(path)
+        if path == "search":
+            return {"result": {"search_result": {"ids": list(map(str, range(1000, 1050))), "count": 50}}}
+        return raw(params["auto_id"], technicalCondition=None)
+    search = RiaSearch(engine, "key", fetch)
+    candidate = parse_car(raw(), "123")
+    search.acquire()
+    try:
+        peers = search.comparisons(candidate)
+    finally:
+        search.release()
+    assert len(peers) == int(limit) and calls.count("info") == int(limit)
+    assert estimate(candidate, peers)["market"] is None
+
+
 def test_filters_and_independent_valuation_with_cache(engine):
     calls = []
     filters = Filters(brand="Volkswagen", model="Golf", region="Хмельницька область",

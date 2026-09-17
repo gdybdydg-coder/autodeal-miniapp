@@ -19,7 +19,7 @@ from sqlalchemy.orm import Session
 
 from .auto_ria import RiaError, fetch_json, listing_preview
 from .models import Filters, SourceBudget, SourceCache, SourceProbe
-from .ria_budget import BudgetLimits
+from .ria_budget import BudgetLimits, peer_scan_limit
 
 FRESH_SECONDS = 900
 SNAPSHOT_SECONDS = 86400
@@ -117,7 +117,7 @@ def parse_ids(data):
         parsed = list(dict.fromkeys(str(i) for i in ids))
         if any(not re.fullmatch(r"[1-9][0-9]{0,11}", i) for i in parsed):
             raise ValueError()
-        return {"ids": parsed[:10], "total": max(0, result["count"])}
+        return {"ids": parsed[:50], "total": max(0, result["count"])}
     except (KeyError, ValueError, TypeError):
         raise RiaError("invalid_response") from None
 
@@ -186,6 +186,7 @@ class RiaSearch:
     def __init__(self, engine, key, fetch=fetch_json, limits=None):
         self.engine, self.key, self.fetch = engine, key, fetch
         self.limits = limits or BudgetLimits.env()
+        self.peer_scan_limit = peer_scan_limit()
         self.owner = uuid.uuid4().hex
         self.deadline = time.monotonic() + 42
         self.stage = "acquire"
@@ -298,17 +299,25 @@ class RiaSearch:
         if not candidate["comparable_condition"] or not all(candidate.get(k) for k in required):
             return []
         # Independent of the user's budget and region, preventing a price-capped median.
-        params = {"category_id": 1, "searchType": 4, "status_id": 0, "page": 0, "countpage": 7,
+        tolerance = max(30000, candidate["mileage"] * .2)
+        params = {"category_id": 1, "searchType": 4, "status_id": 0, "page": 0, "countpage": self.peer_scan_limit + 1,
                   "order_by": 7, "marka_id[0]": candidate["brand_id"], "model_id[0]": candidate["model_id"],
                   "generation_id[0][0]": candidate["generation_id"], "bodystyle[0]": candidate["body_id"],
+                  "modifications[0][0][0]": candidate["modification_id"],
                   "type[0]": candidate["fuel_id"], "gearbox[0]": candidate["gear_id"],
                   "s_yers[0]": candidate["year"] - 1, "po_yers[0]": candidate["year"] + 1,
-                  "damage": 1, "abroad": 2, "custom": 1}
+                  "raceFrom": math.floor(max(0, candidate["mileage"] - tolerance) / 1000),
+                  "raceTo": math.ceil((candidate["mileage"] + tolerance) / 1000),
+                  "technicalCondition[0]": 1, "damage": 1, "abroad": 2, "custom": 1}
         ids = self.request("search", params, parse_ids)["ids"]
         peers = []
-        for source_id in [i for i in ids if i != candidate["id"]][:6]:
+        for source_id in [i for i in ids if i != candidate["id"]][:self.peer_scan_limit]:
             try:
                 peers.append(self.car(source_id))
+                # Recheck details even if the provider ignores a query parameter.
+                # Once five suitable peers establish a result, stop spending calls.
+                if estimate(candidate, peers)["valuation"] in {"sample_median", "mixed_sample"}:
+                    break
             except RiaError as exc:
                 if str(exc) not in {"listing_unavailable", "invalid_response"}:
                     raise

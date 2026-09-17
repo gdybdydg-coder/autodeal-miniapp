@@ -16,7 +16,7 @@ from .auth import telegram_user
 from .auto_ria import probe_once, probe_status
 from .auto_ria import RiaError
 from .ria_search import RiaSearch, initialize_budget, verify_search_once, quota_status, budget_usage
-from .ria_budget import BudgetLimits
+from .ria_budget import BudgetLimits, peer_scan_limit
 from .ria_validation import validate_once, validate_run_id, validation_status
 from .models import Base, Delivery, EnabledRequest, Filters, Listing, Search, SearchRequest, User
 
@@ -51,6 +51,7 @@ class Settings:
 
 def create_app(settings: Settings, engine=None):
     BudgetLimits.env()  # Validate before serving requests or running startup probes.
+    peer_scan_limit()
     validate_run_id(settings.ria_validation_run_id)
     if not settings.bot_token or len(settings.webhook_secret) < 32:
         raise ValueError("Configure server-only Telegram secrets")

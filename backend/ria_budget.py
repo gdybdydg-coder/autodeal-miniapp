@@ -3,6 +3,13 @@ import os
 from dataclasses import dataclass
 
 
+def peer_scan_limit():
+    value = os.getenv("RIA_COMPARABLE_SCAN_LIMIT", "6")
+    if not value.isascii() or not value.isdecimal() or not 6 <= int(value) <= 20:
+        raise ValueError("AUTO.RIA comparable scan limit must be between 6 and 20")
+    return int(value)
+
+
 @dataclass(frozen=True)
 class BudgetLimits:
     hourly: int = 24
