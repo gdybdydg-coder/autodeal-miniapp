@@ -5,13 +5,16 @@ let cloudBusy=false;
 let notificationState=null;
 function renderNotificationStatus() {
   const state=notificationState;
-  $("notificationStatus").textContent=!state?.available?"Сповіщення ще готуються до запуску":
-    !state.telegram_ready?"Потрібно надіслати /start у чаті бота":
-    !state.test_sent?"Надішли тестове повідомлення, щоб перевірити зв’язок":
-    "Можна ввімкнути один пошук · перевірка приблизно щохвилини";
+  $("notificationStatus").textContent=!state?.available?"Готуються до запуску":
+    !state.telegram_ready?"Підключи чат бота":
+    !state.test_sent?"Перевір зв’язок тестовим повідомленням":
+    "Готові до ввімкнення · один пошук";
   $("testNotification").disabled=cloudBusy||!state?.available||!state?.telegram_ready;
 }
-function cloudMessage(message) {$("cloudStatus").textContent=message;}
+function cloudMessage(message) {
+  $("cloudStatus").textContent=message;
+  $("cloudStatus").hidden=message==="Список оновлено.";
+}
 async function cloudAction(action) {
   if(cloudBusy) return;
   cloudBusy=true;
@@ -36,16 +39,16 @@ async function loadCloud() {
     const card=document.createElement("article");card.className="saved-search-card";
     const name=document.createElement("h3");name.textContent=item.name;
     const summary=document.createElement("p");summary.className="filter-help";summary.textContent=summarizeFilters(filters);
-    const status=document.createElement("p");status.className="filter-help";
+    const status=document.createElement("p");status.className="filter-help search-status";
     const statuses={starting:"готуємо початковий список, попередні авто не розсилаємо",watching:"моніторинг працює",
       checking:"оцінюємо нові авто",coverage_limited:"частину авто не встигли оцінити: звузь фільтри пошуку",
       quota_exceeded:"пауза: ліміт запитів AUTO.RIA",busy:"очікуємо завершення іншого запиту",
       search_limit:"перевірку продовжимо наступним циклом",window_gap:"забагато нових результатів: звузь фільтри та ввімкни пошук знову",
       unsupported_filter:"фільтр не підтверджено AUTO.RIA: зміни пошук",invalid_response:"пауза: некоректна відповідь AUTO.RIA"};
-    status.textContent="Збережено в акаунті · "+(item.enabled?
-      (notificationState?.available?(statuses[item.monitor_status]||"очікуємо перевірку джерела"):"моніторинг тимчасово недоступний"):"без сповіщень");
+    status.textContent=item.enabled?
+      (notificationState?.available?(statuses[item.monitor_status]||"очікуємо перевірку джерела"):"моніторинг тимчасово недоступний"):"Сповіщення вимкнені";
     const actions=document.createElement("div");actions.className="saved-actions";
-    actions.append(managerButton("Відкрити пошук",()=>openSavedSearch(filters)),managerButton("Видалити із сервера",()=>{
+    actions.append(managerButton("Відкрити пошук",()=>openSavedSearch(filters)),managerButton("Видалити",()=>{
       if(cloudBusy) return;
       actions.replaceChildren(managerButton("Так, видалити із сервера",()=>cloudAction(async()=>{
         await window.AutoDealCloud.remove(item.id);await loadCloud();

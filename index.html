@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
   <meta name="theme-color" content="#070709">
   <title>AUTODEAL</title>
-  <link rel="stylesheet" href="style.css?v=9">
+  <link rel="stylesheet" href="style.css?v=10">
 </head>
 <body>
 <main class="app">
@@ -60,13 +60,8 @@
   </nav>
 <section id="savedDialog" class="saved-page" aria-labelledby="savedTitle" hidden>
   <div class="dialog-head"><h2 id="savedTitle" tabindex="-1">Мої пошуки</h2><button id="closeSaved" class="dialog-close" type="button" aria-label="Повернутися до попереднього розділу">←</button></div>
-  <p id="notificationStatus" class="delivery-status" role="status">Перевіряємо стан сповіщень…</p>
-  <p class="filter-help">Для сповіщень: відкрий чат бота та надішли /start, повернись сюди й онови список. Після тестового повідомлення ввімкни один збережений пошук. /stop у чаті вимикає всі сповіщення.</p>
-  <div class="saved-actions">
-    <a class="manager-button" href="https://t.me/auto_deal_finder1_bot?start=notifications" target="_blank" rel="noopener">Відкрити чат бота</a>
-    <button id="testNotification" class="manager-button" type="button" disabled>Надіслати тестове повідомлення</button>
-  </div>
-  <button id="newSavedSearch" class="manager-button" type="button">＋ Новий пошук</button>
+  <p class="subtitle saved-subtitle">Твої фільтри. Авто, які ти шукаєш.</p>
+  <button id="newSavedSearch" class="search-button" type="button">＋ Новий пошук</button>
   <p id="savedError" class="saved-error" role="alert" hidden></p>
   <form id="saveSearchForm" hidden>
     <label class="label" for="savedName">Назва пошуку</label>
@@ -76,14 +71,29 @@
     <p class="filter-help save-hint">Доступно в Telegram на твоїх пристроях. Без сповіщень.</p>
     <button class="save-search-button" id="confirmSaveSearch" type="submit">Лише на цьому пристрої</button>
   </form>
-  <section aria-labelledby="cloudTitle">
-    <h3 id="cloudTitle">В акаунті Telegram</h3>
+  <section class="cloud-section" aria-labelledby="cloudTitle">
+    <div class="saved-section-head">
+      <h3 id="cloudTitle">В акаунті Telegram</h3>
+      <button id="refreshCloud" class="manager-button refresh-button" type="button" aria-label="Оновити список" title="Оновити список">↻</button>
+    </div>
     <p id="cloudStatus" class="filter-help" role="status">Збережені в акаунті пошуки завантажуються при відкритті цього списку в Telegram.</p>
-    <button id="refreshCloud" class="manager-button" type="button">Оновити список</button>
     <div id="cloudSearchList"></div>
   </section>
-  <h3 id="localTitle">На цьому пристрої</h3>
-  <div id="savedSearchList"></div>
+  <details class="saved-fold notification-panel">
+    <summary><span class="fold-copy"><span class="fold-title">Сповіщення в Telegram</span><span id="notificationStatus" role="status">Перевіряємо стан…</span></span></summary>
+    <div class="fold-body">
+      <p class="filter-help">Відкрий чат бота та надішли /start. Повернись сюди, онови список і надішли тестове повідомлення. Потім увімкни сповіщення в картці потрібного пошуку.</p>
+      <div class="notification-actions">
+        <a class="manager-button" href="https://t.me/auto_deal_finder1_bot?start=notifications" target="_blank" rel="noopener">Відкрити чат бота ↗</a>
+        <button id="testNotification" class="manager-button" type="button" disabled>Надіслати тест</button>
+      </div>
+      <p class="filter-help notification-footnote">На першому запуску доступний один активний пошук. /stop у чаті вимикає всі сповіщення.</p>
+    </div>
+  </details>
+  <details class="saved-fold local-panel">
+    <summary><span id="localTitle" class="fold-title">На цьому пристрої</span></summary>
+    <div id="savedSearchList" class="fold-body"></div>
+  </details>
   <details class="save-privacy"><summary>Про збереження</summary><p class="filter-help">Збереження в акаунті передає назву, фільтри та підтверджений Telegram ID на сервер AUTODeal у Render. Видалити пошук можна в його картці. Локальні пошуки залишаються в цьому браузері й автоматично не переносяться. Для пошуку сервер передає фільтри до AUTO.RIA без твого Telegram ID.</p></details>
 </section>
 </main>
@@ -95,6 +105,6 @@
 <script src="search-manager.js?v=14"></script>
 <script src="cloud-api.js?v=11"></script>
 <script src="live-search.js?v=13"></script>
-<script src="cloud-searches.js?v=14"></script>
+<script src="cloud-searches.js?v=15"></script>
 </body>
 </html>

@@ -104,3 +104,39 @@ h1 { font-weight: 400; letter-spacing: -.3px; }
 #savedDialog .save-hint { margin:8px 0 0; font-size:13px; }
 .save-privacy { margin-top:18px; border-top:1px solid #36363d; padding-top:12px; }
 .save-privacy summary { min-height:44px; display:flex; align-items:center; cursor:pointer; color:#aaaab4; }
+
+/* Saved searches share the home screen's panels, spacing and red accent. */
+#savedDialog .dialog-head { padding-bottom:4px; }
+#savedDialog .dialog-head h2 { font-size:26px; font-weight:400; letter-spacing:-.3px; }
+#savedDialog .dialog-close { flex:0 0 40px; height:40px; border-radius:12px; background:#17171c; font-size:23px; }
+.saved-subtitle { margin:0 0 18px; }
+#savedDialog #newSavedSearch { min-height:46px; margin-bottom:22px; }
+.saved-section-head { display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:10px; }
+.saved-section-head h3 { margin:0; font-size:15px; font-weight:500; color:#d7d7de; }
+#savedDialog .refresh-button { width:44px; height:44px; padding:0; border:0; background:#17171c; font-size:24px; border-radius:12px; }
+#cloudSearchList { display:grid; gap:12px; }
+.saved-search-card { padding:16px; border:1px solid #29292f; border-radius:18px; background:var(--panel); }
+.saved-search-card h3 { font-size:18px; font-weight:500; margin:0 0 8px; }
+.saved-search-card > .filter-help { line-height:1.65; margin-bottom:12px; }
+.saved-search-card .search-status { display:inline-block; padding:5px 9px; border-radius:7px; background:#202024; color:#a5a5ae; font-size:11px; }
+.saved-search-card .saved-actions { display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:8px; margin-top:2px; }
+#savedDialog .manager-button { display:inline-flex; align-items:center; justify-content:center; min-width:0; line-height:1.35; border-color:#303036; border-radius:10px; text-decoration:none; font-size:13px; }
+.saved-search-card .saved-actions .manager-button:first-child { background:#302025; border-color:#593037; color:#ff8b91; }
+.saved-search-card .saved-actions .manager-button:nth-child(2) { background:transparent; color:#a5a5ae; }
+.saved-search-card .saved-actions .manager-button:nth-child(3) { grid-column:1/-1; background:#202024; }
+#savedDialog button:disabled { cursor:default; opacity:.45; }
+.saved-fold { margin-top:16px; background:var(--panel); border:1px solid #29292f; border-radius:16px; }
+.saved-fold > summary { display:flex; align-items:center; justify-content:space-between; gap:12px; min-height:60px; padding:14px; cursor:pointer; list-style:none; }
+.saved-fold > summary::-webkit-details-marker { display:none; }
+.saved-fold > summary::after { content:"+"; color:#8d8d95; font-size:20px; }
+.saved-fold[open] > summary::after { content:"−"; }
+.fold-copy { display:grid; gap:4px; }
+.fold-title { font-size:14px; font-weight:400; color:#d7d7de; }
+#notificationStatus { font-size:12px; color:#8d8d95; line-height:1.4; }
+.fold-body { padding:0 14px 14px; }
+.notification-actions { display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:8px; }
+.notification-footnote { margin:12px 0 0; font-size:11px; }
+.local-panel .saved-search-card { margin-top:10px; background:#19191e; padding:12px; }
+#saveSearchForm { background:var(--panel); border:1px solid #29292f; border-radius:18px; padding:16px; }
+.save-privacy { margin-top:16px; border:0; padding:0; }
+.save-privacy summary { font-size:12px; }

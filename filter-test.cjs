@@ -115,7 +115,7 @@ console.log('PASS: manager open/save/restore, draft notification preference, con
  await new Promise(resolve=>setImmediate(resolve));
  assert.equal(saves,1);assert.equal(savedRaw,localBefore);
  assert.equal(byId.cloudSearchList.children[0].children[0].textContent,byId.savedName.value);
- assert.match(byId.cloudSearchList.children[0].children[2].textContent,/без сповіщень/);
+ assert.match(byId.cloudSearchList.children[0].children[2].textContent,/Сповіщення вимкнені/);
  const actions=byId.cloudSearchList.children[0].children[3];
  actions.replaceChildren=function(...children){this.children=children;};
  actions.children[1].listeners.click();assert.equal(deletes,0);
