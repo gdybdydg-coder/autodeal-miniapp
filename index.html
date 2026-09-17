@@ -4,16 +4,17 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
   <meta name="theme-color" content="#070709">
-  <meta name="autodeal-version" content="20260917-30">
+  <meta name="autodeal-version" content="20260917-31">
   <title>AUTODEAL</title>
-  <link rel="stylesheet" href="style.css?v=20260917-30">
+  <link rel="stylesheet" href="style.css?v=20260917-31">
 </head>
 <body>
 <main class="app">
   <header class="header"><div class="logo">AUTO<span>DEAL</span></div><button class="icon-button" id="settingsBtn" aria-label="Налаштування">⚙️</button></header>
   <div id="searchIntro">
   <h1 id="searchTitle" tabindex="-1">Нові вигідні авто</h1>
-  <p class="subtitle">Налаштуй підписку на сповіщення в чаті бота</p>
+  <p class="subtitle" id="searchSubtitle">Налаштуй підписку на сповіщення в чаті бота</p>
+  <p class="filter-help editing-hint" id="editingHint" hidden></p>
   </div>
 
   <section id="searchFilters" class="search-box" aria-label="Фільтри пошуку">
@@ -44,6 +45,7 @@
     <p class="filter-help">Вигідні авто — щонайменше на 15% нижче оцінки ринкової ціни. Сповіщення надходитимуть після увімкнення підписки.</p>
     <button id="searchBtn" class="search-button" type="button" hidden>Показати авто</button>
     <button id="saveSearchBtn" class="search-button" type="button">Створити підписку</button>
+    <button id="cancelSubscriptionEdit" class="save-search-button" type="button" hidden>Скасувати редагування</button>
   </section>
 
   <section id="results" class="results" aria-live="polite" hidden>
@@ -64,31 +66,34 @@
   <nav class="navbar" aria-label="Головна навігація">
     <button class="nav active" data-tab="search" aria-current="page"><span>🔎</span>Фільтри</button>
     <button class="nav" data-tab="deals" hidden><span>🔥</span>Вигідні</button>
-    <button class="nav" data-tab="saved"><span>♡</span>Мої пошуки</button>
+    <button class="nav" data-tab="saved"><span>♡</span>Підписки</button>
     <button class="nav" data-tab="settings"><span>⚙️</span>Налаштування</button>
   </nav>
 <section id="savedDialog" class="saved-page" aria-labelledby="savedTitle" hidden>
   <div class="subscriptions-head">
     <button id="closeSaved" class="subscription-head-button" type="button" aria-label="Повернутися до попереднього розділу">←</button>
-    <h2 id="savedTitle" tabindex="-1">Мої пошуки</h2>
+    <h2 id="savedTitle" tabindex="-1">Мої підписки</h2>
     <button id="refreshCloud" class="subscription-head-button" type="button" aria-label="Оновити підписки">↻</button>
   </div>
   <div id="subscriptionTabs" class="subscription-tabs" role="tablist" aria-label="Збережені пошуки">
     <button id="localTab" type="button" role="tab" aria-controls="localPanel" aria-selected="false" tabindex="-1">На пристрої <span id="localCount" class="subscription-count">0</span></button>
     <button id="subscriptionsTab" type="button" role="tab" aria-controls="cloudPanel" aria-selected="true" tabindex="0">Підписки <span id="cloudCount" class="subscription-count">…</span></button>
   </div>
-  <button id="newSavedSearch" class="saved-find" type="button">Знайти авто</button>
+  <button id="newSavedSearch" class="saved-find" type="button">+ Нова підписка</button>
   <p id="savedError" class="saved-error" role="alert" hidden></p>
   <form id="saveSearchForm" hidden>
-    <label class="label" for="savedName">Назва пошуку</label>
+    <label class="label" for="savedName">Назва підписки</label>
     <input id="savedName" class="input" maxlength="60" required autocomplete="off">
     <p id="draftSummary" class="filter-help"></p>
-    <button class="search-button" id="saveCloudSearch" type="button">Зберегти в акаунті</button>
-    <p class="filter-help save-hint">Доступно в Telegram на твоїх пристроях. Без сповіщень.</p>
+    <button class="manager-button" id="editDraftFilters" type="button">Змінити фільтри</button>
+    <p id="saveStatus" class="saved-error" role="status" hidden></p>
+    <button class="search-button" id="saveCloudSearch" type="button">Зберегти підписку</button>
+    <p class="filter-help save-hint" id="saveHint">Збережемо в акаунті Telegram на паузі.</p>
     <button class="save-search-button" id="confirmSaveSearch" type="submit">Лише на цьому пристрої</button>
   </form>
   <section id="cloudPanel" class="subscription-panel" role="tabpanel" aria-labelledby="subscriptionsTab">
     <h3 id="cloudTitle" class="sr-only">Підписки в акаунті Telegram</h3>
+    <p id="subscriptionsHint" class="filter-help subscription-readiness" role="status"></p>
     <p id="cloudStatus" class="filter-help" role="status">Збережені в акаунті пошуки завантажуються при відкритті цього списку в Telegram.</p>
     <div id="cloudSearchList"></div>
   </section>
@@ -116,12 +121,12 @@
   </section>
   <section class="settings-card" aria-labelledby="alertSettingsTitle">
     <h2 id="alertSettingsTitle">Підписки на авто</h2>
-    <p class="filter-help">Вмикай повідомлення для потрібного пошуку в його картці. На першому запуску доступний один активний пошук.</p>
-    <button id="settingsSearches" class="save-search-button" type="button">Перейти до моїх пошуків →</button>
+    <p class="filter-help">Можна зберегти до 20 підписок. Вмикай сповіщення через меню ⋯ у картці. На цьому етапі доступна одна активна підписка після підключення моніторингу.</p>
+    <button id="settingsSearches" class="save-search-button" type="button">Перейти до підписок →</button>
     <p class="filter-help notification-footnote">/stop у чаті — вимкнути всі сповіщення.</p>
   </section>
   <details class="save-privacy"><summary>Про збереження</summary><p class="filter-help">Збереження в акаунті передає назву, фільтри та підтверджений Telegram ID на сервер AUTODeal у Render. Видалити пошук можна в його картці. Локальні пошуки залишаються в цьому браузері й автоматично не переносяться. Для пошуку сервер передає фільтри до AUTO.RIA без твого Telegram ID.</p></details>
-  <div class="app-release"><span>Версія 20260917-30</span><button id="reloadApp" class="manager-button" type="button">Оновити застосунок</button></div>
+  <div class="app-release"><span>Версія 20260917-31</span><button id="reloadApp" class="manager-button" type="button">Оновити застосунок</button></div>
 </section>
 </main>
 <dialog id="brandDialog" class="brand-dialog" aria-labelledby="brandDialogTitle">
@@ -145,14 +150,14 @@
 <div id="toast" class="toast" role="status"></div>
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
 <script src="data/cars.js?v=4"></script>
-<script src="saved-searches.js?v=6"></script>
-<script src="app.js?v=20260917-30"></script>
+<script src="saved-searches.js?v=20260917-31"></script>
+<script src="app.js?v=20260917-31"></script>
 <script src="brand-picker.js?v=20260917-25"></script>
-<script src="search-manager.js?v=20260917-26"></script>
-<script src="cloud-api.js?v=20260917-30"></script>
+<script src="search-manager.js?v=20260917-31"></script>
+<script src="cloud-api.js?v=20260917-31"></script>
 <script src="catalog-loader.js?v=20260917-25"></script>
-<script src="live-search.js?v=20260917-30"></script>
-<script src="cloud-searches.js?v=20260917-23"></script>
+<script src="live-search.js?v=20260917-31"></script>
+<script src="cloud-searches.js?v=20260917-31"></script>
 <script src="app-version.js?v=20260917-22"></script>
 </body>
 </html>

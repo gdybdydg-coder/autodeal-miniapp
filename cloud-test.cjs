@@ -25,6 +25,16 @@ test('delete handles empty 204 and rejects unsafe IDs',async()=>{
   assert.equal(await api.remove(1),null);
   await assert.rejects(api.remove('../2'));assert.equal(calls,1);
 });
+test('editing targets the same subscription without opting in and distinguishes duplicate filters',async()=>{
+  const calls=[];
+  const api=create(async(url,opts)=>{calls.push([url,opts]);return {ok:false,status:409,
+    json:async()=>({detail:'Subscription filters already exist'})};},()=> 'fake');
+  await assert.rejects(api.update(7,'My Golf',{brand:'Volkswagen'}),/такими фільтрами вже є/);
+  assert.equal(calls[0][0],'https://autodeal-api.onrender.com/api/subscriptions/7');
+  assert.equal(calls[0][1].method,'PUT');
+  assert.deepEqual(JSON.parse(calls[0][1].body),{name:'My Golf',filters:{brand:'Volkswagen'}});
+  await assert.rejects(api.update('../9','Name',{}));assert.equal(calls.length,1);
+});
 test('network errors give recovery guidance',async()=>{
   const api=create(async()=>{throw new TypeError('network');},()=> 'fake');
   await assert.rejects(api.list(),/Онови список/);

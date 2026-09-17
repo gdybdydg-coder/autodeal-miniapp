@@ -2,6 +2,37 @@
 const savedAPI=window.AutoDealSaved;
 let draftFilters=null,savedScope="cloud",menuOpener=null;
 let managerReturnTab="search",managerSession=0;
+let editingSearch=null,draftName=null,editRequest=0;
+const subscriptionMode=()=>document.documentElement?.dataset?.mode==="subscriptions";
+function renderSubscriptionEditor() {
+  if(!subscriptionMode()) return;
+  $("searchTitle").textContent=editingSearch?"Редагувати підписку":"Нові вигідні авто";
+  $("searchSubtitle").textContent=editingSearch?editingSearch.name:"Налаштуй підписку на сповіщення в чаті бота";
+  $("saveSearchBtn").textContent=editingSearch?"Зберегти зміни":"Створити підписку";
+  $("cancelSubscriptionEdit").hidden=!editingSearch;
+  $("editingHint").hidden=!editingSearch;
+  $("editingHint").textContent=editingSearch?.scope==="local"?"Це пошук на цьому пристрої. Сповіщення для нього не надсилаються.":
+    "Зміна фільтрів поставить підписку на паузу. Після збереження її потрібно ввімкнути знову.";
+}
+function resetSubscriptionEditor() {
+  editRequest++;editingSearch=null;draftName=null;renderSubscriptionEditor();
+}
+async function editSubscription(item,scope) {
+  if(window.AutoDealCloudSearches?.isBusy?.()) {toast("Зачекай, завершуємо попередню дію.");return;}
+  const request=++editRequest;
+  try {
+    if(window.AutoDealCatalog) await window.AutoDealCatalog.ensureFilters(item.filters);
+    if(request!==editRequest) return;
+    applySavedFilters(item.filters);
+    editingSearch={id:item.id,name:item.name,scope,enabled:!!item.enabled};
+    draftName=null;
+    managerSession++;draftFilters=null;
+    renderSubscriptionEditor();showSearchForm();
+  } catch(error) {
+    if(request!==editRequest) return;
+    $("savedError").hidden=false;$("savedError").textContent=error.message;
+  }
+}
 function summarizeFilters(f) {
   const parts=[f.brand||"Всі марки",f.model,f.region||"Вся Україна"];
   for(const [key,label,unit] of [["price","Ціна","$"],["year","Рік",""],["mileage","Пробіг","тис. км"]]) {
@@ -46,10 +77,18 @@ function setSavedScope(scope) {
 }
 function renderSavedView() {
   const compose=!!draftFilters;
-  $("savedTitle").textContent=compose?"Зберегти пошук":"Мої пошуки";
+  $("savedTitle").textContent=compose?(editingSearch?"Зберегти зміни":"Нова підписка"):"Мої підписки";
   $("subscriptionTabs").hidden=compose;
   $("newSavedSearch").hidden=compose;
   $("saveSearchForm").hidden=!compose;
+  $("saveCloudSearch").hidden=editingSearch?.scope==="local";
+  $("confirmSaveSearch").hidden=editingSearch?.scope==="cloud";
+  $("saveCloudSearch").textContent=editingSearch?"Зберегти зміни":"Зберегти підписку";
+  $("confirmSaveSearch").textContent=editingSearch?"Зберегти зміни на пристрої":"Лише на цьому пристрої";
+  $("saveHint").textContent=editingSearch?.scope==="local"?"Зміни збережуться лише на цьому пристрої.":
+    editingSearch?"Назву можна змінити без паузи. Зміна фільтрів вимкне сповіщення до повторного ввімкнення підписки.":
+    "Збережемо в акаунті Telegram на паузі. Увімкнути сповіщення можна буде в меню підписки, коли моніторинг буде готовий.";
+  $("saveStatus").hidden=true;
   setSavedScope(savedScope);
 }
 function closeSubscriptionActions() {
@@ -71,8 +110,10 @@ function showSubscriptionActions(item,options,opener) {
       button.className="subscription-menu-button"+(danger?" destructive":"");
       button.disabled=disabled;actions.append(button);return button;
     }
-    action("Відкрити пошук",()=>{closeSubscriptionActions();return openSavedSearch(item.filters);});
-    if(options.toggle) action(item.enabled?"Вимкнути сповіщення":"Увімкнути сповіщення",options.toggle,!options.canToggle);
+    action(subscriptionMode()?"Редагувати підписку":"Відкрити пошук",()=>{
+      closeSubscriptionActions();return subscriptionMode()?editSubscription(item,options.cloud?"cloud":"local"):openSavedSearch(item.filters);
+    });
+    if(options.toggle) action(item.enabled?"Поставити на паузу — вимкнути сповіщення":"Увімкнути сповіщення",options.toggle,!options.canToggle);
     action(options.cloud?"Видалити підписку":"Видалити пошук",()=>{
       actions.replaceChildren();
       $("subscriptionMenuTitle").textContent=options.cloud?"Видалити підписку?":"Видалити пошук?";
@@ -87,13 +128,14 @@ function showSubscriptionActions(item,options,opener) {
 }
 function subscriptionCard(item,options) {
   const card=document.createElement("article");card.className="subscription-card";
-  const open=managerButton("",()=>openSavedSearch(item.filters));open.className="subscription-open";
+  const open=managerButton("",()=>subscriptionMode()?editSubscription(item,options.cloud?"cloud":"local"):openSavedSearch(item.filters));open.className="subscription-open";
   const icon=document.createElement("img");icon.className="subscription-icon";icon.src="assets/subscription-car.svg";icon.alt="";
   const copy=document.createElement("span");copy.className="subscription-copy";
   const name=document.createElement("span");name.className="subscription-name";name.textContent=item.name;
   const summary=document.createElement("span");summary.className="subscription-summary";summary.textContent=subscriptionSummary(item.filters,item.name);
-  copy.append(name,summary);open.append(icon,copy);
-  open.setAttribute("aria-label","Відкрити пошук «"+item.name+"». "+summary.textContent);
+  const state=document.createElement("span");state.className="subscription-state"+(options.active?" is-active":"");state.textContent=options.status;
+  copy.append(name,summary,state);open.append(icon,copy);
+  open.setAttribute("aria-label",(subscriptionMode()?"Редагувати підписку «":"Відкрити пошук «")+item.name+"». "+summary.textContent+". "+options.status);
   const aside=document.createElement("div");aside.className="subscription-aside";
   const more=managerButton("⋯",()=>showSubscriptionActions(item,options,more));more.className="subscription-more";
   more.setAttribute("aria-label","Дії для пошуку «"+item.name+"»");more.setAttribute("aria-haspopup","dialog");
@@ -116,7 +158,7 @@ function renderSavedSearches() {
   $("localCount").textContent=String(items.length);
   if(!items.length) {
     const empty=document.createElement("p");empty.className="filter-help";
-    empty.textContent="Ще немає збережених пошуків. Вибери фільтри та натисни «Зберегти пошук».";
+    empty.textContent="Тут зберігаються пошуки лише на цьому пристрої. Для сповіщень створи підписку в акаунті Telegram.";
     list.append(empty);return;
   }
   for(const item of items) {
@@ -160,9 +202,9 @@ function openSearchManager(compose) {
   if(compose) {
     try { draftFilters=savedAPI.normalize(readCurrentFilters()); }
     catch(error) { toast(error.message);return; }
-    $("savedName").value=[draftFilters.brand||"Мій пошук",draftFilters.model].filter(Boolean).join(" ");
+    $("savedName").value=draftName??(editingSearch?.name||[draftFilters.brand||"Моя підписка",draftFilters.model].filter(Boolean).join(" "));
     $("draftSummary").textContent=summarizeFilters(draftFilters);
-  }
+  } else resetSubscriptionEditor();
   if($("savedDialog").hidden) {
     managerReturnTab=currentScreen;
   }
@@ -175,7 +217,10 @@ function openSearchManager(compose) {
   if(!compose) return window.AutoDealCloudSearches?.refresh();
 }
 $("saveSearchBtn").addEventListener("click",()=>openSearchManager(true));
+$("cancelSubscriptionEdit").addEventListener("click",()=>{resetSubscriptionEditor();return openSearchManager(false);});
+$("editDraftFilters").addEventListener("click",()=>{draftName=$("savedName").value;managerSession++;draftFilters=null;showSearchForm();});
 function openSettings() {
+  editRequest++;
   setSearchTab("settings");
   $("settingsTitle").focus({preventScroll:true});
   return window.AutoDealCloudSearches?.refreshSettings?.();
@@ -198,27 +243,33 @@ for(const [id,scope] of [["localTab","local"],["subscriptionsTab","cloud"]]) {
   });
 }
 $("settingsSearches").addEventListener("click",()=>openSearchManager(false));
-$("closeSaved").addEventListener("click",()=>setSearchTab(managerReturnTab));
+$("closeSaved").addEventListener("click",()=>{editRequest++;managerSession++;setSearchTab(managerReturnTab);});
 $("newSavedSearch").addEventListener("click",()=>{
+  resetSubscriptionEditor();
+  if(subscriptionMode()) applySavedFilters({brand:"",model:"",region:"",price:{from:null,to:null},year:{from:null,to:null},
+    mileage:{from:null,to:null},body:[],fuel:[],transmission:[],onlyDeals:true});
   showSearchForm();
-  toast("Обери фільтри та натисни «Зберегти пошук».");
+  toast("Обери фільтри та натисни «Створити підписку».");
 });
 $("saveSearchForm").addEventListener("submit",event=>{
   event.preventDefault();
-  if(!draftFilters) return;
+  if(!draftFilters||editingSearch?.scope==="cloud"||window.AutoDealCloudSearches?.isBusy?.()) return;
   try {
-    savedAPI.save(window.localStorage,draftFilters,$("savedName").value,false);
+    if(editingSearch) savedAPI.update(window.localStorage,editingSearch.id,draftFilters,$("savedName").value);
+    else savedAPI.save(window.localStorage,draftFilters,$("savedName").value,false);
+    resetSubscriptionEditor();
     draftFilters=null;savedScope="local";renderSavedView();renderSavedSearches();
     toast("Пошук збережено на пристрої");
   } catch(error) {
     storageError();
-    if(error.message.includes("Назва")||error.message.includes("20 пошуків")) $("savedError").textContent=error.message;
+    if(/Назва|20 пошуків|вже є|уже видалено/.test(error.message)) $("savedError").textContent=error.message;
   }
 });
 document.querySelectorAll(".nav").forEach(item=>item.addEventListener("click",()=>{
   if(item.dataset.tab==="saved") return openSearchManager(false);
   if(item.dataset.tab==="settings") return openSettings();
   if(item.dataset.tab==="deals") return searchCars({deals:true});
+  editRequest++;
   showSearchForm();
 }));
 window.addEventListener("storage",event=>{

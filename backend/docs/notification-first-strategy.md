@@ -137,3 +137,16 @@ regression tests cover the shutdown guards and the subscription-only UI entry.
 The durable new-listing monitor, multi-subscription scheduling and a real
 end-to-end notification test remain to be implemented and verified. This release
 does not enable monitoring or delivery. No AutoSpect interaction was completed.
+
+### Subscription management follow-up (release 20260917-31)
+
+Step 1 now includes in-place name/filter editing, cancellation, visible per-card
+states, confirmed deletion, and existing pause/activation controls. Up to 20
+subscriptions can be saved per user. Changed criteria pause the subscription and
+invalidate old monitoring evidence; activation stays explicit. Duplicate edits
+return a recoverable conflict without overwriting either subscription. Local
+drafts stay local, including edits. Backend tests cover ownership, paused edits,
+old queued-message invalidation, duplicates and editing at the subscription cap.
+Frontend tests cover complete filter restoration, save/cancel/retry, async
+navigation and draft preservation. Monitoring/delivery remain disabled, with
+the one-active-subscription pilot capacity deferred to step 2.

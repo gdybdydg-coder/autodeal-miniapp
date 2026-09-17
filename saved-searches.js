@@ -55,12 +55,22 @@
     return item;
   }
   function remove(storage,id) { write(storage,read(storage).filter(item=>item.id!==id)); }
+  function update(storage,id,filters,name) {
+    const normalized=normalize(filters),items=read(storage),item=items.find(item=>item.id===id);
+    if(!item) throw Error("Пошук уже видалено. Онови список.");
+    name=name.trim();
+    if(!name||name.length>60) throw Error("Назва має містити від 1 до 60 символів");
+    if(items.some(other=>other.id!==id&&JSON.stringify(other.filters)===JSON.stringify(normalized)))
+      throw Error("Пошук із такими фільтрами вже є. Відкрий його у списку.");
+    Object.assign(item,{name,filters:normalized,notificationsWanted:false});
+    write(storage,items);return item;
+  }
   function setWanted(storage,id,value) {
     const items=read(storage),item=items.find(item=>item.id===id);
     if(!item) throw Error("Пошук не знайдений");
     item.notificationsWanted=!!value;write(storage,items);
   }
-  const api={KEY,normalize,read,save,remove,setWanted};
+  const api={KEY,normalize,read,save,update,remove,setWanted};
   if(typeof module!=="undefined"&&module.exports) module.exports=api;
   else root.AutoDealSaved=api;
 })(typeof window!=="undefined"?window:globalThis);
