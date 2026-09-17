@@ -8,6 +8,20 @@
 > mass scans by default. Release 34 adds measurements for the explicitly
 > authorized notification rollout; each subscription still requires activation.
 
+## Manual minimum discount (release 20260917-41)
+
+The subscription form has one text field with a decimal keyboard for
+`filters.minDiscount`: any numeric percentage from 0 to 100, including fractions.
+Both comma and period input are accepted. The saved threshold applies to monitor
+matching, the final delivery check and legacy search results. Valuation evidence
+proves the median independently of the selected threshold. Subscriptions with
+otherwise identical filters share discovery and peer-price requests.
+
+Existing subscriptions still use 15%. Omitting the default from canonical filters
+preserves their fingerprints, active watches and checkpoints. Changing a threshold
+uses the existing edit flow and requires explicit reactivation. Provider caps,
+monitor flags and notification consent are unchanged.
+
 ## Subscription management (release 20260917-31)
 
 Users can save up to 20 distinct subscriptions, open a card to edit its name and

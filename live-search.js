@@ -29,9 +29,10 @@
   }
   function renderResults(data,filters,options) {
     const list=document.getElementById("resultsList");list.replaceChildren();
+    const minDiscount=filters.minDiscount??15,percentLabel=String(minDiscount).replace(".",",")+"%";
     const visibleCars=filters.onlyDeals?data.cars.filter(car=>(options.fullScan&&car.stale&&car.historical_match)||(!data.stale&&!car.stale&&car.valuation==="sample_median"&&
       car.comparables>=5&&Number.isFinite(car.market)&&car.market>0&&Number.isFinite(car.price_usd)&&
-      car.price_usd>0&&car.price_usd<=car.market*.85)):data.cars;
+      car.price_usd>0&&car.price_usd*100<=car.market*(100-minDiscount))):data.cars;
     document.getElementById("count").textContent="Показано: "+visibleCars.length;
     const checked=Number.isFinite(data.checked_at)?new Date(data.checked_at*1000).toLocaleString("uk-UA"):null;
     document.getElementById("sourceNote").textContent=
@@ -68,12 +69,12 @@
     }
     if(!visibleCars.length&&options.fullScan) {
       list.append(node("div","empty",data.complete?
-        (filters.onlyDeals?"Серед отриманих оголошень не підтверджено авто на 15% нижче медіани. Частині авто може бракувати даних для оцінки.":"Отримані оголошення не пройшли перевірку вибраних фільтрів або вже недоступні."):
+        (filters.onlyDeals?"Серед отриманих оголошень не підтверджено авто на "+percentLabel+" нижче медіани. Частині авто може бракувати даних для оцінки.":"Отримані оголошення не пройшли перевірку вибраних фільтрів або вже недоступні."):
         (["paused","budget_exhausted","incomplete","error"].includes(data.status)?
           "Серед уже перевірених оголошень відповідних авто поки немає. Повну перевірку ще не завершено.":
           "Перевірка триває. Автомобілі з’являтимуться тут, щойно пройдуть перевірку.")));
     } else if(!visibleCars.length) list.append(node("div","empty",filters.onlyDeals?
-      (data.stale?"Потрібна свіжа перевірка цін, щоб показати вигідні авто. ":"У перевіреній частині оголошень не підтверджено пропозицій на 15% нижче медіани. ")+
+      (data.stale?"Потрібна свіжа перевірка цін, щоб показати вигідні авто. ":"У перевіреній частині оголошень не підтверджено пропозицій на "+percentLabel+" нижче медіани. ")+
       (options.dealsView?"Повернися до «Пошук» та вимкни «Тільки вигідні авто», щоб переглянути авто без оцінки. ":"Вимкни цей фільтр, щоб бачити авто без оцінки. ")+
       "Це не означає, що вигідних авто на AUTO.RIA немає.":
       "У перевіреній частині оголошень немає авто, які відповідають усім фільтрам."));

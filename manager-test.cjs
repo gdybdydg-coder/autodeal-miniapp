@@ -344,3 +344,35 @@ test('a live monitor cannot display successful monitoring when AUTO.RIA discover
   assert.equal(ui.ids.notificationStatus.textContent,'Перевірка AUTO.RIA затримується');
   assert.match(ui.ids.launchProgress.textContent,/помилка отримання оголошень/);
 });
+
+test('manual percent accepts a comma or decimal point, validates and restores saved values',()=>{
+  const ui=setup({},'subscriptions');
+  assert.equal(ui.filters().minDiscount,15);
+  for(const value of ['0','7','12,5','12.5','83','99.99','100']) {
+    ui.ids.minDiscount.value=value;
+    assert.equal(ui.filters().minDiscount,Number(value.replace(',','.')));
+  }
+  for(const value of ['','-1','100.01','abc','12,5,5']) {
+    ui.ids.minDiscount.value=value;
+    assert.throws(ui.filters,/від 0 до 100/);
+  }
+  assert.equal(ui.ids.minDiscount.focused,true);
+  ui.ids.minDiscount.value='12,5';
+  ui.run('savedAPI.save(window.localStorage,readCurrentFilters(),"Мій Golf",false)');
+  const saved=JSON.parse(ui.local()).searches[0];
+  assert.equal(saved.filters.minDiscount,12.5);
+  ui.ids.minDiscount.value='83';
+  ui.run('applySavedFilters(savedAPI.read(window.localStorage)[0].filters)');
+  assert.equal(ui.ids.minDiscount.value,'12,5');
+  assert.match(ui.run('summarizeFilters(readCurrentFilters())'),/Від 12,5%/);
+});
+
+test('subscription creation sends the manually entered percent to the server',async()=>{
+  const writes=[];
+  const ui=setup({save:async(name,filters)=>{writes.push({name,filters});return{id:8,name,filters,enabled:false}}},'subscriptions');
+  ui.ids.minDiscount.value='7,25';ui.ids.saveSearchBtn.listeners.click();
+  assert.match(ui.ids.draftSummary.textContent,/Від 7,25%/);
+  ui.ids.savedName.value='Мій поріг';await ui.ids.saveCloudSearch.listeners.click();
+  assert.equal(writes.length,1);assert.equal(writes[0].filters.minDiscount,7.25);
+  assert.equal(writes[0].name,'Мій поріг');assert.equal(ui.searches.length,0);
+});

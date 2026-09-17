@@ -22,6 +22,9 @@
     }
     if(typeof filters.onlyDeals!=="boolean") return fail();
     result.onlyDeals=filters.onlyDeals;
+    const percent=filters.minDiscount===undefined?15:filters.minDiscount;
+    if(!Number.isFinite(percent)||percent<0||percent>100) return fail();
+    if(percent!==15) result.minDiscount=percent;
     if(!result.fuel.includes("Електро")) result.transmission=result.transmission.filter(v=>v!=="Редуктор");
     return result;
   }

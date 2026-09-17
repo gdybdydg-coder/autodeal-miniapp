@@ -15,8 +15,7 @@ from .peer_cache import evidence_current
 
 
 def matches(car: Car, filters: Filters):
-    # Alerts always require >=15% below supplied valuation, even for broad searches.
-    if not is_deal(car.price, car.market):
+    if not is_deal(car.price, car.market, filters.minDiscount):
         return False
     for key in ("brand", "model", "region"):
         if getattr(filters, key) and getattr(filters, key) != getattr(car, key):
@@ -66,11 +65,11 @@ def eligible(db, user_id, listing, now):
     if not fresh(car, now, db):
         return False
     if car.source == "auto_ria":
-        if not is_deal(car.price, car.market):
-            return False
         # Production matches use official catalog IDs, not translated labels.
         # The trusted monitor records the filter fingerprint and enable epoch.
-        return db.scalar(matching_searches(user_id, listing.id).limit(1)) is not None
+        return any(is_deal(car.price, car.market, Filters.model_validate(search.filters).minDiscount)
+                   for search in db.scalars(select(Search).where(
+                       Search.id.in_(matching_searches(user_id, listing.id)))))
     return any(matches(car, Filters.model_validate(row.filters)) for row in db.scalars(
         select(Search).where(Search.user_id == user_id, Search.enabled.is_(True),
                              Search.after_listing < listing.id)))

@@ -43,8 +43,8 @@ def initialize(engine):
 
 
 def source_filters(filters):
-    # Alerts always require the deal threshold; this UI flag changes no source IDs.
-    return Filters.model_validate(filters).model_copy(update={"onlyDeals": True})
+    # Percentages filter shared valuations, never provider discovery or pricing.
+    return Filters.model_validate(filters).model_copy(update={"onlyDeals": True, "minDiscount": 15})
 
 
 def reset_watch(db, search_id, enabled):
@@ -321,7 +321,8 @@ class Monitor:
                 if (not candidate or not rating or resolved is None
                         or not matches(candidate, Filters.model_validate(search.filters), resolved)
                         or rating["valuation"] != "sample_median"
-                        or not is_deal(candidate["price_usd"], rating["market"])):
+                        or not is_deal(candidate["price_usd"], rating["market"],
+                                       Filters.model_validate(search.filters).minDiscount)):
                     continue
                 car = Car(source="auto_ria", source_id=source_id, url=candidate["url"],
                     photo=candidate["image"], brand=candidate["brand"][:100], model=candidate["model"][:100],

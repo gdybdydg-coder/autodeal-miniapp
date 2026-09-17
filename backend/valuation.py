@@ -32,10 +32,11 @@ def number(value, *, positive=False):
     return type(value) in (int, float) and math.isfinite(value) and (value > 0 if positive else value >= 0)
 
 
-def is_deal(price, market):
+def is_deal(price, market, min_discount=15):
     # Classify using exact decimal inputs, never the rounded display percentage.
     return bool(number(price, positive=True) and number(market, positive=True)
-                and Decimal(str(price)) <= Decimal(str(market)) * Decimal("0.85"))
+                and number(min_discount) and min_discount <= 100
+                and Decimal(str(price)) * 100 <= Decimal(str(market)) * (100 - Decimal(str(min_discount))))
 
 
 def vehicle_key(vin):
@@ -160,12 +161,15 @@ def evidence_valid(car, now):
         result = estimate(candidate, evidence.get("peers", []), now=now)
     except (AttributeError, KeyError, TypeError, ValueError, OverflowError):
         return False
-    return (result["assessment"] == "deal" and result["market"] == car.market
+    # Valuation proof is shared; each subscription applies its own threshold.
+    return (result["valuation"] == "sample_median" and result["market"] == car.market
             and result["comparables"] == car.comparables)
 
 
 def policy():
     return {"version": VERSION, "basis": "asking_prices", "threshold_percent": 15,
+            "threshold_scope": "subscription", "threshold_min": 0, "threshold_max": 100,
+            "fractional_thresholds": True,
             "minimum_comparables": MIN_PEERS, "dimensions": list(DIMENSIONS),
             "missing_modification_fallback": "same_generation_body_fuel_gear_and_explicit_engine_capacity",
             "condition_basis": "no_source_damage_parts_abroad_or_custom_flags",

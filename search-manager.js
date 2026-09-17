@@ -40,7 +40,7 @@ function summarizeFilters(f) {
     if(r.from!==null||r.to!==null) parts.push(label+": "+(r.from??"…")+"–"+(r.to??"…")+" "+unit);
   }
   for(const key of ["body","fuel","transmission"]) if(f[key].length) parts.push(f[key].join(", "));
-  parts.push(f.onlyDeals?"Від 15% нижче ринку":"Без обмеження вигоди");
+  parts.push(f.onlyDeals?"Від "+String(f.minDiscount??15).replace(".",",")+"% нижче ринку":"Без обмеження вигоди");
   return parts.filter(Boolean).join(" · ");
 }
 function storageError() {
@@ -62,7 +62,7 @@ function subscriptionSummary(filters,name) {
     const text=range.from===null?"до "+format(range.to):range.to===null?"від "+format(range.from):format(range.from)+"–"+format(range.to);
     parts.push((key==="mileage"?"Пробіг ":"")+text+unit);
   }
-  parts.push(...filters.fuel,...filters.transmission,filters.onlyDeals?"Від 15% нижче ринку":"Усі ціни");
+  parts.push(...filters.fuel,...filters.transmission,filters.onlyDeals?"Від "+String(filters.minDiscount??15).replace(".",",")+"% нижче ринку":"Усі ціни");
   return parts.join(", ");
 }
 function setSavedScope(scope) {
@@ -191,6 +191,7 @@ function applySavedFilters(raw) {
   }
   for(const group of advancedGroups) document.querySelectorAll('input[name="'+group.name+'"]').forEach(input=>input.checked=f[group.name].includes(input.value));
   onlyDeals=f.onlyDeals;
+  $("minDiscount").value=String(f.minDiscount??15).replace(".",",");
   marketButton.querySelector(".switch").classList.toggle("active",onlyDeals);
   marketButton.setAttribute("aria-checked",String(onlyDeals));
   updateAdvancedCount();
