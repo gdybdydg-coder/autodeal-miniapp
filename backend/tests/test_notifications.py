@@ -55,6 +55,33 @@ def test_webhook_disabled_and_failed_checks_never_register(db):
     assert telegram_setup.webhook_status(db)["status"] == "unavailable"
 
 
+@pytest.mark.parametrize("old_url,expected", [
+    (telegram_setup.APP_URL + "?v=7", "configured"),
+    ("https://different.example/app", "existing_menu_conflict"),
+])
+def test_menu_release_changes_only_our_launch_url_once(db, old_url, expected):
+    settings = Settings("unused", TOKEN, SECRET, miniapp_release="test-19")
+    calls = []
+    current = {"type": "web_app", "text": "Old", "web_app": {"url": old_url}}
+    def request(token, method, payload):
+        nonlocal current
+        calls.append(method)
+        assert method in {"getMe", "getChatMenuButton", "setChatMenuButton"}
+        if method == "getMe":
+            return {"ok": True, "result": {"username": telegram_setup.BOT_USERNAME}}
+        if method == "setChatMenuButton":
+            assert payload["menu_button"]["web_app"]["url"] == telegram_setup.APP_URL + "?v=test-19"
+            current = payload["menu_button"]
+            return {"ok": True, "result": True}
+        return {"ok": True, "result": current}
+    telegram_setup.configure_menu(db, settings, request)
+    assert telegram_setup.menu_status(db, "test-19")["status"] == expected
+    count = len(calls)
+    telegram_setup.configure_menu(db, settings, request)
+    assert len(calls) == count and not settings.live and not settings.configure_webhook
+    assert ("setChatMenuButton" in calls) == (expected == "configured")
+
+
 @pytest.fixture
 def api(db, monkeypatch):
     async def idle(engine, settings, stop):

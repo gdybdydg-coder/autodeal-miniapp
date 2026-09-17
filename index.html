@@ -4,8 +4,9 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
   <meta name="theme-color" content="#070709">
+  <meta name="autodeal-version" content="20260917-19">
   <title>AUTODEAL</title>
-  <link rel="stylesheet" href="style.css?v=11">
+  <link rel="stylesheet" href="style.css?v=20260917-19">
 </head>
 <body>
 <main class="app">
@@ -87,22 +88,29 @@
 </section>
 <section id="settingsPage" class="settings-page" aria-labelledby="settingsTitle" hidden>
   <h1 id="settingsTitle" tabindex="-1">Налаштування</h1>
-  <p class="subtitle">Сповіщення та зв’язок із ботом</p>
-  <details class="saved-fold notification-panel" open>
-    <summary><span class="fold-copy"><span class="fold-title">Сповіщення в Telegram</span><span id="notificationStatus" role="status">Перевіряємо стан…</span></span></summary>
-    <div class="fold-body">
-      <p class="filter-help">Відкрий чат бота та надішли /start. Повернись сюди, онови список і надішли тестове повідомлення. Потім увімкни сповіщення в картці потрібного пошуку.</p>
+  <p class="subtitle">Керуй підключенням і повідомленнями</p>
+  <section class="settings-card" aria-labelledby="telegramSettingsTitle">
+    <div class="settings-card-head"><span class="settings-symbol" aria-hidden="true">↗</span><div><h2 id="telegramSettingsTitle">Telegram</h2><p id="notificationStatus" role="status">Перевіряємо стан…</p></div></div>
+      <p class="filter-help">Вигідні авто надходитимуть в особистий чат із ботом.</p>
+      <a class="manager-button telegram-link" href="https://t.me/auto_deal_finder1_bot?start=notifications" target="_blank" rel="noopener">Відкрити чат бота ↗</a>
+  </section>
+  <section class="settings-card" aria-labelledby="connectionSettingsTitle">
+      <h2 id="connectionSettingsTitle">Перевірка зв’язку</h2>
+      <p class="filter-help">Надішли /start у чаті бота, перевір підключення та отримай тестове повідомлення.</p>
       <div class="notification-actions">
-        <a class="manager-button" href="https://t.me/auto_deal_finder1_bot?start=notifications" target="_blank" rel="noopener">Відкрити чат бота ↗</a>
+        <button id="refreshSettings" class="manager-button" type="button">Перевірити</button>
         <button id="testNotification" class="manager-button" type="button" disabled>Надіслати тест</button>
       </div>
-      <p class="filter-help notification-footnote">На першому запуску доступний один активний пошук. /stop у чаті вимикає всі сповіщення.</p>
-      <button id="refreshSettings" class="save-search-button" type="button">Перевірити підключення</button>
       <p id="settingsStatus" class="filter-help settings-status" role="status" hidden></p>
-    </div>
-  </details>
-  <button id="settingsSearches" class="save-search-button" type="button">Керувати моїми пошуками →</button>
+  </section>
+  <section class="settings-card" aria-labelledby="alertSettingsTitle">
+    <h2 id="alertSettingsTitle">Підписки на авто</h2>
+    <p class="filter-help">Вмикай повідомлення для потрібного пошуку в його картці. На першому запуску доступний один активний пошук.</p>
+    <button id="settingsSearches" class="save-search-button" type="button">Перейти до моїх пошуків →</button>
+    <p class="filter-help notification-footnote">/stop у чаті — вимкнути всі сповіщення.</p>
+  </section>
   <details class="save-privacy"><summary>Про збереження</summary><p class="filter-help">Збереження в акаунті передає назву, фільтри та підтверджений Telegram ID на сервер AUTODeal у Render. Видалити пошук можна в його картці. Локальні пошуки залишаються в цьому браузері й автоматично не переносяться. Для пошуку сервер передає фільтри до AUTO.RIA без твого Telegram ID.</p></details>
+  <div class="app-release"><span>Версія 20260917-19</span><button id="reloadApp" class="manager-button" type="button">Оновити застосунок</button></div>
 </section>
 </main>
 <div id="toast" class="toast" role="status"></div>
@@ -114,5 +122,6 @@
 <script src="cloud-api.js?v=11"></script>
 <script src="live-search.js?v=13"></script>
 <script src="cloud-searches.js?v=16"></script>
+<script src="app-version.js?v=20260917-19"></script>
 </body>
 </html>

@@ -2,15 +2,18 @@
 import logging
 import re
 import time
+from urllib.parse import urlsplit
 
 import httpx
 from sqlalchemy.orm import Session
+from sqlalchemy.exc import IntegrityError
 
 from .models import SourceProbe
 
 BOT_USERNAME = "auto_deal_finder1_bot"
 WEBHOOK_URL = "https://autodeal-api.onrender.com/telegram/webhook"
 PROBE_ID = "telegram-webhook-v1"
+APP_URL = "https://gdybdydg-coder.github.io/autodeal-miniapp/"
 
 
 def call(token, method, payload):
@@ -65,3 +68,57 @@ def send_test(token, uid):
                 "Повернись у «Мої пошуки» та ввімкни сповіщення для одного пошуку.\n"
                 "Це перевірка зв’язку, не оголошення про авто.\n"
                 "/stop — вимкнути всі сповіщення."})
+
+
+def configure_menu(engine, settings, request=call):
+    """Update only the bot's launch button after an operator publishes a release.
+
+    No messages, webhook changes, source requests or delivery flag changes.
+    """
+    version = settings.miniapp_release
+    if not version:
+        return
+    probe_id = "telegram-menu-" + version
+    with Session(engine) as db:
+        db.add(SourceProbe(id=probe_id, status="checking", checked_at=time.time(), requests=0, result={}))
+        try:
+            db.commit()
+        except IntegrityError:
+            db.rollback()
+            return
+    status = "unavailable"
+    target = APP_URL + "?v=" + version
+    try:
+        me = request(settings.bot_token, "getMe", {})
+        if me.get("ok") is True and (me.get("result") or {}).get("username") == BOT_USERNAME:
+            menu = request(settings.bot_token, "getChatMenuButton", {})
+            old = menu.get("result") or {}
+            if menu.get("ok") is True and old.get("type") in {"default", "commands", "web_app"}:
+                old_url = (old.get("web_app") or {}).get("url", "")
+                parsed = urlsplit(old_url)
+                ours = (parsed.scheme == "https" and parsed.netloc == "gdybdydg-coder.github.io"
+                        and parsed.path in {"/autodeal-miniapp/", "/autodeal-miniapp/index.html"})
+                if old.get("type") == "web_app" and not ours:
+                    status = "existing_menu_conflict"
+                else:
+                    result = request(settings.bot_token, "setChatMenuButton", {"menu_button": {
+                        "type": "web_app", "text": "Відкрити AUTODeal", "web_app": {"url": target}}})
+                    if result.get("ok") is True and result.get("result") is True:
+                        check = request(settings.bot_token, "getChatMenuButton", {})
+                        if check.get("ok") is True and ((check.get("result") or {}).get("web_app") or {}).get("url") == target:
+                            status = "configured"
+        elif me.get("ok") is True:
+            status = "wrong_bot"
+    except Exception:
+        status = "unavailable"
+    with Session(engine) as db:
+        row = db.get(SourceProbe, probe_id)
+        row.status, row.checked_at = status, time.time()
+        row.result = {"release": version}
+        db.commit()
+
+
+def menu_status(engine, version):
+    with Session(engine) as db:
+        row = db.get(SourceProbe, "telegram-menu-" + version) if version else None
+        return {"status": row.status if row else "not_configured", "release": version or None}

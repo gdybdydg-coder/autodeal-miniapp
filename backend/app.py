@@ -1,6 +1,7 @@
 import asyncio
 import hmac
 import os
+import re
 import time
 from contextlib import asynccontextmanager
 from dataclasses import dataclass, field
@@ -36,6 +37,7 @@ class Settings:
     ria_validation_run_id: str = ""
     monitor_enabled: bool = False
     configure_webhook: bool = False
+    miniapp_release: str = ""
 
     @classmethod
     def env(cls):
@@ -49,6 +51,7 @@ class Settings:
             ria_validation_run_id=os.getenv("RIA_VALIDATION_RUN_ID", ""),
             monitor_enabled=os.getenv("MONITOR_ENABLED") == "true",
             configure_webhook=os.getenv("TELEGRAM_CONFIGURE_WEBHOOK") == "true",
+            miniapp_release=os.getenv("MINIAPP_RELEASE", ""),
         )
 
     @property
@@ -60,6 +63,8 @@ def create_app(settings: Settings, engine=None):
     BudgetLimits.env()  # Validate before serving requests or running startup probes.
     peer_scan_limit()
     validate_run_id(settings.ria_validation_run_id)
+    if settings.miniapp_release and not re.fullmatch(r"[a-z0-9-]{1,40}", settings.miniapp_release):
+        raise ValueError("Invalid Mini App release")
     if not settings.bot_token or len(settings.webhook_secret) < 32:
         raise ValueError("Configure server-only Telegram secrets")
     engine = engine or create_engine(settings.database_url, pool_pre_ping=True)
@@ -74,6 +79,7 @@ def create_app(settings: Settings, engine=None):
         await asyncio.to_thread(verify_search_once, engine, settings.auto_ria_api_key)
         await asyncio.to_thread(validate_once, engine, settings.auto_ria_api_key, settings.ria_validation_run_id)
         await asyncio.to_thread(telegram_setup.configure, engine, settings)
+        await asyncio.to_thread(telegram_setup.configure_menu, engine, settings)
         stop = asyncio.Event()
         task = asyncio.create_task(monitor.run(engine, settings, stop)) if settings.monitor_enabled else None
         try:
@@ -184,7 +190,8 @@ def create_app(settings: Settings, engine=None):
                 "budget": budget_usage(engine),
                 "valuation_check": validation_status(engine, settings.ria_validation_run_id),
                 "monitor": monitor.runtime_status(engine, settings.monitor_enabled),
-                "telegram": telegram_setup.webhook_status(engine)}
+                "telegram": telegram_setup.webhook_status(engine),
+                "miniapp_menu": telegram_setup.menu_status(engine, settings.miniapp_release)}
 
     @app.get("/api/notifications/status")
     def notification_status(uid=Depends(identity), db=Depends(session)):

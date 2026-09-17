@@ -21,6 +21,21 @@ without an animated scroll down the filter form, and retain entered filters.
 Deals loading/completion never scrolls the page. Returning to search or opening
 saved searches also cancels a pending ordinary search's completion scroll.
 
+Settings is a separate screen opened by both the header gear and the bottom
+settings button. GitHub Pages serves HTML with a ten-minute cache lifetime, so
+reopening Telegram alone may retain an older interface. Each UI release updates
+the `autodeal-version` meta tag and `release.json`. `app-version.js` checks this
+small same-origin manifest without cache on foregrounding and offers an explicit
+reload button; reload preserves Telegram's URL fragment and device storage.
+It never reloads automatically while the user is editing filters.
+
+After Pages has published a release, the operator can set `MINIAPP_RELEASE` to
+that identifier. Startup verifies the bot identity and its existing default menu,
+updates only our app's launch URL to `?v=<release>`, and verifies the result.
+The DB records this once-only operation; a different app URL is a conflict.
+This changes no webhook, monitoring/delivery flags, subscriptions or messages.
+`miniapp_menu` in `/api/source-status` reports the release and result only.
+
 The bottom «Вигідні» navigation runs the same authenticated search with the current
 form filters and `onlyDeals=true`, without changing the regular search preference.
 Its heading and criteria identify the request. The client also checks the exact

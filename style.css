@@ -143,3 +143,13 @@ h1 { font-weight: 400; letter-spacing: -.3px; }
 .settings-page .manager-button { display:flex; align-items:center; justify-content:center; text-decoration:none; border-color:#303036; border-radius:10px; font-size:13px; line-height:1.4; }
 .settings-page button:disabled { opacity:.45; cursor:default; }
 .settings-status { margin:12px 0 0; }
+.settings-card { background:var(--panel); border:1px solid #29292f; border-radius:18px; padding:16px; margin:0 0 14px; }
+.settings-card h2 { margin:0 0 9px; font-size:16px; font-weight:500; }
+.settings-card-head { display:flex; align-items:center; gap:12px; margin-bottom:14px; }
+.settings-card-head h2 { margin-bottom:4px; }
+.settings-card-head #notificationStatus { margin:0; }
+.settings-symbol { display:flex; align-items:center; justify-content:center; flex:0 0 42px; height:42px; background:#302025; color:#ff8b91; border-radius:12px; font-size:26px; }
+.settings-page .telegram-link { background:#302025; border-color:#593037; color:#ff8b91; }
+.settings-card .save-search-button { margin-top:0; }
+.app-release { display:flex; align-items:center; justify-content:space-between; gap:10px; font-size:11px; color:#818187; margin-top:12px; }
+.app-release .manager-button { font-size:12px; }
