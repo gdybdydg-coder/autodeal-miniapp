@@ -8,6 +8,7 @@ from sqlalchemy.orm import Session
 
 from .models import (Delivery, DeliveryTiming, MonitorJob, MonitorSeen, Search,
                      SourceBudget, SourceProbe, TelegramTest, User)
+from .valuation import DIMENSIONS, reason_category
 
 PROBE_ID = "subscription-launch-v1"
 WINDOW = 86400
@@ -60,6 +61,16 @@ def activity(db, uid=None):
     count = lambda model, *conditions: db.scalar(select(func.count()).select_from(model).where(*conditions)) or 0
     enabled = count(Search, Search.id.in_(subscriptions), Search.enabled.is_(True))
     rating = MonitorJob.result["rating"]["valuation"].as_string()
+    latest_unknown = db.scalar(select(MonitorJob.result["rating"]).where(
+        *jobs, MonitorJob.state == "unvalued").order_by(MonitorJob.last_attempt.desc()).limit(1))
+    allowed = {"unverified_condition", "invalid_price", "invalid_year", "invalid_mileage",
+               "stale_details", "insufficient_comparables", "comparison_limit", "mixed_sample",
+               *("missing_" + name for name in DIMENSIONS)}
+    unknown_reason = None
+    if isinstance(latest_unknown, dict):
+        codes = [code for code in latest_unknown.get("valuation_reasons", []) if code in allowed]
+        unknown_reason = {"category": reason_category({"valuation_reasons": codes}), "codes": codes,
+                          "comparables": latest_unknown.get("comparables", 0)}
     delivery_filters = [DeliveryTiming.accepted_at >= cutoff, Delivery.state == "sent"]
     if uid is not None:
         delivery_filters.append(Delivery.user_id == uid)
@@ -79,6 +90,7 @@ def activity(db, uid=None):
             "pending": count(MonitorJob, *jobs, MonitorJob.state == "pending"),
             "evaluated": count(MonitorJob, *jobs, rating == "sample_median"),
             "unknown": count(MonitorJob, *jobs, MonitorJob.state == "unvalued"),
+            "latest_unknown_reason": unknown_reason,
             "messages_accepted": sent, "last_delivery": last, "receipt_basis": "telegram_api_acceptance"}
 
 

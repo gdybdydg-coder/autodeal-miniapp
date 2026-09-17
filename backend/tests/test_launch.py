@@ -101,7 +101,9 @@ def test_authenticated_progress_is_owner_scoped_and_reads_do_not_spend_requests(
         for sid, source, state in [(first, "123", "checked"), (second, "124", "unvalued")]:
             db.add(MonitorSeen(search_id=sid, source_id=source, epoch="test", state=state, first_seen=now))
             db.add(MonitorJob(source_id=source, state=state, first_seen=now,
-                result={"rating": {"valuation": "sample_median" if state == "checked" else "insufficient_data"}}))
+                result={"rating": {"valuation": "sample_median" if state == "checked" else "insufficient_data",
+                                   "valuation_reasons": ["missing_modification_id", "private-unexpected-value"],
+                                   "comparables": 0}}))
         before = db.get(SourceBudget, "auto_ria").total
         db.commit()
     assert client.get("/api/notifications/status").status_code == 401
@@ -110,10 +112,13 @@ def test_authenticated_progress_is_owner_scoped_and_reads_do_not_spend_requests(
     assert one["new_listings"] == two["new_listings"] == 1
     assert one["evaluated"] == 1 and one["unknown"] == 0
     assert two["evaluated"] == 0 and two["unknown"] == 1
+    assert one["latest_unknown_reason"] is None
+    assert two["latest_unknown_reason"] == {"category": "missing_details", "codes": ["missing_modification_id"], "comparables": 0}
     public = client.get("/api/source-status").json()["launch"]
     assert public["readiness"]["saved_subscriptions"] == 2
     assert public["activity"]["new_listings"] == 2
     assert "user_id" not in str(public) and "source_id" not in str(public)
+    assert "private-unexpected-value" not in str(public)
     with Session(engine) as db:
         assert db.get(SourceBudget, "auto_ria").total == before
         assert db.scalar(select(Delivery)) is None
