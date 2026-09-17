@@ -13,6 +13,18 @@
       return url.protocol==="https:" && (photo?url.hostname.endsWith(".riastatic.com"):url.hostname==="auto.ria.com")?url.href:null;
     } catch(_) {return null;}
   }
+  function valuationMessage(car,stale) {
+    if(stale) return "Оцінка потребує оновлення";
+    if(car.valuation==="pending") return "Оцінку ще не завершено — натисни «Продовжити оцінку»";
+    const reasons=Array.isArray(car.valuation_reasons)?car.valuation_reasons:[];
+    if(reasons.includes("unverified_condition")) return "Не підтверджено стан або статус авто для оцінки";
+    if(reasons.some(reason=>typeof reason==="string"&&reason.startsWith("missing_")))
+      return "Не вистачає даних про версію авто для точного порівняння";
+    if(car.valuation==="mixed_sample") return "Ціни аналогів надто різняться для надійної оцінки";
+    if(Number.isInteger(car.comparables)&&car.comparables>0&&car.comparables<5)
+      return "Схожих авто: "+car.comparables+" із потрібних 5";
+    return "Недостатньо схожих авто для оцінки";
+  }
   function renderResults(data,filters,options) {
     const list=document.getElementById("resultsList");list.replaceChildren();
     const visibleCars=filters.onlyDeals?data.cars.filter(car=>!data.stale&&car.valuation==="sample_median"&&
@@ -43,8 +55,7 @@
       const valued=!data.stale&&Number.isFinite(car.market)&&car.market>0;
       body.append(node("p","market-price",valued?
         "Медіана вибірки ≈ $"+car.market.toLocaleString("en-US")+" · "+car.comparables+" схожих авто":
-        data.stale?"Оцінка потребує оновлення":car.valuation==="pending"?
-        "Оцінку ще не завершено — натисни «Продовжити оцінку»":"Недостатньо схожих авто для оцінки"));
+        valuationMessage(car,data.stale)));
       if(valued) body.append(node("p","car-meta",car.discount>=0?
         "На "+car.discount+"% нижче медіани вибірки":"На "+Math.abs(car.discount)+"% вище медіани вибірки"));
       const href=safeLink(car.url);

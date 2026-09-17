@@ -23,6 +23,21 @@ test('live results use safe text/links and never invent valuation',async()=>{
   assert.equal(body.children.filter(n=>n.href).length,0);
   assert.equal(ids.searchBtn.disabled,false);
 });
+test('unvalued cards explain missing condition, specifications and peer coverage',async()=>{
+  const cards=[
+    {valuation_reasons:['unverified_condition']},
+    {valuation_reasons:['missing_modification_id']},
+    {comparables:4,valuation_reasons:['insufficient_comparables']},
+    {valuation:'mixed_sample',comparables:5}
+  ].map((extra,i)=>({id:String(i),title:'Auto '+i,price_usd:10000,year:2017,mileage:100000,
+    fuel:'Дизель',body:'Седан',transmission:'Автомат',region:'Київ',market:null,...extra}));
+  const {window,ids}=setup(async()=>({cars:cards,warnings:[],inspected:4,source_total:4}));
+  await window.AutoDealLive.search({onlyDeals:false});
+  const texts=ids.resultsList.children.map(article=>article.children[0].children.map(n=>n.textContent).join(' '));
+  assert.match(texts[0],/стан або статус/);assert.match(texts[1],/версію авто/);
+  assert.match(texts[2],/4 із потрібних 5/);assert.match(texts[3],/надто різняться/);
+  assert.ok(texts.every(text=>!text.includes('Медіана вибірки')));
+});
 test('pending search cannot duplicate requests and clears old results on failure',async()=>{
   let reject,calls=0;
   const {window,ids}=setup(()=>{calls++;return new Promise((a,b)=>{reject=b});});

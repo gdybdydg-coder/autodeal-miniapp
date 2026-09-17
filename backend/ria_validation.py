@@ -17,6 +17,7 @@ DIMENSIONS = ("brand_id", "model_id", "generation_id", "modification_id", "body_
 PROFILES = {
     "golf": (("Volkswagen", "Golf"),),
     "popular-v1": (("Volkswagen", "Passat"), ("Audi", "A6"), ("Mercedes-Benz", "E-Class")),
+    "eligible-v1": (("Volkswagen", "Passat"), ("Audi", "A6"), ("Mercedes-Benz", "E-Class")),
 }
 
 
@@ -32,7 +33,8 @@ def validate_profile(profile):
 
 def car_summary(car):
     fields = ("id", "title", "url", "year", "price_usd", "mileage", "market",
-              "comparables", "valuation", "comparable_condition", "observed_at", *DIMENSIONS)
+              "comparables", "valuation", "valuation_reasons", "comparable_condition", "observed_at",
+              "modification_name", "modification_source", "modification_resolution", *DIMENSIONS)
     return {field: car.get(field) for field in fields}
 
 
@@ -93,6 +95,7 @@ def validate_once(engine, key, run_id, fetch=None, *, profile="golf", stop=None)
     probe_id = PREFIX + run_id
     request_cap = MAX_REQUESTS * len(PROFILES[profile])
     metadata = {"profile": profile, "request_cap": request_cap,
+                "candidate_scope": "undamaged" if profile == "eligible-v1" else "all_conditions",
                 "per_query_request_cap": MAX_REQUESTS,
                 "models_planned": [brand + " " + model for brand, model in PROFILES[profile]]}
     with Session(engine) as db:
@@ -103,7 +106,7 @@ def validate_once(engine, key, run_id, fetch=None, *, profile="golf", stop=None)
             db.rollback()
             return
 
-    provider_quota, raw_checks, comparisons, queries = {}, [], [], []
+    provider_quota, raw_checks, comparisons, queries, catalog_checks = {}, [], [], [], []
     query_calls = 0
     def telemetry(data):
         provider_quota.update(data)
@@ -130,17 +133,39 @@ def validate_once(engine, key, run_id, fetch=None, *, profile="golf", stop=None)
                     "technical_condition_id": condition.get("id") if type(condition.get("id")) is int else None,
                     "flags": {name: flags.get(name) if type(flags.get(name)) is bool else None
                               for name in ("damage", "onRepairParts", "abroad", "custom")},
+                    "has_modification_name": bool(isinstance(auto.get("modificationName"), str)
+                                                  and auto["modificationName"].strip()),
                     "missing_auto_fields": [name for name in ("generationId", "modificationId", "bodyId", "fuelId", "gearBoxId")
                                             if type(auto.get(name)) is not int or auto[name] <= 0]})
         return raw
 
     class AuditSearch(RiaSearch):
+        def parameters(self, filters):
+            params, ids = super().parameters(filters)
+            if profile == "eligible-v1":
+                # Target the estimator's supported condition; this is not a
+                # representative sample of every listing for these models.
+                params.update({"technicalCondition[0]": 1, "damage": 1, "abroad": 2, "custom": 1})
+            return params, ids
+
         def request(self, *args, **kwargs):
             if stop is not None and stop.is_set():
                 raise RiaError("validation_stopped")
             return super().request(*args, **kwargs)
 
         def comparisons(self, candidate):
+            if (profile == "eligible-v1" and not catalog_checks and candidate["comparable_condition"]
+                    and candidate.get("modification_id") and candidate.get("modification_name")
+                    and all(candidate.get(key) for key in DIMENSIONS)):
+                # Check the new lookup against a real, independently supplied ID.
+                # Only this copy loses its ID; production candidates stay intact.
+                probe = {**candidate, "modification_id": None, "modification_source": None}
+                self.resolve_modification(probe)
+                catalog_checks.append({"candidate_id": candidate["id"],
+                    "listing_modification_id": candidate["modification_id"],
+                    "catalog_modification_id": probe.get("modification_id"),
+                    "status": ("matched" if probe.get("modification_id") == candidate["modification_id"]
+                               else "conflict" if probe.get("modification_id") else probe.get("modification_resolution", "unavailable"))})
             peers = super().comparisons(candidate)
             comparisons.append(comparison_report(candidate, peers))
             return peers
@@ -152,12 +177,12 @@ def validate_once(engine, key, run_id, fetch=None, *, profile="golf", stop=None)
                 "valued": sum(query.get("valued", 0) for query in queries),
                 "returned": sum(query.get("returned", 0) for query in queries)}
 
-    stop_reasons = {"quota_exceeded", "key_rejected", "access_denied", "connection_error", "validation_stopped", "check_failed"}
+    stop_reasons = {"quota_exceeded", "key_rejected", "access_denied", "connection_error", "validation_stopped", "check_failed", "catalog_conflict"}
     for brand, model in PROFILES[profile]:
         if stop is not None and stop.is_set():
             break
         query_calls = 0
-        raw_checks, comparisons = [], []
+        raw_checks, comparisons, catalog_checks = [], [], []
         search = AuditSearch(engine, key, bounded_fetch)
         filters = Filters(brand=brand, model=model, onlyDeals=False)
         result, status = {"filters": filters.canonical()}, "check_failed"
@@ -169,6 +194,8 @@ def validate_once(engine, key, run_id, fetch=None, *, profile="golf", stop=None)
             status = "valuation_verified" if valued else "insufficient_comparables" if data["cars"] else "no_verified_details"
             if any(not report["calculation_matches"] for report in comparisons):
                 status = "calculation_mismatch"
+            if any(check["status"] == "conflict" for check in catalog_checks):
+                status = "catalog_conflict"
             result.update(inspected=data["inspected"], returned=len(data["cars"]), valued=valued,
                           warnings=data["warnings"], observation_at=data["checked_at"],
                           pending_valuations=data["pending_valuations"],
@@ -178,7 +205,8 @@ def validate_once(engine, key, run_id, fetch=None, *, profile="golf", stop=None)
         except Exception as exc:
             status = "check_failed"
             result.update(error_type=type(exc).__name__, stage=search.stage)
-        result.update(status=status, requests_used=query_calls, detail_checks=raw_checks, comparisons=comparisons)
+        result.update(status=status, requests_used=query_calls, detail_checks=raw_checks,
+                      comparisons=comparisons, catalog_resolution_checks=catalog_checks)
         queries.append(result)
         with Session(engine) as db:
             row = db.get(SourceProbe, probe_id)
@@ -191,6 +219,8 @@ def validate_once(engine, key, run_id, fetch=None, *, profile="golf", stop=None)
         state = queries[0]["status"] if queries else "validation_stopped"
     elif any(query["status"] == "calculation_mismatch" for query in queries):
         state = "calculation_mismatch"
+    elif any(query["status"] == "catalog_conflict" for query in queries):
+        state = "catalog_conflict"
     else:
         complete = len(queries) == len(PROFILES[profile]) and all(
             query["status"] == "valuation_verified" and not query.get("warnings") for query in queries)

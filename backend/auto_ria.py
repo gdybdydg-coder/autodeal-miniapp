@@ -30,10 +30,13 @@ class NoRedirect(HTTPRedirectHandler):
 
 
 def fetch_json(key, method, params, telemetry=None):
-    if method not in {"search", "info", "states", "type", "categories/1/marks",
+    modification_catalog = bool(re.fullmatch(
+        r"modifications/by/generation/[1-9][0-9]{0,11}/body/[1-9][0-9]{0,11}/modifications", method))
+    if not modification_catalog and method not in {"search", "info", "states", "type", "categories/1/marks",
                       "categories/1/bodystyles", "categories/1/gearboxes"} and not re.fullmatch(r"categories/1/marks/[1-9][0-9]*/models", method):
         raise RiaError("invalid_method")
-    url = "https://developers.ria.com/auto/" + method + "?" + urlencode({**params, "api_key": key})
+    base = "https://developers.ria.com/" if modification_catalog else "https://developers.ria.com/auto/"
+    url = base + method + "?" + urlencode({**params, "api_key": key})
     try:
         # urllib emits no request URL logs. Do not print exceptions: URLs contain the key.
         with build_opener(NoRedirect()).open(Request(url, headers={"Accept": "application/json"}), timeout=8) as response:

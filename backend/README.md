@@ -238,6 +238,21 @@ is available in `/api/source-status` as `catalog_check`.
 
 ## Market valuation audit
 
+Missing modification IDs can now be recovered from the official
+[generation/body modification catalog](https://docs-developers.ria.com/en/used-cars/parameters/modifications).
+Only a full `autoData.modificationName` matching exactly one catalog ID for that
+generation and body is accepted (case and whitespace normalization only). Existing
+IDs are never overwritten. The lookup requires otherwise complete identifiers
+and eligible condition. Missing names, ambiguous matches and differing engine,
+gearbox or drive suffixes cannot manufacture a match. Seller descriptions and
+VIN are never used. The same strict comparator and five-peer/15% rule still apply.
+
+Catalogs use the shared seven-day cache and request budget. Candidate cards load
+before optional valuation lookups; a lookup interrupted by the cap can continue
+through the existing cursor. Detail/snapshot cache namespaces are versioned so
+old parsed records do not hide the new field or explanations. The Mini App now
+distinguishes insufficient vehicle data/condition, too few peers and mixed prices.
+
 `RIA_VALIDATION_RUN_ID` selects an explicit once-only check. The default
 `RIA_VALIDATION_PROFILE=golf` retains the original Volkswagen Golf check and its
 32-call cap. `RIA_VALIDATION_PROFILE=popular-v1` checks Volkswagen Passat, Audi A6
@@ -246,6 +261,16 @@ and Mercedes-Benz E-Class sequentially: at most 32 AUTO.RIA calls per model,
 the production search, detail parsing, post-filtering and estimator; it examines
 up to eight candidate cards with the configured peer scan limit. This does not
 call the provider's separate valuation product or submit anything to delivery.
+
+`RIA_VALIDATION_PROFILE=eligible-v1` uses the same three models and 96-call cap,
+but asks the provider for undamaged, customs-cleared vehicles in Ukraine. Returned
+details are still independently checked. `candidate_scope=undamaged` makes clear
+this is a targeted supported-condition check, not an all-market coverage sample.
+At most one real candidate per model also checks the catalog resolver against its
+existing listing-provided modification ID using a separate copy; the production
+candidate is never modified by that diagnostic. Inspect `catalog_resolution_checks`
+alongside medians. Any disagreement requires investigation before relying on the
+resolver. Use a new explicit run ID, such as `eligible-20260917-1`, only deliberately.
 
 The `popular-v1` check `popular-20260917-1` completed on 2026-09-17 with status
 `partial`: 24 candidates, one median and 55 provider requests. The

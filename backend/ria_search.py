@@ -25,6 +25,7 @@ FRESH_SECONDS = 900
 SNAPSHOT_SECONDS = 86400
 PAGE_SIZE = 8
 PAGE_REQUEST_LIMIT = 32
+COMPARABLE_DIMENSIONS = ("brand_id", "model_id", "generation_id", "modification_id", "body_id", "fuel_id", "gear_id")
 CATALOG_PATHS = {"brands": "categories/1/marks", "regions": "states",
                  "body": "categories/1/bodystyles", "fuel": "type",
                  "transmission": "categories/1/gearboxes"}
@@ -35,7 +36,7 @@ def snapshot_key(filters, cursor=None):
     criteria = filters.canonical()
     # Switching the deals toggle only filters the already checked candidate cards.
     criteria["onlyDeals"] = False
-    return hashlib.sha256(json.dumps(["search-snapshot-v2", PAGE_SIZE, criteria, cursor], sort_keys=True).encode()).hexdigest()
+    return hashlib.sha256(json.dumps(["search-snapshot-v3", PAGE_SIZE, criteria, cursor], sort_keys=True).encode()).hexdigest()
 
 
 def snapshot_view(payload, filters, quota, cached=False, reason=None):
@@ -60,6 +61,17 @@ def snapshot_view(payload, filters, quota, cached=False, reason=None):
 
 def normalize(value):
     return " ".join(value.casefold().replace("i", "і").split())
+
+
+def modification_name(value):
+    # Never match truncated labels, seller descriptions or a fuzzy engine token.
+    if not isinstance(value, str) or not 1 <= len(value) <= 150:
+        return ""
+    return " ".join(value.split())
+
+
+def normalize_modification(value):
+    return modification_name(value).casefold()
 
 
 def initialize_budget(engine):
@@ -141,6 +153,13 @@ def parse_catalog(data):
     return {"items": values}
 
 
+def parse_modification_catalog(data):
+    catalog = parse_catalog(data)
+    if any(not 1 <= len(item["name"]) <= 150 for item in data):
+        raise RiaError("invalid_response")
+    return catalog
+
+
 def parse_car(data, source_id):
     preview = listing_preview(data, source_id)
     auto = data["autoData"]
@@ -163,6 +182,8 @@ def parse_car(data, source_id):
             "fuel_id": ident(auto.get("fuelId")), "fuel": label(auto.get("fuelName")),
             "gear_id": ident(auto.get("gearBoxId")), "transmission": label(auto.get("gearboxName")),
             "generation_id": ident(auto.get("generationId")), "modification_id": ident(auto.get("modificationId")),
+            "modification_name": modification_name(auto.get("modificationName")),
+            "modification_source": "listing" if valid_id(auto.get("modificationId")) else None,
             "mileage": round(mileage * 1000), "image": photo,
             "comparable_condition": (data.get("technicalCondition") or {}).get("id") == 1
                 and all(flags.get(k) is False for k in ("damage", "onRepairParts", "abroad", "custom")),
@@ -170,9 +191,12 @@ def parse_car(data, source_id):
 
 
 def estimate(candidate, peers):
-    keys = ("brand_id", "model_id", "generation_id", "modification_id", "body_id", "fuel_id", "gear_id")
-    result = {"market": None, "discount": None, "comparables": 0, "valuation": "insufficient_data"}
-    if not candidate["comparable_condition"] or not all(candidate.get(k) for k in keys):
+    keys = COMPARABLE_DIMENSIONS
+    reasons = (["unverified_condition"] if not candidate["comparable_condition"] else [])
+    reasons += ["missing_" + key for key in keys if not candidate.get(key)]
+    result = {"market": None, "discount": None, "comparables": 0, "valuation": "insufficient_data",
+              "valuation_reasons": reasons}
+    if reasons:
         return result
     unique = {p["id"]: p for p in peers if p["id"] != candidate["id"]}
     prices = [p["price_usd"] for p in unique.values()
@@ -181,13 +205,13 @@ def estimate(candidate, peers):
               and abs(p["mileage"] - candidate["mileage"]) <= max(30000, candidate["mileage"] * .2)]
     result["comparables"] = len(prices)
     if len(prices) < 5:
-        return result
+        return {**result, "valuation_reasons": ["insufficient_comparables"]}
     market = statistics.median(prices)
     # A very mixed sample must not produce a confident-looking discount.
     if max(prices) / min(prices) > 2:
-        return {**result, "valuation": "mixed_sample"}
+        return {**result, "valuation": "mixed_sample", "valuation_reasons": ["mixed_sample"]}
     return {"market": market, "discount": round((1 - candidate["price_usd"] / market) * 100, 1),
-            "comparables": len(prices), "valuation": "sample_median"}
+            "comparables": len(prices), "valuation": "sample_median", "valuation_reasons": []}
 
 
 class RiaSearch:
@@ -221,7 +245,8 @@ class RiaSearch:
 
     def request(self, path, params, parser, ttl=900, *, force=False):
         self.stage = path
-        digest = hashlib.sha256(json.dumps([path, params], sort_keys=True).encode()).hexdigest()
+        cache_key = [path, params, "car-v2"] if path == "info" else [path, params]
+        digest = hashlib.sha256(json.dumps(cache_key, sort_keys=True).encode()).hexdigest()
         with Session(self.engine) as db:
             cached = db.get(SourceCache, digest)
             if not force and cached and cached.expires_at > time.time():
@@ -350,8 +375,29 @@ class RiaSearch:
     def car(self, source_id, *, force=False):
         return self.request("info", {"auto_id": source_id}, lambda raw: parse_car(raw, source_id), force=force)
 
+    def resolve_modification(self, car):
+        """Recover only a unique full catalog label within the same generation/body."""
+        if car.get("modification_id") or not car["comparable_condition"]:
+            return
+        if not all(valid_id(car.get(key)) for key in COMPARABLE_DIMENSIONS if key != "modification_id"):
+            return
+        name = normalize_modification(car.get("modification_name"))
+        if not name:
+            return
+        path = (f"modifications/by/generation/{car['generation_id']}/body/"
+                f"{car['body_id']}/modifications")
+        catalog = self.request(path, {}, parse_modification_catalog, ttl=7 * 86400)["items"]
+        ids = {item["value"] for item in catalog if normalize_modification(item["name"]) == name}
+        if len(ids) == 1:
+            car["modification_id"] = ids.pop()
+            car["modification_source"] = "catalog_name"
+            car["modification_resolution"] = "resolved"
+        else:
+            car["modification_resolution"] = "ambiguous" if ids else "not_found"
+
     def comparisons(self, candidate):
-        required = ("brand_id", "model_id", "generation_id", "modification_id", "body_id", "fuel_id", "gear_id")
+        self.resolve_modification(candidate)
+        required = COMPARABLE_DIMENSIONS
         if not candidate["comparable_condition"] or not all(candidate.get(k) for k in required):
             return []
         # Independent of the user's budget and region, preventing a price-capped median.
@@ -369,7 +415,14 @@ class RiaSearch:
         peers = []
         for source_id in [i for i in ids if i != candidate["id"]][:self.peer_scan_limit]:
             try:
-                peers.append(self.car(source_id))
+                peer = self.car(source_id)
+                # Spend catalog calls only on otherwise comparable peers, after
+                # loading the candidate cards and checking every known attribute.
+                if (all(peer.get(key) == candidate[key] for key in required if key != "modification_id")
+                        and abs(peer["year"] - candidate["year"]) <= 1
+                        and abs(peer["mileage"] - candidate["mileage"]) <= tolerance):
+                    self.resolve_modification(peer)
+                peers.append(peer)
                 # Recheck details even if the provider ignores a query parameter.
                 # Once five suitable peers establish a result, stop spending calls.
                 if estimate(candidate, peers)["valuation"] in {"sample_median", "mixed_sample"}:
@@ -456,7 +509,8 @@ class RiaSearch:
                     if str(exc) in TRANSIENT_ERRORS:
                         pending = candidates[position:]
                         for waiting in pending:
-                            waiting.update(market=None, discount=None, comparables=0, valuation="pending")
+                            waiting.update(market=None, discount=None, comparables=0, valuation="pending",
+                                           valuation_reasons=["pending"])
                         cars.extend(pending)
                         break
                 car.update(rating)
