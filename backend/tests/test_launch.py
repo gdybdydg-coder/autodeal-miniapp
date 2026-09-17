@@ -113,12 +113,16 @@ def test_authenticated_progress_is_owner_scoped_and_reads_do_not_spend_requests(
     assert one["evaluated"] == 1 and one["unknown"] == 0
     assert two["evaluated"] == 0 and two["unknown"] == 1
     assert one["latest_unknown_reason"] is None
+    assert one["unknown_breakdown"] == {"reasons": {}, "peer_rejections": {}, "comparable_counts": {}}
+    assert two["unknown_breakdown"] == {"reasons": {"missing_modification_id": 1},
+                                        "peer_rejections": {}, "comparable_counts": {"0": 1}}
     assert two["latest_unknown_reason"] == {"category": "missing_details", "codes": ["missing_modification_id"], "comparables": 0}
     public = client.get("/api/source-status").json()["launch"]
     assert public["readiness"]["saved_subscriptions"] == 2
     assert public["activity"]["new_listings"] == 2
     assert "user_id" not in str(public) and "source_id" not in str(public)
     assert "private-unexpected-value" not in str(public)
+    assert public["activity"]["unknown_breakdown"] == two["unknown_breakdown"]
     with Session(engine) as db:
         assert db.get(SourceBudget, "auto_ria").total == before
         assert db.scalar(select(Delivery)) is None
