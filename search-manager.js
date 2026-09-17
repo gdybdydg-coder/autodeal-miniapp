@@ -90,7 +90,7 @@ function openSearchManager(compose) {
   }
   if($("savedDialog").hidden) {
     const active=[...document.querySelectorAll(".nav")].find(item=>item.classList.contains("active"));
-    managerReturnTab=active?.dataset.tab==="deals"?"deals":"search";
+    managerReturnTab=["deals","settings"].includes(active?.dataset.tab)?active.dataset.tab:"search";
   }
   managerSession++;
   setSearchTab("saved");
@@ -103,7 +103,14 @@ function openSearchManager(compose) {
   if(!compose) return window.AutoDealCloudSearches?.refresh();
 }
 $("saveSearchBtn").addEventListener("click",()=>openSearchManager(true));
-$("settingsBtn").addEventListener("click",()=>openSearchManager(false));
+function openSettings() {
+  setSearchTab("settings");
+  $("settingsTitle").focus({preventScroll:true});
+  return window.AutoDealCloudSearches?.refreshSettings?.();
+}
+$("settingsBtn").addEventListener("click",openSettings);
+$("openNotificationSettings").addEventListener("click",openSettings);
+$("settingsSearches").addEventListener("click",()=>openSearchManager(false));
 $("closeSaved").addEventListener("click",()=>setSearchTab(managerReturnTab));
 $("newSavedSearch").addEventListener("click",()=>{
   showSearchForm();
@@ -122,7 +129,8 @@ $("saveSearchForm").addEventListener("submit",event=>{
   }
 });
 document.querySelectorAll(".nav").forEach(item=>item.addEventListener("click",()=>{
-  if(item.dataset.tab==="saved"||item.dataset.tab==="settings") return openSearchManager(false);
+  if(item.dataset.tab==="saved") return openSearchManager(false);
+  if(item.dataset.tab==="settings") return openSettings();
   if(item.dataset.tab==="deals") return searchCars({deals:true});
   showSearchForm();
 }));

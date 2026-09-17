@@ -92,6 +92,23 @@ test('new search goes to filters without sending or deleting anything',async()=>
   assert.equal(writes,0);assert.equal(ui.searches.length,0);
 });
 
+test('settings tab and header gear open a separate screen without loading searches',async()=>{
+  let lists=0,statusReads=0;
+  const ui=setup({list:async()=>{lists++;return[]},notificationStatus:async()=>{
+    statusReads++;return{available:false,telegram_ready:false,test_sent:false};}});
+  await ui.nav.settings.listeners.click();
+  assert.equal(ui.ids.settingsPage.hidden,false);assert.equal(ui.ids.savedDialog.hidden,true);
+  assert.equal(ui.ids.searchFilters.hidden,true);assert.equal(ui.ids.results.hidden,true);
+  assert.equal(ui.nav.settings.attributes['aria-current'],'page');
+  assert.equal(lists,0);assert.equal(statusReads,1);
+  ui.nav.search.listeners.click();
+  await ui.ids.settingsBtn.listeners.click();
+  assert.equal(ui.ids.settingsPage.hidden,false);assert.equal(lists,0);
+  await ui.ids.settingsSearches.listeners.click();
+  assert.equal(ui.ids.settingsPage.hidden,true);assert.equal(ui.ids.savedDialog.hidden,false);
+  ui.ids.closeSaved.listeners.click();assert.equal(ui.ids.settingsPage.hidden,false);
+});
+
 test('late completion of saving never hides a new draft',async()=>{
   let done;
   const ui=setup({save:()=>new Promise(resolve=>{done=resolve})});

@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
   <meta name="theme-color" content="#070709">
   <title>AUTODEAL</title>
-  <link rel="stylesheet" href="style.css?v=10">
+  <link rel="stylesheet" href="style.css?v=11">
 </head>
 <body>
 <main class="app">
@@ -79,7 +79,16 @@
     <p id="cloudStatus" class="filter-help" role="status">Збережені в акаунті пошуки завантажуються при відкритті цього списку в Telegram.</p>
     <div id="cloudSearchList"></div>
   </section>
-  <details class="saved-fold notification-panel">
+  <button id="openNotificationSettings" class="save-search-button" type="button">Налаштування сповіщень →</button>
+  <details class="saved-fold local-panel">
+    <summary><span id="localTitle" class="fold-title">На цьому пристрої</span></summary>
+    <div id="savedSearchList" class="fold-body"></div>
+  </details>
+</section>
+<section id="settingsPage" class="settings-page" aria-labelledby="settingsTitle" hidden>
+  <h1 id="settingsTitle" tabindex="-1">Налаштування</h1>
+  <p class="subtitle">Сповіщення та зв’язок із ботом</p>
+  <details class="saved-fold notification-panel" open>
     <summary><span class="fold-copy"><span class="fold-title">Сповіщення в Telegram</span><span id="notificationStatus" role="status">Перевіряємо стан…</span></span></summary>
     <div class="fold-body">
       <p class="filter-help">Відкрий чат бота та надішли /start. Повернись сюди, онови список і надішли тестове повідомлення. Потім увімкни сповіщення в картці потрібного пошуку.</p>
@@ -88,12 +97,11 @@
         <button id="testNotification" class="manager-button" type="button" disabled>Надіслати тест</button>
       </div>
       <p class="filter-help notification-footnote">На першому запуску доступний один активний пошук. /stop у чаті вимикає всі сповіщення.</p>
+      <button id="refreshSettings" class="save-search-button" type="button">Перевірити підключення</button>
+      <p id="settingsStatus" class="filter-help settings-status" role="status" hidden></p>
     </div>
   </details>
-  <details class="saved-fold local-panel">
-    <summary><span id="localTitle" class="fold-title">На цьому пристрої</span></summary>
-    <div id="savedSearchList" class="fold-body"></div>
-  </details>
+  <button id="settingsSearches" class="save-search-button" type="button">Керувати моїми пошуками →</button>
   <details class="save-privacy"><summary>Про збереження</summary><p class="filter-help">Збереження в акаунті передає назву, фільтри та підтверджений Telegram ID на сервер AUTODeal у Render. Видалити пошук можна в його картці. Локальні пошуки залишаються в цьому браузері й автоматично не переносяться. Для пошуку сервер передає фільтри до AUTO.RIA без твого Telegram ID.</p></details>
 </section>
 </main>
@@ -101,10 +109,10 @@
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
 <script src="data/cars.js?v=4"></script>
 <script src="saved-searches.js?v=6"></script>
-<script src="app.js?v=13"></script>
-<script src="search-manager.js?v=14"></script>
+<script src="app.js?v=14"></script>
+<script src="search-manager.js?v=15"></script>
 <script src="cloud-api.js?v=11"></script>
 <script src="live-search.js?v=13"></script>
-<script src="cloud-searches.js?v=15"></script>
+<script src="cloud-searches.js?v=16"></script>
 </body>
 </html>

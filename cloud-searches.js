@@ -14,15 +14,18 @@ function renderNotificationStatus() {
 function cloudMessage(message) {
   $("cloudStatus").textContent=message;
   $("cloudStatus").hidden=message==="Список оновлено.";
+  $("settingsStatus").textContent=message;
+  $("settingsStatus").hidden=message==="Список оновлено.";
 }
 async function cloudAction(action) {
   if(cloudBusy) return;
   cloudBusy=true;
   $("saveCloudSearch").disabled=true;$("refreshCloud").disabled=true;
+  $("refreshSettings").disabled=true;
   renderNotificationStatus();
   cloudMessage("З’єднуюся із сервером…");
   try {await action();} catch(error) {cloudMessage(error.message);}
-  finally {cloudBusy=false;$("saveCloudSearch").disabled=false;$("refreshCloud").disabled=false;renderNotificationStatus();}
+  finally {cloudBusy=false;$("saveCloudSearch").disabled=false;$("refreshCloud").disabled=false;$("refreshSettings").disabled=false;renderNotificationStatus();}
 }
 async function loadCloud() {
   $("cloudSearchList").replaceChildren();
@@ -67,7 +70,14 @@ async function loadCloud() {
   $("cloudTitle").textContent="В акаунті Telegram ("+items.length+")";
   cloudMessage(items.length?"Список оновлено.":"В акаунті ще немає пошуків.");
 }
-window.AutoDealCloudSearches={refresh:()=>cloudAction(loadCloud)};
+async function loadSettings() {
+  notificationState=null;
+  notificationState=await window.AutoDealCloud.notificationStatus();
+  renderNotificationStatus();
+  cloudMessage("Стан підключення оновлено.");
+}
+window.AutoDealCloudSearches={refresh:()=>cloudAction(loadCloud),refreshSettings:()=>cloudAction(loadSettings)};
+$("refreshSettings").addEventListener("click",()=>cloudAction(loadSettings));
 $("refreshCloud").addEventListener("click",()=>cloudAction(loadCloud));
 $("testNotification").addEventListener("click",()=>cloudAction(async()=>{
   const result=await window.AutoDealCloud.testNotification();

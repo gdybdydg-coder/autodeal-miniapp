@@ -104,6 +104,7 @@ function setSearchTab(tab) {
   $("searchFilters").hidden=tab!=="search";
   $("results").hidden=tab!==resultsTab;
   $("savedDialog").hidden=tab!=="saved";
+  $("settingsPage").hidden=tab!=="settings";
   window.AutoDealLive?.dismissAutoScroll?.();
   window.scrollTo?.({top:0,left:0,behavior:"instant"});
   document.querySelectorAll(".nav").forEach(item=>{

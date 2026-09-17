@@ -140,3 +140,6 @@ h1 { font-weight: 400; letter-spacing: -.3px; }
 #saveSearchForm { background:var(--panel); border:1px solid #29292f; border-radius:18px; padding:16px; }
 .save-privacy { margin-top:16px; border:0; padding:0; }
 .save-privacy summary { font-size:12px; }
+.settings-page .manager-button { display:flex; align-items:center; justify-content:center; text-decoration:none; border-color:#303036; border-radius:10px; font-size:13px; line-height:1.4; }
+.settings-page button:disabled { opacity:.45; cursor:default; }
+.settings-status { margin:12px 0 0; }
