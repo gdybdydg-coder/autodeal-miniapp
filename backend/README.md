@@ -232,6 +232,45 @@ Peer valuation is deliberately skipped in this coverage check; it never caches
 unvalued UI snapshots or writes to the notification pipeline. Its sanitized result
 is available in `/api/source-status` as `catalog_check`.
 
+## Market valuation audit
+
+`RIA_VALIDATION_RUN_ID` selects an explicit once-only check. The default
+`RIA_VALIDATION_PROFILE=golf` retains the original Volkswagen Golf check and its
+32-call cap. `RIA_VALIDATION_PROFILE=popular-v1` checks Volkswagen Passat, Audi A6
+and Mercedes-Benz E-Class sequentially: at most 32 AUTO.RIA calls per model,
+96 total, within the existing shared hourly/daily/total budgets. Each model uses
+the production search, detail parsing, post-filtering and estimator; it examines
+up to eight candidate cards with the configured peer scan limit. This does not
+call the provider's separate valuation product or submit anything to delivery.
+
+For the proposed wider check, use a fresh ID such as `popular-20260917-1` with the
+`popular-v1` profile after the code is published and the run is authorized. Do not
+reuse an old run ID with another profile: status reports `profile_conflict` and
+the original record is preserved. A claimed ID never automatically runs again,
+including after a failure or restart. No schema change or new service is needed.
+
+The audit runs as a background startup task so health/API requests can be served.
+Each model retains the production request deadline and database budget lease.
+Shutdown signals it to stop before further requests; quota/authentication failures
+stop the remaining models. Source-detail caches within their 15-minute lifetime
+can be reused; observation timestamps distinguish their age. Reopening the public
+`/api/source-status` only reads the recorded progress and spends no provider calls.
+
+`valuation_check.queries` contains sanitized candidate/peer evidence for each model:
+accepted IDs/prices, rejection reasons, duplicate/self entries, independently
+recalculated median, exact 15% deal threshold and agreement with the estimator.
+Missing required attributes, unverified condition, fewer than five eligible peers
+or a mixed price sample produce no deal threshold. No seller details, VIN, raw
+provider bodies, authentication or personal saved searches are included.
+
+`samples_checked` means each model produced at least one independently checked
+estimate without interrupted work; it is a sample check, not proof of complete
+market coverage or resale value. `partial` exposes missing evidence or limits;
+`calculation_mismatch` requires investigation before enabling delivery. Review
+the underlying listing details as well as the computed median before rollout.
+Run `pytest backend/tests/test_valuation_audit.py -q` for lifecycle, caps, evidence,
+privacy, partial coverage and shutdown checks.
+
 ### Moving beyond the free test allowance
 
 Buying a provider package does not change the application caps. After purchase

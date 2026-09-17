@@ -2,6 +2,7 @@ import asyncio
 import hmac
 import os
 import re
+import threading
 import time
 from contextlib import asynccontextmanager
 from dataclasses import dataclass, field
@@ -19,7 +20,7 @@ from .auto_ria import probe_once, probe_status
 from .auto_ria import RiaError
 from .ria_search import RiaSearch, initialize_budget, verify_search_once, quota_status, budget_usage
 from .ria_budget import BudgetLimits, peer_scan_limit
-from .ria_validation import validate_once, validate_run_id, validation_status
+from .ria_validation import validate_once, validate_run_id, validate_profile, validation_status
 from .models import (Base, Delivery, EnabledRequest, Filters, Listing, MonitorControl,
                      MonitorSeen, MonitorWatch, Search, SearchRequest, TelegramTest, User)
 from . import monitor, telegram_setup, ria_rollout
@@ -40,6 +41,7 @@ class Settings:
     miniapp_release: str = ""
     telegram_test_enabled: bool = False
     catalog_rollout_check: bool = False
+    ria_validation_profile: str = "golf"
 
     @classmethod
     def env(cls):
@@ -56,6 +58,7 @@ class Settings:
             miniapp_release=os.getenv("MINIAPP_RELEASE", ""),
             telegram_test_enabled=os.getenv("TELEGRAM_TEST_ENABLED") == "true",
             catalog_rollout_check=os.getenv("RIA_CATALOG_ROLLOUT_CHECK") == "true",
+            ria_validation_profile=os.getenv("RIA_VALIDATION_PROFILE", "golf"),
         )
 
     @property
@@ -67,6 +70,7 @@ def create_app(settings: Settings, engine=None):
     BudgetLimits.env()  # Validate before serving requests or running startup probes.
     peer_scan_limit()
     validate_run_id(settings.ria_validation_run_id)
+    validate_profile(settings.ria_validation_profile)
     if settings.miniapp_release and not re.fullmatch(r"[a-z0-9-]{1,40}", settings.miniapp_release):
         raise ValueError("Invalid Mini App release")
     if not settings.bot_token or len(settings.webhook_secret) < 32:
@@ -81,18 +85,25 @@ def create_app(settings: Settings, engine=None):
         monitor.initialize(engine)
         await asyncio.to_thread(probe_once, engine, settings.auto_ria_api_key)
         await asyncio.to_thread(verify_search_once, engine, settings.auto_ria_api_key)
-        await asyncio.to_thread(validate_once, engine, settings.auto_ria_api_key, settings.ria_validation_run_id)
         await asyncio.to_thread(ria_rollout.check_once, engine, settings.auto_ria_api_key, settings.catalog_rollout_check)
         await asyncio.to_thread(telegram_setup.configure, engine, settings)
         await asyncio.to_thread(telegram_setup.configure_menu, engine, settings)
         stop = asyncio.Event()
         task = asyncio.create_task(monitor.run(engine, settings, stop)) if settings.monitor_enabled else None
+        validation_stop = threading.Event()
+        validation_task = asyncio.create_task(asyncio.to_thread(
+            validate_once, engine, settings.auto_ria_api_key, settings.ria_validation_run_id,
+            profile=settings.ria_validation_profile, stop=validation_stop,
+        )) if settings.auto_ria_api_key and settings.ria_validation_run_id else None
         try:
             yield
         finally:
             stop.set()
+            validation_stop.set()
             if task:
                 await task
+            if validation_task:
+                await validation_task
 
     app = FastAPI(lifespan=lifespan)
     app.add_middleware(CORSMiddleware, allow_origins=[settings.origin],
@@ -197,7 +208,7 @@ def create_app(settings: Settings, engine=None):
         # Cached public diagnostic only; refreshing NEVER spends API requests.
         return {**probe_status(engine, bool(settings.auto_ria_api_key)), "quota": quota_status(engine),
                 "budget": budget_usage(engine),
-                "valuation_check": validation_status(engine, settings.ria_validation_run_id),
+                "valuation_check": validation_status(engine, settings.ria_validation_run_id, settings.ria_validation_profile),
                 "catalog_check": ria_rollout.status(engine),
                 "monitor": monitor.runtime_status(engine, settings.monitor_enabled),
                 "telegram": telegram_status(),

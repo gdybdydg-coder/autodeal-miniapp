@@ -1,5 +1,6 @@
 """Explicit operator-requested, once-only live check. Never enables delivery."""
 import re
+import statistics
 import time
 
 from sqlalchemy import select
@@ -8,11 +9,15 @@ from sqlalchemy.orm import Session
 
 from .auto_ria import RiaError, fetch_json
 from .models import Filters, SourceProbe
-from .ria_search import RiaSearch
+from .ria_search import RiaSearch, estimate
 
 PREFIX = "auto-ria-validation-"
 MAX_REQUESTS = 32
 DIMENSIONS = ("brand_id", "model_id", "generation_id", "modification_id", "body_id", "fuel_id", "gear_id")
+PROFILES = {
+    "golf": (("Volkswagen", "Golf"),),
+    "popular-v1": (("Volkswagen", "Passat"), ("Audi", "A6"), ("Mercedes-Benz", "E-Class")),
+}
 
 
 def validate_run_id(run_id):
@@ -20,47 +25,100 @@ def validate_run_id(run_id):
         raise ValueError("Invalid AUTO.RIA validation run identifier")
 
 
+def validate_profile(profile):
+    if profile not in PROFILES:
+        raise ValueError("Invalid AUTO.RIA validation profile")
+
+
 def car_summary(car):
     fields = ("id", "title", "url", "year", "price_usd", "mileage", "market",
-              "comparables", "valuation", "comparable_condition", *DIMENSIONS)
+              "comparables", "valuation", "comparable_condition", "observed_at", *DIMENSIONS)
     return {field: car.get(field) for field in fields}
 
 
-def validation_status(engine, run_id):
+def comparison_report(candidate, peers):
+    """Independently explain/recalculate the production estimate from sanitized details."""
+    missing = [key for key in DIMENSIONS if not candidate.get(key)]
+    candidate_reasons = (["unverified_condition"] if not candidate["comparable_condition"] else [])
+    candidate_reasons += ["missing_" + key for key in missing]
+    # The estimator uses the last observation for a repeated ID and excludes self.
+    unique = {peer["id"]: peer for peer in peers if peer["id"] != candidate["id"]}
+    accepted, rejected = [], []
+    for peer in unique.values():
+        reasons = (["candidate_ineligible"] if candidate_reasons else [])
+        if not peer["comparable_condition"]:
+            reasons.append("unverified_condition")
+        reasons += [key for key in DIMENSIONS if peer.get(key) != candidate.get(key)]
+        if abs(peer["year"] - candidate["year"]) > 1:
+            reasons.append("year")
+        if abs(peer["mileage"] - candidate["mileage"]) > max(30000, candidate["mileage"] * .2):
+            reasons.append("mileage")
+        if reasons:
+            rejected.append({"id": peer["id"], "reasons": reasons})
+        else:
+            accepted.append(peer)
+    prices = sorted(peer["price_usd"] for peer in accepted)
+    mixed = len(prices) >= 5 and max(prices) / min(prices) > 2
+    market = statistics.median(prices) if len(prices) >= 5 and not mixed else None
+    actual = estimate(candidate, peers)
+    return {"candidate_id": candidate["id"], "candidate_reasons": candidate_reasons,
+            "peers": [car_summary(peer) for peer in peers],
+            "accepted_ids": [peer["id"] for peer in accepted], "accepted_prices_usd": prices,
+            "rejected": rejected, "duplicate_or_self_entries": len(peers) - len(unique),
+            "mixed_sample": mixed, "recalculated_market": market,
+            "deal_threshold_usd": market * .85 if market is not None else None,
+            "qualifies_as_deal": market is not None and candidate["price_usd"] <= market * .85,
+            "calculation_matches": actual["market"] == market and actual["comparables"] == len(accepted)}
+
+
+def validation_status(engine, run_id, profile="golf"):
+    validate_profile(profile)
     if not run_id:
         return None
     with Session(engine) as db:
         row = db.get(SourceProbe, PREFIX + run_id)
         if row is None:
-            return {"status": "pending"}
+            return {"status": "pending", "profile": profile, "request_cap": MAX_REQUESTS * len(PROFILES[profile])}
+        if row.result.get("profile", "golf") != profile:
+            return {"status": "profile_conflict", "profile": profile}
         return {"status": row.status, "checked_at": row.checked_at,
                 "requests_used": row.requests, "request_cap": MAX_REQUESTS, **row.result}
 
 
-def validate_once(engine, key, run_id, fetch=None):
+def validate_once(engine, key, run_id, fetch=None, *, profile="golf", stop=None):
     validate_run_id(run_id)
-    if not run_id or not key:
+    validate_profile(profile)
+    if not run_id or not key or (stop is not None and stop.is_set()):
         return
     probe_id = PREFIX + run_id
+    request_cap = MAX_REQUESTS * len(PROFILES[profile])
+    metadata = {"profile": profile, "request_cap": request_cap,
+                "per_query_request_cap": MAX_REQUESTS,
+                "models_planned": [brand + " " + model for brand, model in PROFILES[profile]]}
     with Session(engine) as db:
-        db.add(SourceProbe(id=probe_id, status="checking", checked_at=time.time(), requests=0, result={}))
+        db.add(SourceProbe(id=probe_id, status="checking", checked_at=time.time(), requests=0, result=metadata))
         try:
             db.commit()
         except IntegrityError:
             db.rollback()
             return
 
-    provider_quota, raw_checks, comparisons = {}, [], []
+    provider_quota, raw_checks, comparisons, queries = {}, [], [], []
+    query_calls = 0
     def telemetry(data):
         provider_quota.update(data)
 
     def bounded_fetch(api_key, method, params):
+        nonlocal query_calls
+        if stop is not None and stop.is_set():
+            raise RiaError("validation_stopped")
         with Session(engine) as db:
             row = db.scalar(select(SourceProbe).where(SourceProbe.id == probe_id).with_for_update())
-            if row.requests >= MAX_REQUESTS:
+            if row.requests >= request_cap or query_calls >= MAX_REQUESTS:
                 raise RiaError("validation_limit")
             row.requests += 1
             db.commit()  # A crash or upstream error still counts as an attempt.
+        query_calls += 1
         raw = fetch(api_key, method, params) if fetch else fetch_json(api_key, method, params, telemetry=telemetry)
         if method == "info" and isinstance(raw, dict):
             # Diagnostic booleans/IDs only, never raw seller data, VIN or description.
@@ -77,28 +135,71 @@ def validate_once(engine, key, run_id, fetch=None):
         return raw
 
     class AuditSearch(RiaSearch):
+        def request(self, *args, **kwargs):
+            if stop is not None and stop.is_set():
+                raise RiaError("validation_stopped")
+            return super().request(*args, **kwargs)
+
         def comparisons(self, candidate):
             peers = super().comparisons(candidate)
-            comparisons.append({"candidate_id": candidate["id"], "peers": [car_summary(p) for p in peers]})
+            comparisons.append(comparison_report(candidate, peers))
             return peers
 
-    search = AuditSearch(engine, key, bounded_fetch)
-    filters = Filters(brand="Volkswagen", model="Golf", onlyDeals=False)
-    result, status = {}, "check_failed"
-    try:
-        # The production request/filter/valuation path, without snapshot fallback.
-        data = search.search_uncached(filters)
-        valued = sum(car["market"] is not None for car in data["cars"])
-        status = "valuation_verified" if valued else "insufficient_comparables" if data["cars"] else "no_verified_details"
-        result = {"filters": filters.canonical(), "inspected": data["inspected"],
-                  "returned": len(data["cars"]), "valued": valued, "warnings": data["warnings"],
-                  "cars": [car_summary(car) for car in data["cars"]]}
-    except RiaError as exc:
-        status = str(exc)
-    except Exception as exc:
-        result = {"error_type": type(exc).__name__, "stage": search.stage}
-    result.update(provider_quota=provider_quota, detail_checks=raw_checks, comparisons=comparisons)
+    def payload():
+        if profile == "golf":
+            return {**metadata, **(queries[0] if queries else {}), "provider_quota": dict(provider_quota)}
+        return {**metadata, "queries": list(queries), "provider_quota": dict(provider_quota),
+                "valued": sum(query.get("valued", 0) for query in queries),
+                "returned": sum(query.get("returned", 0) for query in queries)}
+
+    stop_reasons = {"quota_exceeded", "key_rejected", "access_denied", "connection_error", "validation_stopped", "check_failed"}
+    for brand, model in PROFILES[profile]:
+        if stop is not None and stop.is_set():
+            break
+        query_calls = 0
+        raw_checks, comparisons = [], []
+        search = AuditSearch(engine, key, bounded_fetch)
+        filters = Filters(brand=brand, model=model, onlyDeals=False)
+        result, status = {"filters": filters.canonical()}, "check_failed"
+        try:
+            # The production path, including post-filtering and strict valuation;
+            # no UI snapshot fallback. Fresh source-detail caches remain reusable.
+            data = search.search_uncached(filters)
+            valued = sum(car["market"] is not None for car in data["cars"])
+            status = "valuation_verified" if valued else "insufficient_comparables" if data["cars"] else "no_verified_details"
+            if any(not report["calculation_matches"] for report in comparisons):
+                status = "calculation_mismatch"
+            result.update(inspected=data["inspected"], returned=len(data["cars"]), valued=valued,
+                          warnings=data["warnings"], observation_at=data["checked_at"],
+                          pending_valuations=data["pending_valuations"],
+                          cars=[car_summary(car) for car in data["cars"]])
+        except RiaError as exc:
+            status = str(exc)
+        except Exception as exc:
+            status = "check_failed"
+            result.update(error_type=type(exc).__name__, stage=search.stage)
+        result.update(status=status, requests_used=query_calls, detail_checks=raw_checks, comparisons=comparisons)
+        queries.append(result)
+        with Session(engine) as db:
+            row = db.get(SourceProbe, probe_id)
+            row.result, row.checked_at = payload(), time.time()
+            db.commit()
+        if stop_reasons.intersection([status, *result.get("warnings", [])]):
+            break
+
+    if profile == "golf":
+        state = queries[0]["status"] if queries else "validation_stopped"
+    elif any(query["status"] == "calculation_mismatch" for query in queries):
+        state = "calculation_mismatch"
+    else:
+        complete = len(queries) == len(PROFILES[profile]) and all(
+            query["status"] == "valuation_verified" and not query.get("warnings") for query in queries)
+        state = "samples_checked" if complete else "partial"
+    final = payload()
+    # The outer record owns aggregate status/counts; per-model fields stay in queries.
+    final.pop("status", None)
+    final.pop("requests_used", None)
     with Session(engine) as db:
         row = db.get(SourceProbe, probe_id)
-        row.status, row.result, row.checked_at = status, result, time.time()
+        row.status, row.result, row.checked_at = state, final, time.time()
         db.commit()
