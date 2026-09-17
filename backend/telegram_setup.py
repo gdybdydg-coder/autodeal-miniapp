@@ -24,8 +24,8 @@ def call(token, method, payload):
             response = client.post(f"https://api.telegram.org/bot{token}/{method}", json=payload)
             result = response.json()
             return result if isinstance(result, dict) else {"uncertain": True}
-    except (httpx.HTTPError, ValueError):
-        return {"uncertain": True}
+    except (httpx.HTTPError, ValueError) as exc:
+        return {"uncertain": True, "error_type": type(exc).__name__}
 
 
 def configure(engine, settings, request=call):
@@ -79,15 +79,35 @@ def configure_menu(engine, settings, request=call):
     if not version:
         return
     probe_id = "telegram-menu-" + version
+    attempt = 1
     with Session(engine) as db:
-        db.add(SourceProbe(id=probe_id, status="checking", checked_at=time.time(), requests=0, result={}))
-        try:
+        row = db.get(SourceProbe, probe_id, with_for_update=True)
+        if row:
+            # An explicit later deploy can retry one failed idempotent menu edit.
+            if row.status != "unavailable" or row.result.get("attempt", 1) >= 2:
+                return
+            attempt = 2
+            row.status, row.result = "checking", {"attempt": attempt}
             db.commit()
-        except IntegrityError:
-            db.rollback()
-            return
+        else:
+            db.add(SourceProbe(id=probe_id, status="checking", checked_at=time.time(), requests=0, result={"attempt": attempt}))
+            try:
+                db.commit()
+            except IntegrityError:
+                db.rollback()
+                return
     status = "unavailable"
     target = APP_URL + "?v=" + version
+    trace = []
+    raw_request = request
+    def request(token, method, payload):
+        response = raw_request(token, method, payload)
+        trace.append({"method": method, "ok": response.get("ok") is True,
+                      "code": response.get("error_code") if type(response.get("error_code")) is int else None,
+                      "uncertain": response.get("uncertain") is True,
+                      "error_type": response.get("error_type") if response.get("error_type") in {
+                          "ConnectTimeout", "ReadTimeout", "ConnectError", "ReadError", "JSONDecodeError", "ValueError"} else None})
+        return response
     try:
         me = request(settings.bot_token, "getMe", {})
         if me.get("ok") is True and (me.get("result") or {}).get("username") == BOT_USERNAME:
@@ -109,16 +129,18 @@ def configure_menu(engine, settings, request=call):
                             status = "configured"
         elif me.get("ok") is True:
             status = "wrong_bot"
-    except Exception:
+    except Exception as exc:
+        trace.append({"stage": "exception", "error_type": type(exc).__name__})
         status = "unavailable"
     with Session(engine) as db:
         row = db.get(SourceProbe, probe_id)
         row.status, row.checked_at = status, time.time()
-        row.result = {"release": version}
+        row.result = {"release": version, "attempt": attempt, "trace": trace}
         db.commit()
 
 
 def menu_status(engine, version):
     with Session(engine) as db:
         row = db.get(SourceProbe, "telegram-menu-" + version) if version else None
-        return {"status": row.status if row else "not_configured", "release": version or None}
+        return {"status": row.status if row else "not_configured", "release": version or None,
+                "checks": row.result.get("trace", []) if row else []}

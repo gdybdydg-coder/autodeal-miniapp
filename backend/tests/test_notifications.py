@@ -82,6 +82,22 @@ def test_menu_release_changes_only_our_launch_url_once(db, old_url, expected):
     assert ("setChatMenuButton" in calls) == (expected == "configured")
 
 
+def test_unavailable_menu_has_safe_diagnostics_and_one_later_retry(db):
+    settings = Settings("unused", TOKEN, SECRET, miniapp_release="retry-19")
+    calls = []
+    def request(token, method, payload):
+        calls.append(method)
+        return {"ok": False, "error_code": 401, "description": "private provider text"}
+    for _ in range(3):
+        telegram_setup.configure_menu(db, settings, request)
+    assert calls == ["getMe", "getMe"]
+    status = telegram_setup.menu_status(db, "retry-19")
+    assert status["status"] == "unavailable"
+    assert status["checks"] == [{"method": "getMe", "ok": False, "code": 401,
+                                 "uncertain": False, "error_type": None}]
+    assert "private provider text" not in str(status)
+
+
 @pytest.fixture
 def api(db, monkeypatch):
     async def idle(engine, settings, stop):

@@ -32,9 +32,11 @@ It never reloads automatically while the user is editing filters.
 After Pages has published a release, the operator can set `MINIAPP_RELEASE` to
 that identifier. Startup verifies the bot identity and its existing default menu,
 updates only our app's launch URL to `?v=<release>`, and verifies the result.
-The DB records this once-only operation; a different app URL is a conflict.
+The DB records the operation; an unavailable result can be retried once on a
+later explicit deploy. A different app URL is a conflict.
 This changes no webhook, monitoring/delivery flags, subscriptions or messages.
-`miniapp_menu` in `/api/source-status` reports the release and result only.
+`miniapp_menu` in `/api/source-status` reports the release, result, and safe
+diagnostic method names/error codes. It never exposes tokens or response bodies.
 
 The bottom «Вигідні» navigation runs the same authenticated search with the current
 form filters and `onlyDeals=true`, without changing the regular search preference.
