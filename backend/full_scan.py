@@ -14,7 +14,8 @@ from sqlalchemy import delete, func, select, update
 from sqlalchemy.orm import Session
 
 from .auto_ria import RiaError
-from .models import Filters, FullScan, ScanItem
+from . import market_cache
+from .models import Filters, FullScan, MarketCar, ScanItem
 from .ria_search import FRESH_SECONDS, PAGE_REQUEST_LIMIT, RiaSearch, estimate, matches, parse_ids, quota_status
 
 log = logging.getLogger(__name__)
@@ -72,7 +73,7 @@ def change(db, uid, scan_id, enabled):
     return True
 
 
-def view(db, uid, scan_id, after=0, only_deals=False):
+def view(db, uid, scan_id, after=0, only_deals=False, cache_after=0):
     row = db.scalar(select(FullScan).where(FullScan.id == scan_id, FullScan.user_id == uid))
     if not row:
         return None
@@ -80,13 +81,27 @@ def view(db, uid, scan_id, after=0, only_deals=False):
     criteria = [ScanItem.scan_id == scan_id, ScanItem.state == "checked"]
     if only_deals:
         criteria.append(ScanItem.deal.is_(True))
-    records = list(db.scalars(select(ScanItem).where(*criteria, ScanItem.id > after)
+    records = list(db.scalars(select(ScanItem).where(ScanItem.scan_id == scan_id,
+                             ScanItem.state != "pending", ScanItem.id > after)
                              .order_by(ScanItem.id).limit(101)))
-    cars = []
+    latest = {c.source_id: c for c in db.scalars(select(MarketCar).where(
+        MarketCar.source_id.in_([item.source_id for item in records[:100]])))} if records else {}
+    filters = Filters.model_validate(row.filters).model_copy(update={"onlyDeals": only_deals})
+    cars, removed = [], []
     for item in records[:100]:
-        car = copy.deepcopy(item.car)
-        stale = now - item.checked_at >= FRESH_SECONDS
-        car.update(checked_at=item.checked_at, stale=stale, historical_match=bool(stale and item.deal))
+        newer = latest.get(item.source_id)
+        if newer and newer.checked_at > item.checked_at:
+            car, checked_at, deal = newer.car if newer.active else None, newer.checked_at, newer.deal
+            if car and not matches(car, filters, row.context.get("ids", {})):
+                car = None
+        else:
+            car, checked_at, deal = item.car if item.state == "checked" else None, item.checked_at, item.deal
+        if car is None or (only_deals and not deal):
+            removed.append({"id": item.source_id, "checked_at": checked_at})
+            continue
+        car = copy.deepcopy(car)
+        stale = now - checked_at >= FRESH_SECONDS
+        car.update(checked_at=checked_at, stale=stale, historical_match=bool(stale and deal))
         if stale:
             car.update(market=None, discount=None, comparables=0, valuation="stale")
         cars.append(car)
@@ -97,7 +112,9 @@ def view(db, uid, scan_id, after=0, only_deals=False):
         ScanItem.scan_id == scan_id, ScanItem.valued.is_(True)))
     return {"scan_id": row.id, "generation": row.generation, "status": row.status, "error": row.error,
             "phase": "checking" if row.context.get("enumerated") else "discovering",
-            "cars": cars, "inspected": row.checked, "discovered": row.discovered,
+            "cars": cars, "removed": removed,
+            "cache": market_cache.query(db, filters, after=cache_after),
+            "inspected": row.checked, "discovered": row.discovered,
             "source_total": row.source_total, "matching": matching, "deals_found": deals, "valued": valued,
             "unavailable": row.unavailable, "requests_used": row.requests,
             "created_at": row.created_at, "checked_at": row.updated_at,
@@ -112,6 +129,7 @@ class Scanner:
     def __init__(self, engine, key, search_factory=RiaSearch):
         self.engine, self.key, self.search_factory = engine, key, search_factory
         self.owner = uuid.uuid4().hex
+        self.last_backfill = None
 
     def claim(self):
         now = time.time()
@@ -176,6 +194,7 @@ class Scanner:
                     return
                 row.context = context
                 db.commit()
+        preview_checked, pages_this_step = False, 0
         for _ in range(50):
             if stop and stop.is_set():
                 return
@@ -184,11 +203,12 @@ class Scanner:
                 if row is None:
                     return
                 context = copy.deepcopy(row.context)
-                # Capture every ID page before the slower peer valuation pass.
-                # Evaluating a page for hours before requesting the next offset
-                # would magnify skips caused by new ads moving the source pages.
+                # Make progress on ID collection each step, then check an early
+                # candidate before the remaining pages. All queued IDs are still
+                # checked; the early preview is not a limit on scan coverage.
                 item = (db.scalar(select(ScanItem).where(ScanItem.scan_id == scan_id, ScanItem.state == "pending")
-                                  .order_by(ScanItem.id).limit(1)) if context["enumerated"] else None)
+                                  .order_by(ScanItem.id).limit(1)) if context["enumerated"] or
+                        (pages_this_step and not preview_checked) else None)
                 if item is None and context["enumerated"]:
                     row.status = "completed" if not context.get("coverage_error") and row.checked == row.discovered and row.discovered >= row.source_total else "incomplete"
                     row.error = "" if row.status == "completed" else context.get("coverage_error", "catalog_changed")
@@ -199,13 +219,21 @@ class Scanner:
             if source_id is None:
                 if not self.enumerate_page(scan_id, source, context):
                     return
+                pages_this_step += 1
                 continue
             car, state = None, "excluded"
+            with Session(self.engine) as db:
+                cached = market_cache.fresh(db, source_id)
+            source.observed_at = time.time()
             try:
-                candidate = source.car(source_id)
+                candidate = cached[0] if cached else source.car(source_id)
                 if matches(candidate, filters, context["ids"]):
-                    rating = estimate(candidate, source.comparisons(candidate))
-                    car, state = {**candidate, **rating}, "checked"
+                    if cached:
+                        car = candidate
+                    else:
+                        rating = estimate(candidate, source.comparisons(candidate))
+                        car = {**candidate, **rating}
+                    state = "checked"
             except RiaError as exc:
                 if str(exc) not in ("listing_unavailable", "invalid_response"):
                     raise
@@ -216,13 +244,20 @@ class Scanner:
                     return
                 item = db.scalar(select(ScanItem).where(ScanItem.scan_id == scan_id, ScanItem.source_id == source_id))
                 item.car, item.state = car, state
-                item.checked_at = min(time.time(), source.observed_at)
+                item.checked_at = cached[1] if cached else min(time.time(), source.observed_at)
                 item.deal = bool(car and car["valuation"] == "sample_median" and car["price_usd"] <= car["market"] * .85)
                 item.valued = bool(car and car["valuation"] == "sample_median")
+                if car:
+                    market_cache.put(db, car, item.checked_at)
+                elif state == "unavailable" or not cached:
+                    # A refreshed car that no longer matches must not linger as
+                    # an old cached match. The original scan still records why.
+                    market_cache.discard(db, source_id)
                 row.checked += 1
                 row.unavailable += int(state == "unavailable")
                 row.error, row.updated_at = "", time.time()
                 db.commit()
+            preview_checked = True
 
     def tick(self, stop=None):
         if not self.key or (stop and stop.is_set()):
@@ -235,6 +270,11 @@ class Scanner:
         try:
             source.acquire()
             acquired = True
+            if self.last_backfill is None or time.monotonic() - self.last_backfill >= 60:
+                with Session(self.engine) as db:
+                    market_cache.backfill(db)
+                    db.commit()
+                self.last_backfill = time.monotonic()
             source.request_limit = PAGE_REQUEST_LIMIT
             self.work(scan_id, source, stop)
         except RiaError as exc:

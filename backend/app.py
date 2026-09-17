@@ -276,8 +276,9 @@ def create_app(settings: Settings, engine=None):
 
     @app.get("/api/cars/scans/{scan_id}")
     def full_scan_progress(scan_id: str, after: int = Query(default=0, ge=0, le=2**53-1), only_deals: bool = False,
+                           cache_after: int = Query(default=0, ge=0, le=2**53-1),
                            uid=Depends(identity), db=Depends(session)):
-        result = full_scan.view(db, uid, scan_id, after=after, only_deals=only_deals)
+        result = full_scan.view(db, uid, scan_id, after=after, only_deals=only_deals, cache_after=cache_after)
         if result is None:
             raise HTTPException(404, "Scan not found")
         return result

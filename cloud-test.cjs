@@ -61,8 +61,9 @@ test('full scan progress reads never start a provider search and ids are validat
   const id='a'.repeat(32);
   await api.startScan({onlyDeals:true});await api.scan(id,123,true);await api.controlScan(id,false);
   assert.equal(calls[0][1],'POST');assert.equal(calls[1][1],'GET');
-  assert.match(calls[1][0],/after=123&only_deals=true$/);assert.equal(calls[1][2],undefined);
+  assert.match(calls[1][0],/after=123&only_deals=true&cache_after=0$/);assert.equal(calls[1][2],undefined);
   assert.equal(calls[2][1],'PATCH');assert.deepEqual(JSON.parse(calls[2][2]),{enabled:false});
   await assert.rejects(api.scan('../x'));await assert.rejects(api.scan(id,-1));await assert.rejects(api.controlScan(id,'yes'));
+  await assert.rejects(api.scan(id,0,true,-1));
   assert.equal(calls.length,3);
 });

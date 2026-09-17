@@ -137,15 +137,25 @@
   }
   function showScan(data,state) {
     if(state.generation&&state.generation!==data.generation) {
-      state.cars.clear();state.after=0;
+      state.cars.clear();state.after=0;state.cacheAfter=0;
       // The response may have used an offset from a previous run. Fetch the new
       // generation from zero instead of silently skipping its first results.
       state.generation=data.generation;scheduleScan(state,0);return;
     }
     state.generation=data.generation;state.scanId=data.scan_id;state.after=data.after;
+    state.cacheAfter=data.cache?.after??state.cacheAfter??0;
     state.data=data;
-    let changed=data.cars.length>0;
-    for(const car of data.cars) state.cars.set(car.id,car);
+    let changed=false;
+    for(const car of [...(data.cache?.cars||[]),...data.cars]) {
+      const previous=state.cars.get(car.id);
+      if(!previous||car.checked_at>=previous.checked_at) {
+        state.cars.set(car.id,car);changed=true;
+      }
+    }
+    for(const removed of data.removed||[]) {
+      if((state.cars.get(removed.id)?.checked_at??-Infinity)<=removed.checked_at)
+        changed=state.cars.delete(removed.id)||changed;
+    }
     const now=Date.now()/1000;
     for(const [id,car] of state.cars) if(now-car.checked_at>=900&&!car.stale) {
       changed=true;
@@ -160,10 +170,10 @@
     if(scanPanel) {
       scanPanel.hidden=false;
       document.getElementById("scanTitle").textContent=titles[data.status]||
-        (data.phase==="discovering"?"Збираємо оголошення за фільтрами":"Перевіряємо всі оголошення");
+        (data.phase==="discovering"?"Збираємо та перевіряємо оголошення":"Перевіряємо всі оголошення");
       const bar=document.getElementById("scanBar");bar.max=Math.max(1,data.source_total,data.discovered);bar.value=data.inspected;
       let status="Перевірено "+data.inspected+" із "+(data.source_total||data.discovered||"…")+" · Вигідних знайдено: "+data.deals_found+".";
-      if(data.phase==="discovering") status="Отримано оголошень: "+data.discovered+" із "+(data.source_total||"…")+". Далі перевіримо ціни.";
+      if(data.phase==="discovering") status="Отримано оголошень: "+data.discovered+" із "+(data.source_total||"…")+". Уже перевірено: "+data.inspected+".";
       if(Number.isInteger(data.valued)) status+=" Оцінено ціну: "+data.valued+".";
       if(data.status==="waiting") status+=data.error==="quota_exceeded"?
         " Продовжимо автоматично приблизно через "+Math.max(1,Math.ceil(data.retry_after_seconds/60))+" хв після відновлення ліміту.":
@@ -178,16 +188,18 @@
         ["completed","incomplete"].includes(data.status)?"Перевірити знову":"Продовжити";
     }
     document.getElementById("sourceNote").textContent=
+      (data.cache?.total?"Показуємо також раніше перевірені авто за твоїми фільтрами. База ще не охоплює всі оголошення AUTO.RIA. ":"")+
       "Оголошення перевіряються поступово за всіма сторінками AUTO.RIA. "+
       "Оцінка — медіана цін щонайменше 5 схожих авто; це ціни пропозицій, не продажів. "+
       (data.unavailable?"Недоступних або некоректних оголошень: "+data.unavailable+". ":"")+
       "Час перевірки вказаний у картці. Ціна та наявність могли змінитися.";
-    more.hidden=!data.more_results&&state.cars.size<=state.displayLimit;more.textContent="Показати ще знайдені авто";
-    if(data.more_results||activeStatus(data.status)) scheduleScan(state,data.more_results?200:5000);
+    const hasMore=data.more_results||data.cache?.more;
+    more.hidden=!hasMore&&state.cars.size<=state.displayLimit;more.textContent="Показати ще знайдені авто";
+    if(hasMore||activeStatus(data.status)) scheduleScan(state,hasMore?200:5000);
   }
   async function startFullScan(filters,options={},restart=false) {
     if(pollTimer!==null) root.clearTimeout(pollTimer);
-    const state={filters:JSON.parse(JSON.stringify(filters)),options,cars:new Map(),after:0,scanId:null,displayLimit:50};
+    const state={filters:JSON.parse(JSON.stringify(filters)),options,cars:new Map(),after:0,cacheAfter:0,scanId:null,displayLimit:50};
     current=state;busy=true;scrollOnFinish=false;
     const button=document.getElementById("searchBtn"),label=button.textContent;
     button.disabled=true;more.hidden=true;
@@ -197,7 +209,7 @@
     document.getElementById("resultsCriteria").textContent=options.criteria||"";
     document.getElementById("count").textContent="";
     document.getElementById("resultsList").replaceChildren();
-    document.getElementById("sourceNote").textContent="Запускаємо повну перевірку оголошень за твоїми фільтрами…";
+    document.getElementById("sourceNote").textContent="Шукаємо серед отриманих авто та запускаємо оновлення…";
     try {showScan(await root.AutoDealCloud.startScan(state.filters,restart),state);}
     catch(error) {document.getElementById("sourceNote").textContent=error.message;}
     finally {busy=false;button.disabled=false;button.textContent=label;}
@@ -206,7 +218,7 @@
     if(current!==state||!state.scanId||state.polling) return;
     state.polling=true;more.disabled=true;
     try {
-      const data=await root.AutoDealCloud.scan(state.scanId,state.after,state.filters.onlyDeals);
+      const data=await root.AutoDealCloud.scan(state.scanId,state.after,state.filters.onlyDeals,state.cacheAfter);
       if(current===state) showScan(data,state);
     } catch(error) {
       if(current===state) {

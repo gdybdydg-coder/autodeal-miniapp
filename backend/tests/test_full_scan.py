@@ -69,7 +69,7 @@ def test_all_123_listings_across_pages_are_checked_without_manual_cursors(engine
     assert len(rest["cars"]) == 23 and not rest["more_results"]
     assert {c["id"] for c in result["cars"] + rest["cars"]} == set(map(str, range(100, 223)))
     assert [p["page"] for path, p in calls if path == "search"] == [0, 1, 2]
-    assert [path for path, _ in calls[:3]] == ["search"] * 3
+    assert [path for path, _ in calls[:3]] == ["search", "info", "search"]
     assert len([1 for path, _ in calls if path == "info"]) == 123
     before = len(calls)
     status(engine, scan_id);status(engine, scan_id, only_deals=True)
@@ -250,3 +250,65 @@ def test_pause_during_network_call_stops_before_another_listing_and_can_resume(e
     result = finish(engine, scan_id, runner(engine, fetch))
     assert result["complete"] and result["inspected"] == 12
     assert len([1 for path, _ in calls if path == "info"]) == 12
+
+
+def test_first_result_is_available_before_the_rest_of_a_large_catalog(engine):
+    calls = []
+    scan_id = start(engine)
+    base = provider(calls, 35156)
+    def fetch(key, path, params):
+        if path == "search" and params["page"] == 1:
+            result = status(engine, scan_id)
+            assert result["inspected"] == 1 and result["cars"][0]["id"] == "100"
+            assert result["discovered"] == 50 and not result["complete"]
+        return base(key, path, params)
+    runner(engine, fetch).tick()
+    result = status(engine, scan_id)
+    assert result["inspected"] >= 1 and result["phase"] == "discovering"
+    assert 50 < result["discovered"] < result["source_total"] == 35156
+
+
+def test_another_search_reads_cached_cars_immediately_and_reuses_fresh_valuations(engine):
+    calls = []
+    scan_id = start(engine)
+    finish(engine, scan_id, runner(engine, provider(calls, 3)))
+    before = len(calls)
+    new = start(engine, Filters(price={"to": 12000}, onlyDeals=False))
+    result = status(engine, new)
+    assert result["inspected"] == 0 and result["cars"] == []
+    assert {c["id"] for c in result["cache"]["cars"]} == {"100", "101", "102"}
+    assert result["cache"]["coverage"] == "partial" and len(calls) == before
+    result = finish(engine, new, runner(engine, provider(calls, 3)))
+    assert result["complete"] and result["inspected"] == 3
+    assert [path for path, _ in calls[before:]] == ["search"]
+
+
+def test_refresh_removes_a_cached_car_that_no_longer_matches(engine, monkeypatch):
+    filters = Filters(price={"to": 12000}, onlyDeals=False)
+    scan_id = start(engine, filters)
+    finish(engine, scan_id, runner(engine, provider([], 1)))
+    now = time.time()
+    monkeypatch.setattr(time, "time", lambda: now + 901)
+    start(engine, filters, restart=True)
+    base = provider([], 1)
+    def fetch(key, path, params):
+        return raw(params["auto_id"], USD=20000, technicalCondition=None) if path == "info" else base(key, path, params)
+    result = finish(engine, scan_id, runner(engine, fetch))
+    assert result["cars"] == result["cache"]["cars"] == []
+    assert [entry["id"] for entry in result["removed"]] == ["100"]
+
+
+def test_old_scan_uses_newer_shared_details_and_cannot_resurrect_removed_cars(engine):
+    from backend import market_cache
+    scan_id = start(engine, Filters(price={"to": 12000}, onlyDeals=False))
+    finish(engine, scan_id, runner(engine, provider([], 1)))
+    with Session(engine) as db:
+        cached, checked_at = market_cache.fresh(db, "100")
+        market_cache.put(db, {**cached, "price_usd": 20000}, checked_at + 1)
+        db.commit()
+    result = status(engine, scan_id)
+    assert result["cars"] == [] and result["removed"][0]["id"] == "100"
+    with Session(engine) as db:
+        market_cache.discard(db, "100")
+        db.commit()
+    assert status(engine, scan_id)["cars"] == []
