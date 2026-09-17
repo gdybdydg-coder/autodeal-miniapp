@@ -270,7 +270,15 @@ At most one real candidate per model also checks the catalog resolver against it
 existing listing-provided modification ID using a separate copy; the production
 candidate is never modified by that diagnostic. Inspect `catalog_resolution_checks`
 alongside medians. Any disagreement requires investigation before relying on the
-resolver. Use a new explicit run ID, such as `eligible-20260917-1`, only deliberately.
+resolver. Use a new explicit run ID only deliberately.
+
+The approved `eligible-20260917-1` run has now completed: 96 calls, 24 candidate
+cards, three matching catalog diagnostics and one qualifying Passat price sample
+($8,700 versus a $11,700 five-peer median). Sixteen valuations remained pending
+at the cap; the overall result is partial. This ID must not be reused to request
+another run. See the [supported-condition report and evidence](docs/valuation-audit-eligible-2026-09-17.md).
+The Mini App release 20260917-27 and backend were deployed; monitoring and
+automatic delivery remain disabled.
 
 The `popular-v1` check `popular-20260917-1` completed on 2026-09-17 with status
 `partial`: 24 candidates, one median and 55 provider requests. The
