@@ -1,6 +1,7 @@
 const {test}=require('node:test'),assert=require('node:assert/strict');
 const fs=require('node:fs'),vm=require('node:vm');
 const tick=()=>new Promise(resolve=>setImmediate(resolve));
+const part=(node,className)=>node.className===className?node:node.children?.map(n=>part(n,className)).find(Boolean);
 function setup(api={}) {
   const nodes=[],html=fs.readFileSync(__dirname+'/index.html','utf8');
   function element(tag='div') {
@@ -49,8 +50,8 @@ test('opening My searches reads account once, keeps local cards and restores nav
   assert.equal(ui.ids.localTitle.textContent,'На цьому пристрої (1)');
   assert.equal(ui.ids.savedSearchList.children.length,1);
   resolve([{id:7,name:'Мій Golf',filters:ui.filters(),enabled:false}]);await pending;
-  assert.equal(ui.ids.cloudTitle.textContent,'В акаунті Telegram (1)');
-  assert.equal(ui.ids.cloudSearchList.children[0].children[0].textContent,'Мій Golf');
+  assert.equal(ui.ids.cloudCount.textContent,'1');assert.equal(ui.ids.localCount.textContent,'1');
+  assert.equal(part(ui.ids.cloudSearchList.children[0],'subscription-name').textContent,'Мій Golf');
   assert.equal(ui.searches.length,0);
   ui.ids.closeSaved.listeners.click();assert.equal(ui.nav.deals.attributes['aria-current'],'page');
 });
@@ -61,7 +62,7 @@ test('account failure does not erase device searches and refresh recovers',async
   ui.run('savedAPI.save(window.localStorage,readCurrentFilters(),"На телефоні",false)');
   const before=ui.local();await ui.nav.saved.listeners.click();
   assert.match(ui.ids.cloudStatus.textContent,/не відповідає/);
-  assert.equal(ui.ids.savedSearchList.children[0].children[0].textContent,'На телефоні');
+  assert.equal(part(ui.ids.savedSearchList.children[0],'subscription-name').textContent,'На телефоні');
   assert.equal(ui.local(),before);assert.equal(ui.ids.refreshCloud.disabled,false);
   fail=false;await ui.ids.refreshCloud.listeners.click();
   assert.match(ui.ids.cloudStatus.textContent,/ще немає/);
@@ -72,7 +73,7 @@ test('saved card restores full criteria, waits for active search and starts one 
   const ui=setup({list:async()=>[{id:9,name:'Golf',filters:stored,enabled:false}]});stored=ui.filters();
   ui.ids.brand.value='BMW';ui.ids.model.value='X5';
   await ui.nav.saved.listeners.click();
-  const open=ui.ids.cloudSearchList.children[0].children[3].children[0];
+  const open=part(ui.ids.cloudSearchList.children[0],'subscription-open');
   ui.setBusy(true);await open.listeners.click();
   assert.equal(ui.ids.savedDialog.hidden,false);assert.match(ui.ids.savedError.textContent,/ще виконується/);
   assert.equal(ui.ids.brand.value,'BMW');assert.equal(ui.searches.length,0);
@@ -128,7 +129,10 @@ test('notification controls require readiness and send only on an explicit tap',
     notificationStatus:async()=>state,testNotification:async()=>{tests++;state={...state,test_sent:true};return{state:'sent'}},
     enable:async(id,value)=>{updates.push([id,value]);enabled=value}});
   await ui.nav.saved.listeners.click();
-  const toggle=()=>ui.ids.cloudSearchList.children[0].children[3].children[2];
+  const toggle=()=>{
+    part(ui.ids.cloudSearchList.children[0],'subscription-more').listeners.click();
+    return ui.ids.subscriptionMenuActions.children.find(n=>/сповіщення/.test(n.textContent));
+  };
   assert.equal(ui.ids.testNotification.disabled,true);assert.equal(toggle().disabled,true);
   assert.equal(tests,0);assert.deepEqual(updates,[]);
   state={...state,telegram_ready:true};await ui.ids.refreshCloud.listeners.click();
@@ -141,4 +145,52 @@ test('notification controls require readiness and send only on an explicit tap',
   state={...state,available:false};await ui.ids.refreshCloud.listeners.click();
   assert.equal(toggle().disabled,false);
   await toggle().listeners.click();assert.deepEqual(updates,[[8,true],[8,false]]);
+});
+
+test('subscription tabs switch independent lists without searching or reloading the account',async()=>{
+  let lists=0;
+  const ui=setup({list:async()=>{lists++;return[{id:9,name:'Golf',filters:ui.filters(),enabled:false}]}});
+  ui.run('savedAPI.save(window.localStorage,readCurrentFilters(),"На телефоні",false)');
+  await ui.nav.saved.listeners.click();
+  assert.equal(ui.ids.cloudPanel.hidden,false);assert.equal(ui.ids.localPanel.hidden,true);
+  ui.ids.localTab.listeners.click();
+  assert.equal(ui.ids.cloudPanel.hidden,true);assert.equal(ui.ids.localPanel.hidden,false);
+  assert.equal(ui.ids.localTab.attributes['aria-selected'],'true');assert.equal(ui.ids.refreshCloud.hidden,true);
+  ui.ids.localTab.listeners.keydown({key:'ArrowRight',preventDefault(){}});
+  assert.equal(ui.ids.cloudPanel.hidden,false);assert.equal(ui.ids.localPanel.hidden,true);
+  assert.equal(ui.ids.subscriptionsTab.focused,true);assert.equal(lists,1);assert.equal(ui.searches.length,0);
+});
+
+test('menu and delete confirmation do not open search; cancel preserves data and server error stays visible',async()=>{
+  let fail=true;const removed=[];
+  const ui=setup({list:async()=>removed.length?[]:[{id:17,name:'<b>Мій Golf</b>',filters:ui.filters(),enabled:false}],
+    remove:async id=>{if(fail)throw Error('Не вдалося видалити');removed.push(id)}});
+  await ui.nav.saved.listeners.click();
+  part(ui.ids.cloudSearchList.children[0],'subscription-more').listeners.click();
+  assert.equal(ui.ids.subscriptionMenu.open,true);assert.equal(ui.searches.length,0);
+  assert.equal(ui.ids.subscriptionMenuTitle.textContent,'<b>Мій Golf</b>');
+  const action=label=>ui.ids.subscriptionMenuActions.children.find(n=>n.textContent===label);
+  action('Видалити підписку').listeners.click();assert.deepEqual(removed,[]);
+  action('Скасувати').listeners.click();assert.deepEqual(removed,[]);
+  action('Видалити підписку').listeners.click();await action('Так, видалити').listeners.click();
+  assert.equal(ui.ids.subscriptionMenu.open,true);assert.equal(ui.ids.subscriptionMenuError.hidden,false);
+  assert.match(ui.ids.subscriptionMenuError.textContent,/Не вдалося/);
+  fail=false;await action('Так, видалити').listeners.click();
+  assert.deepEqual(removed,[17]);assert.equal(ui.ids.subscriptionMenu.open,false);assert.equal(ui.ids.cloudCount.textContent,'0');
+});
+
+test('device save returns to device list and deletion remains local',async()=>{
+  let network=0;
+  const ui=setup({list:async()=>{network++;return[]},remove:async()=>{network++}});
+  ui.ids.saveSearchBtn.listeners.click();ui.ids.savedName.value='Локальний Golf';
+  assert.equal(ui.ids.subscriptionTabs.hidden,true);assert.equal(ui.ids.newSavedSearch.hidden,true);
+  ui.ids.saveSearchForm.listeners.submit({preventDefault(){}});
+  assert.equal(ui.ids.saveSearchForm.hidden,true);assert.equal(ui.ids.subscriptionTabs.hidden,false);
+  assert.equal(ui.ids.localPanel.hidden,false);assert.equal(ui.ids.newSavedSearch.hidden,false);
+  assert.equal(ui.ids.localCount.textContent,'1');
+  part(ui.ids.savedSearchList.children[0],'subscription-more').listeners.click();
+  assert.equal(ui.ids.openNotificationSettings.hidden,true);
+  ui.ids.subscriptionMenuActions.children.find(n=>n.textContent==='Видалити пошук').listeners.click();
+  ui.ids.subscriptionMenuActions.children.find(n=>n.textContent==='Так, видалити').listeners.click();
+  assert.equal(ui.ids.localCount.textContent,'0');assert.equal(network,0);
 });

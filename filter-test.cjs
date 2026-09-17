@@ -88,10 +88,10 @@ byId.brand.value='Audi';byId.model.value='A4';
 run('applySavedFilters(savedAPI.read(window.localStorage)[0].filters)');
 assert.equal(byId.brand.value,'BMW');assert.equal(byId.model.value,'3 Series');assert.equal(byId.priceTo.value,20000);
 const card=byId.savedSearchList.children[0];
-const actions=card.children[3];
-actions.children[1].listeners.click(); // First delete click requests confirmation.
+card.children[1].children[0].listeners.click();
+byId.subscriptionMenuActions.children[1].listeners.click(); // First delete click requests confirmation.
 assert.equal(JSON.parse(savedRaw).searches.length,1);
-byId.savedSearchList.children[0].children[3].children[1].listeners.click();
+byId.subscriptionMenuActions.children[0].listeners.click();
 assert.equal(JSON.parse(savedRaw).searches.length,0);
 context.window.localStorage.setItem=()=>{throw Error('blocked')};
 byId.saveSearchBtn.listeners.click();
@@ -114,12 +114,11 @@ console.log('PASS: manager open/save/restore, draft notification preference, con
  byId.saveCloudSearch.listeners.click();
  await new Promise(resolve=>setImmediate(resolve));
  assert.equal(saves,1);assert.equal(savedRaw,localBefore);
- assert.equal(byId.cloudSearchList.children[0].children[0].textContent,byId.savedName.value);
- assert.match(byId.cloudSearchList.children[0].children[2].textContent,/Сповіщення вимкнені/);
- const actions=byId.cloudSearchList.children[0].children[3];
- actions.replaceChildren=function(...children){this.children=children;};
- actions.children[1].listeners.click();assert.equal(deletes,0);
- actions.children[0].listeners.click();
+ assert.equal(byId.cloudSearchList.children[0].children[0].children[1].children[0].textContent,byId.savedName.value);
+ byId.cloudSearchList.children[0].children[1].children[0].listeners.click();
+ assert.match(byId.subscriptionMenuStatus.textContent,/Сповіщення вимкнені/);
+ byId.subscriptionMenuActions.children[1].listeners.click();assert.equal(deletes,0);
+ byId.subscriptionMenuActions.children[0].listeners.click();
  await new Promise(resolve=>setImmediate(resolve));
  assert.equal(deletes,1);assert.equal(byId.cloudSearchList.children.length,0);
  context.window.AutoDealCloud.list=async()=>{throw Error('Session expired');};

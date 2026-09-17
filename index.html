@@ -4,9 +4,9 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
   <meta name="theme-color" content="#070709">
-  <meta name="autodeal-version" content="20260917-19">
+  <meta name="autodeal-version" content="20260917-20">
   <title>AUTODEAL</title>
-  <link rel="stylesheet" href="style.css?v=20260917-19">
+  <link rel="stylesheet" href="style.css?v=20260917-20">
 </head>
 <body>
 <main class="app">
@@ -60,9 +60,16 @@
     <button class="nav" data-tab="settings"><span>⚙️</span>Налаштування</button>
   </nav>
 <section id="savedDialog" class="saved-page" aria-labelledby="savedTitle" hidden>
-  <div class="dialog-head"><h2 id="savedTitle" tabindex="-1">Мої пошуки</h2><button id="closeSaved" class="dialog-close" type="button" aria-label="Повернутися до попереднього розділу">←</button></div>
-  <p class="subtitle saved-subtitle">Твої фільтри. Авто, які ти шукаєш.</p>
-  <button id="newSavedSearch" class="search-button" type="button">＋ Новий пошук</button>
+  <div class="subscriptions-head">
+    <button id="closeSaved" class="subscription-head-button" type="button" aria-label="Повернутися до попереднього розділу">←</button>
+    <h2 id="savedTitle" tabindex="-1">Мої пошуки</h2>
+    <button id="refreshCloud" class="subscription-head-button" type="button" aria-label="Оновити підписки">↻</button>
+  </div>
+  <div id="subscriptionTabs" class="subscription-tabs" role="tablist" aria-label="Збережені пошуки">
+    <button id="localTab" type="button" role="tab" aria-controls="localPanel" aria-selected="false" tabindex="-1">На пристрої <span id="localCount" class="subscription-count">0</span></button>
+    <button id="subscriptionsTab" type="button" role="tab" aria-controls="cloudPanel" aria-selected="true" tabindex="0">Підписки <span id="cloudCount" class="subscription-count">…</span></button>
+  </div>
+  <button id="newSavedSearch" class="saved-find" type="button">Знайти авто</button>
   <p id="savedError" class="saved-error" role="alert" hidden></p>
   <form id="saveSearchForm" hidden>
     <label class="label" for="savedName">Назва пошуку</label>
@@ -72,19 +79,15 @@
     <p class="filter-help save-hint">Доступно в Telegram на твоїх пристроях. Без сповіщень.</p>
     <button class="save-search-button" id="confirmSaveSearch" type="submit">Лише на цьому пристрої</button>
   </form>
-  <section class="cloud-section" aria-labelledby="cloudTitle">
-    <div class="saved-section-head">
-      <h3 id="cloudTitle">В акаунті Telegram</h3>
-      <button id="refreshCloud" class="manager-button refresh-button" type="button" aria-label="Оновити список" title="Оновити список">↻</button>
-    </div>
+  <section id="cloudPanel" class="subscription-panel" role="tabpanel" aria-labelledby="subscriptionsTab">
+    <h3 id="cloudTitle" class="sr-only">Підписки в акаунті Telegram</h3>
     <p id="cloudStatus" class="filter-help" role="status">Збережені в акаунті пошуки завантажуються при відкритті цього списку в Telegram.</p>
     <div id="cloudSearchList"></div>
   </section>
-  <button id="openNotificationSettings" class="save-search-button" type="button">Налаштування сповіщень →</button>
-  <details class="saved-fold local-panel">
-    <summary><span id="localTitle" class="fold-title">На цьому пристрої</span></summary>
-    <div id="savedSearchList" class="fold-body"></div>
-  </details>
+  <section id="localPanel" class="subscription-panel" role="tabpanel" aria-labelledby="localTab" hidden>
+    <h3 id="localTitle" class="sr-only">На цьому пристрої</h3>
+    <div id="savedSearchList"></div>
+  </section>
 </section>
 <section id="settingsPage" class="settings-page" aria-labelledby="settingsTitle" hidden>
   <h1 id="settingsTitle" tabindex="-1">Налаштування</h1>
@@ -110,18 +113,27 @@
     <p class="filter-help notification-footnote">/stop у чаті — вимкнути всі сповіщення.</p>
   </section>
   <details class="save-privacy"><summary>Про збереження</summary><p class="filter-help">Збереження в акаунті передає назву, фільтри та підтверджений Telegram ID на сервер AUTODeal у Render. Видалити пошук можна в його картці. Локальні пошуки залишаються в цьому браузері й автоматично не переносяться. Для пошуку сервер передає фільтри до AUTO.RIA без твого Telegram ID.</p></details>
-  <div class="app-release"><span>Версія 20260917-19</span><button id="reloadApp" class="manager-button" type="button">Оновити застосунок</button></div>
+  <div class="app-release"><span>Версія 20260917-20</span><button id="reloadApp" class="manager-button" type="button">Оновити застосунок</button></div>
 </section>
 </main>
+<dialog id="subscriptionMenu" class="subscription-sheet" aria-labelledby="subscriptionMenuTitle" aria-describedby="subscriptionMenuSummary">
+  <div class="sheet-handle" aria-hidden="true"></div>
+  <div class="subscription-sheet-head"><h2 id="subscriptionMenuTitle"></h2><button id="closeSubscriptionMenu" type="button" aria-label="Закрити меню">×</button></div>
+  <p id="subscriptionMenuSummary" class="filter-help"></p>
+  <p id="subscriptionMenuStatus" class="subscription-menu-status"></p>
+  <p id="subscriptionMenuError" class="saved-error" role="alert" hidden></p>
+  <div id="subscriptionMenuActions" class="subscription-menu-actions"></div>
+  <button id="openNotificationSettings" class="subscription-menu-button" type="button">Налаштування сповіщень →</button>
+</dialog>
 <div id="toast" class="toast" role="status"></div>
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
 <script src="data/cars.js?v=4"></script>
 <script src="saved-searches.js?v=6"></script>
-<script src="app.js?v=14"></script>
-<script src="search-manager.js?v=15"></script>
+<script src="app.js?v=15"></script>
+<script src="search-manager.js?v=16"></script>
 <script src="cloud-api.js?v=11"></script>
 <script src="live-search.js?v=13"></script>
-<script src="cloud-searches.js?v=16"></script>
-<script src="app-version.js?v=20260917-19"></script>
+<script src="cloud-searches.js?v=17"></script>
+<script src="app-version.js?v=20260917-20"></script>
 </body>
 </html>

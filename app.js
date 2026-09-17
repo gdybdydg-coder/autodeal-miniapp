@@ -100,6 +100,7 @@ function readCurrentFilters() {
 }
 let resultsTab="search";
 function setSearchTab(tab) {
+  if($("subscriptionMenu").open) $("subscriptionMenu").close();
   $("searchIntro").hidden=tab!=="search";
   $("searchFilters").hidden=tab!=="search";
   $("results").hidden=tab!==resultsTab;

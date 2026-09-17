@@ -1,6 +1,6 @@
 "use strict";
 const savedAPI=window.AutoDealSaved;
-let draftFilters=null,pendingDelete=null;
+let draftFilters=null,savedScope="cloud",menuOpener=null;
 let managerReturnTab="search",managerSession=0;
 function summarizeFilters(f) {
   const parts=[f.brand||"Всі марки",f.model,f.region||"Вся Україна"];
@@ -21,6 +21,89 @@ function managerButton(text,action) {
   button.type="button";button.className="manager-button";button.textContent=text;
   button.addEventListener("click",action);return button;
 }
+function subscriptionSummary(filters,name) {
+  const parts=[],vehicle=[filters.brand,filters.model].filter(Boolean).join(" ");
+  if(vehicle&&!name.toLowerCase().includes(vehicle.toLowerCase())) parts.push(vehicle);
+  parts.push(...filters.body,filters.region.replace(" область"," обл.")||"Вся Україна");
+  for(const [key,unit] of [["price"," $"],["year"," р."],["mileage"," тис. км"]]) {
+    const range=filters[key],format=n=>n.toLocaleString("uk-UA");
+    if(range.from===null&&range.to===null) continue;
+    const text=range.from===null?"до "+format(range.to):range.to===null?"від "+format(range.from):format(range.from)+"–"+format(range.to);
+    parts.push((key==="mileage"?"Пробіг ":"")+text+unit);
+  }
+  parts.push(...filters.fuel,...filters.transmission,filters.onlyDeals?"Від 15% нижче ринку":"Усі ціни");
+  return parts.join(", ");
+}
+function setSavedScope(scope) {
+  savedScope=scope;
+  for(const [id,panel,value] of [["localTab","localPanel","local"],["subscriptionsTab","cloudPanel","cloud"]]) {
+    const selected=scope===value;
+    $(id).setAttribute("aria-selected",String(selected));
+    $(id).tabIndex=selected?0:-1;
+    $(panel).hidden=!selected||!!draftFilters;
+  }
+  $("refreshCloud").hidden=scope!=="cloud"||!!draftFilters;
+}
+function renderSavedView() {
+  const compose=!!draftFilters;
+  $("savedTitle").textContent=compose?"Зберегти пошук":"Мої пошуки";
+  $("subscriptionTabs").hidden=compose;
+  $("newSavedSearch").hidden=compose;
+  $("saveSearchForm").hidden=!compose;
+  setSavedScope(savedScope);
+}
+function closeSubscriptionActions() {
+  if($("subscriptionMenu").open) $("subscriptionMenu").close();
+}
+function showSubscriptionActions(item,options,opener) {
+  menuOpener=opener;
+  const sheet=$("subscriptionMenu");
+  const render=()=>{
+    $("subscriptionMenuTitle").textContent=item.name;
+    $("subscriptionMenuSummary").textContent=subscriptionSummary(item.filters,item.name);
+    $("subscriptionMenuStatus").textContent=options.status;
+    $("subscriptionMenuError").hidden=true;
+    $("openNotificationSettings").hidden=!options.cloud;
+    const actions=$("subscriptionMenuActions");
+    actions.replaceChildren();
+    function action(label,run,disabled=false,danger=false) {
+      const button=managerButton(label,()=>{if(!button.disabled)return run();});
+      button.className="subscription-menu-button"+(danger?" destructive":"");
+      button.disabled=disabled;actions.append(button);return button;
+    }
+    action("Відкрити пошук",()=>{closeSubscriptionActions();return openSavedSearch(item.filters);});
+    if(options.toggle) action(item.enabled?"Вимкнути сповіщення":"Увімкнути сповіщення",options.toggle,!options.canToggle);
+    action(options.cloud?"Видалити підписку":"Видалити пошук",()=>{
+      actions.replaceChildren();
+      $("subscriptionMenuTitle").textContent=options.cloud?"Видалити підписку?":"Видалити пошук?";
+      $("subscriptionMenuStatus").textContent="«"+item.name+"» буде видалено зі списку.";
+      $("openNotificationSettings").hidden=true;
+      action("Так, видалити",options.remove,false,true);
+      action("Скасувати",render);
+    },false,true);
+  };
+  render();
+  if(!sheet.open) sheet.showModal();
+}
+function subscriptionCard(item,options) {
+  const card=document.createElement("article");card.className="subscription-card";
+  const open=managerButton("",()=>openSavedSearch(item.filters));open.className="subscription-open";
+  const icon=document.createElement("img");icon.className="subscription-icon";icon.src="assets/subscription-car.svg";icon.alt="";
+  const copy=document.createElement("span");copy.className="subscription-copy";
+  const name=document.createElement("span");name.className="subscription-name";name.textContent=item.name;
+  const summary=document.createElement("span");summary.className="subscription-summary";summary.textContent=subscriptionSummary(item.filters,item.name);
+  copy.append(name,summary);open.append(icon,copy);
+  open.setAttribute("aria-label","Відкрити пошук «"+item.name+"». "+summary.textContent);
+  const aside=document.createElement("div");aside.className="subscription-aside";
+  const more=managerButton("⋯",()=>showSubscriptionActions(item,options,more));more.className="subscription-more";
+  more.setAttribute("aria-label","Дії для пошуку «"+item.name+"»");more.setAttribute("aria-haspopup","dialog");
+  aside.append(more);
+  if(item.enabled) {
+    const bell=document.createElement("img");bell.className="subscription-bell";bell.src="assets/subscription-bell.svg";
+    bell.alt=options.status;bell.title=options.status;aside.append(bell);
+  }
+  card.append(open,aside);return card;
+}
 function renderSavedSearches() {
   const list=$("savedSearchList");
   list.replaceChildren();
@@ -30,26 +113,17 @@ function renderSavedSearches() {
   try { items=savedAPI.read(window.localStorage); }
   catch { storageError();return; }
   $("localTitle").textContent="На цьому пристрої ("+items.length+")";
+  $("localCount").textContent=String(items.length);
   if(!items.length) {
     const empty=document.createElement("p");empty.className="filter-help";
     empty.textContent="Ще немає збережених пошуків. Вибери фільтри та натисни «Зберегти пошук».";
     list.append(empty);return;
   }
   for(const item of items) {
-    const article=document.createElement("article");article.className="saved-search-card";
-    const name=document.createElement("h3");name.textContent=item.name;
-    const summary=document.createElement("p");summary.className="filter-help";summary.textContent=summarizeFilters(item.filters);
-    const status=document.createElement("p");status.className="filter-help";
-    status.textContent="Лише на цьому пристрої · без сповіщень";
-    const actions=document.createElement("div");actions.className="saved-actions";
-    actions.append(managerButton("Відкрити пошук",()=>openSavedSearch(item.filters)));
-    if(pendingDelete===item.id) {
-      actions.append(managerButton("Так, видалити",()=>{
-        try { savedAPI.remove(window.localStorage,item.id);pendingDelete=null;renderSavedSearches(); }
-        catch { storageError(); }
-      }),managerButton("Скасувати",()=>{pendingDelete=null;renderSavedSearches();}));
-    } else actions.append(managerButton("Видалити",()=>{pendingDelete=item.id;renderSavedSearches();}));
-    article.append(name,summary,status,actions);list.append(article);
+    list.append(subscriptionCard(item,{status:"Лише на цьому пристрої · без сповіщень",remove:()=>{
+      try {savedAPI.remove(window.localStorage,item.id);closeSubscriptionActions();renderSavedSearches();}
+      catch {$("subscriptionMenuError").hidden=false;$("subscriptionMenuError").textContent="Не вдалося видалити пошук. Спробуй ще раз.";}
+    }}));
   }
 }
 function openSavedSearch(filters) {
@@ -81,7 +155,7 @@ function applySavedFilters(raw) {
   setSearchTab("search");
 }
 function openSearchManager(compose) {
-  draftFilters=null;pendingDelete=null;
+  draftFilters=null;
   if(compose) {
     try { draftFilters=savedAPI.normalize(readCurrentFilters()); }
     catch(error) { toast(error.message);return; }
@@ -95,9 +169,7 @@ function openSearchManager(compose) {
   managerSession++;
   setSearchTab("saved");
   window.AutoDealLive?.dismissAutoScroll?.();
-  $("savedTitle").textContent=compose?"Зберегти пошук":"Мої пошуки";
-  $("newSavedSearch").hidden=compose;
-  $("saveSearchForm").hidden=!compose;
+  renderSavedView();
   renderSavedSearches();
   $("savedTitle").focus({preventScroll:true});
   if(!compose) return window.AutoDealCloudSearches?.refresh();
@@ -110,6 +182,21 @@ function openSettings() {
 }
 $("settingsBtn").addEventListener("click",openSettings);
 $("openNotificationSettings").addEventListener("click",openSettings);
+$("closeSubscriptionMenu").addEventListener("click",closeSubscriptionActions);
+$("subscriptionMenu").addEventListener("click",event=>{if(event.target===$("subscriptionMenu"))closeSubscriptionActions();});
+$("subscriptionMenu").addEventListener("close",()=>{
+  if(menuOpener?.isConnected) menuOpener.focus({preventScroll:true});
+  menuOpener=null;
+});
+for(const [id,scope] of [["localTab","local"],["subscriptionsTab","cloud"]]) {
+  $(id).addEventListener("click",()=>setSavedScope(scope));
+  $(id).addEventListener("keydown",event=>{
+    if(!["ArrowLeft","ArrowRight","Home","End"].includes(event.key))return;
+    event.preventDefault();
+    const next=event.key==="Home"?"local":event.key==="End"?"cloud":savedScope==="local"?"cloud":"local";
+    setSavedScope(next);$(next==="local"?"localTab":"subscriptionsTab").focus();
+  });
+}
 $("settingsSearches").addEventListener("click",()=>openSearchManager(false));
 $("closeSaved").addEventListener("click",()=>setSearchTab(managerReturnTab));
 $("newSavedSearch").addEventListener("click",()=>{
@@ -121,7 +208,7 @@ $("saveSearchForm").addEventListener("submit",event=>{
   if(!draftFilters) return;
   try {
     savedAPI.save(window.localStorage,draftFilters,$("savedName").value,false);
-    $("saveSearchForm").hidden=true;draftFilters=null;renderSavedSearches();
+    draftFilters=null;savedScope="local";renderSavedView();renderSavedSearches();
     toast("Пошук збережено на пристрої");
   } catch(error) {
     storageError();

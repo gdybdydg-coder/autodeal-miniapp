@@ -153,3 +153,41 @@ h1 { font-weight: 400; letter-spacing: -.3px; }
 .settings-card .save-search-button { margin-top:0; }
 .app-release { display:flex; align-items:center; justify-content:space-between; gap:10px; font-size:11px; color:#818187; margin-top:12px; }
 .app-release .manager-button { font-size:12px; }
+
+/* Compact subscription list, based on the supplied AUTO.RIA reference. */
+.app:has(#savedDialog:not([hidden])) > .header { display:none; }
+#savedDialog { padding-bottom:90px; }
+.subscriptions-head { display:grid; grid-template-columns:44px minmax(0,1fr) 44px; align-items:center; gap:8px; margin:0 0 22px; min-height:48px; }
+.subscriptions-head h2 { margin:0; text-align:center; font-size:19px; font-weight:600; letter-spacing:-.2px; }
+.subscription-head-button { width:44px; height:44px; padding:0; border:0; background:transparent; color:#b7b7bd; font-size:25px; cursor:pointer; }
+#refreshCloud { grid-column:3; }
+.subscription-tabs { display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); padding:3px; margin:0 0 16px; border-radius:32px; background:#252527; }
+.subscription-tabs button { display:flex; align-items:center; justify-content:center; gap:8px; min-height:46px; padding:8px 10px; border:0; border-radius:28px; color:#d0d0d4; background:transparent; font-size:15px; cursor:pointer; }
+.subscription-tabs button[aria-selected="true"] { background:#e2e2e4; color:#151516; }
+.subscription-count { min-width:24px; padding:2px 7px; border-radius:20px; background:#111112; color:#ccc; font-size:13px; line-height:1.25; }
+[aria-selected="true"] .subscription-count { background:#b32c32; color:white; }
+#cloudSearchList, #savedSearchList { display:grid; gap:16px; }
+.subscription-panel > .filter-help { margin:4px 0 14px; }
+.subscription-card { display:grid; grid-template-columns:minmax(0,1fr) 40px; align-items:center; padding:0 9px 0 0; background:#1c1c1e; border-radius:10px; }
+.subscription-open { display:grid; grid-template-columns:28px minmax(0,1fr); align-items:center; gap:14px; width:100%; min-height:112px; padding:14px 8px 14px 14px; border:0; border-radius:10px; text-align:left; background:transparent; color:#e0e0e3; cursor:pointer; }
+.subscription-icon { width:28px; height:23px; object-fit:contain; }
+.subscription-copy { display:block; min-width:0; }
+.subscription-name { display:-webkit-box; -webkit-box-orient:vertical; -webkit-line-clamp:2; overflow:hidden; overflow-wrap:anywhere; font-size:16px; font-weight:400; line-height:1.3; margin-bottom:5px; }
+.subscription-summary { display:-webkit-box; -webkit-box-orient:vertical; -webkit-line-clamp:4; overflow:hidden; overflow-wrap:anywhere; color:#929295; font-size:14px; font-weight:400; line-height:1.35; }
+.subscription-aside { display:flex; flex-direction:column; align-items:center; justify-content:center; gap:5px; }
+.subscription-more { min-width:40px; height:44px; padding:0; border:0; background:transparent; color:#a3a3a8; font-size:29px; line-height:1; cursor:pointer; }
+.subscription-bell { width:16px; height:16px; }
+#savedDialog #newSavedSearch { position:fixed; z-index:11; left:50%; transform:translateX(-50%); bottom:calc(80px + env(safe-area-inset-bottom)); width:auto; max-width:calc(100vw - 48px); min-width:164px; min-height:48px; margin:0; padding:12px 30px; border:0; border-radius:30px; background:#bd2c34; color:white; font-size:16px; font-weight:600; white-space:nowrap; box-shadow:0 4px 20px #0007; cursor:pointer; }
+.subscription-sheet { position:fixed; inset:auto 0 0; width:100%; max-width:520px; max-height:85dvh; overflow:auto; overscroll-behavior:contain; margin:0 auto; padding:10px 20px max(20px,env(safe-area-inset-bottom)); border:1px solid #343437; border-bottom:0; border-radius:24px 24px 0 0; background:#1c1c1e; color:#e5e5e7; }
+.subscription-sheet::backdrop { background:#0009; }
+body:has(.subscription-sheet[open]) { overflow:hidden; }
+.sheet-handle { width:36px; height:4px; margin:0 auto 10px; border-radius:4px; background:#55555a; }
+.subscription-sheet-head { display:flex; align-items:center; justify-content:space-between; gap:12px; }
+.subscription-sheet-head h2 { min-width:0; margin:0 0 8px; overflow-wrap:anywhere; font-size:19px; font-weight:500; }
+.subscription-sheet-head button { flex:0 0 44px; height:44px; align-self:flex-start; padding:0; border:0; border-radius:50%; background:transparent; color:#aaa; font-size:28px; cursor:pointer; }
+.subscription-sheet .filter-help { margin:0 0 12px; font-size:13px; }
+.subscription-menu-status { margin:0 0 16px; color:#aaaab2; font-size:12px; line-height:1.5; }
+.subscription-menu-button { display:block; width:100%; min-height:48px; padding:13px 0; border:0; border-top:1px solid #343437; background:transparent; color:#e5e5e7; text-align:left; font-size:15px; line-height:1.4; cursor:pointer; }
+.subscription-menu-button.destructive { color:#f4777d; }
+.subscription-menu-button:disabled { color:#747478; cursor:default; }
+@media(max-width:350px) { .subscription-tabs button { padding:8px 5px; font-size:14px; gap:5px; } .subscription-open { gap:9px; padding-left:10px; } .subscription-summary { font-size:13px; } }
