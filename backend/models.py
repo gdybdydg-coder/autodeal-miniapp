@@ -318,6 +318,17 @@ class MonitorJob(Base):
     result: Mapped[dict] = mapped_column(JSON, default=dict)
 
 
+class MonitorActiveWindow(Base):
+    """A bounded, supplemental first-page check; never a historical scan cursor."""
+    __tablename__ = "monitor_active_windows"
+    feed_id: Mapped[str] = mapped_column(String(64), primary_key=True)
+    next_poll: Mapped[float] = mapped_column(Float, default=0, index=True)
+    checked_at: Mapped[float] = mapped_column(Float, default=0)
+    status: Mapped[str] = mapped_column(String(40), default="starting")
+    window: Mapped[list] = mapped_column(JSON, default=list)
+    source_total: Mapped[int] = mapped_column(Integer, default=0)
+
+
 class TelegramTest(Base):
     __tablename__ = "telegram_tests"
     user_id: Mapped[int] = mapped_column(BigInteger, primary_key=True, autoincrement=False)

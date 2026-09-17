@@ -148,6 +148,8 @@ class TelegramSender:
             if "unverified_condition" in reasons:
                 pricing.append("⚠️ Стан авто не підтверджено даними джерела")
         sections = [f"🚘 {car.brand} {car.model} · {car.year}"]
+        if (car.pipeline or {}).get("discovery_kind") == "active_window":
+            sections.append("🕘 Активне оголошення з додаткової перевірки")
         if details:
             sections.append("\n".join(details))
         sections.extend(("\n".join(pricing), "/stop — вимкнути сповіщення"))

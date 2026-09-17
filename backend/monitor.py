@@ -12,7 +12,7 @@ import uuid
 from collections import Counter
 from datetime import datetime, timezone
 
-from sqlalchemy import delete, func, select, update
+from sqlalchemy import case, delete, func, select, update
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
@@ -22,6 +22,7 @@ from .models import (Car, Filters, Listing, MonitorControl, MonitorFeed, Monitor
 from .ria_budget import BudgetLimits
 from .ria_search import RiaSearch, estimate, matches, parse_ids, quota_status
 from .valuation import MAX_AGE, VERSION, PeerBatch, is_deal, price_only_evidence
+from . import active_window
 
 INTERVAL = 60
 LEASE = 120
@@ -90,7 +91,7 @@ def active_members(db):
                MonitorWatch.epoch == MonitorMembership.epoch).order_by(Search.user_id, Search.id)))
 
 
-def runtime_status(engine, enabled, uid=None):
+def runtime_status(engine, enabled, uid=None, *, active_window_enabled=False):
     with Session(engine) as db:
         row = db.get(MonitorControl, "pilot")
         healthy = bool(enabled and row and time.time() - row.heartbeat < LEASE + 60)
@@ -114,8 +115,10 @@ def runtime_status(engine, enabled, uid=None):
                 "interval_seconds": poll_interval(groups), "minimum_interval_seconds": INTERVAL,
                 "active_filter_groups": groups, "shared_polling": True,
                 "pending_jobs": db.scalar(select(func.count()).select_from(MonitorJob)
-                    .where(MonitorJob.state == "pending")), "strategy": "new_publications_v3",
+                    .where(MonitorJob.state == "pending")),
+                "strategy": "publications_with_bounded_active_window" if active_window_enabled else "new_publications_v3",
                 "index_overlap_seconds": INDEX_OVERLAP,
+                "active_window": active_window.status(db, own_groups, active_window_enabled),
                 "discovery": discovery}
 
 
@@ -191,8 +194,11 @@ class Monitor:
             for job, seen in outdated:
                 if (job.result.get("rating", {}).get("valuation_version") != VERSION
                         or job.result.get("notification_version") != NOTIFICATION_VERSION):
-                    job.state, job.next_run, job.result = "pending", 0, {}
+                    origin = job.result.get("discovery_kind", "new_publication")
+                    job.state, job.next_run, job.result = "pending", 0, {"discovery_kind": origin}
                     seen.state = "pending"
+            if self.settings.ria_active_window_enabled:
+                active_window.sync(db, {member.feed_id for _, _, member in active_members(db)})
             db.commit()
 
     def prepare_window(self, feed_id):
@@ -351,6 +357,7 @@ class Monitor:
                     comparables=0 if partial else rating["comparables"], observed_at=candidate["observed_at"],
                     valuation_evidence=proof,
                     pipeline={"discovered_at": job.first_seen, "evaluated_at": evidence["evaluated_at"],
+                              "discovery_kind": evidence.get("discovery_kind", "new_publication"),
                               "source_added_at": candidate.get("source_added_at")})
                 if listing is None:
                     listing = Listing(source="auto_ria", source_id=source_id)
@@ -381,7 +388,8 @@ class Monitor:
                         and 0 <= time.time() - candidate["observed_at"] <= EVIDENCE_SECONDS)
         if not reusable:
             candidate = source.car(source_id, force=True)
-            evidence = {"candidate": candidate, "filters": {}}
+            evidence = {"candidate": candidate, "filters": {},
+                        "discovery_kind": evidence.get("discovery_kind", "new_publication")}
         any_match = False
         for _, _, _, raw_filters in interests:
             filters = source_filters(raw_filters)
@@ -433,7 +441,9 @@ class Monitor:
         with Session(self.engine) as db:
             if not self.owned(db):
                 return
-            if kind == "discover":
+            if kind == active_window.KIND:
+                active_window.defer(db, key, reason)
+            elif kind == "discover":
                 feed = db.get(MonitorFeed, key)
                 feed.status, feed.next_poll = reason, time.time() + wait
                 for _, watch, member in active_members(db):
@@ -462,20 +472,41 @@ class Monitor:
                 groups = {member.feed_id for _, _, member in active_members(db)}
                 feed = db.scalar(select(MonitorFeed).where(MonitorFeed.id.in_(groups),
                     MonitorFeed.next_poll <= time.time()).order_by(MonitorFeed.next_poll, MonitorFeed.id).limit(1))
-                job = db.scalar(select(MonitorJob).where(MonitorJob.state == "pending",
-                    MonitorJob.next_run <= time.time()).order_by(MonitorJob.last_attempt, MonitorJob.first_seen,
-                                                               MonitorJob.source_id).limit(1))
+                supplemental = func.coalesce(MonitorJob.result["discovery_kind"].as_string(), "") == active_window.KIND
+                job_query = select(MonitorJob).where(MonitorJob.state == "pending", MonitorJob.next_run <= time.time())
+                if not self.settings.ria_active_window_enabled or not active_window.budget_available(db):
+                    job_query = job_query.where(~supplemental)
+                job = db.scalar(job_query.order_by(case((supplemental, 1), else_=0),
+                    MonitorJob.last_attempt, MonitorJob.first_seen, MonitorJob.source_id).limit(1))
                 last = db.get(MonitorControl, "pilot").status
                 kind = "evaluate" if job and (not feed or last == "discover") else "discover" if feed else None
                 key = job.source_id if kind == "evaluate" else feed.id if kind else None
+                if kind is None and self.settings.ria_active_window_enabled:
+                    extra = active_window.due(db, groups)
+                    if extra:
+                        if active_window.budget_available(db):
+                            kind, key = active_window.KIND, extra.feed_id
+                        else:
+                            active_window.defer(db, extra.feed_id, "reserved_for_new_publications")
+                            db.commit()
             if kind:
                 status, worked = kind, True
                 source = self.search_factory(self.engine, self.settings.auto_ria_api_key)
+                supplemental_work = kind == active_window.KIND or (kind == "evaluate"
+                        and job.result.get("discovery_kind") == active_window.KIND)
+                if supplemental_work:
+                    source.request_limit = active_window.CALL_RESERVE
                 acquired = False
                 try:
                     source.acquire()
                     acquired = True
-                    if kind == "discover":
+                    if supplemental_work:
+                        with Session(self.engine) as db:
+                            if not active_window.budget_available(db, source.limits):
+                                raise RiaError("reserved_for_new_publications")
+                    if kind == active_window.KIND:
+                        active_window.discover(self, key, source)
+                    elif kind == "discover":
                         self.discover(key, source, poll_interval(len(groups), source.limits))
                     else:
                         self.evaluate(key, source)

@@ -47,6 +47,7 @@ class Settings:
     full_scan_enabled: bool = False
     ria_diagnostic_listing_id: str = ""
     ria_recovery_listing_id: str = ""
+    ria_active_window_enabled: bool = False
 
     @classmethod
     def env(cls):
@@ -67,6 +68,7 @@ class Settings:
             full_scan_enabled=os.getenv("FULL_SCAN_ENABLED") == "true",
             ria_diagnostic_listing_id=os.getenv("RIA_DIAGNOSTIC_LISTING_ID", ""),
             ria_recovery_listing_id=os.getenv("RIA_RECOVERY_LISTING_ID", ""),
+            ria_active_window_enabled=os.getenv("RIA_ACTIVE_WINDOW_ENABLED") == "true",
         )
 
     @property
@@ -239,7 +241,8 @@ def create_app(settings: Settings, engine=None):
                 "launch": launch.status(engine, settings.live and settings.monitor_enabled),
                 "valuation_check": validation_status(engine, settings.ria_validation_run_id, settings.ria_validation_profile),
                 "catalog_check": ria_rollout.status(engine),
-                "monitor": monitor.runtime_status(engine, settings.monitor_enabled),
+                "monitor": monitor.runtime_status(engine, settings.monitor_enabled,
+                    active_window_enabled=settings.ria_active_window_enabled),
                 "full_scan": full_scan.runtime_status(engine, settings.full_scan_enabled),
                 "telegram": telegram_status(),
                 "miniapp_menu": telegram_setup.menu_status(engine, settings.miniapp_release)}
@@ -247,7 +250,8 @@ def create_app(settings: Settings, engine=None):
     @app.get("/api/notifications/status")
     def notification_status(uid=Depends(identity), db=Depends(session)):
         user, test = db.get(User, uid), db.get(TelegramTest, uid)
-        runtime = monitor.runtime_status(engine, settings.monitor_enabled, uid)
+        runtime = monitor.runtime_status(engine, settings.monitor_enabled, uid,
+                                        active_window_enabled=settings.ria_active_window_enabled)
         telegram = telegram_status()
         connected = telegram["status"] == "configured"
         return {**runtime, "available": settings.live and runtime["running"] and connected,

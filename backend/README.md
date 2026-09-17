@@ -683,3 +683,28 @@ once, never replaying sent or uncertain deliveries. `launch.activity` separates
 informational outcomes and condition exclusions from verified valuations; unknown
 valuation counts remain visible even after an information-only alert. Missing
 mileage on a comparison candidate no longer raises an exception in peer search.
+
+### Bounded active-listing supplement (2026-09-17)
+
+`RIA_ACTIVE_WINDOW_ENABLED=true` adds a lower-priority check for listings whose
+publication predates subscription activation, including newly matching older
+offers. It requests only the latest 50 active IDs in each existing filter group,
+without publication-date bounds, every five minutes. It queues at most one
+previously unseen candidate per check. This is **not complete historical coverage**:
+no next page is requested, and older cars outside that window can still be missed.
+After unseen candidates, checked non-deals in the window may be refreshed after
+30 minutes to notice a price change on the same ID. Sent/uncertain deliveries
+are never replayed. Cards explicitly identify this supplemental discovery path.
+
+Primary publication discovery and its jobs take priority. Supplemental work
+starts only if a full 32-call bounded step fits below half of both rolling
+hour/day allowances and within the existing absolute cap. Otherwise it pauses
+as `reserved_for_new_publications`; no limits are enlarged. Runtime status labels
+this as `latest_active_window_only`, never a full-source coverage guarantee.
+The additive `monitor_active_windows` table records only that bounded window.
+
+Live incident evidence: on 2026-09-17 at 22:39:36 UTC the configured recovery
+report for AUTO.RIA 39767288 changed to `delivery_states={"sent":1}` with fresh
+price USD 6200 and no market estimate (zero eligible comparables). This proves
+Telegram API acceptance through the normal worker, not a phone push receipt or
+automatic discovery of that ID by the supplemental window.
