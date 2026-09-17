@@ -23,7 +23,7 @@ from .ria_budget import BudgetLimits, peer_scan_limit
 from .ria_validation import validate_once, validate_run_id, validate_profile, validation_status
 from .models import (Base, Delivery, EnabledRequest, Filters, Listing, MonitorControl,
                      MonitorSeen, MonitorWatch, Search, SearchRequest, TelegramTest, User)
-from . import monitor, telegram_setup, ria_rollout
+from . import monitor, telegram_setup, ria_rollout, full_scan
 
 
 @dataclass(frozen=True)
@@ -90,6 +90,7 @@ def create_app(settings: Settings, engine=None):
         await asyncio.to_thread(telegram_setup.configure_menu, engine, settings)
         stop = asyncio.Event()
         task = asyncio.create_task(monitor.run(engine, settings, stop)) if settings.monitor_enabled else None
+        scan_task = asyncio.create_task(full_scan.run(engine, settings.auto_ria_api_key, stop)) if settings.auto_ria_api_key else None
         validation_stop = threading.Event()
         validation_task = asyncio.create_task(asyncio.to_thread(
             validate_once, engine, settings.auto_ria_api_key, settings.ria_validation_run_id,
@@ -102,6 +103,8 @@ def create_app(settings: Settings, engine=None):
             validation_stop.set()
             if task:
                 await task
+            if scan_task:
+                await scan_task
             if validation_task:
                 await validation_task
 
@@ -261,6 +264,31 @@ def create_app(settings: Settings, engine=None):
             return JSONResponse({"detail": code, "quota": quota_status(engine)}, status_code=status)
         except Exception:
             return JSONResponse({"detail": "source_unavailable"}, status_code=503)
+
+    @app.post("/api/cars/scans")
+    def start_full_scan(payload: Filters, restart: bool = False, uid=Depends(identity), db=Depends(session)):
+        if not settings.auto_ria_api_key:
+            raise HTTPException(503, "not_configured")
+        user_row(db, uid)
+        scan_id = full_scan.start(db, uid, payload, restart)
+        db.commit()
+        return full_scan.view(db, uid, scan_id, only_deals=payload.onlyDeals)
+
+    @app.get("/api/cars/scans/{scan_id}")
+    def full_scan_progress(scan_id: str, after: int = Query(default=0, ge=0, le=2**53-1), only_deals: bool = False,
+                           uid=Depends(identity), db=Depends(session)):
+        result = full_scan.view(db, uid, scan_id, after=after, only_deals=only_deals)
+        if result is None:
+            raise HTTPException(404, "Scan not found")
+        return result
+
+    @app.patch("/api/cars/scans/{scan_id}")
+    def control_full_scan(scan_id: str, payload: EnabledRequest, uid=Depends(identity), db=Depends(session)):
+        user_row(db, uid)
+        if not full_scan.change(db, uid, scan_id, payload.enabled):
+            raise HTTPException(404, "Scan not found")
+        db.commit()
+        return {"ok": True}
 
     @app.get("/api/catalog")
     def catalog(brand: str = Query(default="", max_length=150), uid=Depends(identity)):

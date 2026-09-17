@@ -14,7 +14,7 @@
           ...(body?{body:JSON.stringify(body)}:{})
         });
         if(!response.ok) {
-          if((path.startsWith("/api/cars/search")||path.startsWith("/api/catalog")) && response.status!==401) {
+          if((path.startsWith("/api/cars/")||path.startsWith("/api/catalog")) && response.status!==401) {
             const reasons={unsupported_filter:"AUTO.RIA не підтвердила один із фільтрів. Зміни вибір: фільтр не буде проігноровано.",
               busy:"Інший пошук ще виконується. Спробуй за хвилину.",quota_exceeded:"Досягнуто ліміт запитів AUTO.RIA. Спробуй пізніше.",
               search_limit:"Перевірка зайняла забагато часу. Спробуй пізніше.",not_configured:"Джерело AUTO.RIA ще не налаштоване.",
@@ -24,6 +24,8 @@
               throw Error("Досягнуто загальну межу запитів. Потрібно перевірити залишок пакета AUTO.RIA.");
             if(code==="quota_exceeded" && Number.isFinite(quota?.retry_after_seconds) && quota.retry_after_seconds>0)
               throw Error("Ліміт запитів AUTO.RIA. Спробуй знову приблизно через "+Math.ceil(quota.retry_after_seconds/60)+" хв.");
+            if(path.startsWith("/api/cars/scans")&&response.status===404)
+              throw Error("Оновлення повної перевірки ще недоступне або цей пошук уже видалено. Онови застосунок і повтори пошук.");
             throw Error(reasons[code]||"AUTO.RIA зараз не відповідає. Спробуй пізніше.");
           }
           if((method==="PATCH" || path.startsWith("/api/notifications/")) && response.status!==401) {
@@ -49,6 +51,17 @@
       } finally {clearTimeout(timer);}
     }
     return {
+      startScan:(filters,restart=false)=>request("/api/cars/scans"+(restart?"?restart=true":""),"POST",filters),
+      scan:(id,after=0,onlyDeals=false)=>{
+        if(!/^[a-f0-9]{32}$/.test(id)||!Number.isSafeInteger(after)||after<0)
+          return Promise.reject(Error("Онови результати пошуку."));
+        return request("/api/cars/scans/"+id+"?after="+after+"&only_deals="+!!onlyDeals);
+      },
+      controlScan:(id,enabled)=>{
+        if(!/^[a-f0-9]{32}$/.test(id)||typeof enabled!=="boolean")
+          return Promise.reject(Error("Некоректний пошук"));
+        return request("/api/cars/scans/"+id,"PATCH",{enabled});
+      },
       search:(filters,cursor)=>{
         if(cursor!=null&&!/^[a-f0-9]{32}$/.test(cursor)) return Promise.reject(Error("Онови результати пошуку."));
         return request("/api/cars/search"+(cursor?"?cursor="+cursor:""),"POST",filters);

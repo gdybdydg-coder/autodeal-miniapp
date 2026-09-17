@@ -54,3 +54,15 @@ test('notification opt-in uses PATCH and renders specific consent errors',async(
   await assert.rejects(api.enable('../7',true),/Некоректний/);
   await assert.rejects(api.enable(7,'true'),/Некоректний/);
 });
+
+test('full scan progress reads never start a provider search and ids are validated',async()=>{
+  const calls=[];
+  const api=create(async(url,opts)=>{calls.push([url,opts.method,opts.body]);return {ok:true,status:200,json:async()=>({})};},()=> 'fake');
+  const id='a'.repeat(32);
+  await api.startScan({onlyDeals:true});await api.scan(id,123,true);await api.controlScan(id,false);
+  assert.equal(calls[0][1],'POST');assert.equal(calls[1][1],'GET');
+  assert.match(calls[1][0],/after=123&only_deals=true$/);assert.equal(calls[1][2],undefined);
+  assert.equal(calls[2][1],'PATCH');assert.deepEqual(JSON.parse(calls[2][2]),{enabled:false});
+  await assert.rejects(api.scan('../x'));await assert.rejects(api.scan(id,-1));await assert.rejects(api.controlScan(id,'yes'));
+  assert.equal(calls.length,3);
+});
