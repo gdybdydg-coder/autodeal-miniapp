@@ -26,7 +26,7 @@ function subscriptionSummary(filters,name) {
   if(vehicle&&!name.toLowerCase().includes(vehicle.toLowerCase())) parts.push(vehicle);
   parts.push(...filters.body,filters.region.replace(" область"," обл.")||"Вся Україна");
   for(const [key,unit] of [["price"," $"],["year"," р."],["mileage"," тис. км"]]) {
-    const range=filters[key],format=n=>n.toLocaleString("uk-UA");
+    const range=filters[key],format=n=>key==="year"?String(n):n.toLocaleString("uk-UA");
     if(range.from===null&&range.to===null) continue;
     const text=range.from===null?"до "+format(range.to):range.to===null?"від "+format(range.from):format(range.from)+"–"+format(range.to);
     parts.push((key==="mileage"?"Пробіг ":"")+text+unit);
