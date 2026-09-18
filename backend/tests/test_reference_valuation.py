@@ -49,6 +49,9 @@ def test_exact_result_keeps_priority_and_mixed_prices_are_not_cherry_picked():
     assert notification_estimate(candidate, peers)["valuation"] == "sample_lower_quartile"
     assert notification_estimate(candidate, peers[:4])["valuation"] == "reference_lower_quartile"
     peers[-1]["price_usd"] = 25000
+    assert notification_estimate(candidate, peers)["market"] == 10000
+    assert notification_estimate({**candidate, "gear_id": None}, peers)["market"] == 10000
+    peers[0]["price_usd"] = 100
     assert notification_estimate(candidate, peers)["valuation"] == "mixed_sample"
     assert notification_estimate({**candidate, "gear_id": None}, peers)["market"] is None
 

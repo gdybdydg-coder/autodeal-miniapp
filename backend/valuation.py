@@ -253,8 +253,10 @@ def policy():
             "year_tolerance": 1, "mileage_tolerance_percent": 20, "mileage_tolerance_min_km": 30000,
             "maximum_detail_age_seconds": MAX_AGE, "sample_max_price_ratio": 2,
             "user_price_and_region_affect_estimate": False,
-            "reference_estimate": {"version": "reference-v2", "minimum_comparables": 3, **PRICING_METHOD,
+            "reference_estimate": {"version": "reference-v3", "minimum_comparables": 3, **PRICING_METHOD,
                 "confidence": "indicative", "known_attributes_must_match": True,
+                "wide_price_sample": "lower_majority_with_at_least_three_peers_within_2_to_1",
+                "wide_price_sample_quartile": "all_eligible_peers_without_price_trimming",
                 "year_tolerance": 2, "mileage_tolerance_percent": 40, "mileage_tolerance_min_km": 60000,
                 "subscription_threshold_applies": True, "comparison_request_cap": 8,
                 "comparison_start_window_seconds": 8}}

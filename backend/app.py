@@ -25,7 +25,7 @@ from .valuation import policy as valuation_policy, reason_category
 from .models import (Base, Delivery, EnabledRequest, Filters, Listing, MonitorControl,
                      MonitorFeed, MonitorJob, MonitorMembership, MonitorSeen, MonitorWatch,
                      Search, SearchEditRequest, SearchRequest, TelegramTest, User)
-from . import monitor, telegram_setup, ria_rollout, full_scan, launch, notification_diagnostic
+from . import monitor, telegram_setup, ria_rollout, full_scan, launch, notification_diagnostic, valuation_audit
 
 
 @dataclass(frozen=True)
@@ -48,6 +48,7 @@ class Settings:
     ria_diagnostic_listing_id: str = ""
     ria_recovery_listing_id: str = ""
     ria_active_window_enabled: bool = False
+    valuation_audit_run_id: str = ""
 
     @classmethod
     def env(cls):
@@ -69,6 +70,7 @@ class Settings:
             ria_diagnostic_listing_id=os.getenv("RIA_DIAGNOSTIC_LISTING_ID", ""),
             ria_recovery_listing_id=os.getenv("RIA_RECOVERY_LISTING_ID", ""),
             ria_active_window_enabled=os.getenv("RIA_ACTIVE_WINDOW_ENABLED") == "true",
+            valuation_audit_run_id=os.getenv("VALUATION_AUDIT_RUN_ID", ""),
         )
 
     @property
@@ -83,6 +85,7 @@ def create_app(settings: Settings, engine=None):
     validate_profile(settings.ria_validation_profile)
     notification_diagnostic.validate_id(settings.ria_diagnostic_listing_id)
     notification_diagnostic.validate_id(settings.ria_recovery_listing_id)
+    valuation_audit.validate_run_id(settings.valuation_audit_run_id)
     if settings.miniapp_release and not re.fullmatch(r"[a-z0-9-]{1,40}", settings.miniapp_release):
         raise ValueError("Invalid Mini App release")
     if not settings.bot_token or len(settings.webhook_secret) < 32:
@@ -96,6 +99,7 @@ def create_app(settings: Settings, engine=None):
         initialize_budget(engine)
         monitor.initialize(engine)
         launch.initialize(engine, settings.live and settings.monitor_enabled)
+        await asyncio.to_thread(valuation_audit.check_once, engine, settings.valuation_audit_run_id)
         if not settings.full_scan_enabled:
             full_scan.pause_all(engine)
         await asyncio.to_thread(probe_once, engine, settings.auto_ria_api_key)

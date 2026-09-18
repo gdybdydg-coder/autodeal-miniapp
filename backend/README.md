@@ -1,6 +1,44 @@
 # AUTODeal backend — subscriptions for new worthwhile cars
 
+## Supported lower prices despite an expensive upper tail (release 20260918-48)
+
+`reference-v3` fixes a false-negative in the prior spread guard: one expensive
+peer could suppress the entire p25 estimate even when the cheaper observations
+agreed. Exact `asking-v5` comparisons stay unchanged. A wide sample can now
+supply an explicitly **indicative** lower-price reference if at least three AND
+a strict majority of the cheapest eligible peers fit within the existing 2:1
+spread bound. P25 still uses **all** eligible observations: no cheap or expensive
+prices are removed. A sparse cheap tail or a wide lower band remains unpriced.
+If the exact cohort was mixed, the fallback uses only that exact accepted cohort;
+adding broader, more expensive peers cannot raise its quartile. Known vehicle
+conflicts, freshness, condition exclusions, saved thresholds and delivery claims
+remain enforced. No provider request or historical candidate scan is added.
+
+Synthetic regression only: `900, 1300, 1600, 1800, 6000` now yields an indicative
+$1,300 lower quartile; a $950 candidate is 26.9% below it. Previously the entire
+sample was rejected. These prices are not a reconstruction of the owner's Lada
+until verified against retained server evidence. Cards disclose a wide price
+spread, the observation count and the absence of completed-sale data. Unpriced
+cards now explain an unsupported price spread, and their acceptance logs retain
+the public source ID, reason codes, peer count and prices for diagnosis.
+
+Optional `VALUATION_AUDIT_RUN_ID` (lowercase letters, digits and hyphens, max 40)
+performs one operator-only replay of up to 20 retained mixed-price evaluations
+from the last 24 hours. A durable `SourceProbe` claim prevents repeats. It uses
+the original evaluation time, makes **zero** provider calls, never queues jobs
+or notifications and never modifies deliveries/subscriptions. Only public car
+fields and price evidence are logged; no recipient IDs, credentials, seller text
+or VINs. Replay results are historical analysis, not current deliverable quotes.
+
+Validation: 319 backend tests and 65 frontend tests pass. Regression coverage
+includes an expensive outlier, unsupported low bands, exact-cohort preservation,
+evidence replay/tamper rejection, saved-discount enforcement, deduplication,
+zero additional requests with cached peers, Telegram wording and bounded
+operator diagnostics that cannot alter sent/uncertain deliveries or quota.
+
 ## Conservative asking-price reference (release 20260918-47)
+
+Historical release notes; wide-price sample handling is superseded by release 48.
 
 `asking-v5` and `reference-v2` replace the median used for notification thresholds
 with the **lower quartile (p25)** of the same eligible, distinct fresh peer prices.

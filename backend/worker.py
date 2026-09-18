@@ -153,13 +153,16 @@ class TelegramSender:
             discount = (1 - car.price / car.market) * 100
             market = f"${car.market:,.0f}".replace(",", " ")
             benefit = f"{discount:.1f}".rstrip("0").rstrip(".").replace(".", ",")
-            reference = (car.valuation_evidence or {}).get("version") == REFERENCE_VERSION
+            proof = car.valuation_evidence or {}
+            reference = proof.get("version") == REFERENCE_VERSION
             pricing.extend((f"📊 Обережний ціновий орієнтир: ≈ {market}",
                             f"📉 Нижче орієнтира: {benefit}%",
                             f"ℹ️ Нижній квартиль цін {car.comparables} схожих авто",
                             "Ціни оголошень; фактична ціна продажу невідома"))
             if reference:
-                pricing.append("Приблизна оцінка за ширшим порівнянням")
+                pricing.append("Приблизний орієнтир: великий розкид цін аналогів"
+                               if proof.get("reference_kind") == "lower_price_band"
+                               else "Приблизна оцінка за ширшим порівнянням")
                 if (car.valuation_evidence or {}).get("unknown_dimensions"):
                     pricing.append("Частину характеристик не вказано — оцінка приблизна")
                 if (car.valuation_evidence or {}).get("candidate", {}).get("comparable_condition") is not True:
@@ -171,6 +174,8 @@ class TelegramSender:
                 pricing.append("Неповні характеристики — перевірте оголошення")
             if "insufficient_comparables" in reasons:
                 pricing.append("Недостатньо зіставних авто для оцінки")
+            if "mixed_sample" in reasons:
+                pricing.append("Ціни аналогів надто різняться; нижній орієнтир не підтверджено")
             if "unverified_condition" in reasons:
                 pricing.append("⚠️ Стан авто не підтверджено даними джерела")
         sections = [f"🚘 {car.brand} {car.model} · {car.year}"]
@@ -263,6 +268,13 @@ def deliver_one(engine, settings: Settings, sender, now=None):
                     delivery_log.info("Conservative-price notification accepted source_id=%s version=%s market_usd=%s median_usd=%s comparables=%s peer_prices_usd=%s",
                                       car.source_id, proof.get("version"), car.market, proof.get("median_usd"),
                                       car.comparables, sorted(peer["price_usd"] for peer in proof.get("peers", [])))
+                elif car.source == "auto_ria":
+                    job = db.get(MonitorJob, car.source_id)
+                    rating = (job.result or {}).get("rating", {}) if job else {}
+                    proof = rating.get("valuation_evidence", {})
+                    delivery_log.info("Unpriced notification accepted source_id=%s reasons=%s comparables=%s peer_prices_usd=%s",
+                                      car.source_id, rating.get("valuation_reasons", []), rating.get("comparables", 0),
+                                      sorted(peer["price_usd"] for peer in proof.get("peers", [])))
             elif result.get("error_code") == 429:
                 retry = result.get("parameters", {}).get("retry_after", 60)
                 row.retry_at = now + max(1, min(int(retry), 86400))

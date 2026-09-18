@@ -5,9 +5,9 @@ an assertion that missing equipment/condition matches or that a sale is a bargai
 """
 import time
 
-from .valuation import FIELDS, MAX_AGE, PRICING_METHOD, estimate as exact_estimate, is_deal, number, price_statistics
+from .valuation import FIELDS, MAX_AGE, PRICING_METHOD, PeerBatch, estimate as exact_estimate, is_deal, number, price_statistics
 
-VERSION = "reference-v2"
+VERSION = "reference-v3"
 MIN_PEERS = 3
 TARGET_PEERS = 5
 YEAR_TOLERANCE = 2
@@ -106,11 +106,22 @@ def estimate(candidate, peers, *, now=None):
     result["comparables"] = len(prices)
     if len(prices) < MIN_PEERS:
         return {**result, "valuation_reasons": ["insufficient_comparables"]}
-    # Never cherry-pick cheap/expensive peers or discard a conflicting price to
-    # manufacture a discount. A heterogeneous sample stays unpriced.
-    if max(prices) / min(prices) > 2:
-        return {**result, "valuation": "mixed_sample", "valuation_reasons": ["mixed_sample"]}
     evidence.update(price_statistics(prices))
+    evidence["reference_kind"] = "broader_comparison"
+    if max(prices) / min(prices) > 2:
+        # A high asking-price tail must not hide a supported lower reference.
+        # Require at least three AND a majority of observations at the cheap end
+        # within the existing 2:1 spread bound. Keep EVERY peer in p25: neither
+        # cheap outliers nor expensive ones are removed to manufacture a deal.
+        # A sparse low tail or a wide lower band still has no reliable reference.
+        required = max(MIN_PEERS, len(prices) // 2 + 1)
+        lower = sorted(prices)[:required]
+        support = {"count": len(lower), "required": required,
+                   "min_usd": min(lower), "max_usd": max(lower), "maximum_ratio": 2}
+        evidence["lower_price_support"] = support
+        if len(lower) < required or max(lower) / min(lower) > 2:
+            return {**result, "valuation": "mixed_sample", "valuation_reasons": ["mixed_sample"]}
+        evidence["reference_kind"] = "lower_price_band"
     market = evidence["lower_quartile_usd"]
     evidence["oldest_peer_at"] = min(peer["observed_at"] for peer in accepted)
     return {**result, "market": market, "discount": round((1 - candidate["price_usd"] / market) * 100, 1),
@@ -120,7 +131,14 @@ def estimate(candidate, peers, *, now=None):
 
 def notification_estimate(candidate, peers, *, now=None):
     exact = exact_estimate(candidate, peers, now=now)
-    # A mixed exact sample must not become a bargain through a broader fallback.
+    if exact["valuation"] == "mixed_sample":
+        # Keep the exact accepted cohort. Broader, more expensive peers cannot
+        # raise its quartile when resolving only an upper-price-tail problem.
+        ids = {peer["id"] for peer in exact["valuation_evidence"]["peers"]}
+        selected = PeerBatch((peer for peer in peers if peer.get("id") in ids),
+                             **getattr(peers, "diagnostics", {}))
+        reference = estimate(candidate, selected, now=now)
+        return reference if reference["valuation"] == "reference_lower_quartile" else exact
     if exact["valuation"] != "insufficient_data":
         return exact
     reference = estimate(candidate, peers, now=now)
