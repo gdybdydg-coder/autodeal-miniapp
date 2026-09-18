@@ -1,13 +1,40 @@
 # AUTODeal backend — subscriptions for new worthwhile cars
 
-## Pending draft: AUTO.RIA lower market boundary minus 5%
+## AUTO.RIA API lower market boundary minus 5% (release 20260918-50)
 
-The requested provider-based calculation and Telegram rendering are prepared in
-`ria_market_range.py`, with source identity, freshness and proof validation.
-The provider range adapter and monitor switch are **not implemented or enabled**:
-the documented AI API exposes an average, without a verified lower-bound field,
-and the public range-popup request returned HTTP 403. No new release is deployed.
-See [the source findings and remaining integration work](docs/autoria-lower-bound-integration.md).
+Telegram notifications now support the owner's provider-based policy: the lower
+boundary of the **listing-specific paid AUTO.RIA AI range**, multiplied by
+**0.95**, with each subscription's saved discount applied to that adjusted value.
+Production enables it with `RIA_AI_PRICE_ENABLED=true` and server-only
+`AUTO_RIA_USER_ID`, reusing `AUTO_RIA_API_KEY`. No credential belongs in Git.
+
+The live API response supplies `price.USD` and `avgValueRange`. The adapter derives
+a symmetric range from these **two** provider fields and floors its boundaries
+to whole dollars; it never guesses the range from an average alone. It requests
+`omniId` for the candidate with a 168-hour period. Native-app parity is not claimed:
+periods, refresh time and rounding can differ. The Telegram card discloses the
+lower boundary and the separate 5% adjustment. See [schema, evidence and limits](docs/autoria-lower-bound-integration.md).
+
+Each uncached new candidate uses one budgeted AI request (20-second timeout,
+no inner retry, 60-second shared cache), instead of notification-comparable
+searches. Missing/malformed ranges, method permission failures and timeouts
+preserve a fresh informational card without an invented valuation. Old pending
+proofs are refreshed only for current unsent interests; sent/uncertain claims and
+stopped epochs remain untouched. No historical jobs are reopened by the upgrade.
+Repair notices, fresh positive prices, /stop and existing quotas are preserved.
+`RIA_ACTIVE_WINDOW_ENABLED=false` and `FULL_SCAN_ENABLED=false` remain in force.
+Legacy peer valuation is retained only for existing manual-search callers and
+for explicitly disabled AI mode, not as a hidden AI-notification fallback.
+
+Optional `RIA_AI_PRICE_PROBE_ID` requests one read-only quote at startup. Its
+unique durable claim prevents repeats, including on redeploy. It uses the same
+budget and never fetches listing details, creates jobs or sends Telegram cards.
+
+Validation: 404 backend tests and 65 frontend tests pass, including the complete
+provider-to-dispatch path and all existing delivery safeguards.
+
+The following sections describe earlier releases; their notification pricing
+formulas are superseded while the AUTO.RIA AI policy is enabled.
 
 ## Repair candidates are disclosed instead of hidden (release 20260918-49)
 

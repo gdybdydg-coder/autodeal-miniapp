@@ -1,57 +1,84 @@
-# AUTO.RIA lower market boundary minus 5% — blocked integration draft
+# AUTO.RIA AI lower market boundary minus 5%
 
-Requested 2026-09-18: stop valuing new notifications from our comparable cars.
-Use the **actual lower boundary of AUTO.RIA's listing-specific market range**,
-multiply it by **0.95**, and apply each saved minimum discount to that adjusted
-reference. An average, percentile, cheapest comparable or overall model price
-chart is not the requested lower boundary.
+## Verified provider access on 2026-09-18
 
-## Verified source findings on 2026-09-18
+The owner's existing paid account returned HTTP 200 twice from the documented
+[AI valuation method](https://docs-developers.ria.com/en/used-cars/average_price/auto_ria_average_price_ai):
 
-- The ordinary [listing detail API](https://docs-developers.ria.com/en/used-cars/auto_search_and_info/auto_info)
-  documents listing price and attributes, without this market range.
-- The [AI average-price API](https://docs-developers.ria.com/en/used-cars/average_price/auto_ria_average_price_ai)
-  is a paid method requiring `user_id`, `api_key` and an enabled permission.
-  Its documented response contains `statisticData` of type `avgPrice` with
-  `price.USD`. It does **not** document the requested lower/upper boundaries.
-  Enabling or buying this method alone is not proof it supplies that range.
-- The [older median API](https://docs-developers.ria.com/en/used-cars/average_price/median_average_price)
-  is deprecated. Its percentiles describe a different statistic.
-- The public Vito page (`40292766`) returned HTTP 200 with `averagePrice=5399`
-  on 2026-09-18. It did not contain the lower boundary. The site's public
-  `averagePrice` popup request returned HTTP 403. No alternate identity,
-  credential, proxy or access workaround was attempted.
-- No paid method was called, service bought, quota changed, private seller data
-  retained or Telegram notification resent during this investigation.
+`POST https://developers.ria.com/auto/ai-avarage-price/`
 
-## Prepared, locally testable part
+Server-only query credentials: `user_id` and `api_key`. JSON body:
+`{"langId":4,"period":168,"params":{"omniId":"40292766"}}`.
+The method name really is spelled `avarage`. Two successful probes took about
+11–12 seconds. Two other attempts timed out; the production timeout is bounded
+at 20 seconds and does not retry within an evaluation.
 
-`ria_market_range.py` validates an **internal** range contract (listing ID, USD,
-explicit positive ordered lower/upper boundaries, observation time), applies
-exact decimal multiplication by 0.95, and retains the source range in evidence.
-Those internal field names are not an assertion about any provider wire schema.
-Price/range freshness, identity, adjustment and condition notices are rechecked
-before dispatch. Telegram displays the adjusted reference, raw lower boundary
-and percentage below/above it. It does not label an above-reference price a gain.
+Sanitized actual response (all seller/vehicle identity data discarded):
 
-The screenshot example 4168–4607 yields 3959.60, **not** 4607 × 0.95 or an
-adjusted mean. Its listing price 4299 is 8.6% above the adjusted reference.
-Screenshots are arithmetic examples only, not validated live source fixtures.
+```json
+{"statisticData":[{"id":"avgPriceBlock","type":"avgPrice",
+ "price":{"USD":5423,"UAH":243425},"avgValueRange":0.05,"quantityAdv":261}]}
+```
 
-## Required before merge or deploy
+The ordinary detail API does not supply this valuation. The earlier public-page
+popup HTTP 403 did **not** mean this paid API was inaccessible. No new service
+was purchased, no access workaround used, and no Telegram recovery claim reset.
 
-1. Obtain an authorized supported source of the **listing-specific lower
-   boundary** and a real sanitized response confirming field meanings, listing
-   identity, currency and timestamp. Ask AUTO.RIA which method supplies the same
-   range as the listing screen; do not assume buying the AI API resolves it.
-2. Map that verified response to the internal contract; count/cache its requests
-   within the existing budget and a bounded timeout. Do not retrieve secrets.
-3. Switch monitor valuation to that adapter, remove notification-comparable
-   requests, reject pending old-policy proofs, and test a live read-only quote.
-   Missing ranges must preserve fresh informational alerts without inventing
-   market prices. Preserve /stop, current epochs, saved discounts and all
-   sent/uncertain claims; do not reprocess historical candidates.
-4. Test the complete source-to-worker path, then deploy normally and verify.
+## Boundary and adjustment
 
-This draft does **not** wire or enable a provider fetch, change the live monitor,
-publish a new release, or claim a working AUTO.RIA valuation integration.
+The provider supplies an average **and** `avgValueRange`. We interpret the latter
+as the fractional half-width of its symmetric market band:
+
+- lower USD = floor(average USD × (1 − provider range fraction));
+- upper USD = floor(average USD × (1 + provider range fraction));
+- AUTODeal reference = lower USD × **0.95**;
+- discount = (AUTODeal reference − asking price) / AUTODeal reference × 100.
+
+Thus the live API fixture gives a band **5151–5694**, then an AUTODeal reference
+of **4893.45**. These are derived values, not explicit lower/upper wire fields.
+The additional 5% is an owner-selected adjustment, separate from AUTO.RIA's band
+width. A different source width is respected; there is no fixed 10% reduction.
+
+`avgValueRange` is present in the observed live response but omitted from the
+documentation's example. Symmetric interpretation is consistent with the user's
+listing screenshots (e.g. mean 3920 and width .05 gives 3724–4116); exact parity
+with the native app has **not** been independently verified for the same listing.
+The API uses a 168-hour observation period. App period, refresh and rounding may
+differ. The card says "our market reference", not an achieved resale price.
+
+Missing, nonnumeric or invalid width/mean, missing USD, zero observations or
+ambiguous average blocks yield no range. We never assume a default width,
+substitute a percentile/cheapest peer, or use a general model sales chart.
+Normalized evidence retains listing ID, mean, range fraction, observation count,
+period, bounds and observation time; `similarCars`, seller IDs, VINs and raw
+response bodies are not stored or logged.
+
+## Runtime and delivery guarantees
+
+`RIA_AI_PRICE_ENABLED=true` selects this policy for notifications. The existing
+server API key plus `AUTO_RIA_USER_ID` authenticates one POST per uncached new
+candidate, through the unchanged shared budget/lease. Cache lifetime is 60
+seconds. Failed calls consume budget. Method-specific 401/403 does not block
+ordinary publication discovery; shared quota protection still applies.
+
+There is no notification-comparable fallback or old-candidate scan. If no usable
+range is obtained, a freshly priced matching candidate gets an explicit
+informational card. Priced cards apply each saved minimum discount after the
+5% adjustment. A listed price above the reference is never described as profit.
+Repair candidates disclose condition markers; parts-only/abroad/custom exclusions
+remain. Candidate and range freshness, known changed/removed details, current
+filter epochs and /stop are checked again at dispatch.
+
+On upgrade, only pending or current unsent delivery interests can request a fresh
+valuation. Finished historical jobs, stopped epochs, sent/uncertain claims and
+once-only recoveries are not reset. The optional operator quote probe has its own
+once-per-ID durable claim and cannot create matches, jobs or messages.
+
+## Verification
+
+Offline coverage includes the actual sanitized API shape, invalid/missing band
+fields, non-5% widths, error redaction, no redirects, quota/cache sharing,
+new-only discovery, no peer requests, per-subscription thresholds, outage cards,
+/stop during valuation, old pending proof refresh, sent/uncertain deduplication,
+and the once-only read-only probe. The screenshot arithmetic fixtures test the
+owner's extra 5% separately; they are not reconstructed live listings.

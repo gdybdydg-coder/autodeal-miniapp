@@ -1,10 +1,7 @@
-"""Prepared pricing policy; NOT a working AUTO.RIA range acquisition adapter.
+"""AUTO.RIA's listing-specific range, followed by the owner's 5% adjustment.
 
-`quote` is an internal contract for a future, verified provider adapter. These
-field names are NOT claimed to exist in AUTO.RIA's documented AI API, which
-currently documents avgPrice, not the listing UI's lower/upper boundaries.
-Nothing in this module requests data or infers a lower bound from an average.
-See docs/autoria-lower-bound-integration.md for the release blocker.
+The normalized range comes from ria_ai_price, using the provider's average AND
+range fraction. An average alone is insufficient. No comparable-car fallback.
 """
 import copy
 import re
@@ -14,7 +11,7 @@ from decimal import Decimal
 from .valuation import FIELDS, is_deal, notification_condition_allowed, number, repair_notices
 
 VERSION = "autoria-lower-bound-v1"
-BASIS = "auto_ria_listing_market_range"
+BASIS = "auto_ria_ai_market_range"
 FACTOR = Decimal("0.95")
 MAX_AGE = 300
 EVIDENCE_FIELDS = (*FIELDS, "condition_exclusions")
@@ -23,8 +20,12 @@ QUOTE_FIELDS = {"source_id", "basis", "currency", "lower_usd", "upper_usd", "obs
 
 def range_valid(quote, source_id, now):
     """Require an explicit range for this listing, never median/avgPrice/p25."""
-    return bool(isinstance(quote, dict) and set(quote) == QUOTE_FIELDS
-        and isinstance(source_id, str) and re.fullmatch(r"[1-9][0-9]{0,11}", source_id)
+    from .ria_ai_price import boundaries
+    if not isinstance(quote, dict) or set(quote) not in (QUOTE_FIELDS, QUOTE_FIELDS | {"provider"}):
+        return False
+    if "provider" in quote and boundaries(quote["provider"]) != (quote["lower_usd"], quote["upper_usd"]):
+        return False
+    return bool(isinstance(source_id, str) and re.fullmatch(r"[1-9][0-9]{0,11}", source_id)
         and quote["source_id"] == source_id and quote["basis"] == BASIS
         and quote["currency"] == "USD"
         and number(quote["lower_usd"], positive=True)
@@ -32,6 +33,16 @@ def range_valid(quote, source_id, now):
         and quote["lower_usd"] <= quote["upper_usd"]
         and number(quote["observed_at"], positive=True)
         and -30 <= now - quote["observed_at"] <= MAX_AGE)
+
+
+def policy():
+    return {"version": VERSION, "basis": BASIS,
+            "pricing_method": "provider_lower_bound_minus_5_percent",
+            "adjustment_percent": 5, "threshold_scope": "subscription",
+            "period_hours": 168, "provider_calls_per_uncached_listing": 1,
+            "notification_comparable_requests": 0,
+            "missing_range": "informational_without_market_price",
+            "native_app_range_identity_verified": False}
 
 
 def estimate(candidate, quote, *, now=None):

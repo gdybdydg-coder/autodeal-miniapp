@@ -258,7 +258,7 @@ class RiaSearch:
                 row.busy_until = 0
                 db.commit()
 
-    def request(self, path, params, parser, ttl=900, *, force=False):
+    def request(self, path, params, parser, ttl=900, *, force=False, fetcher=None):
         self.stage = path
         cache_key = [path, params, "car-v5"] if path == "info" else [path, params]
         digest = hashlib.sha256(json.dumps(cache_key, sort_keys=True).encode()).hexdigest()
@@ -281,7 +281,7 @@ class RiaSearch:
             db.commit()  # Failed calls consume budget too, even on a process crash.
             self.requests_made += 1
         try:
-            payload = parser(self.fetch(self.key, path, params))
+            payload = parser(fetcher() if fetcher is not None else self.fetch(self.key, path, params))
         except RiaError as exc:
             if path == "info" and str(exc) in {"listing_unavailable", "invalid_response"}:
                 peer_cache.invalidate(self.engine, params["auto_id"])
@@ -303,6 +303,16 @@ class RiaSearch:
             row.payload, row.expires_at = payload, time.time() + ttl
             db.commit()
         return payload
+
+    def market_range(self, source_id, user_id):
+        """One bounded paid valuation, counted in the unchanged shared budget."""
+        from . import ria_ai_price, ria_market_range
+        if not ria_ai_price.valid_id(source_id) or not ria_ai_price.valid_id(user_id):
+            raise RiaError("ai_not_configured")
+        return self.request(ria_ai_price.METHOD,
+            {"omniId": source_id, "period": ria_ai_price.PERIOD_HOURS,
+             "policy": ria_market_range.VERSION}, lambda value: value, ttl=60,
+            fetcher=lambda: ria_ai_price.fetch_quote(self.key, user_id, source_id))
 
     def catalog(self, brand=""):
         """Shared official dictionaries. A cached UI read spends no provider calls."""

@@ -49,7 +49,15 @@ def matches(car: Car, filters: Filters):
     return True
 
 
-def fresh(car, now, db=None):
+def fresh(car, now, db=None, *, require_provider_range=False):
+    if require_provider_range and car.source == "auto_ria":
+        proof = car.valuation_evidence or {}
+        if car.market is None:
+            if proof.get("pricing_policy") != ria_market_range.VERSION:
+                return False
+        elif (proof.get("version") != ria_market_range.VERSION
+              or not (proof.get("source_range") or {}).get("provider")):
+            return False
     return (-30 <= now - car.observed_at <= (300 if car.source == "auto_ria" else 86400)
             and (car.source != "auto_ria" or price_only_evidence_valid(car, now)
                  or (evidence_valid(car, now)
@@ -78,9 +86,9 @@ def matching_searches(user_id, listing_id):
         MonitorMatch.epoch == MonitorWatch.epoch, MonitorMatch.fingerprint == Search.fingerprint)
 
 
-def eligible(db, user_id, listing, now):
+def eligible(db, user_id, listing, now, *, require_provider_range=False):
     car = Car.model_validate(listing.car)
-    if not fresh(car, now, db):
+    if not fresh(car, now, db, require_provider_range=require_provider_range):
         return False
     if car.source == "auto_ria":
         # Production matches use official catalog IDs, not translated labels.
@@ -99,7 +107,7 @@ def supplemental_listing(listing):
                 and (listing.car.get("pipeline") or {}).get("discovery_kind") == "active_window")
 
 
-def enqueue(engine, now=None, *, allow_active_window=True):
+def enqueue(engine, now=None, *, allow_active_window=True, require_provider_range=False):
     now = time.time() if now is None else now
     with Session(engine) as db:
         for user in db.scalars(select(User).where(User.ready.is_(True))):
@@ -112,9 +120,9 @@ def enqueue(engine, now=None, *, allow_active_window=True):
                 if not allow_active_window and supplemental_listing(listing):
                     continue
                 refreshable = (listing.source == "auto_ria"
-                    and not fresh(Car.model_validate(listing.car), now, db)
+                    and not fresh(Car.model_validate(listing.car), now, db, require_provider_range=require_provider_range)
                     and db.scalar(matching_searches(user.id, listing.id).limit(1)) is not None)
-                if not refreshable and not eligible(db, user.id, listing, now):
+                if not refreshable and not eligible(db, user.id, listing, now, require_provider_range=require_provider_range):
                     continue
                 exists = db.scalar(select(Delivery.id).where(Delivery.user_id == user.id, Delivery.listing_id == listing.id))
                 if exists:
@@ -178,6 +186,8 @@ class TelegramSender:
         else:
             pricing.append("ℹ️ Ринкову оцінку не підтверджено — це не підтверджена вигода")
             reasons = (car.valuation_evidence or {}).get("uncertainty_reasons", [])
+            if "provider_market_range_unavailable" in reasons:
+                pricing.append("AUTO.RIA не надала придатний діапазон оцінки")
             if "incomplete_details" in reasons:
                 pricing.append("Неповні характеристики — перевірте оголошення")
             if "insufficient_comparables" in reasons:
@@ -240,7 +250,8 @@ def deliver_one(engine, settings: Settings, sender, now=None):
         listing = db.get(Listing, row.listing_id)
         refresh = []
         retired = not settings.ria_active_window_enabled and supplemental_listing(listing)
-        if not retired and user and user.ready and listing and listing.source == "auto_ria" and not fresh(Car.model_validate(listing.car), now, db):
+        if not retired and user and user.ready and listing and listing.source == "auto_ria" and not fresh(
+                Car.model_validate(listing.car), now, db, require_provider_range=settings.ria_ai_price_enabled):
             refresh = list(db.scalars(matching_searches(user.id, listing.id)))
         if retired:
             row.state = "cancelled"
@@ -255,7 +266,8 @@ def deliver_one(engine, settings: Settings, sender, now=None):
             db.execute(update(MonitorSeen).where(MonitorSeen.search_id.in_(refresh),
                 MonitorSeen.source_id == listing.source_id).values(state="pending"))
             row.state, row.retry_at = "pending", now + 5
-        elif not user or not user.ready or not listing or not eligible(db, row.user_id, listing, now):
+        elif not user or not user.ready or not listing or not eligible(
+                db, row.user_id, listing, now, require_provider_range=settings.ria_ai_price_enabled):
             row.state = "cancelled"
         else:
             car = Car.model_validate(listing.car)
@@ -278,13 +290,19 @@ def deliver_one(engine, settings: Settings, sender, now=None):
                 timing.telegram_date = stamp if type(stamp) is int and stamp > 0 else None
                 if car.source == "auto_ria" and car.market is not None:
                     proof = car.valuation_evidence or {}
-                    delivery_log.info("Conservative-price notification accepted source_id=%s version=%s market_usd=%s median_usd=%s comparables=%s peer_prices_usd=%s",
-                                      car.source_id, proof.get("version"), car.market, proof.get("median_usd"),
-                                      car.comparables, sorted(peer["price_usd"] for peer in proof.get("peers", [])))
+                    if proof.get("version") == ria_market_range.VERSION:
+                        quote = proof["source_range"]
+                        provider = quote.get("provider") or {}
+                        delivery_log.info("AUTO.RIA-price notification accepted source_id=%s average_usd=%s range_fraction=%s lower_usd=%s market_usd=%s price_usd=%s",
+                            car.source_id, provider.get("average_usd"), provider.get("range_fraction"), quote["lower_usd"], car.market, car.price)
+                    else:
+                        delivery_log.info("Conservative-price notification accepted source_id=%s version=%s market_usd=%s median_usd=%s comparables=%s peer_prices_usd=%s",
+                            car.source_id, proof.get("version"), car.market, proof.get("median_usd"),
+                            car.comparables, sorted(peer["price_usd"] for peer in proof.get("peers", [])))
                 elif car.source == "auto_ria":
                     job = db.get(MonitorJob, car.source_id)
                     rating = (job.result or {}).get("rating", {}) if job else {}
-                    proof = rating.get("valuation_evidence", {})
+                    proof = rating.get("valuation_evidence") or {}
                     delivery_log.info("Unpriced notification accepted source_id=%s reasons=%s comparables=%s peer_prices_usd=%s",
                                       car.source_id, rating.get("valuation_reasons", []), rating.get("comparables", 0),
                                       sorted(peer["price_usd"] for peer in proof.get("peers", [])))

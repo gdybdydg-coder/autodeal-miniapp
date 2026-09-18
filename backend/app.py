@@ -25,7 +25,7 @@ from .valuation import policy as valuation_policy, reason_category
 from .models import (Base, Delivery, EnabledRequest, Filters, Listing, MonitorControl,
                      MonitorFeed, MonitorJob, MonitorMembership, MonitorSeen, MonitorWatch,
                      Search, SearchEditRequest, SearchRequest, TelegramTest, User)
-from . import monitor, telegram_setup, ria_rollout, full_scan, launch, notification_diagnostic, valuation_audit
+from . import monitor, telegram_setup, ria_rollout, full_scan, launch, notification_diagnostic, valuation_audit, ria_ai_price, ria_market_range
 
 
 @dataclass(frozen=True)
@@ -49,6 +49,9 @@ class Settings:
     ria_recovery_listing_id: str = ""
     ria_active_window_enabled: bool = False
     valuation_audit_run_id: str = ""
+    auto_ria_user_id: str = field(default="", repr=False)
+    ria_ai_price_enabled: bool = False
+    ria_ai_price_probe_id: str = ""
 
     @classmethod
     def env(cls):
@@ -71,6 +74,9 @@ class Settings:
             ria_recovery_listing_id=os.getenv("RIA_RECOVERY_LISTING_ID", ""),
             ria_active_window_enabled=os.getenv("RIA_ACTIVE_WINDOW_ENABLED") == "true",
             valuation_audit_run_id=os.getenv("VALUATION_AUDIT_RUN_ID", ""),
+            auto_ria_user_id=os.getenv("AUTO_RIA_USER_ID", "").strip(),
+            ria_ai_price_enabled=os.getenv("RIA_AI_PRICE_ENABLED") == "true",
+            ria_ai_price_probe_id=os.getenv("RIA_AI_PRICE_PROBE_ID", "").strip(),
         )
 
     @property
@@ -86,6 +92,10 @@ def create_app(settings: Settings, engine=None):
     notification_diagnostic.validate_id(settings.ria_diagnostic_listing_id)
     notification_diagnostic.validate_id(settings.ria_recovery_listing_id)
     valuation_audit.validate_run_id(settings.valuation_audit_run_id)
+    if settings.ria_ai_price_enabled and (not settings.auto_ria_api_key or not ria_ai_price.valid_id(settings.auto_ria_user_id)):
+        raise ValueError("Configure server-only AUTO.RIA AI credentials")
+    if settings.ria_ai_price_probe_id and not ria_ai_price.valid_id(settings.ria_ai_price_probe_id):
+        raise ValueError("Invalid AUTO.RIA AI probe listing ID")
     if settings.miniapp_release and not re.fullmatch(r"[a-z0-9-]{1,40}", settings.miniapp_release):
         raise ValueError("Invalid Mini App release")
     if not settings.bot_token or len(settings.webhook_secret) < 32:
@@ -111,6 +121,9 @@ def create_app(settings: Settings, engine=None):
                                settings.auto_ria_api_key, settings.ria_diagnostic_listing_id)
         await asyncio.to_thread(notification_diagnostic.check_dates_once, engine,
                                settings.auto_ria_api_key, settings.ria_diagnostic_listing_id)
+        if settings.ria_ai_price_enabled:
+            await asyncio.to_thread(ria_ai_price.check_once, engine, settings.auto_ria_api_key,
+                                   settings.auto_ria_user_id, settings.ria_ai_price_probe_id)
         stop = asyncio.Event()
         task = asyncio.create_task(monitor.run(engine, settings, stop)) if settings.monitor_enabled else None
         scan_task = asyncio.create_task(full_scan.run(engine, settings.auto_ria_api_key, stop)) if settings.auto_ria_api_key and settings.full_scan_enabled else None
@@ -241,7 +254,7 @@ def create_app(settings: Settings, engine=None):
         # Cached public diagnostic only; refreshing NEVER spends API requests.
         return {**probe_status(engine, bool(settings.auto_ria_api_key)), "quota": quota_status(engine),
                 "budget": budget_usage(engine),
-                "valuation_policy": valuation_policy(),
+                "valuation_policy": ria_market_range.policy() if settings.ria_ai_price_enabled else valuation_policy(),
                 "launch": launch.status(engine, settings.live and settings.monitor_enabled),
                 "valuation_check": validation_status(engine, settings.ria_validation_run_id, settings.ria_validation_profile),
                 "catalog_check": ria_rollout.status(engine),

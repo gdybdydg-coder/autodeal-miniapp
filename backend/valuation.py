@@ -9,7 +9,7 @@ from decimal import Decimal
 
 VERSION = "asking-v5"
 PRICE_ONLY_VERSION = "listing-price-v3"
-INFORMATION_REASONS = {"incomplete_details", "insufficient_comparables", "mixed_sample",
+INFORMATION_REASONS = {"provider_market_range_unavailable", "incomplete_details", "insufficient_comparables", "mixed_sample",
                        "unverified_condition", "missing_valuation_details", "repair_condition"}
 REPAIR_CONDITIONS = {"damage", "technical_condition"}
 MAX_AGE = 900
@@ -222,14 +222,14 @@ def evidence_valid(car, now):
             and result["comparables"] == car.comparables)
 
 
-def price_only_evidence(candidate, evaluated_at, uncertainty_reasons=None):
+def price_only_evidence(candidate, evaluated_at, uncertainty_reasons=None, *, pricing_policy=None):
     """Proof for a clearly labelled informational (not verified-deal) alert.
 
     The price is still mandatory and freshly retrieved from the official detail
     endpoint. This proof never claims a market value or discount.
     """
     return {"version": PRICE_ONLY_VERSION, "basis": "fresh_listing_price",
-            "evaluated_at": evaluated_at,
+            "evaluated_at": evaluated_at, "pricing_policy": pricing_policy,
             "condition_notices": repair_notices(candidate),
             "uncertainty_reasons": sorted(set(uncertainty_reasons or ["incomplete_details"])),
             "candidate": {key: candidate.get(key) for key in
@@ -286,7 +286,7 @@ def policy():
 
 def reason_category(rating):
     codes = rating.get("valuation_reasons", [])
-    for code in ("stale_details", "comparison_limit", "mixed_sample"):
+    for code in ("provider_market_range_unavailable", "stale_details", "comparison_limit", "mixed_sample"):
         if code in codes:
             return code
     if any(code.startswith(("missing_", "invalid_")) or code == "unverified_condition" for code in codes):

@@ -23,8 +23,10 @@ from .ria_budget import BudgetLimits
 from .ria_search import RiaSearch, estimate, matches, parse_ids, quota_status
 from .valuation import (MAX_AGE, VERSION, PeerBatch, is_deal, price_only_evidence,
                         notification_condition_allowed, repair_notices)
-from . import active_window
-from .reference_valuation import VERSION as REFERENCE_VERSION, VALUED, notification_estimate
+from . import active_window, ria_market_range
+from .reference_valuation import VERSION as REFERENCE_VERSION, VALUED as PEER_VALUED, notification_estimate
+
+VALUED = {*PEER_VALUED, "provider_lower_bound_adjusted"}
 
 INTERVAL = 60
 LEASE = 120
@@ -357,7 +359,8 @@ class Monitor:
                         or not matches(candidate, filters, resolved)
                         or not (partial or priced_deal)):
                     continue
-                proof = (price_only_evidence(candidate, evidence["evaluated_at"], evidence["uncertainty_reasons"])
+                proof = (price_only_evidence(candidate, evidence["evaluated_at"], evidence["uncertainty_reasons"],
+                         pricing_policy=ria_market_range.VERSION if self.settings.ria_ai_price_enabled else None)
                          if partial else rating["valuation_evidence"])
                 car = Car(source="auto_ria", source_id=source_id, url=candidate["url"],
                     photo=candidate["image"], brand=candidate["brand"][:100], model=candidate["model"][:100],
@@ -412,23 +415,38 @@ class Monitor:
         partial = incomplete_optional_details(candidate)
         excluded = not notification_condition_allowed(candidate)
         rating = evidence.get("rating", {})
-        proof_peers = rating.get("valuation_evidence", {}).get("peers", [])
-        if (rating.get("valuation_version") not in {VERSION, REFERENCE_VERSION} or
-                any(not -30 <= time.time() - peer["observed_at"] <= MAX_AGE for peer in proof_peers)):
+        proof = rating.get("valuation_evidence") or {}
+        reusable_rating = (rating.get("valuation_version") in {VERSION, REFERENCE_VERSION}
+            and all(-30 <= time.time() - peer["observed_at"] <= MAX_AGE for peer in proof.get("peers", [])))
+        if self.settings.ria_ai_price_enabled:
+            reusable_rating = (rating.get("valuation_version") == ria_market_range.VERSION
+                and ria_market_range.range_valid(proof.get("source_range"), source_id, time.time())
+                and bool((proof.get("source_range") or {}).get("provider")))
+        if not reusable_rating:
             evidence.pop("rating", None)
         if any_match and not excluded and "rating" not in evidence:
-            try:
-                peers = source.notification_comparisons(candidate)
-            except RiaError as exc:
-                if str(exc) not in {"search_limit", "quota_exceeded", "connection_error", "upstream_error"}:
-                    raise
-                # The listing price was already freshly retrieved. A bounded
-                # peer-search failure must not discard that verified candidate.
-                peers = PeerBatch(limited=True, unavailable=str(exc))
-            evidence["rating"] = notification_estimate(candidate, peers)
+            if self.settings.ria_ai_price_enabled:
+                quote = None
+                try:
+                    quote = source.market_range(source_id, self.settings.auto_ria_user_id)
+                except RiaError as exc:
+                    # A method outage/permission/quota failure cannot hide the
+                    # matching candidate whose positive price is already fresh.
+                    log.warning("AUTO.RIA AI valuation unavailable source_id=%s reason=%s", source_id, str(exc))
+                evidence["rating"] = ria_market_range.estimate(candidate, quote)
+            else:
+                try:
+                    peers = source.notification_comparisons(candidate)
+                except RiaError as exc:
+                    if str(exc) not in {"search_limit", "quota_exceeded", "connection_error", "upstream_error"}:
+                        raise
+                    peers = PeerBatch(limited=True, unavailable=str(exc))
+                evidence["rating"] = notification_estimate(candidate, peers)
         rating = evidence.get("rating", {})
         uncertainty = []
         if any_match and not excluded and rating.get("valuation") not in VALUED:
+            if self.settings.ria_ai_price_enabled:
+                uncertainty.append("provider_market_range_unavailable")
             if repair_notices(candidate):
                 uncertainty.append("repair_condition")
             if partial:
@@ -545,7 +563,8 @@ class Monitor:
         if webhook_status(self.engine)["status"] != "configured":
             return
         from .worker import TelegramSender, deliver_one, enqueue
-        enqueue(self.engine, allow_active_window=self.settings.ria_active_window_enabled)
+        enqueue(self.engine, allow_active_window=self.settings.ria_active_window_enabled,
+                require_provider_range=self.settings.ria_ai_price_enabled)
         deliver_one(self.engine, self.settings, self.sender or TelegramSender(self.settings.bot_token))
 
 

@@ -13,7 +13,7 @@ from .valuation import DIMENSIONS, reason_category
 
 PROBE_ID = "subscription-launch-v1"
 WINDOW = 86400
-UNKNOWN_CODES = {"unverified_condition", "invalid_price", "invalid_year", "invalid_mileage",
+UNKNOWN_CODES = {"provider_market_range_unavailable", "unverified_condition", "invalid_price", "invalid_year", "invalid_mileage",
                  "stale_details", "insufficient_comparables", "comparison_limit", "mixed_sample",
                  "missing_engine_cc", *("missing_" + name for name in DIMENSIONS)}
 PEER_CODES = UNKNOWN_CODES | set(DIMENSIONS) | {"engine_cc", "year", "mileage", "duplicate_vehicle"}
@@ -113,7 +113,8 @@ def activity(db, uid=None):
             # Keep historical counters through the policy upgrade without
             # treating old median evidence as valid for a new delivery.
             "evaluated": count(MonitorJob, *jobs, rating.in_(("sample_median", "reference_median",
-                "sample_lower_quartile", "reference_lower_quartile"))),
+                "sample_lower_quartile", "reference_lower_quartile", "provider_lower_bound_adjusted"))),
+            "provider_estimated": count(MonitorJob, *jobs, rating == "provider_lower_bound_adjusted"),
             "reference_estimated": count(MonitorJob, *jobs, rating.in_(("reference_median", "reference_lower_quartile"))),
             "unknown": count(MonitorJob, *jobs, MonitorJob.state.in_(("unvalued", "informational"))),
             "informational": count(MonitorJob, *jobs, MonitorJob.state == "informational"),
