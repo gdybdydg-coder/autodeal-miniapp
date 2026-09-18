@@ -13,6 +13,7 @@ from .models import (Car, Delivery, DeliveryTiming, Filters, Listing, MonitorJob
 from .valuation import evidence_valid, is_deal, price_only_evidence_valid
 from .peer_cache import evidence_current
 from .reference_valuation import VERSION as REFERENCE_VERSION
+from . import ria_market_range
 
 delivery_log = logging.getLogger("autodeal.delivery")
 delivery_log.setLevel(logging.INFO)
@@ -149,7 +150,13 @@ class TelegramSender:
         if car.region:
             details.append(f"📍 {car.region}")
         pricing = [f"💰 Ціна: {price}"]
-        if car.market is not None:
+        provider_range = (car.valuation_evidence or {}).get("version") == ria_market_range.VERSION
+        if car.market is not None and provider_range:
+            pricing.extend(ria_market_range.pricing_lines(car))
+            if (not (car.valuation_evidence or {}).get("condition_notices")
+                    and (car.valuation_evidence or {}).get("candidate", {}).get("comparable_condition") is not True):
+                pricing.append("⚠️ Стан авто не підтверджено даними джерела")
+        elif car.market is not None:
             discount = (1 - car.price / car.market) * 100
             market = f"${car.market:,.0f}".replace(",", " ")
             benefit = f"{discount:.1f}".rstrip("0").rstrip(".").replace(".", ",")
@@ -182,7 +189,8 @@ class TelegramSender:
         if (car.valuation_evidence or {}).get("condition_notices"):
             pricing.append("⚠️ У джерелі є позначка про пошкодження / ремонт — перевір опис")
             if car.market is not None:
-                pricing.append("Орієнтир аналогів без позначених пошкоджень; витрати на ремонт не враховані")
+                pricing.append("Витрати на ремонт не враховані" if provider_range else
+                               "Орієнтир аналогів без позначених пошкоджень; витрати на ремонт не враховані")
         sections = [f"🚘 {car.brand} {car.model} · {car.year}"]
         if (car.pipeline or {}).get("discovery_kind") == "active_window":
             sections.append("🕘 Активне оголошення з додаткової перевірки")

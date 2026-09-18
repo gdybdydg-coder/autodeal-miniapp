@@ -1,5 +1,14 @@
 # AUTODeal backend — subscriptions for new worthwhile cars
 
+## Pending draft: AUTO.RIA lower market boundary minus 5%
+
+The requested provider-based calculation and Telegram rendering are prepared in
+`ria_market_range.py`, with source identity, freshness and proof validation.
+The provider range adapter and monitor switch are **not implemented or enabled**:
+the documented AI API exposes an average, without a verified lower-bound field,
+and the public range-popup request returned HTTP 403. No new release is deployed.
+See [the source findings and remaining integration work](docs/autoria-lower-bound-integration.md).
+
 ## Repair candidates are disclosed instead of hidden (release 20260918-49)
 
 At the owner's explicit request, damage and technical-condition flags on a

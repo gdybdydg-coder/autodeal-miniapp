@@ -9,6 +9,7 @@ from .auto_ria import RiaError
 from .models import ValuationPeer
 from .valuation import FIELDS, MAX_AGE, comparable, group_key, reasons
 from . import reference_valuation as reference
+from . import ria_market_range
 
 
 def observe(engine, car, *, create=False):
@@ -64,6 +65,8 @@ def evidence_current(db, evidence):
         prior = used[row.source_id]
         if row.observed_at >= prior["observed_at"]:
             fields = reference.EVIDENCE_FIELDS if evidence.get("version") == reference.VERSION else FIELDS
+            if evidence.get("version") == ria_market_range.VERSION:
+                fields = ria_market_range.EVIDENCE_FIELDS
             if not row.available or any(row.car.get(key) != prior.get(key) for key in fields if key != "observed_at"):
                 return False
     return True

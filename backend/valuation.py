@@ -195,6 +195,9 @@ def estimate(candidate, peers, *, now=None):
 def evidence_valid(car, now):
     """Old or inconsistent valuation evidence must return to the monitor queue."""
     evidence = car.valuation_evidence
+    from . import ria_market_range
+    if evidence and evidence.get("version") == ria_market_range.VERSION:
+        return ria_market_range.evidence_valid(car, now)
     from .reference_valuation import VERSION as REFERENCE_VERSION, estimate as reference_estimate
     if not evidence or evidence.get("version") not in {VERSION, REFERENCE_VERSION}:
         return False
