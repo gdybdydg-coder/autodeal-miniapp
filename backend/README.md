@@ -1,5 +1,19 @@
 # AUTODeal backend — subscriptions for new worthwhile cars
 
+## Client onboarding (release 20260918-51)
+
+Private `/start`, `/help` and `/stop` commands now queue durable replies in a new
+additive `bot_replies` table. A separate one-message-per-second loop handles them
+independently of AUTO.RIA. Successful welcome acceptance confirms chat connectivity;
+manual tests remain available. Neither `/start` nor a welcome enables subscriptions.
+Repeated updates, uncertain sends and abandoned sending claims are not replayed.
+Stop preserves filters, cancels pending car delivery and prevents a queued welcome.
+The Mini App exposes activate/pause directly on each saved subscription card.
+The same Telegram identity, fresh-only discovery, quota and deduplication rules apply.
+`release.json` now matches the published UI so the update button finds this release.
+
+Earlier notes that `/start` is silent or requires a separate manual test are superseded.
+
 ## AUTO.RIA API lower market boundary minus 5% (release 20260918-50)
 
 Telegram notifications now support the owner's provider-based policy: the lower

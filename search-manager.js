@@ -87,7 +87,7 @@ function renderSavedView() {
   $("confirmSaveSearch").textContent=editingSearch?"Зберегти зміни на пристрої":"Лише на цьому пристрої";
   $("saveHint").textContent=editingSearch?.scope==="local"?"Зміни збережуться лише на цьому пристрої.":
     editingSearch?"Назву можна змінити без паузи. Зміна фільтрів вимкне сповіщення до повторного ввімкнення підписки.":
-    "Збережемо в акаунті Telegram на паузі. Увімкнути сповіщення можна буде в меню підписки, коли моніторинг буде готовий.";
+    "Збережемо в акаунті Telegram на паузі. Далі натисни «Увімкнути сповіщення» в картці підписки.";
   $("saveStatus").hidden=true;
   setSavedScope(savedScope);
 }
@@ -144,7 +144,17 @@ function subscriptionCard(item,options) {
     const bell=document.createElement("img");bell.className="subscription-bell";bell.src="assets/subscription-bell.svg";
     bell.alt=options.status;bell.title=options.status;aside.append(bell);
   }
-  card.append(open,aside);return card;
+  card.append(open,aside);
+  if(options.cloud&&options.toggle) {
+    const activate=managerButton(item.enabled?"⏸ Поставити на паузу":
+      options.canToggle?"🔔 Увімкнути сповіщення":"Підключити сповіщення",()=>{
+        if(window.AutoDealCloudSearches?.isBusy?.()) return;
+        return options.canToggle?options.toggle():openSettings();
+      });
+    activate.className="subscription-toggle";
+    card.append(activate);
+  }
+  return card;
 }
 function renderSavedSearches() {
   const list=$("savedSearchList");

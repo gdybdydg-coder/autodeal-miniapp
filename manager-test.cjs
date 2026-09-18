@@ -395,3 +395,29 @@ test('subscription creation sends the manually entered percent to the server',as
   assert.equal(writes.length,1);assert.equal(writes[0].filters.minDiscount,7.25);
   assert.equal(writes[0].name,'Мій поріг');assert.equal(ui.searches.length,0);
 });
+
+
+test('subscription cards expose explicit enable and pause without opening the menu',async()=>{
+  let enabled=false;const changes=[];
+  const ui=setup({list:async()=>[{id:7,name:'Мій пошук',filters:ui.filters(),enabled}],
+    notificationStatus:async()=>({available:true,telegram_ready:true,test_sent:true}),
+    enable:async(id,value)=>{changes.push({id,value});enabled=value;}},'subscriptions');
+  await ui.nav.saved.listeners.click();
+  let button=part(ui.ids.cloudSearchList.children[0],'subscription-toggle');
+  assert.match(button.textContent,/Увімкнути/);assert.deepEqual(changes,[]);
+  await button.listeners.click();
+  assert.deepEqual(changes,[{id:7,value:true}]);
+  button=part(ui.ids.cloudSearchList.children[0],'subscription-toggle');
+  assert.match(button.textContent,/паузу/);await button.listeners.click();
+  assert.deepEqual(changes,[{id:7,value:true},{id:7,value:false}]);
+});
+
+test('unconnected subscription routes to setup without enabling notifications',async()=>{
+  const ui=setup({list:async()=>[{id:7,name:'Пошук',filters:ui.filters(),enabled:false}],
+    notificationStatus:async()=>({available:true,telegram_ready:false,test_sent:false}),
+    enable:async()=>assert.fail('must connect first')},'subscriptions');
+  await ui.nav.saved.listeners.click();
+  const button=part(ui.ids.cloudSearchList.children[0],'subscription-toggle');
+  assert.match(button.textContent,/Підключити/);button.listeners.click();
+  assert.equal(ui.ids.settingsPage.hidden,false);
+});

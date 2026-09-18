@@ -16,3 +16,11 @@ test('update fetches same-origin version without identity and preserves Telegram
   assert.equal(new URL(reload).hash,'#tgWebAppData=fake-test');
   assert.equal(calls,2);
 });
+
+
+test('release manifest agrees with the published page version',()=>{
+  const html=fs.readFileSync(__dirname+'/index.html','utf8');
+  const release=JSON.parse(fs.readFileSync(__dirname+'/release.json','utf8'));
+  assert.ok(html.includes('content="'+release.version+'"'));
+  assert.ok(html.includes('Версія '+release.version));
+});

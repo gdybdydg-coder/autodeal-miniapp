@@ -184,6 +184,7 @@ html[data-mode="subscriptions"] .navbar { grid-template-columns:repeat(3,1fr); }
 #cloudSearchList, #savedSearchList { display:grid; gap:16px; }
 .subscription-panel > .filter-help { margin:4px 0 14px; }
 .subscription-card { display:grid; grid-template-columns:minmax(0,1fr) 40px; align-items:center; padding:0 9px 0 0; background:#1c1c1e; border-radius:10px; }
+.subscription-toggle { grid-column:1 / -1; margin:0 5px 14px 14px; min-height:44px; padding:10px 12px; border:1px solid #633037; border-radius:9px; background:#332025; color:#fff; font:inherit; font-size:14px; cursor:pointer; }
 .subscription-open { display:grid; grid-template-columns:28px minmax(0,1fr); align-items:center; gap:14px; width:100%; min-height:112px; padding:14px 8px 14px 14px; border:0; border-radius:10px; text-align:left; background:transparent; color:#e0e0e3; cursor:pointer; }
 .subscription-icon { width:28px; height:23px; object-fit:contain; }
 .subscription-copy { display:block; min-width:0; }

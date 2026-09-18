@@ -15,7 +15,7 @@ function renderNotificationStatus() {
     state.activity?.enabled_subscriptions>0?"Моніторинг працює":"Готові до ввімкнення";
   const activity=state?.activity;
   $("launchProgress").textContent=!activity?"Увійди через Telegram, щоб побачити стан перевірок.":
-    !activity.enabled_subscriptions?"Активних підписок ще немає. У розділі «Підписки» натисни ⋯ і ввімкни потрібну.":
+    !activity.enabled_subscriptions?"Активних підписок ще немає. Натисни «Увімкнути сповіщення» в картці потрібної підписки.":
     "Активних підписок: "+activity.enabled_subscriptions+". Нових авто: "+activity.new_listings+
     ". Оцінено: "+activity.evaluated+". Бракує даних: "+activity.unknown+". У черзі: "+activity.pending+
     ". Повідомлень прийнято Telegram: "+activity.messages_accepted+"."+
@@ -26,8 +26,8 @@ function renderNotificationStatus() {
   $("subscriptionsHint").textContent=!state?(cloudBusy?"Перевіряємо стан сповіщень…":"Стан сповіщень не підтверджено. Онови список, щоб перевірити підключення."):
     !state.available?"Підписки збережені. Сповіщення ще готуються до запуску.":
     !state.telegram_ready?"Для сповіщень відкрий чат бота й надішли /start.":
-    !state.test_sent?"Перевір зв’язок тестовим повідомленням у налаштуваннях.":
-    "Вмикай сповіщення в меню ⋯ потрібних підписок. Однакові фільтри перевіряються разом.";
+    !state.test_sent?"Надішли /start у чаті бота та дочекайся привітання. Або надішли тест у налаштуваннях.":
+    "Натисни «Увімкнути сповіщення» в потрібній підписці. Після ввімкнення шукаємо нові публікації.";
 }
 function cloudMessage(message) {
   $("cloudStatus").textContent=message;
@@ -85,6 +85,7 @@ async function loadCloud() {
       canToggle:item.enabled||!!(notificationState?.available&&notificationState.telegram_ready&&notificationState.test_sent),
       toggle:window.AutoDealCloud.enable?()=>cloudAction(async()=>{
         await window.AutoDealCloud.enable(item.id,!item.enabled);await loadCloud();
+        toast(item.enabled?"Підписку зупинено · фільтри збережені":"Сповіщення ввімкнені · чекаємо нові оголошення");
         closeSubscriptionActions();
       }):null,
       remove:()=>cloudAction(async()=>{

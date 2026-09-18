@@ -22,10 +22,11 @@ from .ria_search import RiaSearch, initialize_budget, verify_search_once, quota_
 from .ria_budget import BudgetLimits, peer_scan_limit
 from .ria_validation import validate_once, validate_run_id, validate_profile, validation_status
 from .valuation import policy as valuation_policy, reason_category
-from .models import (Base, Delivery, EnabledRequest, Filters, Listing, MonitorControl,
+from .models import (Base, BotReply, Delivery, EnabledRequest, Filters, Listing, MonitorControl,
                      MonitorFeed, MonitorJob, MonitorMembership, MonitorSeen, MonitorWatch,
                      Search, SearchEditRequest, SearchRequest, TelegramTest, User)
 from . import monitor, telegram_setup, ria_rollout, full_scan, launch, notification_diagnostic, valuation_audit, ria_ai_price, ria_market_range
+from . import bot_commands
 
 
 @dataclass(frozen=True)
@@ -117,6 +118,7 @@ def create_app(settings: Settings, engine=None):
         await asyncio.to_thread(ria_rollout.check_once, engine, settings.auto_ria_api_key, settings.catalog_rollout_check)
         await asyncio.to_thread(telegram_setup.configure, engine, settings)
         await asyncio.to_thread(telegram_setup.configure_menu, engine, settings)
+        await asyncio.to_thread(bot_commands.configure, engine, settings)
         await asyncio.to_thread(notification_diagnostic.check_once, engine,
                                settings.auto_ria_api_key, settings.ria_diagnostic_listing_id)
         await asyncio.to_thread(notification_diagnostic.check_dates_once, engine,
@@ -125,6 +127,7 @@ def create_app(settings: Settings, engine=None):
             await asyncio.to_thread(ria_ai_price.check_once, engine, settings.auto_ria_api_key,
                                    settings.auto_ria_user_id, settings.ria_ai_price_probe_id)
         stop = asyncio.Event()
+        reply_task = asyncio.create_task(bot_commands.run(engine, settings, stop)) if settings.configure_webhook else None
         task = asyncio.create_task(monitor.run(engine, settings, stop)) if settings.monitor_enabled else None
         scan_task = asyncio.create_task(full_scan.run(engine, settings.auto_ria_api_key, stop)) if settings.auto_ria_api_key and settings.full_scan_enabled else None
         validation_stop = threading.Event()
@@ -137,6 +140,8 @@ def create_app(settings: Settings, engine=None):
         finally:
             stop.set()
             validation_stop.set()
+            if reply_task:
+                await reply_task
             if task:
                 await task
             if scan_task:
@@ -196,8 +201,7 @@ def create_app(settings: Settings, engine=None):
             control = db.get(MonitorControl, "pilot")
             if not control or time.time() - control.heartbeat >= monitor.LEASE + 60:
                 raise HTTPException(503, "Monitor is offline")
-            test = db.get(TelegramTest, user.id)
-            if not test or test.state != "sent":
+            if not bot_commands.connection_confirmed(db, user.id):
                 raise HTTPException(409, "Send a test notification first")
 
     def latest(db):
@@ -274,7 +278,7 @@ def create_app(settings: Settings, engine=None):
         return {**runtime, "available": settings.live and runtime["running"] and connected,
                 "test_available": telegram["test_available"],
                 "telegram_ready": bool(user and user.ready),
-                "test_sent": bool(test and test.state == "sent"),
+                "test_sent": bot_commands.connection_confirmed(db, uid),
                 "activity": launch.activity(db, uid),
                 "bot_url": "https://t.me/" + telegram_setup.BOT_USERNAME + "?start=notifications"}
 
@@ -464,8 +468,11 @@ def create_app(settings: Settings, engine=None):
             raise HTTPException(422, "Invalid update") from None
         if chat.get("type") != "private" or chat.get("id") != uid or type(uid) is not int or not 0 < uid < 2**52 or sender.get("is_bot"):
             return {"ok": True}
-        command = text.split()[0].split("@")[0] if text.split() else ""
-        if command not in ("/start", "/stop"):
+        token = text.split()[0] if text.split() else ""
+        command, _, mention = token.partition("@")
+        if mention and mention.lower() != telegram_setup.BOT_USERNAME.lower():
+            return {"ok": True}
+        if command not in ("/start", "/stop", "/help"):
             return {"ok": True}
         if type(command_at) is not int or command_at <= 0:
             raise HTTPException(422, "Invalid message date")
@@ -475,14 +482,16 @@ def create_app(settings: Settings, engine=None):
                 return {"ok": True}
             user.last_update = update_id
             user.last_command_at = command_at
-            user.ready = command == "/start"
+            if command in ("/start", "/stop"):
+                user.ready = command == "/start"
             if command == "/stop":
                 for sid in db.scalars(select(Search.id).where(Search.user_id == uid)):
                     monitor.reset_watch(db, sid, False)
                 db.execute(update(Search).where(Search.user_id == uid).values(enabled=False))
                 db.execute(update(Delivery).where(Delivery.user_id == uid, Delivery.state == "pending").values(state="cancelled"))
+            db.add(BotReply(user_id=uid, command_at=command_at, update_id=update_id, command=command))
             db.commit()
-        # /start records consent only; the explicit Mini App test confirms delivery.
+        # Durable reply processing is independent of source polling. /start never enables searches.
         return {"ok": True}
 
     return app

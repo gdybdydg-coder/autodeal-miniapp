@@ -208,6 +208,20 @@ class User(Base):
     last_command_at: Mapped[int] = mapped_column(BigInteger, default=0)
 
 
+class BotReply(Base):
+    """Durable replies to explicit private-chat commands, separate from car delivery."""
+    __tablename__ = "bot_replies"
+    __table_args__ = (UniqueConstraint("user_id", "command_at", "update_id"),)
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    user_id: Mapped[int] = mapped_column(BigInteger, index=True)
+    command_at: Mapped[int] = mapped_column(BigInteger)
+    update_id: Mapped[int] = mapped_column(BigInteger)
+    command: Mapped[str] = mapped_column(String(20))
+    state: Mapped[str] = mapped_column(String(20), default="pending", index=True)
+    attempted_at: Mapped[float] = mapped_column(Float, default=0)
+    message_id: Mapped[int | None] = mapped_column(BigInteger, nullable=True)
+
+
 class Search(Base):
     __tablename__ = "searches"
     __table_args__ = (UniqueConstraint("user_id", "fingerprint"),)
