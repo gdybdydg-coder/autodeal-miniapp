@@ -1,6 +1,8 @@
 """Provider transport/schema and the production monitor-to-dispatch path."""
 import copy
 import json
+import subprocess
+import sys
 from dataclasses import replace
 from urllib.error import HTTPError, URLError
 from urllib.parse import parse_qs, urlparse
@@ -299,3 +301,10 @@ def test_quote_failure_still_consumes_budget(p, monkeypatch):
     with Session(p.engine) as db:
         assert db.get(SourceBudget, "auto_ria").total == baseline + 1
     assert calls == ["124"]
+
+
+def test_probe_diagnostics_reach_stderr_without_root_logging_configuration():
+    result = subprocess.run([sys.executable, "-c",
+        "from backend.ria_ai_price import log; log.info('AI-probe-log-check')"],
+        capture_output=True, text=True, check=True)
+    assert "AI-probe-log-check" in result.stderr

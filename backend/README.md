@@ -30,7 +30,7 @@ Optional `RIA_AI_PRICE_PROBE_ID` requests one read-only quote at startup. Its
 unique durable claim prevents repeats, including on redeploy. It uses the same
 budget and never fetches listing details, creates jobs or sends Telegram cards.
 
-Validation: 404 backend tests and 65 frontend tests pass, including the complete
+Validation: 405 backend tests and 65 frontend tests pass, including the complete
 provider-to-dispatch path and all existing delivery safeguards.
 
 The following sections describe earlier releases; their notification pricing

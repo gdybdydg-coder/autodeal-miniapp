@@ -23,6 +23,9 @@ MAX_BYTES = 1024 * 1024
 PROVIDER_FIELDS = {"average_usd", "range_fraction", "quantity", "period_hours"}
 log = logging.getLogger("autodeal.ai_price")
 log.setLevel(logging.INFO)
+log.propagate = False
+if not log.handlers:
+    log.addHandler(logging.StreamHandler())
 
 
 def valid_id(value):
@@ -110,6 +113,9 @@ def check_once(engine, key, user_id, source_id):
             db.commit()
         except IntegrityError:
             db.rollback()
+            # Report retained evidence on restart; never repeat the provider call.
+            row = db.get(SourceProbe, probe_id)
+            report(source_id, row.status, row.requests, row.result)
             return
     source = RiaSearch(engine, key)
     source.request_limit = 1
@@ -131,6 +137,10 @@ def check_once(engine, key, user_id, source_id):
         row = db.get(SourceProbe, probe_id)
         row.status, row.result, row.requests = status, result, source.requests_made
         db.commit()
+    report(source_id, status, source.requests_made, result)
+
+
+def report(source_id, status, requests, result):
     log.info("AUTO.RIA AI range probe source_id=%s status=%s requests=%s lower_usd=%s upper_usd=%s provider=%s",
-             source_id, status, source.requests_made, result.get("lower_usd"), result.get("upper_usd"),
+             source_id, status, requests, result.get("lower_usd"), result.get("upper_usd"),
              result.get("provider"))
