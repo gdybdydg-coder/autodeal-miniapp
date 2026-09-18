@@ -182,7 +182,7 @@ def test_shared_informational_job_refreshes_only_unsent_current_interests(
     factory, sender = p.runner.search_factory, p.runner.sender
     def information_only(engine, key):
         source = factory(engine, key)
-        source.comparisons = lambda _: []
+        source.notification_comparisons = lambda _: []
         return source
     def send(uid, car):
         result = sender(uid, car)

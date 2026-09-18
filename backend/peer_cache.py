@@ -8,6 +8,7 @@ from sqlalchemy.orm import Session
 from .auto_ria import RiaError
 from .models import ValuationPeer
 from .valuation import FIELDS, MAX_AGE, comparable, group_key, reasons
+from . import reference_valuation as reference
 
 
 def observe(engine, car, *, create=False):
@@ -62,6 +63,23 @@ def evidence_current(db, evidence):
     for row in db.scalars(select(ValuationPeer).where(ValuationPeer.source_id.in_(used))):
         prior = used[row.source_id]
         if row.observed_at >= prior["observed_at"]:
-            if not row.available or any(row.car.get(key) != prior.get(key) for key in FIELDS if key != "observed_at"):
+            fields = reference.EVIDENCE_FIELDS if evidence.get("version") == reference.VERSION else FIELDS
+            if not row.available or any(row.car.get(key) != prior.get(key) for key in fields if key != "observed_at"):
                 return False
     return True
+
+
+def reference_candidates(engine, candidate, limit=20):
+    """Reuse only prior comparison observations, never the user's cheap candidates."""
+    now = time.time()
+    if reference.reasons(candidate, now):
+        return []
+    with Session(engine) as db:
+        rows = db.scalars(select(ValuationPeer).where(ValuationPeer.available.is_(True),
+            ValuationPeer.source_id != candidate["id"], ValuationPeer.observed_at >= now - MAX_AGE,
+            ValuationPeer.car["brand_id"].as_integer() == candidate["brand_id"],
+            ValuationPeer.car["model_id"].as_integer() == candidate["model_id"])
+            .order_by(ValuationPeer.observed_at.desc(), ValuationPeer.source_id).limit(200))
+        peers = [copy.deepcopy(row.car) for row in rows if not reference.comparable(candidate, row.car, now)]
+    peers.sort(key=lambda peer: (abs(peer["year"] - candidate["year"]), -peer["observed_at"], peer["id"]))
+    return peers[:limit]

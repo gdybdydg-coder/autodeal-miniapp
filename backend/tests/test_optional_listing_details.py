@@ -9,7 +9,8 @@ from backend.ria_search import RiaSearch, engine_capacity, matches, parse_car
 from backend.ria_validation import comparison_report
 from backend.tests.test_monitor import p, drain, wake
 from backend.tests.test_ria_search import engine, fixture_fetch, raw
-from backend.valuation import PRICE_ONLY_VERSION, estimate
+from backend.valuation import estimate
+from backend.reference_valuation import VERSION as REFERENCE_VERSION
 
 
 def sparse(source_id="123", price=10000, capacity="1.9", modification=None):
@@ -151,10 +152,13 @@ def test_monitor_sends_fresh_price_when_optional_details_are_missing(p):
     assert len(p.sent) == 1
     car = p.sent[0][1]
     assert car.source_id == "124" and car.price == 10000
-    assert car.market is None and car.comparables == 0 and car.mileage is None
+    assert car.market == 15000 and car.comparables == 5 and car.mileage is None
     assert car.fuel == "" and car.transmission == "" and car.body == ""
-    assert car.valuation_evidence["version"] == PRICE_ONLY_VERSION
-    # No peer-price search is needed before the urgent partial notification.
-    assert not any(path == "search" and "generation_id[0][0]" in params for path, params in p.calls)
+    assert car.valuation_evidence["version"] == REFERENCE_VERSION
+    # One bounded peer-price page can now value partial details, without scanning
+    # old candidates or inventing the candidate's missing attributes.
+    comparisons = [params for path, params in p.calls if path == "search" and "published_after" not in params]
+    assert len(comparisons) == 1 and comparisons[0]["page"] == 0
+    assert "gearbox[0]" not in comparisons[0] and "type[0]" not in comparisons[0]
     discovery = [params for path, params in p.calls if path == "search" and "published_after" in params]
     assert discovery and all("type[0]" not in params for params in discovery)

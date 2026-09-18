@@ -23,6 +23,7 @@ from .ria_budget import BudgetLimits
 from .ria_search import RiaSearch, estimate, matches, parse_ids, quota_status
 from .valuation import MAX_AGE, VERSION, PeerBatch, is_deal, price_only_evidence
 from . import active_window
+from .reference_valuation import VERSION as REFERENCE_VERSION, VALUED, notification_estimate
 
 INTERVAL = 60
 LEASE = 120
@@ -349,11 +350,11 @@ class Monitor:
                 resolved = evidence.get("filters", {}).get(fingerprint)
                 filters = Filters.model_validate(search.filters)
                 partial = evidence.get("informational_notification") is True
-                strict_deal = bool(rating and rating.get("valuation") == "sample_median"
+                priced_deal = bool(rating and rating.get("valuation") in VALUED
                     and is_deal(candidate["price_usd"], rating["market"], filters.minDiscount))
                 if (not candidate or candidate.get("condition_exclusions") or resolved is None
                         or not matches(candidate, filters, resolved)
-                        or not (partial or strict_deal)):
+                        or not (partial or priced_deal)):
                     continue
                 proof = (price_only_evidence(candidate, evidence["evaluated_at"], evidence["uncertainty_reasons"])
                          if partial else rating["valuation_evidence"])
@@ -411,22 +412,22 @@ class Monitor:
         excluded = bool(candidate.get("condition_exclusions"))
         rating = evidence.get("rating", {})
         proof_peers = rating.get("valuation_evidence", {}).get("peers", [])
-        if (rating.get("valuation_version") != VERSION or
+        if (rating.get("valuation_version") not in {VERSION, REFERENCE_VERSION} or
                 any(not -30 <= time.time() - peer["observed_at"] <= MAX_AGE for peer in proof_peers)):
             evidence.pop("rating", None)
-        if any_match and not partial and not excluded and "rating" not in evidence:
+        if any_match and not excluded and "rating" not in evidence:
             try:
-                peers = source.comparisons(candidate)
+                peers = source.notification_comparisons(candidate)
             except RiaError as exc:
                 if str(exc) not in {"search_limit", "quota_exceeded", "connection_error", "upstream_error"}:
                     raise
                 # The listing price was already freshly retrieved. A bounded
                 # peer-search failure must not discard that verified candidate.
                 peers = PeerBatch(limited=True, unavailable=str(exc))
-            evidence["rating"] = estimate(candidate, peers)
+            evidence["rating"] = notification_estimate(candidate, peers)
         rating = evidence.get("rating", {})
         uncertainty = []
-        if any_match and not excluded:
+        if any_match and not excluded and rating.get("valuation") not in VALUED:
             if partial:
                 uncertainty.append("incomplete_details")
             elif rating.get("valuation") in {"insufficient_data", "mixed_sample"}:
@@ -440,7 +441,7 @@ class Monitor:
         evidence["uncertainty_reasons"] = sorted(set(uncertainty))
         evidence["informational_notification"] = bool(uncertainty)
         outcome = ("excluded" if excluded else "informational" if uncertainty else "checked"
-                   if not any_match or rating.get("valuation") == "sample_median" else "unvalued")
+                   if not any_match or rating.get("valuation") in VALUED else "unvalued")
         self.complete(source_id, evidence, outcome)
 
     def defer(self, kind, key, reason, limits):

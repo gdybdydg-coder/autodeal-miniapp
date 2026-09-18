@@ -12,6 +12,13 @@ from .models import (Car, Delivery, DeliveryTiming, Filters, Listing, MonitorJob
                      MonitorSeen, MonitorWatch, Search, User)
 from .valuation import evidence_valid, is_deal, price_only_evidence_valid
 from .peer_cache import evidence_current
+from .reference_valuation import VERSION as REFERENCE_VERSION
+
+delivery_log = logging.getLogger("autodeal.delivery")
+delivery_log.setLevel(logging.INFO)
+delivery_log.propagate = False
+if not delivery_log.handlers:
+    delivery_log.addHandler(logging.StreamHandler())
 
 
 def matches(car: Car, filters: Filters):
@@ -146,7 +153,16 @@ class TelegramSender:
             discount = (1 - car.price / car.market) * 100
             market = f"${car.market:,.0f}".replace(",", " ")
             benefit = f"{discount:.1f}".rstrip("0").rstrip(".").replace(".", ",")
-            pricing.extend((f"📊 Ринкова ціна: ≈ {market}", f"🔥 Вигода: {benefit}%"))
+            reference = (car.valuation_evidence or {}).get("version") == REFERENCE_VERSION
+            if reference:
+                pricing.extend((f"📊 Орієнтовна ринкова ціна: ≈ {market}",
+                                f"📉 Нижче оцінки: {benefit}%", f"ℹ️ За цінами {car.comparables} схожих авто"))
+                if (car.valuation_evidence or {}).get("unknown_dimensions"):
+                    pricing.append("Частину характеристик не вказано — оцінка приблизна")
+                if (car.valuation_evidence or {}).get("candidate", {}).get("comparable_condition") is not True:
+                    pricing.append("⚠️ Стан авто не підтверджено даними джерела")
+            else:
+                pricing.extend((f"📊 Ринкова ціна: ≈ {market}", f"🔥 Вигода: {benefit}%"))
         else:
             pricing.append("ℹ️ Ринкову оцінку не підтверджено — це не підтверджена вигода")
             reasons = (car.valuation_evidence or {}).get("uncertainty_reasons", [])
@@ -241,6 +257,9 @@ def deliver_one(engine, settings: Settings, sender, now=None):
                 timing.accepted_at = time.time()
                 stamp = result["result"].get("date")
                 timing.telegram_date = stamp if type(stamp) is int and stamp > 0 else None
+                if (car.valuation_evidence or {}).get("version") == REFERENCE_VERSION:
+                    delivery_log.info("Reference-price notification accepted source_id=%s market_usd=%s comparables=%s",
+                                      car.source_id, car.market, car.comparables)
             elif result.get("error_code") == 429:
                 retry = result.get("parameters", {}).get("retry_after", 60)
                 row.retry_at = now + max(1, min(int(retry), 86400))

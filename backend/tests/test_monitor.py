@@ -572,7 +572,7 @@ def test_uncertain_valuation_is_recorded_without_fake_deal(p):
     factory = p.runner.search_factory
     def incomplete(engine, key):
         source = factory(engine, key)
-        source.comparisons = lambda _: []
+        source.notification_comparisons = lambda _: []
         return source
     p.runner.search_factory = incomplete
     wake(p)

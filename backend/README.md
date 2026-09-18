@@ -1,5 +1,41 @@
 # AUTODeal backend — subscriptions for new worthwhile cars
 
+## Indicative market prices for new alerts (release 20260918-46)
+
+Notifications first try the existing five-peer `asking-v4` comparison. When it
+cannot value an otherwise eligible new car, `reference-v1` can show a labelled
+**indicative** median from at least three distinct, fresh comparable listings.
+It matches brand/model and every known generation/body/fuel/gear/engine field;
+missing candidate attributes are disclosed rather than guessed. Known engines
+allow different trim/modification IDs in this broader tier. Without an engine
+capacity, a known modification must still match. Year tolerance is ±2 and known
+mileage tolerance ±max(60,000 km, 40%). Peers must have explicitly eligible source
+condition; a candidate of unknown condition is labelled, and explicit adverse
+condition remains excluded. Self/relisted VINs, stale/invalid prices, conflicting
+known attributes and samples with a max/min price ratio over two are rejected.
+
+The card shows an indicative market price, the percentage below that estimate
+and peer count. Each subscription's exact `minDiscount` applies to both price
+tiers, including at final dispatch. With no usable reference, the fresh-price
+informational card remains available without a fabricated price or percentage.
+Delivery recomputes the reference evidence and checks known changes/removals.
+
+Both comparison tiers share at most eight additional provider requests and an
+eight-second window for starting them; an in-flight request retains the provider
+adapter's eight-second timeout. This is not a first-second delivery guarantee.
+Only one first page per tier is used. An interrupted comparison keeps already
+retrieved peers, so three usable observations survive a later upstream failure.
+Fresh comparison observations are reused across jobs; user budget and region do
+not restrict peer prices. A lack of peers never creates an endless retry job.
+
+This does not enable historical candidate discovery or revalue delivered cars.
+`RIA_ACTIVE_WINDOW_ENABLED` and `FULL_SCAN_ENABLED` remain false, existing exact
+policy and notification version markers are unchanged, and quota caps, /stop,
+subscription epochs, sent/uncertain claims and filters are preserved. No schema
+migration, paid valuation product or new service is required. Aggregate activity
+adds `reference_estimated`; accepted reference notifications log only public
+listing ID, indicative median and sample size, never recipient IDs or credentials.
+
 ## Fresh publications and multiple regions (release 20260918-45)
 
 The owner's 2026-09-18 direction is to spend discovery quota on newly published

@@ -20,6 +20,7 @@ from .auto_ria import RiaError, fetch_json, listing_preview
 from .models import Filters, SourceBudget, SourceCache, SourceProbe
 from .ria_budget import BudgetLimits, peer_scan_limit
 from . import peer_cache
+from . import reference_valuation as reference
 from .valuation import DIMENSIONS, VERSION, PeerBatch, comparison_dimensions, estimate, is_deal, number, reasons, vehicle_key
 from .launch import source_added_at
 
@@ -491,6 +492,75 @@ class RiaSearch:
             requests_used=self.requests_made - start_requests,
             limited=incomplete and (len(ids) > inspected or result["total"] > len(result["ids"])))
         return peers
+
+    def notification_comparisons(self, candidate):
+        """Two price tiers share one small allowance; a slow lookup cannot loop.
+
+        Exact peers are preferred. A broader first page uses only known vehicle
+        attributes, never the subscriber's price ceiling or selected regions.
+        Existing peer observations survive a later timeout/quota failure.
+        """
+        started, previous_limit, previous_deadline = self.requests_made, self.request_limit, self.deadline
+        self.request_limit = min(previous_limit if previous_limit is not None else started + 8, started + 8)
+        self.deadline = min(previous_deadline, time.monotonic() + 8)
+        peers = PeerBatch()
+        try:
+            try:
+                exact_peers = self.comparisons(candidate)
+                peers = PeerBatch(exact_peers, **getattr(exact_peers, "diagnostics", {}))
+            except RiaError as exc:
+                if str(exc) not in TRANSIENT_ERRORS:
+                    raise
+                peers.diagnostics.update(limited=True, unavailable=str(exc))
+            peers.extend(peer_cache.reference_candidates(self.engine, candidate, self.peer_scan_limit))
+            rating = reference.notification_estimate(candidate, peers)
+            if (rating["valuation"] in reference.VALUED | {"mixed_sample"}
+                    or peers.diagnostics.get("unavailable") or reference.reasons(candidate, time.time())):
+                return peers
+            tolerance = max(reference.MILEAGE_MINIMUM, (candidate.get("mileage") or 0) * reference.MILEAGE_FRACTION)
+            params = {"category_id": 1, "searchType": 4, "status_id": 0, "page": 0,
+                      "countpage": self.peer_scan_limit + 1, "order_by": 7,
+                      "marka_id[0]": candidate["brand_id"], "model_id[0]": candidate["model_id"],
+                      "s_yers[0]": candidate["year"] - reference.YEAR_TOLERANCE,
+                      "po_yers[0]": candidate["year"] + reference.YEAR_TOLERANCE,
+                      "damage": 1, "abroad": 2, "custom": 1}
+            for field, parameter in (("generation_id", "generation_id[0][0]"), ("body_id", "bodystyle[0]"),
+                                     ("fuel_id", "type[0]"), ("gear_id", "gearbox[0]")):
+                if valid_id(candidate.get(field)):
+                    params[parameter] = candidate[field]
+            if valid_id(candidate.get("engine_cc")):
+                params.update(engineVolumeFrom=candidate["engine_cc"] / 1000,
+                              engineVolumeTo=candidate["engine_cc"] / 1000)
+            elif valid_id(candidate.get("modification_id")):
+                params["modifications[0][0][0]"] = candidate["modification_id"]
+            if number(candidate.get("mileage")):
+                params.update(raceFrom=math.floor(max(0, candidate["mileage"] - tolerance) / 1000),
+                              raceTo=math.ceil((candidate["mileage"] + tolerance) / 1000))
+            result = self.request("search", params, parse_ids)
+            known_ids = {peer["id"] for peer in peers} | {candidate["id"]}
+            ids = [sid for sid in result["ids"] if sid not in known_ids]
+            for source_id in ids[:self.peer_scan_limit]:
+                try:
+                    peers.append(peer_cache.observe(self.engine, self.car(source_id), create=True))
+                except RiaError as exc:
+                    if str(exc) not in {"listing_unavailable", "invalid_response"}:
+                        raise
+                rating = reference.notification_estimate(candidate, peers)
+                if (rating["valuation"] in {"sample_median", "mixed_sample"}
+                        or (rating["valuation"] == "reference_median" and rating["comparables"] >= reference.TARGET_PEERS)):
+                    break
+            return peers
+        except RiaError as exc:
+            if str(exc) not in TRANSIENT_ERRORS:
+                raise
+            peers.diagnostics.update(limited=True, unavailable=str(exc))
+            # Three already retrieved peers remain useful if the fourth request
+            # fails. No second lookup or background retry delays the alert.
+            peers.extend(peer_cache.reference_candidates(self.engine, candidate, self.peer_scan_limit))
+            return peers
+        finally:
+            peers.diagnostics["requests_used"] = self.requests_made - started
+            self.request_limit, self.deadline = previous_limit, previous_deadline
 
     def search(self, filters, cursor=None):
         if not self.key:

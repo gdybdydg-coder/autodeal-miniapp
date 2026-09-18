@@ -10,8 +10,8 @@ from backend.monitor import NOTIFICATION_VERSION
 from backend.ria_search import RiaSearch, parse_car
 from backend.tests.test_monitor import p, drain, wake
 from backend.tests.test_ria_search import engine, raw
-from backend.valuation import VERSION, estimate, price_only_evidence_valid
-from backend.worker import TelegramSender
+from backend.valuation import VERSION, estimate, evidence_valid, price_only_evidence_valid
+from backend.worker import TelegramSender, fresh
 
 
 def alter_details(p, mutate):
@@ -45,14 +45,21 @@ def test_explicit_adverse_condition_is_not_bypassed_by_incomplete_details(p, fla
         assert db.get(MonitorJob, "124").state == "excluded"
 
 
-def test_unknown_condition_is_explicitly_labelled_without_a_fake_discount(p, monkeypatch):
+@pytest.mark.parametrize("with_reference", [False, True])
+def test_unknown_condition_is_explicitly_labelled_without_a_fake_discount(p, monkeypatch, with_reference):
     alter_details(p, lambda data: data.update(autoInfoBar={"damage": False}))
+    if not with_reference:
+        monkeypatch.setattr(RiaSearch, "notification_comparisons", lambda *_: [])
     p.ads["124"] = p.clock[0] - 1
     drain(p)
     assert len(p.sent) == 1
     car = p.sent[0][1]
-    assert car.market is None and price_only_evidence_valid(car, p.clock[0])
-    assert "unverified_condition" in car.valuation_evidence["uncertainty_reasons"]
+    if with_reference:
+        assert car.market == 15000 and evidence_valid(car, p.clock[0])
+        assert car.valuation_evidence["confidence"] == "indicative"
+    else:
+        assert car.market is None and price_only_evidence_valid(car, p.clock[0])
+        assert "unverified_condition" in car.valuation_evidence["uncertainty_reasons"]
     requests, real_client = [], httpx.Client
     def handler(request):
         requests.append(json.loads(request.content))
@@ -61,15 +68,16 @@ def test_unknown_condition_is_explicitly_labelled_without_a_fake_discount(p, mon
         real_client(transport=httpx.MockTransport(handler), **kw))
     TelegramSender("test-only")(111, car)
     text = requests[0]["text"]
-    assert "Ринкову оцінку не підтверджено" in text
+    assert ("Орієнтовна ринкова ціна" if with_reference else "Ринкову оцінку не підтверджено") in text
     assert "Стан авто не підтверджено" in text
-    assert "Вигода:" not in text and "%" not in text
+    assert "Вигода:" not in text
+    assert ("%" in text) is with_reference
     # A stale price, price change or tampered exclusion can never authorize send.
-    assert not price_only_evidence_valid(car, p.clock[0] + 301)
-    assert not price_only_evidence_valid(car.model_copy(update={"price": 1}), p.clock[0])
+    assert not fresh(car, p.clock[0] + 301)
+    assert not fresh(car.model_copy(update={"price": 1}), p.clock[0])
     proof = {**car.valuation_evidence, "candidate": {
         **car.valuation_evidence["candidate"], "condition_exclusions": ["damage"]}}
-    assert not price_only_evidence_valid(car.model_copy(update={"valuation_evidence": proof}), p.clock[0])
+    assert not fresh(car.model_copy(update={"valuation_evidence": proof}), p.clock[0])
 
 
 @pytest.mark.parametrize("error", ["search_limit", "quota_exceeded", "connection_error", "upstream_error"])
@@ -100,7 +108,7 @@ def test_insufficient_peers_recovery_is_once_not_a_permanent_retry_loop(p):
     factory = p.runner.search_factory
     def insufficient(engine, key):
         source = factory(engine, key)
-        source.comparisons = lambda _: []
+        source.notification_comparisons = lambda _: []
         return source
     p.runner.search_factory = insufficient
     drain(p)

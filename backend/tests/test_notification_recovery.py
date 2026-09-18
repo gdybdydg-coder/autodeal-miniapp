@@ -45,7 +45,7 @@ def test_recovery_does_not_fabricate_market_price_when_peers_are_missing(p):
     factory = p.runner.search_factory
     def insufficient(engine, key):
         source = factory(engine, key)
-        source.comparisons = lambda _: []
+        source.notification_comparisons = lambda _: []
         return source
     p.runner.search_factory = insufficient
     drain(p)

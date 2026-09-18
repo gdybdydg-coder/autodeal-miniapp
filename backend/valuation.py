@@ -163,7 +163,11 @@ def estimate(candidate, peers, *, now=None):
 def evidence_valid(car, now):
     """Old or inconsistent valuation evidence must return to the monitor queue."""
     evidence = car.valuation_evidence
-    if not evidence or evidence.get("version") != VERSION:
+    from .reference_valuation import VERSION as REFERENCE_VERSION, estimate as reference_estimate
+    if not evidence or evidence.get("version") not in {VERSION, REFERENCE_VERSION}:
+        return False
+    reference = evidence.get("version") == REFERENCE_VERSION
+    if reference and evidence.get("confidence") != "indicative":
         return False
     try:
         candidate = evidence.get("candidate", {})
@@ -171,11 +175,11 @@ def evidence_valid(car, now):
                 ("id", car.source_id), ("price_usd", car.price), ("year", car.year),
                 ("mileage", car.mileage), ("observed_at", car.observed_at))):
             return False
-        result = estimate(candidate, evidence.get("peers", []), now=now)
+        result = (reference_estimate if reference else estimate)(candidate, evidence.get("peers", []), now=now)
     except (AttributeError, KeyError, TypeError, ValueError, OverflowError):
         return False
     # Valuation proof is shared; each subscription applies its own threshold.
-    return (result["valuation"] == "sample_median" and result["market"] == car.market
+    return (result["valuation"] == ("reference_median" if reference else "sample_median") and result["market"] == car.market
             and result["comparables"] == car.comparables)
 
 
@@ -225,7 +229,12 @@ def policy():
             "condition_basis": "no_source_damage_parts_abroad_or_custom_flags",
             "year_tolerance": 1, "mileage_tolerance_percent": 20, "mileage_tolerance_min_km": 30000,
             "maximum_detail_age_seconds": MAX_AGE, "sample_max_price_ratio": 2,
-            "user_price_and_region_affect_median": False}
+            "user_price_and_region_affect_median": False,
+            "reference_estimate": {"version": "reference-v1", "minimum_comparables": 3,
+                "confidence": "indicative", "known_attributes_must_match": True,
+                "year_tolerance": 2, "mileage_tolerance_percent": 40, "mileage_tolerance_min_km": 60000,
+                "subscription_threshold_applies": True, "comparison_request_cap": 8,
+                "comparison_start_window_seconds": 8}}
 
 
 def reason_category(rating):
