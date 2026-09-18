@@ -491,6 +491,11 @@ def create_app(settings: Settings, engine=None):
                     monitor.reset_watch(db, sid, False)
                 db.execute(update(Search).where(Search.user_id == uid).values(enabled=False))
                 db.execute(update(Delivery).where(Delivery.user_id == uid, Delivery.state == "pending").values(state="cancelled"))
+            if command == "/stats":
+                text = bot_commands.stats_text(db, uid, settings.admin_telegram_id)
+                db.commit()
+                telegram_setup.call(settings.bot_token, "sendMessage", {"chat_id": uid, "text": text})
+                return {"ok": True}
             db.add(BotReply(user_id=uid, command_at=command_at, update_id=update_id, command=command))
             db.commit()
         # Durable reply processing is independent of source polling. /start never enables searches.
