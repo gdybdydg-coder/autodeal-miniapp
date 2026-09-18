@@ -12,8 +12,9 @@ The live API response supplies `price.USD` and `avgValueRange`. The adapter deri
 a symmetric range from these **two** provider fields and floors its boundaries
 to whole dollars; it never guesses the range from an average alone. It requests
 `omniId` for the candidate with a 168-hour period. Native-app parity is not claimed:
-periods, refresh time and rounding can differ. The Telegram card discloses the
-lower boundary and the separate 5% adjustment. See [schema, evidence and limits](docs/autoria-lower-bound-integration.md).
+periods, refresh time and rounding can differ. At the owner's request, Telegram
+cards show only "Ринкова ціна: ≈ $…" and "Вигода: …%", without the formula line.
+The calculation and source evidence remain unchanged. See [schema, evidence and limits](docs/autoria-lower-bound-integration.md).
 
 Each uncached new candidate uses one budgeted AI request (20-second timeout,
 no inner retry, 60-second shared cache), instead of notification-comparable

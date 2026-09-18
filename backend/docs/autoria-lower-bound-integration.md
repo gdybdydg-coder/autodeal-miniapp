@@ -44,7 +44,9 @@ documentation's example. Symmetric interpretation is consistent with the user's
 listing screenshots (e.g. mean 3920 and width .05 gives 3724–4116); exact parity
 with the native app has **not** been independently verified for the same listing.
 The API uses a 168-hour observation period. App period, refresh and rounding may
-differ. The card says "our market reference", not an achieved resale price.
+differ. The concise card labels this "Ринкова ціна: ≈ $…" and the difference
+"Вигода: …%". At the owner's request, the formula is retained in server evidence
+rather than printed in the notification. The estimate is not an achieved sale price.
 
 Missing, nonnumeric or invalid width/mean, missing USD, zero observations or
 ambiguous average blocks yield no range. We never assume a default width,

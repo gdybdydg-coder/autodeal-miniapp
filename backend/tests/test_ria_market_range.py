@@ -135,9 +135,9 @@ def test_repair_notice_and_remaining_exclusions(flag, allowed):
         assert rating["valuation_evidence"]["condition_notices"] == [flag]
 
 
-@pytest.mark.parametrize("price,expected", [(950, "Нижче нашого орієнтира: 23,1%"),
-                                          (1300, "Вище нашого орієнтира: 5,3%")])
-def test_telegram_card_discloses_real_basis_and_does_not_invent_profit(monkeypatch, price, expected):
+@pytest.mark.parametrize("price,expected", [(950, "Вигода: 23,1%"),
+                                          (1300, "Вище ринкової ціни: 5,3%")])
+def test_telegram_card_uses_concise_pricing_and_does_not_invent_profit(monkeypatch, price, expected):
     candidate, quote = fixture(price, 1300, 1600)
     car = priced_car(candidate, quote)
     requests, client = [], httpx.Client
@@ -148,8 +148,8 @@ def test_telegram_card_discloses_real_basis_and_does_not_invent_profit(monkeypat
                         client(transport=httpx.MockTransport(handler), **kw))
     assert TelegramSender("test-only")(111, car)["ok"]
     text = requests[0]["text"]
-    assert "Наш ринковий орієнтир: ≈ $1 235" in text
-    assert "AUTO.RIA, нижня межа: $1 300 − 5%" in text and expected in text
+    assert "Ринкова ціна: ≈ $1 235" in text and expected in text
+    assert "нижня межа" not in text and "− 5%" not in text and "нашого орієнтира" not in text
     assert "квартиль" not in text and "схожих авто" not in text
     assert "прибуток" not in text and "/stop" in text
     assert requests[0]["reply_markup"]["inline_keyboard"][0][0]["url"] == str(car.url)

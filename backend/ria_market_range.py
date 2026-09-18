@@ -105,8 +105,6 @@ def pricing_lines(car):
     price, market = Decimal(str(car.price)), Decimal(str(car.market))
     percent = (market - price) / market * 100
     label = f"{abs(percent):.1f}".rstrip("0").rstrip(".").replace(".", ",")
-    difference = (f"📉 Нижче нашого орієнтира: {label}%" if percent >= 0
-                  else f"📈 Вище нашого орієнтира: {label}%")
-    return [f"📊 Наш ринковий орієнтир: ≈ {money(car.market)}",
-            f"AUTO.RIA, нижня межа: {money(car.valuation_evidence['source_range']['lower_usd'])} − 5%",
-            difference]
+    difference = (f"🔥 Вигода: {label}%" if percent >= 0
+                  else f"📈 Вище ринкової ціни: {label}%")
+    return [f"📊 Ринкова ціна: ≈ {money(car.market)}", difference]
