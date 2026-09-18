@@ -8,15 +8,27 @@ import time
 from decimal import Decimal
 
 VERSION = "asking-v5"
-PRICE_ONLY_VERSION = "listing-price-v2"
+PRICE_ONLY_VERSION = "listing-price-v3"
 INFORMATION_REASONS = {"incomplete_details", "insufficient_comparables", "mixed_sample",
-                       "unverified_condition", "missing_valuation_details"}
+                       "unverified_condition", "missing_valuation_details", "repair_condition"}
+REPAIR_CONDITIONS = {"damage", "technical_condition"}
 MAX_AGE = 900
 MIN_PEERS = 5
 DIMENSIONS = ("brand_id", "model_id", "generation_id", "modification_id", "body_id", "fuel_id", "gear_id")
 BASE_DIMENSIONS = tuple(key for key in DIMENSIONS if key != "modification_id")
 FIELDS = ("id", "price_usd", "year", "mileage", "observed_at", "comparable_condition", "vehicle_key", "engine_cc", *DIMENSIONS)
 PRICING_METHOD = {"pricing_method": "lower_quartile", "quantile": .25, "quantile_method": "linear"}
+
+
+def notification_condition_allowed(car):
+    """The owner accepts repair candidates; other source exclusions stay intact."""
+    flags = car.get("condition_exclusions") if isinstance(car, dict) else None
+    return isinstance(flags, list) and all(isinstance(flag, str) and flag in REPAIR_CONDITIONS for flag in flags)
+
+
+def repair_notices(car):
+    flags = car.get("condition_exclusions") if isinstance(car, dict) else None
+    return sorted({flag for flag in flags if isinstance(flag, str) and flag in REPAIR_CONDITIONS}) if isinstance(flags, list) else []
 
 
 def price_statistics(prices):
@@ -191,6 +203,8 @@ def evidence_valid(car, now):
     reference = evidence.get("version") == REFERENCE_VERSION
     if reference and evidence.get("confidence") != "indicative":
         return False
+    if reference and evidence.get("condition_notices") != repair_notices(evidence.get("candidate", {})):
+        return False
     try:
         candidate = evidence.get("candidate", {})
         if any(candidate.get(key) != value for key, value in (
@@ -213,6 +227,7 @@ def price_only_evidence(candidate, evaluated_at, uncertainty_reasons=None):
     """
     return {"version": PRICE_ONLY_VERSION, "basis": "fresh_listing_price",
             "evaluated_at": evaluated_at,
+            "condition_notices": repair_notices(candidate),
             "uncertainty_reasons": sorted(set(uncertainty_reasons or ["incomplete_details"])),
             "candidate": {key: candidate.get(key) for key in
                           ("id", "price_usd", "year", "mileage", "observed_at", "condition_exclusions")}}
@@ -228,7 +243,9 @@ def price_only_evidence_valid(car, now):
     uncertainty = evidence.get("uncertainty_reasons")
     if (not isinstance(uncertainty, list) or not uncertainty
             or any(not isinstance(reason, str) or reason not in INFORMATION_REASONS for reason in uncertainty)
-            or candidate.get("condition_exclusions") != []):
+            or not notification_condition_allowed(candidate)
+            or evidence.get("condition_notices") != repair_notices(candidate)
+            or (repair_notices(candidate) and "repair_condition" not in uncertainty)):
         return False
     return (candidate.get("id") == car.source_id
             and candidate.get("price_usd") == car.price
@@ -250,10 +267,12 @@ def policy():
             "missing_modification_fallback_scope": "candidate_or_peer",
             "unknown_valuation_notification": "informational_without_market_or_discount",
             "condition_basis": "no_source_damage_parts_abroad_or_custom_flags",
+            "notification_repair_condition": "disclosed_not_excluded",
+            "notification_other_exclusions": ["onRepairParts", "abroad", "custom"],
             "year_tolerance": 1, "mileage_tolerance_percent": 20, "mileage_tolerance_min_km": 30000,
             "maximum_detail_age_seconds": MAX_AGE, "sample_max_price_ratio": 2,
             "user_price_and_region_affect_estimate": False,
-            "reference_estimate": {"version": "reference-v3", "minimum_comparables": 3, **PRICING_METHOD,
+            "reference_estimate": {"version": "reference-v4", "minimum_comparables": 3, **PRICING_METHOD,
                 "confidence": "indicative", "known_attributes_must_match": True,
                 "wide_price_sample": "lower_majority_with_at_least_three_peers_within_2_to_1",
                 "wide_price_sample_quartile": "all_eligible_peers_without_price_trimming",

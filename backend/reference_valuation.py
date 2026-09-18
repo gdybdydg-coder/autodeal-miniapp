@@ -5,9 +5,10 @@ an assertion that missing equipment/condition matches or that a sale is a bargai
 """
 import time
 
-from .valuation import FIELDS, MAX_AGE, PRICING_METHOD, PeerBatch, estimate as exact_estimate, is_deal, number, price_statistics
+from .valuation import (FIELDS, MAX_AGE, PRICING_METHOD, PeerBatch, estimate as exact_estimate,
+                        is_deal, number, price_statistics, notification_condition_allowed, repair_notices)
 
-VERSION = "reference-v3"
+VERSION = "reference-v4"
 MIN_PEERS = 3
 TARGET_PEERS = 5
 YEAR_TOLERANCE = 2
@@ -35,7 +36,8 @@ def reasons(car, now, *, peer=False):
         result.append("stale_details")
     # Unknown condition on the candidate is disclosed, never interpreted as good.
     # Peer prices must come from explicitly eligible source-condition observations.
-    if car.get("condition_exclusions") != [] or (peer and car.get("comparable_condition") is not True):
+    if ((peer and (car.get("condition_exclusions") != [] or car.get("comparable_condition") is not True))
+            or (not peer and not notification_condition_allowed(car))):
         result.append("unverified_condition")
     if car.get("mileage") is not None and not number(car["mileage"]):
         result.append("invalid_mileage")
@@ -67,6 +69,7 @@ def estimate(candidate, peers, *, now=None):
     evidence = {"version": VERSION, "basis": "asking_prices", "currency": "USD", **PRICING_METHOD,
                 "confidence": "indicative", "evaluated_at": now,
                 "candidate": {key: candidate.get(key) for key in EVIDENCE_FIELDS},
+                "condition_notices": repair_notices(candidate),
                 "peers": [], "rejected": [], "duplicate_entries": 0,
                 "unknown_dimensions": [key for key in OPTIONAL_DIMENSIONS if not identifier(candidate.get(key))],
                 "search": getattr(peers, "diagnostics", {})}

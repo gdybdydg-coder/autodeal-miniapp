@@ -165,7 +165,8 @@ class TelegramSender:
                                else "Приблизна оцінка за ширшим порівнянням")
                 if (car.valuation_evidence or {}).get("unknown_dimensions"):
                     pricing.append("Частину характеристик не вказано — оцінка приблизна")
-                if (car.valuation_evidence or {}).get("candidate", {}).get("comparable_condition") is not True:
+                if (not proof.get("condition_notices")
+                        and proof.get("candidate", {}).get("comparable_condition") is not True):
                     pricing.append("⚠️ Стан авто не підтверджено даними джерела")
         else:
             pricing.append("ℹ️ Ринкову оцінку не підтверджено — це не підтверджена вигода")
@@ -176,8 +177,12 @@ class TelegramSender:
                 pricing.append("Недостатньо зіставних авто для оцінки")
             if "mixed_sample" in reasons:
                 pricing.append("Ціни аналогів надто різняться; нижній орієнтир не підтверджено")
-            if "unverified_condition" in reasons:
+            if "unverified_condition" in reasons and not (car.valuation_evidence or {}).get("condition_notices"):
                 pricing.append("⚠️ Стан авто не підтверджено даними джерела")
+        if (car.valuation_evidence or {}).get("condition_notices"):
+            pricing.append("⚠️ У джерелі є позначка про пошкодження / ремонт — перевір опис")
+            if car.market is not None:
+                pricing.append("Орієнтир аналогів без позначених пошкоджень; витрати на ремонт не враховані")
         sections = [f"🚘 {car.brand} {car.model} · {car.year}"]
         if (car.pipeline or {}).get("discovery_kind") == "active_window":
             sections.append("🕘 Активне оголошення з додаткової перевірки")

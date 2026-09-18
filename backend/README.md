@@ -1,6 +1,40 @@
 # AUTODeal backend — subscriptions for new worthwhile cars
 
+## Repair candidates are disclosed instead of hidden (release 20260918-49)
+
+At the owner's explicit request, damage and technical-condition flags on a
+**candidate** no longer prevent a matching notification. `reference-v4` can
+calculate the same conservative lower-quartile reference from eligible peers;
+the card discloses the source's repair/damage marker and that repair costs are
+not included. Comparable peers still require clear source-condition flags, so
+damaged peer prices are not silently mixed into the reference. Parts-only,
+abroad and customs exclusions are unchanged. No seller text is inferred as a
+mechanical diagnosis. The exact comparison policy remains `asking-v5`.
+
+When a price reference is unavailable, `listing-price-v3` can deliver the freshly
+priced repair candidate with an explicit condition notice and no fabricated
+market/discount. Proof replay checks the condition notice against the retained
+source flags. Saved filters and minimum discount for priced alerts, /stop,
+sent/uncertain claims, fresh positive prices and all source quotas remain intact.
+`informational-v3` does not reopen finished historical jobs in fresh-only mode.
+
+Vito incident `40292766`: the bounded diagnostic found one matching current
+subscription, no monitor job/seen interest, technical-condition ID 3 and no
+generation ID. Exact-ID `created` and `published` queries for the active interval
+both returned no match, despite a recent public-page display timestamp. Repair
+admission addresses the second blocker; it does not claim that the publication
+API discovered this listing. The existing once-per-ID operator recovery can
+process this explicitly requested car through the normal worker. It does not
+enable old-candidate scanning or reset previous recovery/delivery claims.
+
+Validation: 324 backend tests and 65 frontend tests pass. Added coverage includes
+repair cards with/without reference peers, explicit condition disclosure, notice
+tamper rejection, minimum-discount enforcement, /stop during comparison and a
+once-only recovery with missing generation outside the publication window.
+
 ## Supported lower prices despite an expensive upper tail (release 20260918-48)
+
+Historical release notes; candidate repair handling is superseded by release 49.
 
 `reference-v3` fixes a false-negative in the prior spread guard: one expensive
 peer could suppress the entire p25 estimate even when the cheaper observations

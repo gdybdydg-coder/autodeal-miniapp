@@ -21,7 +21,8 @@ from .models import (Car, Filters, Listing, MonitorControl, MonitorFeed, Monitor
                      MonitorMatch, MonitorMembership, MonitorSeen, MonitorWatch, Search, User)
 from .ria_budget import BudgetLimits
 from .ria_search import RiaSearch, estimate, matches, parse_ids, quota_status
-from .valuation import MAX_AGE, VERSION, PeerBatch, is_deal, price_only_evidence
+from .valuation import (MAX_AGE, VERSION, PeerBatch, is_deal, price_only_evidence,
+                        notification_condition_allowed, repair_notices)
 from . import active_window
 from .reference_valuation import VERSION as REFERENCE_VERSION, VALUED, notification_estimate
 
@@ -32,7 +33,7 @@ WINDOW_SECONDS = 3600
 INDEX_OVERLAP = 600
 EVIDENCE_SECONDS = 60
 OPTIONAL_DETAIL_FIELDS = ("body_id", "fuel_id", "gear_id", "mileage")
-NOTIFICATION_VERSION = "informational-v2"
+NOTIFICATION_VERSION = "informational-v3"
 log = logging.getLogger(__name__)
 
 
@@ -352,7 +353,7 @@ class Monitor:
                 partial = evidence.get("informational_notification") is True
                 priced_deal = bool(rating and rating.get("valuation") in VALUED
                     and is_deal(candidate["price_usd"], rating["market"], filters.minDiscount))
-                if (not candidate or candidate.get("condition_exclusions") or resolved is None
+                if (not candidate or not notification_condition_allowed(candidate) or resolved is None
                         or not matches(candidate, filters, resolved)
                         or not (partial or priced_deal)):
                     continue
@@ -409,7 +410,7 @@ class Monitor:
                 evidence["filters"][fingerprint] = resolved
             any_match |= matches(candidate, filters, evidence["filters"][fingerprint])
         partial = incomplete_optional_details(candidate)
-        excluded = bool(candidate.get("condition_exclusions"))
+        excluded = not notification_condition_allowed(candidate)
         rating = evidence.get("rating", {})
         proof_peers = rating.get("valuation_evidence", {}).get("peers", [])
         if (rating.get("valuation_version") not in {VERSION, REFERENCE_VERSION} or
@@ -428,6 +429,8 @@ class Monitor:
         rating = evidence.get("rating", {})
         uncertainty = []
         if any_match and not excluded and rating.get("valuation") not in VALUED:
+            if repair_notices(candidate):
+                uncertainty.append("repair_condition")
             if partial:
                 uncertainty.append("incomplete_details")
             elif rating.get("valuation") in {"insufficient_data", "mixed_sample"}:
@@ -436,7 +439,7 @@ class Monitor:
                         uncertainty.append(reason)
                 if not uncertainty:
                     uncertainty.append("missing_valuation_details")
-            if uncertainty and not candidate.get("comparable_condition"):
+            if uncertainty and not candidate.get("comparable_condition") and not repair_notices(candidate):
                 uncertainty.append("unverified_condition")
         evidence["uncertainty_reasons"] = sorted(set(uncertainty))
         evidence["informational_notification"] = bool(uncertainty)

@@ -29,8 +29,8 @@ def alter_details(p, mutate):
     p.runner.search_factory = changed
 
 
-@pytest.mark.parametrize("flag", ["damage", "onRepairParts", "abroad", "custom", "technical"])
-def test_explicit_adverse_condition_is_not_bypassed_by_incomplete_details(p, flag):
+@pytest.mark.parametrize("flag", ["onRepairParts", "abroad", "custom"])
+def test_parts_abroad_and_custom_exclusions_are_not_bypassed_by_incomplete_details(p, flag):
     def mutate(data):
         data["autoData"]["gearBoxId"] = None
         if flag == "technical":
