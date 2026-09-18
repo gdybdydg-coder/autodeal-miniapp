@@ -5,8 +5,9 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from backend import active_window
-from backend.models import (Delivery, MonitorActiveWindow, MonitorControl, MonitorFeed,
+from backend.models import (Delivery, Listing, MonitorActiveWindow, MonitorControl, MonitorFeed,
                             MonitorJob, MonitorSeen, MonitorWatch, Range, Search, SourceBudget)
+from backend.worker import enqueue
 from backend.monitor import Monitor, reset_watch, runtime_status
 from backend.tests.test_monitor import p, drain, wake, details, add_search
 
@@ -131,6 +132,42 @@ def test_stop_during_supplemental_fetch_cannot_create_interest(p, monkeypatch):
     assert not p.sent and not details(p, "123")
     with Session(p.engine) as db:
         assert db.get(MonitorJob, "123") is None
+
+
+@pytest.mark.parametrize("already_queued", [True, False])
+def test_disable_supplement_retires_old_work_and_queued_alerts_but_keeps_new(p, monkeypatch, already_queued):
+    enable_window(p, monkeypatch)
+    for _ in range(20):
+        if not p.runner.tick():
+            break
+    with Session(p.engine) as db:
+        listing = db.scalar(select(Listing))
+        assert listing and listing.source_id == "123"
+        listing_id = listing.id
+        db.add(Delivery(user_id=222, listing_id=listing.id, state="sent", message_id=17))
+        db.add(Delivery(user_id=333, listing_id=listing.id, state="uncertain"))
+        db.add(MonitorJob(source_id="999", first_seen=p.clock[0], result={"discovery_kind": "active_window"}))
+        db.add(MonitorSeen(search_id=1, source_id="999", epoch=db.get(MonitorWatch, 1).epoch,
+                           state="pending", first_seen=p.clock[0]))
+        db.commit()
+    if already_queued:
+        enqueue(p.engine)
+    previous_old_checks = len(details(p, "123"))
+    p.settings = replace(p.settings, ria_active_window_enabled=False)
+    p.runner = Monitor(p.engine, p.settings, p.runner.search_factory, p.runner.sender)
+    p.ads["124"] = p.clock[0] + 1
+    wake(p, 601)  # Stale supplemental cards must not initiate a price refresh.
+    p.runner.deliver_tick()  # Delivery can run before the first monitor sync.
+    drain(p)
+    assert [car.source_id for _, car in p.sent] == ["124"]
+    assert len(details(p, "123")) == previous_old_checks and not details(p, "999")
+    with Session(p.engine) as db:
+        assert db.get(MonitorJob, "999").state == "cancelled"
+        assert db.get(MonitorSeen, (1, "999")).state == "cancelled"
+        assert db.scalar(select(Delivery.state).where(Delivery.user_id == 222)) == "sent"
+        assert db.scalar(select(Delivery.state).where(Delivery.user_id == 333)) == "uncertain"
+        old = db.scalar(select(Delivery).where(Delivery.user_id == 111, Delivery.listing_id == listing_id))
+        assert (old.state == "cancelled") if already_queued else old is None
 
 
 @pytest.mark.parametrize("first_delivery", ["sent", "uncertain"])

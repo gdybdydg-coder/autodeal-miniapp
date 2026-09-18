@@ -13,6 +13,7 @@ function setup(fetch) {
     AutoDealBrandPicker:{refresh(){pickerValues=brand.children.map(o=>o.value)}}};
   const context=vm.createContext({window,brand,model,region,advancedGroups,
     selectedValues:()=>[],renderAdvancedOptions(){},Option:function(text,value){return{text,value}},
+    renderRegionOptions(){region.replaceChildren(...data.regions.slice(1).map(value=>({value})));},
     document:{getElementById:id=>({catalogStatus:status,retryCatalog:retry})[id]}});
   vm.runInContext(fs.readFileSync(__dirname+'/catalog-loader.js','utf8'),context);
   return{window,data,brand,model,region,status,retry,pickerValues:()=>pickerValues};

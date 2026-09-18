@@ -1,5 +1,39 @@
 # AUTODeal backend — subscriptions for new worthwhile cars
 
+## Fresh publications and multiple regions (release 20260918-45)
+
+The owner's 2026-09-18 direction is to spend discovery quota on newly published
+cars. Keep `RIA_ACTIVE_WINDOW_ENABLED=false` and `FULL_SCAN_ENABLED=false`.
+The main publication-time monitor, short indexing overlap, subscription activation
+checkpoints and current price verification remain in place. Disabling the active
+window retires its pending valuation jobs and prevents both newly queued and
+already queued supplemental cards from being sent or refreshing old prices.
+Sent/uncertain delivery records and stopped subscriptions remain untouched.
+Comparable-price requests still serve valuation of new candidates; no historical
+candidate sweep or periodic old price-drop checking runs in this mode.
+
+The main form now offers checkbox selection of one or multiple regions. The
+existing `filters.region` accepts a string or a list of region names, with OR
+semantics. One group sends `state[0]`, `state[1]`, etc. with corresponding
+`city[i]=0` in a single AUTO.RIA search. Details must match one of the selected
+region IDs; a missing region is not treated as an optional unknown attribute.
+Region order/duplicates canonicalize to one subscription. Empty and single-region
+lists canonicalize to the previous string representation, preserving legacy
+fingerprints, saved drafts and active monitor checkpoints.
+
+Editing an existing subscription to multiple regions follows the normal
+save/reactivate flow. The release does not silently merge separate subscriptions
+whose other filters or activation times might differ. Provider caps stay at their
+configured values. Discovery still polls according to its quota-aware interval;
+this release does not promise first-second publication-to-phone delivery.
+
+Validation covers four regions in one feed, exact region matching (including
+missing/out-of-scope locations), old single-region compatibility, persistence and
+duplicates, and switching off supplemental jobs/queued cards while new alerts
+continue and sent/uncertain records are preserved.
+
+Provider syntax: https://docs-developers.ria.com/en/used-cars/auto_search_and_info/search_auto
+
 > Product direction changed on 2026-09-17: AUTODeal will monitor new, qualifying
 > listings for saved subscriptions and notify users in their private bot chat.
 > A full-market catalog and bulk database acquisition are no longer launch goals.

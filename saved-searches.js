@@ -6,10 +6,14 @@
   function normalize(filters) {
     if (!filters || typeof filters!=="object") return fail();
     const result={};
-    for(const key of ["brand","model","region"]) {
+    for(const key of ["brand","model"]) {
       if(typeof filters[key]!=="string" || filters[key].length>150) return fail();
       result[key]=filters[key];
     }
+    const regions=Array.isArray(filters.region)?filters.region:(filters.region===""?[]:[filters.region]);
+    if(regions.length>30||!regions.every(v=>typeof v==="string"&&v.length>0&&v.length<=150)) return fail();
+    const uniqueRegions=[...new Set(regions)].sort();
+    result.region=uniqueRegions.length>1?uniqueRegions:(uniqueRegions[0]||"");
     for(const key of ["price","year","mileage"]) {
       const range=filters[key];
       if(!range || !["from","to"].every(k=>range[k]===null || (Number.isFinite(range[k])&&range[k]>=0))) return fail();

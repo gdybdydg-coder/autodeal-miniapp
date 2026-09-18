@@ -163,6 +163,15 @@ class Monitor:
 
     def sync(self):
         with Session(self.engine) as db:
+            if not self.settings.ria_active_window_enabled:
+                # Retire only queued supplemental work. Keep publication cursors,
+                # subscription epochs and sent/uncertain delivery records intact.
+                retired_ids = select(MonitorJob.source_id).where(MonitorJob.state == "pending",
+                    MonitorJob.result["discovery_kind"].as_string() == active_window.KIND)
+                db.execute(update(MonitorSeen).where(MonitorSeen.source_id.in_(retired_ids),
+                    MonitorSeen.state == "pending").values(state="cancelled"))
+                db.execute(update(MonitorJob).where(MonitorJob.source_id.in_(retired_ids)).values(
+                    state="cancelled", reason="active_window_disabled"))
             # Legacy watches have no verified creation-time checkpoint. Upgrade
             # to a new baseline, never reinterpret old windows as new arrivals.
             legacy = db.execute(select(Search.id, Search.user_id).join(User, User.id == Search.user_id)
@@ -532,7 +541,7 @@ class Monitor:
         if webhook_status(self.engine)["status"] != "configured":
             return
         from .worker import TelegramSender, deliver_one, enqueue
-        enqueue(self.engine)
+        enqueue(self.engine, allow_active_window=self.settings.ria_active_window_enabled)
         deliver_one(self.engine, self.settings, self.sender or TelegramSender(self.settings.bot_token))
 
 

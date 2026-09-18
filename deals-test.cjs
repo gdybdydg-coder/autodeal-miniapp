@@ -26,7 +26,8 @@ function setup(fetchSearch,mode='legacy') {
   const context=vm.createContext({window,document,URL,Option:function(text,value){return{text,value}},setTimeout:()=>0,clearTimeout(){}});
   for(const file of ['data/cars.js','saved-searches.js','app.js','search-manager.js','live-search.js'])
     vm.runInContext(fs.readFileSync(__dirname+'/'+file,'utf8'),context);
-  ids.brand.value='Volkswagen';ids.model.value='Golf';ids.region.value='Хмельницька область';
+  ids.brand.value='Volkswagen';ids.model.value='Golf';
+  nodes.find(n=>n.name==='region'&&n.value==='Хмельницька область').checked=true;
   ids.priceTo.value='20000';ids.mileageTo.value='180';
   nodes.find(n=>n.name==='fuel'&&n.value==='Дизель').checked=true;
   vm.runInContext('onlyDeals=false',context);

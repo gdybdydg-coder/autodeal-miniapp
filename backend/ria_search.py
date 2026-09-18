@@ -370,9 +370,12 @@ class RiaSearch:
         if filters.model:
             ids["model_id"] = self.resolve(f"categories/1/marks/{ids['brand_id']}/models", [filters.model])[0]
             params["model_id[0]"] = ids["model_id"]
-        if filters.region:
-            ids["region_id"] = self.resolve("states", [filters.region.removesuffix(" область")])[0]
-            params["state[0]"] = ids["region_id"]
+        if filters.regions:
+            states = self.resolve("states", [region.removesuffix(" область") for region in filters.regions])
+            ids["region_id"] = states if len(states) > 1 else states[0]
+            for index, state in enumerate(states):
+                params[f"state[{index}]"] = state
+                params[f"city[{index}]"] = 0
         for field, path, param, id_field in (
             ("body", "categories/1/bodystyles", "bodystyle", "body_id"),
             ("fuel", "type", "type", "fuel_id"),
@@ -596,7 +599,8 @@ def matches(car, filters, ids):
     for key, value in ids.items():
         if isinstance(value, list):
             # Missing optional details are unknown, not a contradiction.
-            if value and car.get(key) is not None and car.get(key) not in value:
+            if value and car.get(key) not in value and (car.get(key) is not None
+                    or key not in {"body_id", "fuel_id", "gear_id"}):
                 return False
         elif car.get(key) != value:
             return False

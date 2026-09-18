@@ -28,7 +28,7 @@ Choice = Annotated[str, Field(min_length=1, max_length=150)]
 class Filters(StrictModel):
     brand: str = Field(default="", max_length=150)
     model: str = Field(default="", max_length=150)
-    region: str = Field(default="", max_length=150)
+    region: Annotated[str, Field(max_length=150)] | Annotated[list[Choice], Field(max_length=30)] = ""
     price: Range = Field(default_factory=Range)
     year: Range = Field(default_factory=Range)
     mileage: Range = Field(default_factory=Range)
@@ -38,11 +38,19 @@ class Filters(StrictModel):
     onlyDeals: bool = True
     minDiscount: float = Field(default=15, ge=0, le=100, strict=True)
 
+    @property
+    def regions(self):
+        return sorted(set(self.region)) if isinstance(self.region, list) else ([self.region] if self.region else [])
+
     def canonical(self):
         data = self.model_dump(by_alias=True)
         # Preserve existing subscription fingerprints and activation checkpoints.
         if data["minDiscount"] == 15:
             data.pop("minDiscount")
+        # Single-region and unrestricted subscriptions retain their old identity,
+        # activation time and checkpoints; region order never creates duplicates.
+        regions = self.regions
+        data["region"] = regions if len(regions) > 1 else (regions[0] if regions else "")
         for key in ("body", "fuel", "transmission"):
             data[key] = sorted(set(data[key]))
         if "Електро" not in data["fuel"]:

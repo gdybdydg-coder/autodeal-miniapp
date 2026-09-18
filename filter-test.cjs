@@ -47,9 +47,9 @@ selected('transmission',['Робот','Автомат']);assert.equal(count(),'�
 byId.mileageFrom.value='186';byId.mileageTo.value='186';assert.equal(count(),'Знайдено: 1');
 byId.mileageTo.value='185';count();assert.match(byId.toast.textContent,/Пробіг.*Від/);
 byId.mileageFrom.value='-1';count();assert.match(byId.toast.textContent,/невід/);
-byId.region.value='Київська область';
-byId.resetAdvanced.listeners.click();assert.equal(byId.region.value,'Київська область');assert.equal(count(),'Знайдено: 2');
-byId.region.value='';selected('fuel',['Електро']);assert.equal(count(),'Знайдено: 0');
+selected('region',['Київська область']);
+byId.resetAdvanced.listeners.click();assert.equal(run('readCurrentFilters().region'),'Київська область');assert.equal(count(),'Знайдено: 2');
+selected('region',[]);selected('fuel',['Електро']);assert.equal(count(),'Знайдено: 0');
 byId.resetAdvanced.listeners.click();byId.brand.value='BMW';byId.model.value='3 Series';assert.equal(count(),'Знайдено: 1');
 byId.priceTo.value='10000';assert.equal(count(),'Знайдено: 0');
 run('const f={brand:"",model:"",region:"",price:{from:null,to:null},year:{from:null,to:null},mileage:{from:0,to:0},body:[],fuel:[],transmission:[],onlyDeals:false}');
@@ -62,6 +62,14 @@ for (const car of context.window.AUTO_DEAL_DATA.cars) {
 }
 assert.ok(html.indexOf('id="region"')<html.indexOf('id="advancedFilters"'));
 console.log('PASS: option counts; multi-select OR; combined AND; mileage conversion/bounds/zero/missing; invalid ranges; reset; basic filters; data vocabulary; visible region.');
+const wantedRegions=['Вінницька область','Чернівецька область','Хмельницька область','Тернопільська область'];
+selected('region',wantedRegions);run('updateRegionSummary()');
+assert.deepEqual(Array.from(run('readCurrentFilters().region')).sort(),[...wantedRegions].sort());
+assert.match(byId.regionSummary.textContent,/Вінницька/);assert.match(byId.regionSummary.textContent,/Тернопільська/);
+run('f.region=readCurrentFilters().region');
+for(const region of wantedRegions) assert.equal(run('matchesFilters('+JSON.stringify({region,price:1,year:2020,mileage:0})+',f)'),true);
+assert.equal(run('matchesFilters({region:"Київська область",price:1,year:2020,mileage:0},f)'),false);
+byId.clearRegions.listeners.click();assert.equal(run('readCurrentFilters().region'),'');assert.equal(byId.regionSummary.textContent,'Вся Україна');
 // Exercise manager event wiring with a minimal DOM, without claiming visual QA.
 let savedRaw=null;
 context.window.localStorage={getItem:()=>savedRaw,setItem:(key,value)=>{savedRaw=value;}};

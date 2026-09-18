@@ -30,7 +30,8 @@ function setup(api={},mode='legacy') {
     Event:function(type){this.type=type},setTimeout:()=>0,clearTimeout(){}});
   for(const f of ['data/cars.js','saved-searches.js','app.js','search-manager.js','cloud-searches.js'])
     vm.runInContext(fs.readFileSync(__dirname+'/'+f,'utf8'),context);
-  ids.brand.value='Volkswagen';ids.model.value='Golf';ids.region.value='Хмельницька область';
+  ids.brand.value='Volkswagen';ids.model.value='Golf';
+  nodes.find(n=>n.name==='region'&&n.value==='Хмельницька область').checked=true;
   ids.priceTo.value='20000';ids.mileageTo.value='180';
   nodes.find(n=>n.name==='fuel'&&n.value==='Дизель').checked=true;
   const run=s=>vm.runInContext(s,context);
@@ -273,6 +274,24 @@ test('subscription edit restores all filters and updates the same id without a s
   assert.equal(updates[0].filters.onlyDeals,true);assert.equal(stored.name,'Новий Golf');
   assert.equal(ui.ids.cloudCount.textContent,'1');assert.equal(ui.searches.length,0);
   assert.equal(ui.ids.saveSearchForm.hidden,true);assert.equal(ui.ids.cancelSubscriptionEdit.hidden,true);
+});
+
+test('one subscription restores and saves four regions together without starting a scan',async()=>{
+  const regions=['Вінницька область','Чернівецька область','Хмельницька область','Тернопільська область'];
+  let stored;const updates=[];
+  const ui=setup({list:async()=>[stored],update:async(id,name,filters)=>{
+    updates.push({id,name,filters});stored={id,name,filters,enabled:false};return stored;
+  },notificationStatus:async()=>({available:false,telegram_ready:true})},'subscriptions');
+  stored={id:27,name:'Чотири області',filters:{...ui.filters(),region:regions},enabled:false};
+  await ui.nav.saved.listeners.click();
+  for(const name of regions) assert.ok(part(ui.ids.cloudSearchList.children[0],'subscription-summary').textContent.includes(name.replace(' область',' обл.')));
+  await part(ui.ids.cloudSearchList.children[0],'subscription-open').listeners.click();
+  assert.deepEqual(Array.from(ui.filters().region).sort(),[...regions].sort());
+  assert.match(ui.ids.regionSummary.textContent,/Вінницька/);
+  ui.ids.saveSearchBtn.listeners.click();await ui.ids.saveCloudSearch.listeners.click();
+  assert.equal(updates.length,1);assert.equal(updates[0].id,27);
+  assert.deepEqual(Array.from(updates[0].filters.region),[...regions].sort());
+  assert.equal(ui.ids.cloudCount.textContent,'1');assert.equal(ui.searches.length,0);
 });
 
 test('cancelled edit performs no write and a new subscription starts with clear filters',async()=>{

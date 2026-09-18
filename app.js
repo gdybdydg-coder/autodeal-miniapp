@@ -1,6 +1,6 @@
 const {catalog,regions,cars,bodyTypes,fuelTypes,transmissionTypes}=window.AUTO_DEAL_DATA;
-const $=id=>document.getElementById(id);const brand=$("brand"),model=$("model"),region=$("region"),marketButton=$("marketSwitch");
-Object.keys(catalog).forEach(value=>brand.add(new Option(value,value)));regions.forEach((value,index)=>region.add(new Option(value,index?value:"")));
+const $=id=>document.getElementById(id);const brand=$("brand"),model=$("model"),marketButton=$("marketSwitch");
+Object.keys(catalog).forEach(value=>brand.add(new Option(value,value)));
 brand.addEventListener("change",()=>{model.innerHTML='<option value="">Всі моделі</option>';const models=catalog[brand.value]||[];models.forEach(value=>model.add(new Option(value,value)));model.disabled=!models.length});
 let onlyDeals=true;marketButton.addEventListener("click",()=>{onlyDeals=!onlyDeals;marketButton.querySelector(".switch").classList.toggle("active",onlyDeals);marketButton.setAttribute("aria-checked",String(onlyDeals))});
 const numberValue=id=>$(id).value===""?null:Number($(id).value);
@@ -21,6 +21,31 @@ const advancedGroups = [
 function selectedValues(name) {
   return [...document.querySelectorAll('input[name="'+name+'"]:checked')].map(input=>input.value);
 }
+function regionValues(value) { return Array.isArray(value)?value:(value?[value]:[]); }
+function updateRegionSummary() {
+  const selected=selectedValues("region");
+  $("regionSummary").textContent=selected.length?selected.map(v=>v.replace(" область","")).join(", "):"Вся Україна";
+  $("clearRegions").disabled=!selected.length;
+}
+function renderRegionOptions() {
+  const previous=selectedValues("region");
+  $("regionOptions").replaceChildren();
+  const legend=document.createElement("legend");legend.className="sr-only";legend.textContent="Області пошуку";
+  $("regionOptions").append(legend);
+  for(const value of new Set([...regions.slice(1),...previous])) {
+    const label=document.createElement("label");label.className="choice";
+    const input=document.createElement("input");input.type="checkbox";input.name="region";
+    input.value=value;input.checked=previous.includes(value);input.addEventListener("change",updateRegionSummary);
+    const span=document.createElement("span");span.textContent=value.replace(" область","");
+    label.append(input,span);$("regionOptions").append(label);
+  }
+  updateRegionSummary();
+}
+renderRegionOptions();
+$("clearRegions").addEventListener("click",()=>{
+  document.querySelectorAll('input[name="region"]').forEach(input=>input.checked=false);
+  updateRegionSummary();
+});
 let reducerChoice=null;
 function updateAdvancedCount() {
   if (reducerChoice) {
@@ -96,7 +121,7 @@ function inRange(value,range) {
 function matchesFilters(car,filters) {
   return (!filters.brand||car.brand===filters.brand)
     && (!filters.model||car.model===filters.model)
-    && (!filters.region||car.region===filters.region)
+    && (!regionValues(filters.region).length||regionValues(filters.region).includes(car.region))
     && inRange(car.price,filters.price)
     && inRange(car.year,filters.year)
     && inRange(Number.isFinite(car.mileage)?car.mileage/1000:null,filters.mileage)
@@ -108,8 +133,9 @@ function matchesFilters(car,filters) {
 function readCurrentFilters() {
   if(window.AutoDealCatalog?.isBusy?.()) throw Error("Зачекай, завантажуємо моделі вибраної марки.");
   updateAdvancedCount();
+  const selectedRegions=selectedValues("region");
   return {
-    brand:brand.value,model:model.value,region:region.value,
+    brand:brand.value,model:model.value,region:selectedRegions.length>1?selectedRegions:(selectedRegions[0]||""),
     price:readRange("priceFrom","priceTo","Ціна"),
     year:readRange("yearFrom","yearTo","Рік"),
     mileage:readRange("mileageFrom","mileageTo","Пробіг"),

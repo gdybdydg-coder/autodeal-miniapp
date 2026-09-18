@@ -17,9 +17,11 @@ from .peer_cache import evidence_current
 def matches(car: Car, filters: Filters):
     if not is_deal(car.price, car.market, filters.minDiscount):
         return False
-    for key in ("brand", "model", "region"):
+    for key in ("brand", "model"):
         if getattr(filters, key) and getattr(filters, key) != getattr(car, key):
             return False
+    if filters.regions and car.region not in filters.regions:
+        return False
     for key in ("body", "fuel", "transmission"):
         value = getattr(car, key)
         if getattr(filters, key) and value and value not in getattr(filters, key):
@@ -84,7 +86,12 @@ def eligible(db, user_id, listing, now):
                              Search.after_listing < listing.id)))
 
 
-def enqueue(engine, now=None):
+def supplemental_listing(listing):
+    return bool(listing and listing.source == "auto_ria"
+                and (listing.car.get("pipeline") or {}).get("discovery_kind") == "active_window")
+
+
+def enqueue(engine, now=None, *, allow_active_window=True):
     now = time.time() if now is None else now
     with Session(engine) as db:
         for user in db.scalars(select(User).where(User.ready.is_(True))):
@@ -94,6 +101,8 @@ def enqueue(engine, now=None):
             for listing in db.scalars(select(Listing).where(
                     or_(Listing.source != "auto_ria", Listing.id.in_(matched)),
                     Listing.id.not_in(already_queued))):
+                if not allow_active_window and supplemental_listing(listing):
+                    continue
                 refreshable = (listing.source == "auto_ria"
                     and not fresh(Car.model_validate(listing.car), now, db)
                     and db.scalar(matching_searches(user.id, listing.id).limit(1)) is not None)
@@ -195,9 +204,12 @@ def deliver_one(engine, settings: Settings, sender, now=None):
         user = db.scalar(select(User).where(User.id == row.user_id).with_for_update())
         listing = db.get(Listing, row.listing_id)
         refresh = []
-        if user and user.ready and listing and listing.source == "auto_ria" and not fresh(Car.model_validate(listing.car), now, db):
+        retired = not settings.ria_active_window_enabled and supplemental_listing(listing)
+        if not retired and user and user.ready and listing and listing.source == "auto_ria" and not fresh(Car.model_validate(listing.car), now, db):
             refresh = list(db.scalars(matching_searches(user.id, listing.id)))
-        if refresh:
+        if retired:
+            row.state = "cancelled"
+        elif refresh:
             # A long Telegram queue is not grounds to send an old price or silently
             # discard the opportunity. Revalidate through the normal budgeted job.
             job = db.get(MonitorJob, listing.source_id)

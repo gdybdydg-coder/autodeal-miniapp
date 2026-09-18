@@ -21,6 +21,16 @@ h1 { font-size: 26px; line-height: 1.2; font-weight: 600; letter-spacing: -.6px;
 .discount-input .input { padding-right: 38px; }
 .discount-input > span { position: absolute; right: 14px; top: 50%; transform: translateY(-50%); color: var(--muted); pointer-events: none; }
 .discount-field .filter-help { margin: 8px 0 0; }
+.region-picker { border: 1px solid #37373d; border-radius: 10px; padding: 0 12px; background: var(--field); }
+.region-picker > summary { position: relative; padding: 12px 22px 12px 0; min-height: 48px; cursor: pointer; list-style: none; }
+.region-picker > summary::-webkit-details-marker { display: none; }
+.region-picker > summary::after { content: "+"; position: absolute; right: 0; top: 20px; font-size: 20px; }
+.region-picker[open] > summary::after { content: "−"; }
+.region-picker .label { display: block; margin-bottom: 5px; }
+#regionSummary { display: block; font-size: 14px; line-height: 1.5; overflow-wrap: anywhere; }
+#regionOptions { max-height: 300px; overflow-y: auto; overscroll-behavior: contain; padding: 8px 0 12px; }
+.region-picker .filter-help { margin: 0 0 8px; }
+.region-picker .choice { min-height: 44px; }
 fieldset { border: 0; padding: 0; margin: 0; min-width: 0; }
 legend { padding: 0; }
 .range { display: grid; grid-template-columns: minmax(0,1fr) minmax(0,1fr); gap: 0; border: 1px solid #37373d; border-radius: 10px; overflow: hidden; background: var(--field); }

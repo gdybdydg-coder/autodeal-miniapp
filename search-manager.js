@@ -34,7 +34,7 @@ async function editSubscription(item,scope) {
   }
 }
 function summarizeFilters(f) {
-  const parts=[f.brand||"Всі марки",f.model,f.region||"Вся Україна"];
+  const parts=[f.brand||"Всі марки",f.model,regionValues(f.region).join(", ")||"Вся Україна"];
   for(const [key,label,unit] of [["price","Ціна","$"],["year","Рік",""],["mileage","Пробіг","тис. км"]]) {
     const r=f[key];
     if(r.from!==null||r.to!==null) parts.push(label+": "+(r.from??"…")+"–"+(r.to??"…")+" "+unit);
@@ -55,7 +55,7 @@ function managerButton(text,action) {
 function subscriptionSummary(filters,name) {
   const parts=[],vehicle=[filters.brand,filters.model].filter(Boolean).join(" ");
   if(vehicle&&!name.toLowerCase().includes(vehicle.toLowerCase())) parts.push(vehicle);
-  parts.push(...filters.body,filters.region.replace(" область"," обл.")||"Вся Україна");
+  parts.push(...filters.body,regionValues(filters.region).map(v=>v.replace(" область"," обл.")).join(", ")||"Вся Україна");
   for(const [key,unit] of [["price"," $"],["year"," р."],["mileage"," тис. км"]]) {
     const range=filters[key],format=n=>key==="year"?String(n):n.toLocaleString("uk-UA");
     if(range.from===null&&range.to===null) continue;
@@ -183,9 +183,11 @@ function applySavedFilters(raw) {
   const f=savedAPI.normalize(raw);
   if(f.brand && !catalog[f.brand]) throw Error("Ця марка більше не доступна");
   if(f.model && !(catalog[f.brand]||[]).includes(f.model)) throw Error("Ця модель більше не доступна");
-  if(f.region && !regions.includes(f.region)) throw Error("Ця область більше не доступна");
+  if(regionValues(f.region).some(v=>!regions.includes(v))) throw Error("Ця область більше не доступна");
   for(const group of advancedGroups) if(f[group.name].some(v=>!group.options.includes(v))) throw Error("Деякі параметри пошуку більше не доступні");
-  brand.value=f.brand;brand.dispatchEvent(new Event("change"));model.value=f.model;region.value=f.region;
+  brand.value=f.brand;brand.dispatchEvent(new Event("change"));model.value=f.model;
+  document.querySelectorAll('input[name="region"]').forEach(input=>input.checked=regionValues(f.region).includes(input.value));
+  updateRegionSummary();
   for(const key of ["price","year","mileage"]) {
     $(key+"From").value=f[key].from??"";$(key+"To").value=f[key].to??"";
   }

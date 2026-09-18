@@ -55,7 +55,7 @@
       fill(brand,brands,"Всі марки");
       root.AutoDealBrandPicker?.refresh();
       data.regions.splice(0,data.regions.length,"Вся Україна",...states);
-      fill(region,states,"Вся Україна");
+      renderRegionOptions();
       for(const group of advancedGroups) {
         const selected=selectedValues(group.name);
         // Preserve a saved/selected option; the server will reject an obsolete choice.

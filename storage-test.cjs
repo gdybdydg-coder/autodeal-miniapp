@@ -37,3 +37,16 @@ assert.throws(()=>saved.update(storage,first.id,second.filters,'Duplicate'),/в�
 assert.throws(()=>saved.update(storage,'deleted',filters,'Missing'),/видалено/);
 assert.equal(contents,beforeConflict);
 console.log("PASS: persistence, snapshots, deduplication, preferences, removal, validation, unavailable storage, corrupt data preservation and limits.");
+const regions=['Вінницька область','Чернівецька область','Хмельницька область','Тернопільська область'];
+assert.deepEqual(saved.normalize({...filters,region:regions}).region,[...regions].sort());
+assert.deepEqual(saved.normalize({...filters,region:[filters.region]}),saved.normalize(filters));
+assert.equal(saved.normalize({...filters,region:[]}).region,'');
+assert.deepEqual(saved.normalize({...filters,region:[...regions].reverse().concat(regions)}).region,[...regions].sort());
+assert.throws(()=>saved.normalize({...filters,region:['']}));
+assert.throws(()=>saved.normalize({...filters,region:[1]}));
+contents=null;
+const multi=saved.save(storage,{...filters,region:regions},'Чотири області',false);
+assert.equal(saved.save(storage,{...filters,region:[...regions].reverse()},'Оновлена назва',false).id,multi.id);
+assert.equal(saved.read(storage).length,1);
+assert.deepEqual(saved.read(storage)[0].filters.region,[...regions].sort());
+console.log('PASS: multi-region persistence, canonical order, legacy single-region compatibility and duplicate protection.');
