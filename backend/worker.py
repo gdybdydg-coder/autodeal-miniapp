@@ -154,15 +154,16 @@ class TelegramSender:
             market = f"${car.market:,.0f}".replace(",", " ")
             benefit = f"{discount:.1f}".rstrip("0").rstrip(".").replace(".", ",")
             reference = (car.valuation_evidence or {}).get("version") == REFERENCE_VERSION
+            pricing.extend((f"📊 Обережний ціновий орієнтир: ≈ {market}",
+                            f"📉 Нижче орієнтира: {benefit}%",
+                            f"ℹ️ Нижній квартиль цін {car.comparables} схожих авто",
+                            "Ціни оголошень; фактична ціна продажу невідома"))
             if reference:
-                pricing.extend((f"📊 Орієнтовна ринкова ціна: ≈ {market}",
-                                f"📉 Нижче оцінки: {benefit}%", f"ℹ️ За цінами {car.comparables} схожих авто"))
+                pricing.append("Приблизна оцінка за ширшим порівнянням")
                 if (car.valuation_evidence or {}).get("unknown_dimensions"):
                     pricing.append("Частину характеристик не вказано — оцінка приблизна")
                 if (car.valuation_evidence or {}).get("candidate", {}).get("comparable_condition") is not True:
                     pricing.append("⚠️ Стан авто не підтверджено даними джерела")
-            else:
-                pricing.extend((f"📊 Ринкова ціна: ≈ {market}", f"🔥 Вигода: {benefit}%"))
         else:
             pricing.append("ℹ️ Ринкову оцінку не підтверджено — це не підтверджена вигода")
             reasons = (car.valuation_evidence or {}).get("uncertainty_reasons", [])
@@ -257,9 +258,11 @@ def deliver_one(engine, settings: Settings, sender, now=None):
                 timing.accepted_at = time.time()
                 stamp = result["result"].get("date")
                 timing.telegram_date = stamp if type(stamp) is int and stamp > 0 else None
-                if (car.valuation_evidence or {}).get("version") == REFERENCE_VERSION:
-                    delivery_log.info("Reference-price notification accepted source_id=%s market_usd=%s comparables=%s",
-                                      car.source_id, car.market, car.comparables)
+                if car.source == "auto_ria" and car.market is not None:
+                    proof = car.valuation_evidence or {}
+                    delivery_log.info("Conservative-price notification accepted source_id=%s version=%s market_usd=%s median_usd=%s comparables=%s peer_prices_usd=%s",
+                                      car.source_id, proof.get("version"), car.market, proof.get("median_usd"),
+                                      car.comparables, sorted(peer["price_usd"] for peer in proof.get("peers", [])))
             elif result.get("error_code") == 429:
                 retry = result.get("parameters", {}).get("retry_after", 60)
                 row.retry_at = now + max(1, min(int(retry), 86400))

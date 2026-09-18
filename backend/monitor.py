@@ -190,8 +190,8 @@ class Monitor:
                     db.add(MonitorFeed(id=member.feed_id, filters=source_filters(search.filters).canonical(),
                         started_at=member.started_at, cursor=member.started_at))
                     db.flush()
-            # Reconsider only previously discovered, still-active interests when
-            # the valuation policy changes. Never replay a catalog or /stop epoch.
+            # Policy changes do not reopen completed history in fresh-only mode.
+            # Legacy recovery is permitted only with explicit supplemental work.
             outdated = db.execute(select(MonitorJob, MonitorSeen)
                 .join(MonitorSeen, MonitorSeen.source_id == MonitorJob.source_id)
                 .join(Search, Search.id == MonitorSeen.search_id)
@@ -200,9 +200,9 @@ class Monitor:
                 .where(MonitorJob.state == "unvalued", MonitorSeen.state == "unvalued",
                        Search.enabled.is_(True), User.ready.is_(True),
                        MonitorSeen.epoch == MonitorWatch.epoch,
-                       MonitorJob.first_seen >= time.time() - 86400)).all()
+                       MonitorJob.first_seen >= time.time() - 86400)).all() if self.settings.ria_active_window_enabled else []
             for job, seen in outdated:
-                if (job.result.get("rating", {}).get("valuation_version") != VERSION
+                if (job.result.get("rating", {}).get("valuation_version") not in {VERSION, REFERENCE_VERSION}
                         or job.result.get("notification_version") != NOTIFICATION_VERSION):
                     origin = job.result.get("discovery_kind", "new_publication")
                     job.state, job.next_run, job.result = "pending", 0, {"discovery_kind": origin}

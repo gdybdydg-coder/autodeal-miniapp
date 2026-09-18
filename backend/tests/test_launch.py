@@ -101,7 +101,7 @@ def test_authenticated_progress_is_owner_scoped_and_reads_do_not_spend_requests(
         for sid, source, state in [(first, "123", "checked"), (second, "124", "unvalued")]:
             db.add(MonitorSeen(search_id=sid, source_id=source, epoch="test", state=state, first_seen=now))
             db.add(MonitorJob(source_id=source, state=state, first_seen=now,
-                result={"rating": {"valuation": "sample_median" if state == "checked" else "insufficient_data",
+                result={"rating": {"valuation": "sample_lower_quartile" if state == "checked" else "insufficient_data",
                                    "valuation_reasons": ["missing_modification_id", "private-unexpected-value"],
                                    "comparables": 0}}))
         before = db.get(SourceBudget, "auto_ria").total

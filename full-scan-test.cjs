@@ -4,7 +4,7 @@ const fs=require('node:fs'),vm=require('node:vm');
 const id='a'.repeat(32),gen='b'.repeat(32);
 const car=(id,extra={})=>({id:String(id),title:'Passat '+id,price_usd:8700,year:2012,mileage:244000,
   fuel:'Дизель',body:'Універсал',transmission:'Автомат',region:'Київ',market:11700,discount:25.6,
-  comparables:5,valuation:'sample_median',checked_at:Date.now()/1000,...extra});
+  comparables:5,valuation:'sample_lower_quartile',checked_at:Date.now()/1000,...extra});
 const data=(extra={})=>({scan_id:id,generation:gen,status:'queued',cars:[],after:0,inspected:0,
   source_total:5473,discovered:50,deals_found:0,unavailable:0,warnings:[],more_results:false,...extra});
 function setup(api) {

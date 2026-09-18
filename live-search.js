@@ -17,6 +17,7 @@
   function valuationMessage(car,stale) {
     if(stale) return car.historical_match?
       "Відповідало фільтру під час перевірки. Поточна ціна потребує оновлення на AUTO.RIA.":"Оцінка потребує оновлення";
+    if(["sample_median","reference_median"].includes(car.valuation)) return "Оцінка потребує оновлення";
     if(car.valuation==="pending") return "Оцінку ще не завершено — натисни «Продовжити оцінку»";
     const reasons=Array.isArray(car.valuation_reasons)?car.valuation_reasons:[];
     if(reasons.includes("unverified_condition")) return "Не підтверджено стан або статус авто для оцінки";
@@ -30,7 +31,7 @@
   function renderResults(data,filters,options) {
     const list=document.getElementById("resultsList");list.replaceChildren();
     const minDiscount=filters.minDiscount??15,percentLabel=String(minDiscount).replace(".",",")+"%";
-    const visibleCars=filters.onlyDeals?data.cars.filter(car=>(options.fullScan&&car.stale&&car.historical_match)||(!data.stale&&!car.stale&&car.valuation==="sample_median"&&
+    const visibleCars=filters.onlyDeals?data.cars.filter(car=>(options.fullScan&&car.stale&&car.historical_match)||(!data.stale&&!car.stale&&car.valuation==="sample_lower_quartile"&&
       car.comparables>=5&&Number.isFinite(car.market)&&car.market>0&&Number.isFinite(car.price_usd)&&
       car.price_usd>0&&car.price_usd*100<=car.market*(100-minDiscount))):data.cars;
     document.getElementById("count").textContent="Показано: "+visibleCars.length;
@@ -41,7 +42,7 @@
       "Переглянуто оголошень: "+data.inspected+". На час перевірки за фільтрами: "+data.source_total+
       ". "+(data.next_cursor?"Доступне продовження перевірки. ":"")+
       (data.warnings.length?"Частину перевірки не завершено через ліміт або недоступність даних. ":"")+
-      "Оцінка — медіана цін щонайменше 5 схожих авто; це ціни пропозицій, не продажів.";
+      "Орієнтир — нижній квартиль цін щонайменше 5 схожих авто; це ціни оголошень, не фактичних продажів.";
     if(data.warnings.includes("quota_exceeded") && Number.isFinite(data.quota?.retry_after_seconds) && data.quota.retry_after_seconds>0)
       document.getElementById("sourceNote").textContent+=" Нові запити можна повторити приблизно через "+Math.ceil(data.quota.retry_after_seconds/60)+" хв.";
     for(const car of visibleCars) {
@@ -55,26 +56,26 @@
       body.append(node("div","car-name",car.title),node("div","car-price","$"+car.price_usd.toLocaleString("en-US")),
         node("div","car-meta",car.year+" • "+car.fuel+" • "+Math.round(car.mileage/1000)+" тис. км"),
         node("div","car-meta",car.body+" • "+car.transmission),node("div","location",car.region));
-      const valued=!data.stale&&!car.stale&&Number.isFinite(car.market)&&car.market>0;
+      const valued=!data.stale&&!car.stale&&["sample_lower_quartile","reference_lower_quartile"].includes(car.valuation)&&Number.isFinite(car.market)&&car.market>0;
       body.append(node("p","market-price",valued?
-        "Медіана вибірки ≈ $"+car.market.toLocaleString("en-US")+" · "+car.comparables+" схожих авто":
+        "Обережний ціновий орієнтир ≈ $"+car.market.toLocaleString("en-US")+" · "+car.comparables+" схожих авто":
         valuationMessage(car,data.stale||car.stale)));
       if(options.fullScan&&Number.isFinite(car.checked_at)) body.append(node("p","car-meta",
         "Перевірено: "+new Date(car.checked_at*1000).toLocaleString("uk-UA")));
       if(valued) body.append(node("p","car-meta",car.discount>=0?
-        "На "+car.discount+"% нижче медіани вибірки":"На "+Math.abs(car.discount)+"% вище медіани вибірки"));
+        "На "+car.discount+"% нижче цінового орієнтира":"На "+Math.abs(car.discount)+"% вище цінового орієнтира"));
       const href=safeLink(car.url);
       if(href) {const link=node("a","car-link","ВІДКРИТИ НА AUTO.RIA");link.href=href;link.target="_blank";link.rel="noopener";body.append(link);}
       article.append(body);list.append(article);
     }
     if(!visibleCars.length&&options.fullScan) {
       list.append(node("div","empty",data.complete?
-        (filters.onlyDeals?"Серед отриманих оголошень не підтверджено авто на "+percentLabel+" нижче медіани. Частині авто може бракувати даних для оцінки.":"Отримані оголошення не пройшли перевірку вибраних фільтрів або вже недоступні."):
+        (filters.onlyDeals?"Серед отриманих оголошень не підтверджено авто на "+percentLabel+" нижче орієнтира. Частині авто може бракувати даних для оцінки.":"Отримані оголошення не пройшли перевірку вибраних фільтрів або вже недоступні."):
         (["paused","budget_exhausted","incomplete","error"].includes(data.status)?
           "Серед уже перевірених оголошень відповідних авто поки немає. Повну перевірку ще не завершено.":
           "Перевірка триває. Автомобілі з’являтимуться тут, щойно пройдуть перевірку.")));
     } else if(!visibleCars.length) list.append(node("div","empty",filters.onlyDeals?
-      (data.stale?"Потрібна свіжа перевірка цін, щоб показати вигідні авто. ":"У перевіреній частині оголошень не підтверджено пропозицій на "+percentLabel+" нижче медіани. ")+
+      (data.stale?"Потрібна свіжа перевірка цін, щоб показати вигідні авто. ":"У перевіреній частині оголошень не підтверджено пропозицій на "+percentLabel+" нижче орієнтира. ")+
       (options.dealsView?"Повернися до «Пошук» та вимкни «Тільки вигідні авто», щоб переглянути авто без оцінки. ":"Вимкни цей фільтр, щоб бачити авто без оцінки. ")+
       "Це не означає, що вигідних авто на AUTO.RIA немає.":
       "У перевіреній частині оголошень немає авто, які відповідають усім фільтрам."));
@@ -191,7 +192,7 @@
     document.getElementById("sourceNote").textContent=
       (data.cache?.total?"Показуємо також раніше перевірені авто за твоїми фільтрами. База ще не охоплює всі оголошення AUTO.RIA. ":"")+
       "Оголошення перевіряються поступово за всіма сторінками AUTO.RIA. "+
-      "Оцінка — медіана цін щонайменше 5 схожих авто; це ціни пропозицій, не продажів. "+
+      "Орієнтир — нижній квартиль цін щонайменше 5 схожих авто; це ціни оголошень, не фактичних продажів. "+
       (data.unavailable?"Недоступних або некоректних оголошень: "+data.unavailable+". ":"")+
       "Час перевірки вказаний у картці. Ціна та наявність могли змінитися.";
     const hasMore=data.more_results||data.cache?.more;

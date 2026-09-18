@@ -79,7 +79,8 @@ def test_recovery_is_disabled_by_default_and_requires_monitor_lease(p):
         assert db.get(SourceProbe, probe_id("123")) is None
 
 
-def test_old_optional_rejection_is_rechecked_without_changing_valuation_version(p):
+def test_old_optional_rejection_recovery_requires_supplemental_mode(p):
+    p.runner.settings = replace(p.settings, ria_active_window_enabled=True)
     candidate = parse_car(raw("124"), "124")
     candidate["gear_id"] = None
     with Session(p.engine) as db:

@@ -8,7 +8,7 @@ if($("minDiscount").value==="") $("minDiscount").value="15";
 function readMinDiscount() {
   const input=$("minDiscount"),text=input.value.trim(),value=Number(text.replace(",","."));
   if(!/^(?:\d+(?:[.,]\d*)?|[.,]\d+)$/.test(text)||!Number.isFinite(value)||value<0||value>100) {
-    input.focus();throw Error("Вигода: введи відсоток від 0 до 100");
+    input.focus();throw Error("Відсоток: введи значення від 0 до 100");
   }
   return value;
 }

@@ -11,7 +11,7 @@ from backend.tests.test_ria_search import engine, fixture_fetch, raw
 
 def car(source_id="123", **changes):
     return {**parse_car(raw(source_id), source_id), "market": 15000, "discount": 33.3,
-            "comparables": 5, "valuation": "sample_median", **changes}
+            "comparables": 5, "valuation": "sample_lower_quartile", **changes}
 
 
 def test_cache_uses_all_filters_and_never_calls_the_provider(engine):
@@ -50,6 +50,18 @@ def test_missing_dictionary_returns_no_unfiltered_cars(engine):
         result = market_cache.query(db, Filters(brand="Volkswagen"))
         assert result["status"] == "catalog_pending" and result["cars"] == []
         assert db.get(SourceBudget, "auto_ria").total == 2
+
+
+def test_legacy_median_cannot_be_relabelled_as_a_current_lower_quartile(engine):
+    with Session(engine) as db:
+        market_cache.put(db, car(valuation="sample_median"), time.time())
+        db.commit()
+        before = db.get(SourceBudget, "auto_ria").total
+        assert market_cache.fresh(db, "123") is None
+        assert not market_cache.query(db, Filters(onlyDeals=True))["cars"]
+        old = market_cache.query(db, Filters(onlyDeals=False))["cars"][0]
+        assert old["stale"] and old["market"] is None and old["discount"] is None
+        assert db.get(SourceBudget, "auto_ria").total == before
 
 
 def test_cache_is_paginated_and_old_prices_are_not_presented_as_current(engine):

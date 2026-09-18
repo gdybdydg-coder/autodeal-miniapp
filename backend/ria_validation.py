@@ -1,7 +1,6 @@
 """Explicit operator-requested, once-only live check. Never enables delivery."""
 import re
 import math
-import statistics
 import time
 from decimal import Decimal
 
@@ -88,7 +87,12 @@ def comparison_report(candidate, peers, *, now=None):
                 vehicles.add(peer["vehicle_key"])
     prices = sorted(peer["price_usd"] for peer in accepted)
     mixed = len(prices) >= 5 and max(prices) / min(prices) > 2
-    market = float(statistics.median(Decimal(str(price)) for price in prices)) if len(prices) >= 5 and not mixed else None
+    market = None
+    if len(prices) >= 5 and not mixed:
+        # Independent linear p25 calculation, not the production helper.
+        rank, remainder = divmod(len(prices) - 1, 4)
+        low, high = Decimal(str(prices[rank])), Decimal(str(prices[min(rank + 1, len(prices) - 1)]))
+        market = float(low + (high - low) * Decimal(remainder) / 4)
     threshold = Decimal(str(market)) * Decimal("0.85") if market is not None else None
     actual = estimate(candidate, peers, now=now)
     return {"candidate_id": candidate["id"], "candidate_reasons": candidate_reasons,

@@ -68,7 +68,7 @@ def test_unknown_condition_is_explicitly_labelled_without_a_fake_discount(p, mon
         real_client(transport=httpx.MockTransport(handler), **kw))
     TelegramSender("test-only")(111, car)
     text = requests[0]["text"]
-    assert ("Орієнтовна ринкова ціна" if with_reference else "Ринкову оцінку не підтверджено") in text
+    assert ("Обережний ціновий орієнтир" if with_reference else "Ринкову оцінку не підтверджено") in text
     assert "Стан авто не підтверджено" in text
     assert "Вигода:" not in text
     assert ("%" in text) is with_reference
@@ -96,14 +96,14 @@ def test_peer_failure_does_not_discard_a_fresh_matching_candidate(p, error):
     assert p.sent[0][1].price == 10000
 
 
-def test_insufficient_peers_recovery_is_once_not_a_permanent_retry_loop(p):
+def test_pending_insufficient_peers_is_once_not_a_permanent_retry_loop(p):
     candidate = parse_car(raw("124"), "124")
     with Session(p.engine) as db:
-        db.add(MonitorJob(source_id="124", first_seen=p.clock[0], state="unvalued",
-                          result={"candidate": candidate, "notification_version": "optional-details-v1",
-                                  "rating": {"valuation_version": VERSION}}))
+        db.add(MonitorJob(source_id="124", first_seen=p.clock[0], state="pending",
+                          result={"candidate": candidate, "filters": {}, "notification_version": "optional-details-v1",
+                                  "rating": {"valuation_version": "asking-v4"}}))
         db.add(MonitorSeen(search_id=1, source_id="124", epoch=db.get(MonitorWatch, 1).epoch,
-                           state="unvalued", first_seen=p.clock[0]))
+                           state="pending", first_seen=p.clock[0]))
         db.commit()
     factory = p.runner.search_factory
     def insufficient(engine, key):

@@ -119,7 +119,7 @@ def test_catalog_quota_retains_all_loaded_candidates_for_continuation(engine, mo
     assert all(car["market"] is None and car["valuation"] == "pending" for car in result["cars"])
 
 
-def test_retained_live_evidence_keeps_medians_and_all_rejected_conditions():
+def test_retained_live_evidence_keeps_peer_selection_and_recalculates_conservatively():
     data = json.loads((Path(__file__).parents[1] / "docs/valuation-audit-2026-09-17.json").read_text())["valuation_check"]
     valued = 0
     for query in data["queries"]:
@@ -128,7 +128,11 @@ def test_retained_live_evidence_keeps_medians_and_all_rejected_conditions():
             candidate = copy.deepcopy(cars[report["candidate_id"]])
             as_of = max(car["observed_at"] for car in [candidate, *report["peers"]])
             replay = estimate(candidate, report["peers"], now=as_of)
-            assert replay["market"] == report["recalculated_market"]
+            if report["recalculated_market"] is None:
+                assert replay["market"] is None
+            else:
+                assert replay["valuation_evidence"]["median_usd"] == report["recalculated_market"]
+                assert replay["market"] <= report["recalculated_market"]
             assert replay["comparables"] == len(report["accepted_ids"])
             assert comparison_report(candidate, report["peers"], now=as_of)["calculation_matches"]
             valued += replay["market"] is not None

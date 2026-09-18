@@ -110,8 +110,11 @@ def activity(db, uid=None):
     return {"window_seconds": WINDOW, "enabled_subscriptions": enabled,
             "new_listings": count(MonitorJob, *jobs),
             "pending": count(MonitorJob, *jobs, MonitorJob.state == "pending"),
-            "evaluated": count(MonitorJob, *jobs, rating.in_(("sample_median", "reference_median"))),
-            "reference_estimated": count(MonitorJob, *jobs, rating == "reference_median"),
+            # Keep historical counters through the policy upgrade without
+            # treating old median evidence as valid for a new delivery.
+            "evaluated": count(MonitorJob, *jobs, rating.in_(("sample_median", "reference_median",
+                "sample_lower_quartile", "reference_lower_quartile"))),
+            "reference_estimated": count(MonitorJob, *jobs, rating.in_(("reference_median", "reference_lower_quartile"))),
             "unknown": count(MonitorJob, *jobs, MonitorJob.state.in_(("unvalued", "informational"))),
             "informational": count(MonitorJob, *jobs, MonitorJob.state == "informational"),
             "excluded_condition": count(MonitorJob, *jobs, MonitorJob.state == "excluded"),

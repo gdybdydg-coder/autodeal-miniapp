@@ -245,4 +245,6 @@ def test_archived_real_deal_and_ordinary_price_replay_without_provider_access():
                 if result["market"] is not None:
                     found[candidate["id"]] = (candidate["price_usd"], result["market"], result["assessment"])
                     assert estimate(candidate, report["peers"], now=as_of + 901)["assessment"] == "unknown"
-    assert found == {"39378439": (14400, 13300, "not_deal"), "40444164": (8700, 11700, "deal")}
+    # Archived observations are replayed as-of their retrieval time, offline.
+    # The new lower quartiles replace the historical medians 13,300 / 11,700.
+    assert found == {"39378439": (14400, 13200, "not_deal"), "40444164": (8700, 10500, "deal")}

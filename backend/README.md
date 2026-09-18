@@ -1,6 +1,47 @@
 # AUTODeal backend — subscriptions for new worthwhile cars
 
+## Conservative asking-price reference (release 20260918-47)
+
+`asking-v5` and `reference-v2` replace the median used for notification thresholds
+with the **lower quartile (p25)** of the same eligible, distinct fresh peer prices.
+For sorted prices, the zero-based position is `(n - 1) / 4`, with linear
+interpolation between neighbouring prices. For five peers this is the second
+lowest price: one very cheap peer cannot set the reference. There is no arbitrary
+percentage haircut or manually imposed target price. Identical peer prices yield
+the same reference as before; p25 cannot be higher than their median.
+
+Example only (not a reconstruction of the owner's screenshot): asking prices
+`3300, 3500, 4000, 4500, 4900` previously produced a $4,000 median. The new reference
+is $3,500, so a $3,550 listing does not pass a 10% threshold. Offline replay of the
+two previously audited, real retained samples changes their references from
+$13,300 to $13,200 and $11,700 to $10,500. The historical audit files are preserved.
+These are asking-price observations, not observed completed sales or a prediction
+of resale proceeds. A small or unrepresentative sample can still overvalue a car.
+
+Both exact and indicative cards say "Обережний ціновий орієнтир" and "Нижче
+орієнтира", disclose peer count and that completed sale prices are unknown. The
+broader tier continues to disclose its uncertainty. All matching, freshness,
+sample-dispersion, known-vehicle deduplication and exact saved `minDiscount`
+checks remain in force. Evidence retains the median for audit, p25 and its method;
+dispatch recomputes p25 and rejects all legacy median proofs. A pending fresh
+delivery may revalidate normally; finished history is not reopened by a policy
+upgrade when supplemental discovery is disabled. Sent/uncertain claims, /stop,
+subscriptions and epochs stay unchanged. Cached legacy medians are not relabelled.
+
+This calculation uses the same observations and adds no provider requests. New
+publication discovery, disabled old-candidate scanning, the shared eight-call
+comparison cap and all quota limits stay unchanged. Accepted priced notifications
+log public listing ID, policy version, p25, median, count and peer prices without
+recipient IDs or credentials. Historical activity counters include both policies.
+
+Validation: 303 backend tests and 65 frontend tests pass, including an ordinary
+price that the median would classify as discounted, exact decimal thresholds,
+strict/indicative delivery wording, legacy evidence rejection, no historical
+replay in fresh-only mode, deduplication and offline retained-sample replay.
+
 ## Indicative market prices for new alerts (release 20260918-46)
+
+Historical release notes; the pricing statistic below is superseded by release 47.
 
 Notifications first try the existing five-peer `asking-v4` comparison. When it
 cannot value an otherwise eligible new car, `reference-v1` can show a labelled

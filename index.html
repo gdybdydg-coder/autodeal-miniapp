@@ -4,9 +4,9 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
   <meta name="theme-color" content="#070709">
-  <meta name="autodeal-version" content="20260918-46">
+  <meta name="autodeal-version" content="20260918-47">
   <title>AUTODEAL</title>
-  <link rel="stylesheet" href="style.css?v=20260918-46">
+  <link rel="stylesheet" href="style.css?v=20260918-47">
 </head>
 <body>
 <main class="app">
@@ -48,9 +48,9 @@
       <span class="market-left"><span class="fire">🔥</span><span><strong>Тільки вигідні авто</strong><small>Нижче ринку на вказаний відсоток</small></span></span><span class="switch active" aria-hidden="true"></span>
     </button>
     <div class="group discount-field">
-      <label class="label" for="minDiscount">Мінімальна вигода, %</label>
+      <label class="label" for="minDiscount">Мінімальна різниця з орієнтиром, %</label>
       <div class="discount-input"><input id="minDiscount" class="input" type="text" inputmode="decimal" value="15" placeholder="Наприклад, 12,5" autocomplete="off" aria-describedby="discountHelp"><span aria-hidden="true">%</span></div>
-      <p id="discountHelp" class="filter-help">Повідомляти, коли ціна нижча за оцінку ринку хоча б на вказаний відсоток.</p>
+      <p id="discountHelp" class="filter-help">Повідомляти, коли ціна нижча за обережний ціновий орієнтир хоча б на вказаний відсоток.</p>
     </div>
     <button id="searchBtn" class="search-button" type="button" hidden>Показати авто</button>
     <button id="saveSearchBtn" class="search-button" type="button">Створити підписку</button>
@@ -141,13 +141,13 @@
   </section>
   <section class="settings-card" aria-labelledby="valuationSettingsTitle">
     <h2 id="valuationSettingsTitle">Як визначаємо вигоду</h2>
-    <p class="filter-help">Мінімальний відсоток вигоди задаєш у кожній підписці. Ринкову ціну оцінюємо за медіаною мінімум 5 схожих авто. Порівнюємо ту саму модель, покоління, кузов, пальне та коробку. Використовуємо точну модифікацію, а коли її не вказано — однаковий об’єм двигуна. Рік — у межах ±1; пробіг — у межах ±20%, але щонайменше ±30 тис. км.</p>
-    <p class="filter-help">Якщо точних аналогів замало або характеристики неповні, для нового оголошення шукаємо орієнтовну ціну за медіаною від 3 схожих авто. Враховуємо вказані характеристики, рік ±2 та пробіг ±40%, але щонайменше ±60 тис. км. Таку оцінку позначаємо як приблизну й показуємо кількість аналогів. Твій мінімальний відсоток вигоди діє і для неї.</p>
+    <p class="filter-help">Ціновий орієнтир — нижній квартиль цін щонайменше 5 схожих авто: для 5 аналогів це друга найнижча ціна. Це обережний орієнтир за цінами оголошень; фактичні ціни продажу нам невідомі. Мінімальну різницю з орієнтиром задаєш у кожній підписці. Порівнюємо ту саму модель, покоління, кузов, пальне та коробку. Використовуємо точну модифікацію, а коли її не вказано — однаковий об’єм двигуна. Рік — у межах ±1; пробіг — у межах ±20%, але щонайменше ±30 тис. км.</p>
+    <p class="filter-help">Якщо точних аналогів замало або характеристики неповні, для нового оголошення використовуємо нижній квартиль цін від 3 схожих авто. Враховуємо вказані характеристики, рік ±2 та пробіг ±40%, але щонайменше ±60 тис. км. Таку оцінку позначаємо як приблизну й показуємо кількість аналогів. Твій мінімальний відсоток різниці діє і для неї. Навіть дешевший орієнтир не гарантує ціну перепродажу.</p>
     <p class="filter-help">Використовуємо дані AUTO.RIA, перевірені не більш ніж 15 хвилин тому. Відсіюємо оголошення з позначками пошкоджень, продажу на запчастини, перебування за кордоном або потреби розмитнення. Відсутність цих позначок не підтверджує справність авто. Бюджет і область підписки не обмежують ціни аналогів. Якщо даних замало або ціни надто різняться, оцінку не підтверджуємо.</p>
     <p class="filter-help">Це порівняння цін в оголошеннях, а не цін продажу. Воно не гарантує стан авто чи прибуток від перепродажу.</p>
   </section>
   <details class="save-privacy"><summary>Про збереження</summary><p class="filter-help">Збереження в акаунті передає назву, фільтри та підтверджений Telegram ID на сервер AUTODeal у Render. Видалити пошук можна в його картці. Локальні пошуки залишаються в цьому браузері й автоматично не переносяться. Для пошуку сервер передає фільтри до AUTO.RIA без твого Telegram ID.</p></details>
-  <div class="app-release"><span>Версія 20260918-46</span><button id="reloadApp" class="manager-button" type="button">Оновити застосунок</button></div>
+  <div class="app-release"><span>Версія 20260918-47</span><button id="reloadApp" class="manager-button" type="button">Оновити застосунок</button></div>
 </section>
 </main>
 <dialog id="brandDialog" class="brand-dialog" aria-labelledby="brandDialogTitle">
@@ -171,14 +171,14 @@
 <div id="toast" class="toast" role="status"></div>
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
 <script src="data/cars.js?v=4"></script>
-<script src="saved-searches.js?v=20260918-46"></script>
-<script src="app.js?v=20260918-46"></script>
+<script src="saved-searches.js?v=20260918-47"></script>
+<script src="app.js?v=20260918-47"></script>
 <script src="brand-picker.js?v=20260917-25"></script>
-<script src="search-manager.js?v=20260918-46"></script>
-<script src="cloud-api.js?v=20260918-46"></script>
+<script src="search-manager.js?v=20260918-47"></script>
+<script src="cloud-api.js?v=20260918-47"></script>
 <script src="catalog-loader.js?v=20260917-25"></script>
-<script src="live-search.js?v=20260918-46"></script>
-<script src="cloud-searches.js?v=20260918-46"></script>
+<script src="live-search.js?v=20260918-47"></script>
+<script src="cloud-searches.js?v=20260918-47"></script>
 <script src="app-version.js?v=20260917-22"></script>
 </body>
 </html>

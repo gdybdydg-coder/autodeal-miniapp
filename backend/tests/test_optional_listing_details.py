@@ -1,4 +1,5 @@
 import copy
+from dataclasses import replace
 
 import pytest
 from sqlalchemy import select
@@ -78,7 +79,8 @@ def test_engine_basis_still_requires_five_matching_generation_body_fuel_gear_pee
 
 
 @pytest.mark.parametrize("ready", [True, False])
-def test_policy_rechecks_only_active_previous_monitor_interests(p, ready):
+@pytest.mark.parametrize("supplemental", [True, False])
+def test_policy_rechecks_require_active_interests_and_supplemental_mode(p, ready, supplemental):
     p.ads["124"] = p.clock[0] - 1
     drain(p)
     with Session(p.engine) as db:
@@ -88,14 +90,16 @@ def test_policy_rechecks_only_active_previous_monitor_interests(p, ready):
         job.result = {"rating": {"valuation_version": "strict-v2"}}
         db.get(User, 111).ready = ready
         db.commit()
+    p.runner.settings = replace(p.settings, ria_active_window_enabled=supplemental)
     assert p.runner.claim()
     try:
         p.runner.sync()
     finally:
         p.runner.release("idle")
     with Session(p.engine) as db:
-        assert db.get(MonitorJob, "124").state == ("pending" if ready else "unvalued")
-        assert db.scalar(select(MonitorSeen).where(MonitorSeen.source_id == "124")).state == ("pending" if ready else "unvalued")
+        expected = "pending" if ready and supplemental else "unvalued"
+        assert db.get(MonitorJob, "124").state == expected
+        assert db.scalar(select(MonitorSeen).where(MonitorSeen.source_id == "124")).state == expected
 
 
 def test_unknown_optional_values_match_but_known_conflicts_do_not():

@@ -3,13 +3,11 @@
 Only real, fresh peer observations are used. This is a broader comparison, not
 an assertion that missing equipment/condition matches or that a sale is a bargain.
 """
-import statistics
 import time
-from decimal import Decimal
 
-from .valuation import FIELDS, MAX_AGE, estimate as exact_estimate, is_deal, number
+from .valuation import FIELDS, MAX_AGE, PRICING_METHOD, estimate as exact_estimate, is_deal, number, price_statistics
 
-VERSION = "reference-v1"
+VERSION = "reference-v2"
 MIN_PEERS = 3
 TARGET_PEERS = 5
 YEAR_TOLERANCE = 2
@@ -17,7 +15,7 @@ MILEAGE_FRACTION = .4
 MILEAGE_MINIMUM = 60000
 OPTIONAL_DIMENSIONS = ("generation_id", "body_id", "fuel_id", "gear_id", "engine_cc")
 EVIDENCE_FIELDS = (*FIELDS, "condition_exclusions")
-VALUED = {"sample_median", "reference_median"}
+VALUED = {"sample_lower_quartile", "reference_lower_quartile"}
 
 
 def identifier(value):
@@ -66,7 +64,7 @@ def comparable(candidate, peer, now):
 def estimate(candidate, peers, *, now=None):
     now = time.time() if now is None else now
     blockers = reasons(candidate, now)
-    evidence = {"version": VERSION, "basis": "asking_prices", "currency": "USD",
+    evidence = {"version": VERSION, "basis": "asking_prices", "currency": "USD", **PRICING_METHOD,
                 "confidence": "indicative", "evaluated_at": now,
                 "candidate": {key: candidate.get(key) for key in EVIDENCE_FIELDS},
                 "peers": [], "rejected": [], "duplicate_entries": 0,
@@ -112,11 +110,11 @@ def estimate(candidate, peers, *, now=None):
     # manufacture a discount. A heterogeneous sample stays unpriced.
     if max(prices) / min(prices) > 2:
         return {**result, "valuation": "mixed_sample", "valuation_reasons": ["mixed_sample"]}
-    market = float(statistics.median(Decimal(str(price)) for price in prices))
-    evidence.update(median_usd=market, min_usd=min(prices), max_usd=max(prices),
-                    oldest_peer_at=min(peer["observed_at"] for peer in accepted))
+    evidence.update(price_statistics(prices))
+    market = evidence["lower_quartile_usd"]
+    evidence["oldest_peer_at"] = min(peer["observed_at"] for peer in accepted)
     return {**result, "market": market, "discount": round((1 - candidate["price_usd"] / market) * 100, 1),
-            "valuation": "reference_median", "valuation_reasons": [],
+            "valuation": "reference_lower_quartile", "valuation_reasons": [],
             "assessment": "estimated_deal" if is_deal(candidate["price_usd"], market) else "estimated_not_deal"}
 
 
@@ -126,4 +124,4 @@ def notification_estimate(candidate, peers, *, now=None):
     if exact["valuation"] != "insufficient_data":
         return exact
     reference = estimate(candidate, peers, now=now)
-    return reference if reference["valuation"] in {"reference_median", "mixed_sample"} else exact
+    return reference if reference["valuation"] in {"reference_lower_quartile", "mixed_sample"} else exact

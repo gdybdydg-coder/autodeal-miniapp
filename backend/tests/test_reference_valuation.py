@@ -36,7 +36,7 @@ def test_incomplete_or_broader_candidate_has_a_labelled_real_reference(change):
     candidate, peers = sample()
     candidate.update(change)
     rating = notification_estimate(candidate, peers[:3])
-    assert rating["valuation"] == "reference_median" and rating["market"] == 10000
+    assert rating["valuation"] == "reference_lower_quartile" and rating["market"] == 10000
     assert rating["discount"] == 20 and rating["comparables"] == 3
     assert rating["valuation_evidence"]["confidence"] == "indicative"
     assert notification_estimate(candidate, peers[:2])["market"] is None
@@ -45,9 +45,9 @@ def test_incomplete_or_broader_candidate_has_a_labelled_real_reference(change):
 def test_exact_result_keeps_priority_and_mixed_prices_are_not_cherry_picked():
     candidate, peers = sample()
     prices = [8000, 10000, 13000]
-    assert estimate(candidate, [{**p, "price_usd": price} for p, price in zip(peers, prices)])["market"] == 10000
-    assert notification_estimate(candidate, peers)["valuation"] == "sample_median"
-    assert notification_estimate(candidate, peers[:4])["valuation"] == "reference_median"
+    assert estimate(candidate, [{**p, "price_usd": price} for p, price in zip(peers, prices)])["market"] == 9000
+    assert notification_estimate(candidate, peers)["valuation"] == "sample_lower_quartile"
+    assert notification_estimate(candidate, peers[:4])["valuation"] == "reference_lower_quartile"
     peers[-1]["price_usd"] = 25000
     assert notification_estimate(candidate, peers)["valuation"] == "mixed_sample"
     assert notification_estimate({**candidate, "gear_id": None}, peers)["market"] is None
@@ -213,7 +213,8 @@ def test_reference_alert_obeys_each_subscription_discount_and_never_resends(p, m
     car = p.sent[0][1]
     assert car.market == 15000 and car.valuation_evidence["version"] == VERSION
     assert evidence_valid(car, p.clock[0])
-    assert len(accepted_events) == 1 and accepted_events[0][1:] == ("124", 15000, 5)
+    assert len(accepted_events) == 1 and accepted_events[0][1:] == (
+        "124", VERSION, 15000, 15000, 5, [15000] * 5)
     with Session(p.engine) as db:
         assert activity(db, 111)["reference_estimated"] == 1
         assert activity(db, 111)["messages_accepted"] == 1
@@ -236,8 +237,8 @@ def test_reference_alert_obeys_each_subscription_discount_and_never_resends(p, m
         real_client(transport=httpx.MockTransport(handler), **kw))
     TelegramSender("test-only")(111, car)
     text = requests[0]["text"]
-    assert "Орієнтовна ринкова ціна: ≈ $15 000" in text and "Нижче оцінки: 33,3%" in text
-    assert "За цінами 5 схожих авто" in text and "оцінка приблизна" in text
+    assert "Обережний ціновий орієнтир: ≈ $15 000" in text and "Нижче орієнтира: 33,3%" in text
+    assert "Нижній квартиль цін 5 схожих авто" in text and "оцінка приблизна" in text
     assert "🔥 Вигода:" not in text
 
 
@@ -273,9 +274,9 @@ def test_new_reference_policy_does_not_replay_already_sent_or_unvalued_history(p
         db.add(MonitorSeen(search_id=1, source_id="125", state="unvalued", first_seen=p.clock[0] - 7200,
                           epoch=db.get(MonitorWatch, 1).epoch))
         db.commit()
-    assert version == "asking-v4"
-    # Exact policy/version is unchanged, so a deploy does not force old jobs
-    # back through the source just to add a new estimate to an old message.
+    assert version == "asking-v5"
+    # Current jobs and finished history are not replayed just to add a new
+    # estimate to an old message.
     before = len(p.calls)
     assert p.runner.claim()
     try:

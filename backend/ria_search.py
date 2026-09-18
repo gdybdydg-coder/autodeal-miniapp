@@ -443,7 +443,7 @@ class RiaSearch:
         start_requests = self.requests_made
         peers = PeerBatch(peer_cache.candidates(self.engine, candidate, self.peer_scan_limit))
         peers.diagnostics = {"cached_peers": len(peers), "details_inspected": 0, "requests_used": 0, "limited": False}
-        if estimate(candidate, peers)["valuation"] in {"sample_median", "mixed_sample"}:
+        if estimate(candidate, peers)["valuation"] in {"sample_lower_quartile", "mixed_sample"}:
             return peers
         # Independent of the user's budget and region, preventing a price-capped median.
         tolerance = max(30000, candidate["mileage"] * .2)
@@ -482,7 +482,7 @@ class RiaSearch:
                 peers.append(peer_cache.observe(self.engine, peer, create=True))
                 # Recheck details even if the provider ignores a query parameter.
                 # Once five suitable peers establish a result, stop spending calls.
-                if estimate(candidate, peers)["valuation"] in {"sample_median", "mixed_sample"}:
+                if estimate(candidate, peers)["valuation"] in {"sample_lower_quartile", "mixed_sample"}:
                     break
             except RiaError as exc:
                 if str(exc) not in {"listing_unavailable", "invalid_response"}:
@@ -546,8 +546,8 @@ class RiaSearch:
                     if str(exc) not in {"listing_unavailable", "invalid_response"}:
                         raise
                 rating = reference.notification_estimate(candidate, peers)
-                if (rating["valuation"] in {"sample_median", "mixed_sample"}
-                        or (rating["valuation"] == "reference_median" and rating["comparables"] >= reference.TARGET_PEERS)):
+                if (rating["valuation"] in {"sample_lower_quartile", "mixed_sample"}
+                        or (rating["valuation"] == "reference_lower_quartile" and rating["comparables"] >= reference.TARGET_PEERS)):
                     break
             return peers
         except RiaError as exc:

@@ -481,7 +481,7 @@ def test_ageing_comparisons_refresh_even_when_candidate_price_is_still_fresh(p):
     with Session(p.engine) as db:
         listing = db.scalar(select(Listing))
         assert listing and listing.car["market"] == 15000
-        assert listing.car["valuation_evidence"]["version"] == "asking-v4"
+        assert listing.car["valuation_evidence"]["version"] == "asking-v5"
     # The candidate is only 11 seconds old; its peers are now too old. This also
     # covers stale evidence before the first enqueue, not just an existing queue.
     p.clock[0] += 11
@@ -517,7 +517,7 @@ def test_legacy_listing_without_comparable_proof_is_rechecked_instead_of_sent(p)
     p.clock[0] += 6
     p.runner.deliver_tick()
     assert len(p.sent) == 1 and len(details(p, "124")) == 2
-    assert p.sent[0][1].valuation_evidence["version"] == "asking-v4"
+    assert p.sent[0][1].valuation_evidence["version"] == "asking-v5"
 
 
 def test_known_changed_peer_price_invalidates_unexpired_evidence(p):
@@ -582,7 +582,7 @@ def test_uncertain_valuation_is_recorded_without_fake_deal(p):
     with Session(p.engine) as db:
         assert db.get(MonitorJob, "124").state == "informational"
         assert db.get(MonitorSeen, (1, "124")).state == "informational"
-        assert db.get(MonitorJob, "124").result["rating"]["valuation"] != "sample_median"
+        assert db.get(MonitorJob, "124").result["rating"]["valuation"] != "sample_lower_quartile"
 
 
 def test_live_heartbeat_cannot_hide_failed_discovery_or_expose_other_users(p):

@@ -35,7 +35,7 @@ function setup(fetchSearch,mode='legacy') {
 }
 const result=(cars=[],extra={})=>({cars,warnings:[],inspected:3,source_total:500,...extra});
 const car=(price=8500,extra={})=>({title:'Golf',price_usd:price,market:10000,discount:15,comparables:5,
-  valuation:'sample_median',year:2017,mileage:100000,fuel:'Дизель',body:'Хетчбек',transmission:'Автомат',
+  valuation:'sample_lower_quartile',year:2017,mileage:100000,fuel:'Дизель',body:'Хетчбек',transmission:'Автомат',
   region:'Хмельницька',url:'https://auto.ria.com/auto_volkswagen_golf_123.html',...extra});
 
 test('subscription mode keeps restored filters and never starts a manual catalog scan',async()=>{

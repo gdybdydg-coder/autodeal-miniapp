@@ -36,7 +36,16 @@ test('unvalued cards explain missing condition, specifications and peer coverage
   const texts=ids.resultsList.children.map(article=>article.children[0].children.map(n=>n.textContent).join(' '));
   assert.match(texts[0],/стан або статус/);assert.match(texts[1],/версію авто/);
   assert.match(texts[2],/4 із потрібних 5/);assert.match(texts[3],/надто різняться/);
-  assert.ok(texts.every(text=>!text.includes('Медіана вибірки')));
+  assert.ok(texts.every(text=>!text.includes('Обережний ціновий орієнтир')));
+});
+test('a cached median is not displayed as the new conservative reference',async()=>{
+  const {window,ids}=setup(async()=>({cars:[{title:'Old valuation',price_usd:3550,
+    year:1999,mileage:301000,fuel:'Дизель',body:'Універсал',transmission:'Механіка',region:'Тернопільська',
+    valuation:'sample_median',market:4000,comparables:5,discount:11.3}],warnings:[],inspected:1,source_total:1}));
+  await window.AutoDealLive.search({onlyDeals:false});
+  const text=ids.resultsList.children[0].children[0].children.map(n=>n.textContent).join(' ');
+  assert.match(text,/Оцінка потребує оновлення/);
+  assert.doesNotMatch(text,/4,000|11.3|Обережний ціновий орієнтир/);
 });
 test('pending search cannot duplicate requests and clears old results on failure',async()=>{
   let reject,calls=0;

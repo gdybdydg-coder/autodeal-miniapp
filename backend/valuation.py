@@ -7,7 +7,7 @@ import statistics
 import time
 from decimal import Decimal
 
-VERSION = "asking-v4"
+VERSION = "asking-v5"
 PRICE_ONLY_VERSION = "listing-price-v2"
 INFORMATION_REASONS = {"incomplete_details", "insufficient_comparables", "mixed_sample",
                        "unverified_condition", "missing_valuation_details"}
@@ -16,6 +16,25 @@ MIN_PEERS = 5
 DIMENSIONS = ("brand_id", "model_id", "generation_id", "modification_id", "body_id", "fuel_id", "gear_id")
 BASE_DIMENSIONS = tuple(key for key in DIMENSIONS if key != "modification_id")
 FIELDS = ("id", "price_usd", "year", "mileage", "observed_at", "comparable_condition", "vehicle_key", "engine_cc", *DIMENSIONS)
+PRICING_METHOD = {"pricing_method": "lower_quartile", "quantile": .25, "quantile_method": "linear"}
+
+
+def price_statistics(prices):
+    """Lower asking-price reference, not a prediction of a completed sale.
+
+    Linear p25 uses h=(n-1)/4 on the sorted eligible observations. With five
+    peers this is the second-lowest price, so one cheap outlier cannot set the
+    reference. All accepted prices remain in the evidence; no fixed haircut,
+    candidate price, user budget or desired discount changes the result.
+    """
+    ordered = sorted(Decimal(str(price)) for price in prices)
+    position = Decimal(len(ordered) - 1) / 4
+    lower = int(position)
+    fraction = position - lower
+    quartile = ordered[lower] + fraction * (ordered[min(lower + 1, len(ordered) - 1)] - ordered[lower])
+    return {**PRICING_METHOD, "lower_quartile_usd": float(quartile),
+            "median_usd": float(statistics.median(ordered)),
+            "min_usd": float(ordered[0]), "max_usd": float(ordered[-1])}
 
 
 def comparison_dimensions(car):
@@ -106,6 +125,7 @@ def estimate(candidate, peers, *, now=None):
     result = {"market": None, "discount": None, "comparables": 0, "valuation": "insufficient_data",
               "valuation_reasons": candidate_reasons, "assessment": "unknown", "valuation_version": VERSION}
     evidence = {"version": VERSION, "basis": "asking_prices", "currency": "USD", "threshold_percent": 15,
+                **PRICING_METHOD,
                 "comparison_basis": "engine_capacity" if "engine_cc" in comparison_dimensions(candidate) else "modification",
                 "evaluated_at": now, "candidate": {key: candidate.get(key) for key in FIELDS},
                 "peers": [], "rejected": [], "duplicate_entries": 0,
@@ -149,14 +169,14 @@ def estimate(candidate, peers, *, now=None):
         if evidence["search"].get("limited"):
             why.append("comparison_limit")
         return {**result, "valuation_reasons": why}
-    market = float(statistics.median(Decimal(str(price)) for price in prices))
-    evidence.update(median_usd=market, min_usd=min(prices), max_usd=max(prices),
-                    deal_threshold_usd=float(Decimal(str(market)) * Decimal("0.85")),
+    evidence.update(price_statistics(prices))
+    market = evidence["lower_quartile_usd"]
+    evidence.update(deal_threshold_usd=float(Decimal(str(market)) * Decimal("0.85")),
                     oldest_peer_at=min(peer["observed_at"] for peer in accepted))
     if max(prices) / min(prices) > 2:
         return {**result, "valuation": "mixed_sample", "valuation_reasons": ["mixed_sample"]}
     return {**result, "market": market, "discount": round((1 - candidate["price_usd"] / market) * 100, 1),
-            "valuation": "sample_median", "valuation_reasons": [],
+            "valuation": "sample_lower_quartile", "valuation_reasons": [],
             "assessment": "deal" if is_deal(candidate["price_usd"], market) else "not_deal"}
 
 
@@ -165,6 +185,8 @@ def evidence_valid(car, now):
     evidence = car.valuation_evidence
     from .reference_valuation import VERSION as REFERENCE_VERSION, estimate as reference_estimate
     if not evidence or evidence.get("version") not in {VERSION, REFERENCE_VERSION}:
+        return False
+    if any(evidence.get(key) != value for key, value in PRICING_METHOD.items()):
         return False
     reference = evidence.get("version") == REFERENCE_VERSION
     if reference and evidence.get("confidence") != "indicative":
@@ -179,7 +201,7 @@ def evidence_valid(car, now):
     except (AttributeError, KeyError, TypeError, ValueError, OverflowError):
         return False
     # Valuation proof is shared; each subscription applies its own threshold.
-    return (result["valuation"] == ("reference_median" if reference else "sample_median") and result["market"] == car.market
+    return (result["valuation"] == ("reference_lower_quartile" if reference else "sample_lower_quartile") and result["market"] == car.market
             and result["comparables"] == car.comparables)
 
 
@@ -219,7 +241,8 @@ def price_only_evidence_valid(car, now):
 
 
 def policy():
-    return {"version": VERSION, "basis": "asking_prices", "threshold_percent": 15,
+    return {"version": VERSION, "basis": "asking_prices", **PRICING_METHOD,
+            "completed_sale_prices_available": False, "threshold_percent": 15,
             "threshold_scope": "subscription", "threshold_min": 0, "threshold_max": 100,
             "fractional_thresholds": True,
             "minimum_comparables": MIN_PEERS, "dimensions": list(DIMENSIONS),
@@ -229,8 +252,8 @@ def policy():
             "condition_basis": "no_source_damage_parts_abroad_or_custom_flags",
             "year_tolerance": 1, "mileage_tolerance_percent": 20, "mileage_tolerance_min_km": 30000,
             "maximum_detail_age_seconds": MAX_AGE, "sample_max_price_ratio": 2,
-            "user_price_and_region_affect_median": False,
-            "reference_estimate": {"version": "reference-v1", "minimum_comparables": 3,
+            "user_price_and_region_affect_estimate": False,
+            "reference_estimate": {"version": "reference-v2", "minimum_comparables": 3, **PRICING_METHOD,
                 "confidence": "indicative", "known_attributes_must_match": True,
                 "year_tolerance": 2, "mileage_tolerance_percent": 40, "mileage_tolerance_min_km": 60000,
                 "subscription_threshold_applies": True, "comparison_request_cap": 8,
