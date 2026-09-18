@@ -4,15 +4,16 @@ import logging
 import time
 from urllib.parse import urlencode
 
-from sqlalchemy import select
+from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
 from . import telegram_setup
-from .models import BotReply, SourceProbe, TelegramTest, User
+from .models import BotReply, Search, SourceProbe, TelegramTest, User
 
 COMMANDS = [
     {"command": "start", "description": "Почати та відкрити AUTODeal"},
     {"command": "help", "description": "Як налаштувати пошук"},
+    {"command": "stats", "description": "Статистика (адмін)"},
     {"command": "stop", "description": "Зупинити всі сповіщення"},
 ]
 WELCOME = (
@@ -51,9 +52,28 @@ def connection_confirmed(db, uid):
         BotReply.user_id == uid, BotReply.command == "/start", BotReply.state == "sent").limit(1)))
 
 
-def payload(command, uid, release):
+def stats_text(db, uid, admin_uid):
+    if not admin_uid:
+        logging.getLogger(__name__).warning("AUTODeal admin bootstrap requested by Telegram user %s", uid)
+        return f"🔐 Адмін ще не налаштований. Ваш Telegram ID: {uid}"
+    if uid != admin_uid:
+        return "⛔ Команда доступна лише адміністратору."
+    total = db.scalar(select(func.count()).select_from(User)) or 0
+    active = db.scalar(select(func.count()).select_from(User).where(User.ready.is_(True))) or 0
+    searches = db.scalar(select(func.count()).select_from(Search).where(Search.enabled.is_(True))) or 0
+    owners = db.scalar(select(func.count(func.distinct(Search.user_id))).where(Search.enabled.is_(True))) or 0
+    return (
+        "📊 AUTODeal — статистика\n\n"
+        f"👥 Усього користувачів: {total}\n"
+        f"🟢 Підключені до бота: {active}\n"
+        f"🔎 Активних пошуків: {searches}\n"
+        f"🚘 Користувачів з активним пошуком: {owners}"
+    )
+
+
+def payload(command, uid, release, text=None):
     label = "Налаштувати пошук" if command == "/start" else "Відкрити AUTODeal"
-    return {"chat_id": uid, "text": {"/start": WELCOME, "/help": HELP, "/stop": STOPPED}[command],
+    return {"chat_id": uid, "text": text or {"/start": WELCOME, "/help": HELP, "/stop": STOPPED}[command],
             "reply_markup": {"inline_keyboard": [[{"text": label, "web_app": {
                 "url": telegram_setup.APP_URL + ("?" + urlencode({"v": release}) if release else "")}}]]}}
 
@@ -83,7 +103,8 @@ def deliver_one(engine, settings, request=None):
         else:
             try:
                 result = request(settings.bot_token, "sendMessage", payload(
-                    reply.command, reply.user_id, settings.miniapp_release))
+                    reply.command, reply.user_id, settings.miniapp_release,
+                    stats_text(db, reply.user_id, settings.admin_telegram_id) if reply.command == "/stats" else None))
                 message_id = (result.get("result") or {}).get("message_id")
                 if result.get("ok") is True and type(message_id) is int and message_id > 0:
                     reply.state, reply.message_id = "sent", message_id
