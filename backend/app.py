@@ -53,6 +53,7 @@ class Settings:
     auto_ria_user_id: str = field(default="", repr=False)
     ria_ai_price_enabled: bool = False
     ria_ai_price_probe_id: str = ""
+    admin_telegram_id: int = 0
 
     @classmethod
     def env(cls):
@@ -78,6 +79,7 @@ class Settings:
             auto_ria_user_id=os.getenv("AUTO_RIA_USER_ID", "").strip(),
             ria_ai_price_enabled=os.getenv("RIA_AI_PRICE_ENABLED") == "true",
             ria_ai_price_probe_id=os.getenv("RIA_AI_PRICE_PROBE_ID", "").strip(),
+            admin_telegram_id=int(os.getenv("ADMIN_TELEGRAM_ID", "0") or 0),
         )
 
     @property
@@ -472,7 +474,7 @@ def create_app(settings: Settings, engine=None):
         command, _, mention = token.partition("@")
         if mention and mention.lower() != telegram_setup.BOT_USERNAME.lower():
             return {"ok": True}
-        if command not in ("/start", "/stop", "/help"):
+        if command not in ("/start", "/stop", "/help", "/stats"):
             return {"ok": True}
         if type(command_at) is not int or command_at <= 0:
             raise HTTPException(422, "Invalid message date")
