@@ -1,6 +1,6 @@
 """Supplement new publications with a deliberately limited active-listing window.
 
-One first-page search and at most one candidate per group per five minutes.
+One newest-page search per group. After an initial baseline, every new ID entering that page is queued.
 No historical pagination. New publications/jobs always take scheduling priority.
 """
 import time
@@ -15,7 +15,7 @@ from .models import (Delivery, Filters, Listing, MonitorActiveWindow, MonitorFee
 from .ria_budget import BudgetLimits
 from .ria_search import budget_state, parse_ids
 
-INTERVAL = 300
+INTERVAL = 60
 WINDOW_SIZE = 50
 RECHECK_SECONDS = 1800
 KIND = "active_window"
@@ -42,9 +42,9 @@ def sync(db, feed_ids):
 
 def status(db, feed_ids, enabled):
     rows = list(db.scalars(select(MonitorActiveWindow).where(MonitorActiveWindow.feed_id.in_(feed_ids))))
-    return {"enabled": enabled, "coverage": "latest_active_window_only",
+    return {"enabled": enabled, "coverage": "latest_active_window_diff",
             "window_size": WINDOW_SIZE, "interval_seconds": INTERVAL,
-            "maximum_candidates_per_poll": 1, "historical_pagination": False,
+            "maximum_candidates_per_poll": WINDOW_SIZE, "historical_pagination": False,
             "state_counts": dict(Counter(row.status for row in rows)) if enabled else {},
             "last_checked_at": max((row.checked_at for row in rows), default=0) if enabled else None}
 
@@ -86,34 +86,55 @@ def discover(monitor, feed_id, source):
             return
         recipients = [(sid, uid, epoch) for sid, uid, epoch in members
                       if monitor.current(db, sid, uid, epoch)]
+        row = db.get(MonitorActiveWindow, feed_id)
         now = time.time()
-        unseen, refresh = [], []
-        for source_id in ids:
-            job = db.get(MonitorJob, source_id)
+        baseline = row.checked_at <= 0 and not row.window
+        previous = set(row.window or [])
+        arrivals = [] if baseline else [source_id for source_id in ids if source_id not in previous]
+        selected, refresh = [], []
+
+        # Queue every newly-entered ID in the newest-page window. The first
+        # successful page is only a baseline, so enabling a subscription never
+        # replays old catalog entries.
+        for source_id in arrivals:
             listing = db.scalar(select(Listing).where(Listing.source == "auto_ria",
                                                       Listing.source_id == source_id))
-            new_members, old_members = [], []
+            interested = []
             for sid, uid, epoch in recipients:
                 if listing and db.scalar(select(Delivery.id).where(
                         Delivery.user_id == uid, Delivery.listing_id == listing.id)) is not None:
                     continue
                 seen = db.get(MonitorSeen, (sid, source_id))
-                if seen is None:
-                    new_members.append((sid, epoch))
-                # A shared informational outcome does not mean this recipient
-                # received anything. Delivery records above remain authoritative.
-                elif (seen.epoch == epoch and job and job.state in {"checked", "unvalued", "informational"}
-                      and seen.state in {"checked", "unvalued", "informational"}
-                      and job.last_attempt <= now - RECHECK_SECONDS):
+                if seen is None or (seen.epoch == epoch and seen.state != "pending"):
+                    interested.append((sid, epoch))
+            if interested:
+                selected.append((source_id, interested))
+
+        # Existing non-deals can still be refreshed for later price drops, but
+        # refresh work never displaces fresh arrivals.
+        for source_id in ids:
+            if source_id in arrivals:
+                continue
+            job = db.get(MonitorJob, source_id)
+            if not job or job.state not in {"checked", "unvalued", "informational"}:
+                continue
+            listing = db.scalar(select(Listing).where(Listing.source == "auto_ria",
+                                                      Listing.source_id == source_id))
+            old_members = []
+            for sid, uid, epoch in recipients:
+                if listing and db.scalar(select(Delivery.id).where(
+                        Delivery.user_id == uid, Delivery.listing_id == listing.id)) is not None:
+                    continue
+                seen = db.get(MonitorSeen, (sid, source_id))
+                if (seen and seen.epoch == epoch and seen.state in {"checked", "unvalued", "informational"}
+                        and job.last_attempt <= now - RECHECK_SECONDS):
                     old_members.append((sid, epoch))
-            if new_members:
-                unseen.append((source_id, new_members + old_members))
-            elif old_members:
+            if old_members:
                 refresh.append((source_id, old_members))
-        # Existing non-deals are occasionally refreshed, so a price drop on the
-        # same ID is not permanently suppressed. Oldest observation wins ties.
         refresh.sort(key=lambda item: (db.get(MonitorJob, item[0]).last_attempt, item[0]))
-        selected = (unseen or refresh)[:1]
+        if refresh:
+            selected.append(refresh[0])
+
         for source_id, interested in selected:
             for sid, epoch in interested:
                 seen = db.get(MonitorSeen, (sid, source_id))
@@ -127,7 +148,8 @@ def discover(monitor, feed_id, source):
                 db.add(MonitorJob(source_id=source_id, first_seen=now, result={"discovery_kind": KIND}))
             elif job.state != "pending":
                 job.state, job.next_run, job.result = "pending", 0, {"discovery_kind": KIND}
-        row = db.get(MonitorActiveWindow, feed_id)
+
         row.window, row.source_total = ids, result["total"]
-        row.status, row.checked_at, row.next_poll = "limited_window", now, now + INTERVAL
+        row.status = "baseline" if baseline else "watching"
+        row.checked_at, row.next_poll = now, now + INTERVAL
         db.commit()
