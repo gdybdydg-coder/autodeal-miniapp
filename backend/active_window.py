@@ -22,19 +22,23 @@ INTERVAL = 300
 WINDOW_SIZE = 50
 KIND = "active_window"
 CALL_RESERVE = 32
+FRESH_ARRIVAL_SECONDS = 600
 BASELINE_ID = "active-window-fresh-only-v1"
 
 
-def budget_available(db, limits=None, *, reserve=CALL_RESERVE):
+def budget_available(db, limits=None, *, reserve=CALL_RESERVE, backlog=False):
     limits, now = limits or BudgetLimits.env(), time.time()
     row = db.get(SourceBudget, "auto_ria")
     if not row or budget_state(row, now, limits)["reason"] != "available":
         return False
-    # Reserve the actual bounded work step and half the hourly allowance for
-    # primary work. Reserving HALF the daily allowance permanently disabled
-    # this window once ordinary publication/details traffic passed 6,000/day.
-    # Keep at least a fifth of the daily cap (or two hourly caps) untouched.
-    return (sum(t > now - 3600 for t in row.calls) + reserve <= limits.hourly // 2
+    # Primary searches have scheduling priority and keep 20% hourly headroom,
+    # with at least one full bounded evaluation step reserved. Counting primary
+    # calls against a 50% ceiling previously stalled fresh arrivals around
+    # 420/900 calls even while almost half the real quota was unused.
+    # The daily reserve and per-request hard caps remain unchanged.
+    hourly_ceiling = (limits.hourly // 2 if backlog else
+                      limits.hourly - max(limits.hourly // 5, CALL_RESERVE))
+    return (sum(t > now - 3600 for t in row.calls) + reserve <= hourly_ceiling
             and sum(t > now - 86400 for t in row.calls) + reserve
                 <= limits.daily - max(limits.daily // 5, limits.hourly * 2)
             and row.total + reserve <= limits.total)
@@ -66,6 +70,9 @@ def status(db, feed_ids, enabled):
             "window_size": WINDOW_SIZE, "interval_seconds": INTERVAL,
             "maximum_candidates_per_poll": WINDOW_SIZE, "historical_pagination": False,
             "state_counts": dict(Counter(row.status for row in rows)) if enabled else {},
+            "discovery_budget_available": bool(enabled and budget_available(db, reserve=1)),
+            "valuation_budget_available": bool(enabled and budget_available(db)),
+            "backlog_budget_available": bool(enabled and budget_available(db, backlog=True)),
             "last_checked_at": max((row.checked_at for row in rows), default=0) if enabled else None}
 
 

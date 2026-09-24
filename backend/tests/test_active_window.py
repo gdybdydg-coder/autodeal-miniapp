@@ -137,7 +137,7 @@ def test_price_drop_on_seen_non_deal_does_not_recheck_old_listing(p, monkeypatch
 def test_supplement_pauses_before_consuming_reserved_primary_budget(p, monkeypatch):
     enable_window(p, monkeypatch)
     with Session(p.engine) as db:
-        db.get(SourceBudget, "auto_ria").calls = [p.clock[0]] * 450
+        db.get(SourceBudget, "auto_ria").calls = [p.clock[0]] * 720
         db.commit()
     p.ads["124"] = p.clock[0] - 1
     drain(p)
@@ -192,7 +192,7 @@ def test_one_call_newest_page_is_checked_before_bounded_valuation_can_resume(p, 
     enable_window(p, monkeypatch)
     drain(p)
     with Session(p.engine) as db:
-        db.get(SourceBudget, "auto_ria").calls = [p.clock[0]] * 421
+        db.get(SourceBudget, "auto_ria").calls = [p.clock[0]] * 691
         db.commit()
     p.stock = ["39658048", "123"]
     p.prices["39658048"] = 10000
@@ -371,3 +371,108 @@ def test_primary_job_keeps_priority_over_even_newer_supplement(p, monkeypatch):
     monkeypatch.setattr(p.runner, "evaluate", lambda source_id, source: selected.append(source_id))
     assert p.runner.tick()
     assert selected == ["124"]
+
+
+def test_paid_arrival_is_evaluated_with_available_hourly_capacity(p, monkeypatch):
+    from backend.tests.test_ria_ai_price import enable
+    enable_window(p, monkeypatch)
+    ai_calls = enable(p, monkeypatch)
+    drain(p)
+    with Session(p.engine) as db:
+        db.get(SourceBudget, "auto_ria").calls = [p.clock[0]] * 424
+        db.commit()
+    p.stock = ["37319411", "123"]
+    p.prices["37319411"] = 10000
+    wake(p, 301)
+    drain(p)
+    assert [(uid, car.source_id) for uid, car in p.sent] == [(111, "37319411")]
+    assert ai_calls == ["37319411"]
+    assert len(details(p, "37319411")) == 1
+
+
+def test_due_newest_page_is_not_starved_by_supplemental_backlog(p, monkeypatch):
+    enable_window(p, monkeypatch)
+    drain(p)
+    with Session(p.engine) as db:
+        db.add(MonitorJob(source_id="999", first_seen=p.clock[0] - 100,
+                          result={"discovery_kind": active_window.KIND}))
+        db.scalar(select(MonitorActiveWindow)).next_poll = 0
+        db.commit()
+    p.stock = ["37319411", "123"]
+    selected = []
+    monkeypatch.setattr(p.runner, "evaluate", lambda source_id, source: selected.append(source_id))
+    assert p.runner.tick()
+    assert selected == []
+    with Session(p.engine) as db:
+        assert db.get(MonitorJob, "37319411").state == "pending"
+
+
+def test_one_paid_valuation_serves_one_hundred_matching_users(p, monkeypatch):
+    from backend.tests.test_ria_ai_price import enable
+    enable_window(p, monkeypatch)
+    ai_calls = enable(p, monkeypatch)
+    for n in range(2, 101):
+        add_search(p, sid=n, uid=1000 + n)
+    drain(p)
+    p.stock = ["37319411", "123"]
+    p.prices["37319411"] = 10000
+    wake(p, 301)
+    drain(p)
+    # Synthetic delivery only; no real subscribers, network or paid traffic.
+    for _ in range(100):
+        p.runner.deliver_tick()
+    assert len(p.sent) == 100
+    assert len({uid for uid, _ in p.sent}) == 100
+    assert {car.source_id for _, car in p.sent} == {"37319411"}
+    assert len(details(p, "37319411")) == 1
+    assert ai_calls == ["37319411"]
+    p.runner.deliver_tick()
+    assert len(p.sent) == 100
+
+
+@pytest.mark.parametrize("hourly,daily,total,allowed", [
+    (424, 8256, 49286, True),
+    (688, 9000, 50000, True),
+    (689, 9000, 50000, False),
+    (200, 9568, 50000, True),
+    (200, 9569, 50000, False),
+    (200, 8000, 89968, True),
+    (200, 8000, 89969, False),
+    (900, 9000, 50000, False),
+])
+def test_reserved_capacity_keeps_hourly_daily_and_total_bounds(p, hourly, daily, total, allowed):
+    with Session(p.engine) as db:
+        row = db.get(SourceBudget, "auto_ria")
+        row.calls = [p.clock[0]] * hourly + [p.clock[0] - 7200] * (daily - hourly)
+        row.total = total
+        db.commit()
+        assert active_window.budget_available(db, BudgetLimits(900, 12000, 90000)) is allowed
+
+
+def test_old_backlog_leaves_extra_capacity_for_fresh_arrivals(p, monkeypatch):
+    enable_window(p, monkeypatch)
+    drain(p)
+    with Session(p.engine) as db:
+        db.get(SourceBudget, "auto_ria").calls = [p.clock[0]] * 424
+        db.add(MonitorJob(source_id="999", first_seen=p.clock[0] - 601,
+                          result={"discovery_kind": active_window.KIND}))
+        db.commit()
+    selected = []
+    monkeypatch.setattr(p.runner, "evaluate", lambda source_id, source: selected.append(source_id))
+    assert not p.runner.tick()
+    assert selected == []
+    with Session(p.engine) as db:
+        db.add(MonitorJob(source_id="37319411", first_seen=p.clock[0],
+                          result={"discovery_kind": active_window.KIND}))
+        db.commit()
+    assert p.runner.tick()
+    assert selected == ["37319411"]
+    state = runtime_status(p.engine, True, active_window_enabled=True)["active_window"]
+    assert state["valuation_budget_available"] and not state["backlog_budget_available"]
+    with Session(p.engine) as db:
+        assert db.get(MonitorJob, "999").state == "pending"
+        db.get(MonitorJob, "37319411").state = "checked"
+        db.get(SourceBudget, "auto_ria").calls = []
+        db.commit()
+    assert p.runner.tick()
+    assert selected == ["37319411", "999"]

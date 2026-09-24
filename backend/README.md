@@ -1,5 +1,29 @@
 # AUTODeal backend — subscriptions for new worthwhile cars
 
+## Remove avoidable queue stalls while retaining hard caps (2026-09-24)
+
+After the priority fix, production still reported 660 pending jobs and an idle
+worker at 424/900 hourly calls. The old 50% supplemental ceiling plus a 32-call
+step reserve prevented evaluation above 418 calls/hour. Supplemental work now
+keeps 20% hourly headroom (at least 32 calls), allowing bounded evaluation up to
+688 used calls under the existing 900/hour cap. The 12,000/day and 90,000 total
+caps, daily primary reserve, provider backoff and per-request accounting remain
+unchanged. The extra capacity is for discovery and arrivals seen within ten
+minutes. Older pending supplemental jobs retain the 50% hourly ceiling, so
+draining backlog cannot immediately consume the fresh-arrival allowance. No
+job or delivery claim is deleted. This supersedes the earlier uniform
+half-hourly-reserve policy.
+
+A due newest-page poll now precedes supplemental valuation when primary work
+is not due, so draining the queue cannot starve fresh discovery. Initial page
+baselines, five-minute supplemental polling, primary priority, freshness and
+delivery claims are preserved. The active-window status reports separate
+discovery/fresh-valuation/backlog budget availability; a healthy discovery cursor alone does
+not establish fast evaluation. A synthetic 100-user test verifies one detail
+read and one paid quote produce 100 unique deliveries for the same search.
+That test is not a live 100-user throughput guarantee; many distinct searches
+still consume more quota. Older pending work is retained behind fresh arrivals.
+
 ## Fresh supplemental arrivals before accumulated backlog (2026-09-24)
 
 The Volvo incident `37319411` was observed at 18:37:30 UTC and still pending

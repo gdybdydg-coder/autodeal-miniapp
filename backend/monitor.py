@@ -491,6 +491,9 @@ class Monitor:
                 job_query = select(MonitorJob).where(MonitorJob.state == "pending", MonitorJob.next_run <= time.time())
                 if not self.settings.ria_active_window_enabled or not active_window.budget_available(db):
                     job_query = job_query.where(~supplemental)
+                elif not active_window.budget_available(db, backlog=True):
+                    job_query = job_query.where((~supplemental) | (MonitorJob.first_seen >=
+                        time.time() - active_window.FRESH_ARRIVAL_SECONDS))
                 # Newly surfaced active-page IDs must not sit behind hours of
                 # older supplemental backlog. Keep primary publication jobs
                 # first, their retry ordering, and all existing budget gates.
@@ -500,7 +503,13 @@ class Monitor:
                 last = db.get(MonitorControl, "pilot").status
                 kind = "evaluate" if job and (not feed or last == "discover") else "discover" if feed else None
                 key = job.source_id if kind == "evaluate" else feed.id if kind else None
-                if kind is None and self.settings.ria_active_window_enabled:
+                # A nonempty supplemental valuation queue must not starve its
+                # own discovery. A due, bounded newest-page poll comes before
+                # supplemental evaluation, but never before primary work.
+                supplemental_selected = (kind == "evaluate" and
+                    job.result.get("discovery_kind") == active_window.KIND)
+                if self.settings.ria_active_window_enabled and (kind is None or
+                        (not feed and supplemental_selected)):
                     extra = active_window.due(db, groups)
                     if extra:
                         if active_window.budget_available(db, reserve=1):
@@ -522,7 +531,9 @@ class Monitor:
                     if supplemental_work:
                         with Session(self.engine) as db:
                             if not active_window.budget_available(db, source.limits,
-                                    reserve=source.request_limit):
+                                    reserve=source.request_limit,
+                                    backlog=(kind == "evaluate" and job.first_seen <
+                                        time.time() - active_window.FRESH_ARRIVAL_SECONDS)):
                                 raise RiaError("reserved_for_new_publications")
                     if kind == active_window.KIND:
                         active_window.discover(self, key, source)
