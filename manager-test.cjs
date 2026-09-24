@@ -455,19 +455,22 @@ test('subscription creation sends the manually entered percent to the server',as
 });
 
 
-test('subscription cards expose explicit enable and pause without opening the menu',async()=>{
+test('subscription cards expose accessible switches with confirmed enable and pause state',async()=>{
   let enabled=false;const changes=[];
   const ui=setup({list:async()=>[{id:7,name:'Мій пошук',filters:ui.filters(),enabled}],
     notificationStatus:async()=>({available:true,telegram_ready:true,test_sent:true}),
     enable:async(id,value)=>{changes.push({id,value});enabled=value;}},'subscriptions');
   await ui.nav.saved.listeners.click();
   let button=part(ui.ids.cloudSearchList.children[0],'subscription-toggle');
-  assert.match(button.textContent,/Увімкнути/);assert.deepEqual(changes,[]);
+  assert.equal(button.attributes.role,'switch');
+  assert.equal(button.attributes['aria-checked'],'false');
+  assert.match(button.attributes['aria-label'],/Мій пошук/);assert.deepEqual(changes,[]);
   await button.listeners.click();
   assert.deepEqual(changes,[{id:7,value:true}]);
   button=part(ui.ids.cloudSearchList.children[0],'subscription-toggle');
-  assert.match(button.textContent,/паузу/);await button.listeners.click();
+  assert.equal(button.attributes['aria-checked'],'true');await button.listeners.click();
   assert.deepEqual(changes,[{id:7,value:true},{id:7,value:false}]);
+  assert.equal(part(ui.ids.cloudSearchList.children[0],'subscription-toggle').attributes['aria-checked'],'false');
 });
 
 test('unconnected subscription routes to setup without enabling notifications',async()=>{
@@ -476,6 +479,22 @@ test('unconnected subscription routes to setup without enabling notifications',a
     enable:async()=>assert.fail('must connect first')},'subscriptions');
   await ui.nav.saved.listeners.click();
   const button=part(ui.ids.cloudSearchList.children[0],'subscription-toggle');
-  assert.match(button.textContent,/Підключити/);button.listeners.click();
+  assert.equal(button.attributes['aria-checked'],'false');await button.listeners.click();
   assert.equal(ui.ids.settingsPage.hidden,false);
+});
+
+test('subscription switch waits for server confirmation and keeps its state on failure',async()=>{
+  let fail,calls=0;
+  const ui=setup({list:async()=>[{id:7,name:'Пошук',filters:ui.filters(),enabled:false}],
+    notificationStatus:async()=>({available:true,telegram_ready:true,test_sent:true}),
+    enable:()=>{calls++;return new Promise((_,reject)=>{fail=reject;});}},'subscriptions');
+  await ui.nav.saved.listeners.click();
+  const button=part(ui.ids.cloudSearchList.children[0],'subscription-toggle');
+  const pending=button.listeners.click();
+  assert.equal(button.disabled,true);assert.equal(button.attributes['aria-busy'],'true');
+  assert.equal(button.attributes['aria-checked'],'false');
+  await button.listeners.click();assert.equal(calls,1);
+  fail(Error('Сервер недоступний'));await pending;
+  assert.equal(button.disabled,false);assert.equal(button.attributes['aria-checked'],'false');
+  assert.match(ui.ids.cloudStatus.textContent,/Сервер недоступний/);
 });

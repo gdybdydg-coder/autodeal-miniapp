@@ -16,7 +16,7 @@ function renderNotificationStatus() {
     state.activity?.enabled_subscriptions>0?"Моніторинг працює":"Готові до ввімкнення";
   const activity=state?.activity;
   $("launchProgress").textContent=!activity?"Увійди через Telegram, щоб побачити стан перевірок.":
-    !activity.enabled_subscriptions?"Активних підписок ще немає. Натисни «Увімкнути сповіщення» в картці потрібної підписки.":
+    !activity.enabled_subscriptions?"Активних підписок ще немає. Увімкни тумблер біля потрібної підписки.":
     "Активних підписок: "+activity.enabled_subscriptions+". Нових авто: "+activity.new_listings+
     ". Оцінено: "+activity.evaluated+". Бракує даних: "+activity.unknown+". У черзі: "+activity.pending+
     ". Повідомлень прийнято Telegram: "+activity.messages_accepted+"."+
@@ -31,7 +31,7 @@ function renderNotificationStatus() {
     !state.test_sent?"Крок 2 із 3: дочекайся привітання й перевір підключення. Якщо привітання не прийшло, надішли тест.":
     !state.available?"Підключення підтверджено. Моніторинг тимчасово недоступний; збережені підписки залишаються на паузі.":
     activity?.enabled_subscriptions>0?"Сповіщення ввімкнені для "+activity.enabled_subscriptions+" підписок. Нові оголошення надходитимуть у чат бота.":
-    "Крок 3 із 3: натисни «Увімкнути сповіщення» в картці збереженої підписки.";
+    "Крок 3 із 3: увімкни тумблер біля збереженої підписки.";
   $("subscriptionOpenBot").hidden=!!state?.telegram_ready;
   $("subscriptionCheckBot").hidden=!!state?.available&&!!state?.test_sent;
   $("subscriptionCheckBot").disabled=cloudBusy;

@@ -4,9 +4,9 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
   <meta name="theme-color" content="#070709">
-  <meta name="autodeal-version" content="20260924-52">
+  <meta name="autodeal-version" content="20260924-53">
   <title>AUTODEAL</title>
-  <link rel="stylesheet" href="style.css?v=20260924-52">
+  <link rel="stylesheet" href="style.css?v=20260924-53">
 </head>
 <body>
 <main class="app">
@@ -135,7 +135,7 @@
   </section>
   <section class="settings-card" aria-labelledby="alertSettingsTitle">
     <h2 id="alertSettingsTitle">Підписки на авто</h2>
-    <p class="filter-help">Можна зберегти до 20 підписок. Натисни «Увімкнути сповіщення» в картці потрібної підписки. Частота перевірок залежить від кількості різних фільтрів і доступних запитів AUTO.RIA.</p>
+    <p class="filter-help">Можна зберегти до 20 підписок. Для сповіщень увімкни тумблер біля потрібної підписки. Частота перевірок залежить від кількості різних фільтрів і доступних запитів AUTO.RIA.</p>
     <button id="settingsSearches" class="save-search-button" type="button">Перейти до підписок →</button>
     <p class="filter-help notification-footnote">/stop у чаті — вимкнути всі сповіщення.</p>
   </section>
@@ -155,15 +155,8 @@
     <p id="listingTraceResult" class="filter-help" role="status" hidden></p>
     <p class="filter-help">Якщо перевірка не пояснила пропуск, надішли підтримці посилання та ID оголошення, назву підписки й приблизний час публікації. Не передавай токени чи паролі.</p>
   </section>
-  <section class="settings-card" aria-labelledby="valuationSettingsTitle">
-    <h2 id="valuationSettingsTitle">Як визначаємо вигоду</h2>
-    <p class="filter-help">Коли ринкова оцінка доступна, показуємо приблизний орієнтир і відсоток різниці з ціною продавця. Мінімальний відсоток для сповіщень задаєш у підписці.</p>
-    <p class="filter-help">Для кожного нового авто запитуємо оцінку AUTO.RIA за його оголошенням, без окремого пошуку аналогів. Оцінка API за останні 7 днів може відрізнятися від цифри в застосунку AUTO.RIA через період та оновлення даних. Це приблизний орієнтир, який не гарантує ціну перепродажу.</p>
-    <p class="filter-help">Якщо AUTO.RIA не повернула придатний діапазон або тимчасово не відповідає, нове авто за твоїми фільтрами надсилаємо без ринкової суми та відсотка. Позначки про пошкодження чи ремонт показуємо в картці; витрати на ремонт не враховані. Оголошення на запчастини, за кордоном або з потребою розмитнення залишаються виключеними.</p>
-    <p class="filter-help">Моніторимо нові публікації. Старі активні оголошення повторно не скануємо. Перед надсиланням перевіряємо актуальність ціни, оцінки та твоєї підписки.</p>
-  </section>
   <details class="save-privacy"><summary>Про збереження</summary><p class="filter-help">Збереження в акаунті передає назву, фільтри та підтверджений Telegram ID на сервер AUTODeal у Render. Видалити пошук можна в його картці. Локальні пошуки залишаються в цьому браузері й автоматично не переносяться. Для пошуку сервер передає фільтри до AUTO.RIA без твого Telegram ID.</p></details>
-  <div class="app-release"><span>Версія 20260924-52</span><button id="reloadApp" class="manager-button" type="button">Оновити застосунок</button></div>
+  <div class="app-release"><span>Версія 20260924-53</span><button id="reloadApp" class="manager-button" type="button">Оновити застосунок</button></div>
 </section>
 </main>
 <dialog id="brandDialog" class="brand-dialog" aria-labelledby="brandDialogTitle">
@@ -187,14 +180,14 @@
 <div id="toast" class="toast" role="status"></div>
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
 <script src="data/cars.js?v=4"></script>
-<script src="saved-searches.js?v=20260924-52"></script>
-<script src="app.js?v=20260924-52"></script>
+<script src="saved-searches.js?v=20260924-53"></script>
+<script src="app.js?v=20260924-53"></script>
 <script src="brand-picker.js?v=20260917-25"></script>
-<script src="search-manager.js?v=20260924-52"></script>
-<script src="cloud-api.js?v=20260924-52"></script>
+<script src="search-manager.js?v=20260924-53"></script>
+<script src="cloud-api.js?v=20260924-53"></script>
 <script src="catalog-loader.js?v=20260917-25"></script>
-<script src="live-search.js?v=20260924-52"></script>
-<script src="cloud-searches.js?v=20260924-52"></script>
+<script src="live-search.js?v=20260924-53"></script>
+<script src="cloud-searches.js?v=20260924-53"></script>
 <script src="app-version.js?v=20260917-22"></script>
 </body>
 </html>
