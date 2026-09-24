@@ -1,5 +1,35 @@
 # AUTODeal backend — subscriptions for new worthwhile cars
 
+## Publication-only monitoring; supplemental search disabled (2026-09-24)
+
+The owner requires newly published ads, with no quota spent looking for older
+active listings or price drops. Production therefore uses
+`RIA_ACTIVE_WINDOW_ENABLED=false`. An ID newly entering the top 50 active
+results is not proof of a new publication: old promoted listings can enter too.
+The publication-time search and its bounded index overlap remain enabled.
+Turning the extra search off retires its pending jobs without provider calls;
+already sent/uncertain delivery claims, saved filters and stopped epochs stay
+intact. The existing dispatcher also blocks supplemental cards from sending or
+initiating a stale-price refresh while this flag is off.
+
+Regression tests found that simply switching the flag off could permanently
+hide a supplemental ID even when the primary publication search subsequently
+confirmed it. Retired supplemental interests now have a distinct cancellation
+state. Only a primary publication-window response for the same current epoch
+can reopen that unevaluated interest. A pending supplemental ID already
+confirmed by primary discovery is promoted before the switch, so it survives.
+Generic cancellations, evaluated interests and sent/uncertain claims are not
+reopened. This requires no reset, historical scan, recovery flag or DB migration.
+Delivery-triggered price refreshes now preserve their discovery origin. Legacy
+refresh jobs without that marker use their saved card's supplemental origin
+when being retired; an explicit primary confirmation takes precedence.
+
+Coverage now depends on AUTO.RIA's publication-time index. A new publication
+missing from that index may arrive late or remain unseen beyond the existing
+overlap; the disabled unbounded active-page fallback no longer compensates.
+This policy supersedes the supplemental scheduling sections below. Parallel
+valuation and shorter polling intervals remain separate, unfinished speed work.
+
 ## Remove avoidable queue stalls while retaining hard caps (2026-09-24)
 
 After the priority fix, production still reported 660 pending jobs and an idle

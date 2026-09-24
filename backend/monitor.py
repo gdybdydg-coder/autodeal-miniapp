@@ -12,7 +12,7 @@ import uuid
 from collections import Counter
 from datetime import datetime, timezone
 
-from sqlalchemy import case, delete, func, select, update
+from sqlalchemy import case, delete, exists, func, select, update
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
@@ -170,10 +170,16 @@ class Monitor:
             if not self.settings.ria_active_window_enabled:
                 # Retire only queued supplemental work. Keep publication cursors,
                 # subscription epochs and sent/uncertain delivery records intact.
+                origin = func.coalesce(MonitorJob.result["discovery_kind"].as_string(), "")
+                # Older delivery refreshes discarded job provenance. Recover it
+                # from the saved card only when no primary confirmation exists.
+                legacy_refresh = (origin == "") & exists(select(Listing.id).where(
+                    Listing.source == "auto_ria", Listing.source_id == MonitorJob.source_id,
+                    Listing.car["pipeline"]["discovery_kind"].as_string() == active_window.KIND))
                 retired_ids = select(MonitorJob.source_id).where(MonitorJob.state == "pending",
-                    MonitorJob.result["discovery_kind"].as_string() == active_window.KIND)
+                    (origin == active_window.KIND) | legacy_refresh)
                 db.execute(update(MonitorSeen).where(MonitorSeen.source_id.in_(retired_ids),
-                    MonitorSeen.state == "pending").values(state="cancelled"))
+                    MonitorSeen.state == "pending").values(state=active_window.RETIRED_STATE))
                 db.execute(update(MonitorJob).where(MonitorJob.source_id.in_(retired_ids)).values(
                     state="cancelled", reason="active_window_disabled"))
                 active_window.reset(db)
@@ -263,15 +269,34 @@ class Monitor:
                     continue
                 _, watch = state
                 for source_id in ids:
-                    if db.get(MonitorSeen, (sid, source_id)) is not None:
+                    seen = db.get(MonitorSeen, (sid, source_id))
+                    if seen is not None and not (seen.epoch == epoch
+                            and seen.state == active_window.RETIRED_STATE):
+                        # A current publication-window result supersedes the
+                        # unverified newest-page origin of an unevaluated ID.
+                        # Turning that extra search off must not cancel primary
+                        # work, including an ID already observed by this search.
+                        if seen.epoch == epoch and seen.state == "pending":
+                            job = db.get(MonitorJob, source_id)
+                            if job:
+                                job.result = {**job.result, "discovery_kind": "new_publication"}
                         continue
-                    db.add(MonitorSeen(search_id=sid, source_id=source_id, epoch=epoch,
-                                       state="pending", first_seen=now))
+                    if seen is None:
+                        db.add(MonitorSeen(search_id=sid, source_id=source_id, epoch=epoch,
+                                           state="pending", first_seen=now))
+                    else:
+                        # Only cancellation of unverified supplemental work is
+                        # reversible here, and only after fresh primary search
+                        # evidence for the same active subscription epoch.
+                        # Sent/uncertain delivery claims are never modified.
+                        seen.state = "pending"
                     job = db.get(MonitorJob, source_id)
                     if job is None:
                         db.add(MonitorJob(source_id=source_id, first_seen=now))
-                    elif job.state != "pending":
-                        job.state, job.next_run = "pending", 0
+                    else:
+                        if job.state != "pending":
+                            job.state, job.next_run, job.reason = "pending", 0, ""
+                        job.result = {**job.result, "discovery_kind": "new_publication"}
                     context["added"] = True
                 watch.initialized, watch.window, watch.checked_at = True, ids, now
             more = bool(ids) and (context["page"] + 1) * PAGE_SIZE < total

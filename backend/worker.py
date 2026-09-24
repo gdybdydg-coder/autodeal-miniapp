@@ -281,10 +281,14 @@ def deliver_one(engine, settings: Settings, sender, now=None, *, enforce_chat_in
             # A long Telegram queue is not grounds to send an old price or silently
             # discard the opportunity. Revalidate through the normal budgeted job.
             job = db.get(MonitorJob, listing.source_id)
+            origin = (listing.car.get("pipeline") or {}).get("discovery_kind", "new_publication")
             if job is None:
-                db.add(MonitorJob(source_id=listing.source_id, first_seen=now))
+                db.add(MonitorJob(source_id=listing.source_id, first_seen=now,
+                                  result={"discovery_kind": origin}))
             elif job.state != "pending":
-                job.state, job.next_run, job.result = "pending", 0, {}
+                origin = job.result.get("discovery_kind") or origin
+                job.state, job.next_run = "pending", 0
+                job.result = {"discovery_kind": origin}
             db.execute(update(MonitorSeen).where(MonitorSeen.search_id.in_(refresh),
                 MonitorSeen.source_id == listing.source_id).values(state="pending"))
             row.state, row.retry_at = "pending", now + 5

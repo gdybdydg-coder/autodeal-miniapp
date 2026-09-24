@@ -281,7 +281,7 @@ def test_disable_supplement_retires_old_work_and_queued_alerts_but_keeps_new(p, 
     assert len(details(p, "125")) == previous_old_checks and not details(p, "999")
     with Session(p.engine) as db:
         assert db.get(MonitorJob, "999").state == "cancelled"
-        assert db.get(MonitorSeen, (1, "999")).state == "cancelled"
+        assert db.get(MonitorSeen, (1, "999")).state == active_window.RETIRED_STATE
         assert db.scalar(select(Delivery.state).where(Delivery.user_id == 222)) == "sent"
         assert db.scalar(select(Delivery.state).where(Delivery.user_id == 333)) == "uncertain"
         old = db.scalar(select(Delivery).where(Delivery.user_id == 111, Delivery.listing_id == listing_id))
@@ -476,3 +476,116 @@ def test_old_backlog_leaves_extra_capacity_for_fresh_arrivals(p, monkeypatch):
         db.commit()
     assert p.runner.tick()
     assert selected == ["37319411", "999"]
+
+
+def queue_supplement_without_evaluation(p):
+    p.stock = ["124", "123"]
+    wake(p, 301)
+    for _ in range(20):
+        assert p.runner.tick()
+        with Session(p.engine) as db:
+            job = db.get(MonitorJob, "124")
+            if job is not None:
+                assert job.state == "pending" and job.attempts == 0
+                return
+    pytest.fail("supplemental arrival was not queued")
+
+
+def test_disabled_supplement_can_only_return_after_primary_publication_confirmation(p, monkeypatch):
+    enable_window(p, monkeypatch)
+    add_search(p, sid=2, uid=222)
+    drain(p)
+    queue_supplement_without_evaluation(p)
+    p.runner.settings = replace(p.settings, ria_active_window_enabled=False)
+    p.runner.sync()
+    # An old/unconfirmed first-page entry stays retired even with ample quota.
+    wake(p, 60)
+    drain(p)
+    assert not p.sent and not details(p, "124")
+    before = len(p.calls)
+    # Only the authoritative publication-window result can admit it again.
+    p.ads["124"] = p.clock[0] + 1
+    wake(p, 60)
+    drain(p)
+    assert {(uid, car.source_id) for uid, car in p.sent} == {(111, "124"), (222, "124")}
+    assert len(details(p, "124")) == 1
+    assert all("published_after" in params or "generation_id[0][0]" in params
+               for path, params in p.calls[before:] if path == "search")
+    wake(p, 3601)
+    drain(p)
+    assert len(p.sent) == 2 and len(details(p, "124")) == 1
+
+
+def test_primary_confirmation_promotes_pending_supplement_before_disabling(p, monkeypatch):
+    enable_window(p, monkeypatch)
+    drain(p)
+    queue_supplement_without_evaluation(p)
+    p.ads["124"] = p.clock[0] + 1
+    wake(p, 60)
+    assert p.runner.tick()  # Primary publication search confirms the same ID.
+    p.runner.settings = replace(p.settings, ria_active_window_enabled=False)
+    drain(p)
+    assert [(uid, car.source_id) for uid, car in p.sent] == [(111, "124")]
+    assert p.sent[0][1].pipeline["discovery_kind"] == "new_publication"
+
+
+def test_primary_confirmation_of_retired_supplement_does_not_revive_stopped_search(p, monkeypatch):
+    enable_window(p, monkeypatch)
+    add_search(p, sid=2, uid=222)
+    drain(p)
+    queue_supplement_without_evaluation(p)
+    p.runner.settings = replace(p.settings, ria_active_window_enabled=False)
+    p.runner.sync()
+    with Session(p.engine) as db:
+        db.get(Search, 2).enabled = False
+        reset_watch(db, 2, False)
+        db.commit()
+    p.ads["124"] = p.clock[0] + 1
+    wake(p, 60)
+    drain(p)
+    assert [(uid, car.source_id) for uid, car in p.sent] == [(111, "124")]
+    with Session(p.engine) as db:
+        assert db.get(MonitorWatch, 2) is None
+        assert db.get(Search, 2).enabled is False
+
+
+@pytest.mark.parametrize("legacy_origin", [False, True])
+def test_disabling_also_retires_supplemental_price_refresh_already_requested_by_delivery(
+        p, monkeypatch, legacy_origin):
+    enable_window(p, monkeypatch)
+    drain(p)
+    queue_supplement_without_evaluation(p)
+    for _ in range(20):
+        if not p.runner.tick():
+            break
+    enqueue(p.engine)
+    checked = len(details(p, "124"))
+    p.clock[0] += 601
+    p.runner.deliver_tick()  # Stale price requests normal revalidation, without sending.
+    assert not p.sent
+    with Session(p.engine) as db:
+        assert db.get(MonitorJob, "124").state == "pending"
+        if legacy_origin:
+            db.get(MonitorJob, "124").result = {}  # Pre-upgrade refresh lost provenance.
+            db.commit()
+    p.runner.settings = replace(p.settings, ria_active_window_enabled=False)
+    drain(p)
+    assert len(details(p, "124")) == checked
+    assert not p.sent
+    with Session(p.engine) as db:
+        assert db.get(MonitorJob, "124").state == "cancelled"
+
+
+def test_primary_search_does_not_reopen_other_cancellations(p, monkeypatch):
+    enable_window(p, monkeypatch)
+    drain(p)
+    with Session(p.engine) as db:
+        db.add(MonitorJob(source_id="124", state="cancelled", first_seen=p.clock[0]))
+        db.add(MonitorSeen(search_id=1, source_id="124", epoch=db.get(MonitorWatch, 1).epoch,
+                           state="cancelled", first_seen=p.clock[0]))
+        db.commit()
+    p.runner.settings = replace(p.settings, ria_active_window_enabled=False)
+    p.ads["124"] = p.clock[0] + 1
+    wake(p, 60)
+    drain(p)
+    assert not p.sent and not details(p, "124")
