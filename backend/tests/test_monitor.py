@@ -192,6 +192,20 @@ def test_one_new_listing_fans_out_to_two_hundred_subscribers_without_rescanning_
             p.engine, p.settings, p.runner.sender, now=p.clock[0]), range(4)))
     assert set(results) <= {"sent", "busy"} and "sent" in results
     assert len({uid for uid, _ in p.sent}) == len(p.sent)
+    # SQLite does not implement PostgreSQL SKIP LOCKED, so exercise the
+    # remaining per-recipient path serially; the four-worker bound has its own
+    # concurrency test. Neither path calls Telegram or the provider here.
+    reached_100 = False
+    for _ in range(200):
+        if len(p.sent) == 200:
+            break
+        assert deliver_one(p.engine, p.settings, p.runner.sender, now=p.clock[0]) == "sent"
+        reached_100 |= len(p.sent) >= 100
+    assert reached_100
+    assert len(p.sent) == len({uid for uid, _ in p.sent}) == 200
+    assert len(p.calls) == before
+    with Session(p.engine) as db:
+        assert {row.state for row in db.scalars(select(Delivery))} == {"sent"}
 
 
 def test_delivery_batch_is_bounded_but_sends_to_distinct_chats_concurrently(monkeypatch):
