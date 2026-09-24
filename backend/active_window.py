@@ -20,7 +20,6 @@ from .ria_search import budget_state, parse_ids
 # first-page poll uses at most 2,016 searches/day for seven groups.
 INTERVAL = 300
 WINDOW_SIZE = 50
-RECHECK_SECONDS = 1800
 KIND = "active_window"
 CALL_RESERVE = 32
 
@@ -99,7 +98,7 @@ def discover(monitor, feed_id, source):
         baseline = row.checked_at <= 0 and not row.window
         previous = set(row.window or [])
         arrivals = [] if baseline else [source_id for source_id in ids if source_id not in previous]
-        selected, refresh = [], []
+        selected = []
 
         # Queue every newly-entered ID in the newest-page window. The first
         # successful page is only a baseline, so enabling a subscription never
@@ -113,35 +112,12 @@ def discover(monitor, feed_id, source):
                         Delivery.user_id == uid, Delivery.listing_id == listing.id)) is not None:
                     continue
                 seen = db.get(MonitorSeen, (sid, source_id))
-                if seen is None or (seen.epoch == epoch and seen.state != "pending"):
+                # Re-entry into the top page (or a changed price) is not a
+                # new interest for a subscription that saw this ID already.
+                if seen is None:
                     interested.append((sid, epoch))
             if interested:
                 selected.append((source_id, interested))
-
-        # Existing non-deals can still be refreshed for later price drops, but
-        # refresh work never displaces fresh arrivals.
-        for source_id in ids:
-            if source_id in arrivals:
-                continue
-            job = db.get(MonitorJob, source_id)
-            if not job or job.state not in {"checked", "unvalued", "informational"}:
-                continue
-            listing = db.scalar(select(Listing).where(Listing.source == "auto_ria",
-                                                      Listing.source_id == source_id))
-            old_members = []
-            for sid, uid, epoch in recipients:
-                if listing and db.scalar(select(Delivery.id).where(
-                        Delivery.user_id == uid, Delivery.listing_id == listing.id)) is not None:
-                    continue
-                seen = db.get(MonitorSeen, (sid, source_id))
-                if (seen and seen.epoch == epoch and seen.state in {"checked", "unvalued", "informational"}
-                        and job.last_attempt <= now - RECHECK_SECONDS):
-                    old_members.append((sid, epoch))
-            if old_members:
-                refresh.append((source_id, old_members))
-        refresh.sort(key=lambda item: (db.get(MonitorJob, item[0]).last_attempt, item[0]))
-        if refresh:
-            selected.append(refresh[0])
 
         for source_id, interested in selected:
             for sid, epoch in interested:

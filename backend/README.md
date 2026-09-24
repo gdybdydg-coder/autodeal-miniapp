@@ -56,6 +56,10 @@ The primary publication-time search remains first. The optional newest-page
 diff also catches active IDs that enter the first 50 results without appearing
 in the publication-time search (for example, a newly republished ID). It does
 not page through historical results or resend existing delivery claims.
+The first poll only establishes a baseline; later polls evaluate only IDs
+newly entering that page. Already evaluated older listings are not revisited
+for price drops. A published-date miss can still escape if its ID is below
+the first page or was already there at the time of the initial baseline.
 Previously this search stopped indefinitely when regular publication traffic
 exceeded half of the 24-hour cap, despite substantial quota remaining.
 

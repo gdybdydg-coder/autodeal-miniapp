@@ -70,7 +70,7 @@ def test_new_first_page_entries_are_queued_without_a_catalog_scan(p, monkeypatch
     assert not runtime_status(p.engine, True, 999, active_window_enabled=True)["active_window"]["state_counts"]
 
 
-def test_price_drop_on_seen_non_deal_can_qualify_once(p, monkeypatch):
+def test_price_drop_on_seen_non_deal_does_not_recheck_old_listing(p, monkeypatch):
     enable_window(p, monkeypatch)
     drain(p)
     p.stock = ["124", "123"]
@@ -82,12 +82,20 @@ def test_price_drop_on_seen_non_deal_can_qualify_once(p, monkeypatch):
     wake(p, 301)
     drain(p)
     assert not p.sent and len(details(p, "124")) == 1
+
+    p.stock = ["123"]  # An ID leaving the first page must not reset its claim.
+    wake(p, 301)
+    drain(p)
+    p.stock = ["124", "123"]
+    wake(p, 301)
+    drain(p)
+    assert not p.sent and len(details(p, "124")) == 1
     wake(p, 1801)
     drain(p)
-    assert len(p.sent) == 1 and p.sent[0][1].price == 10000
+    assert not p.sent and len(details(p, "124")) == 1
     wake(p, 1801)
     drain(p)
-    assert len(p.sent) == 1
+    assert not p.sent and len(details(p, "124")) == 1
 
 
 def test_supplement_pauses_before_consuming_reserved_primary_budget(p, monkeypatch):
@@ -246,7 +254,7 @@ def test_disable_supplement_retires_old_work_and_queued_alerts_but_keeps_new(p, 
 
 @pytest.mark.parametrize("first_delivery", ["sent", "uncertain"])
 @pytest.mark.parametrize("second_active", [True, False])
-def test_shared_informational_job_refreshes_only_unsent_current_interests(
+def test_shared_informational_job_does_not_recheck_old_listing_or_duplicate_sent(
         p, monkeypatch, first_delivery, second_active):
     enable_window(p, monkeypatch)
     p.stock = ["124"]
@@ -291,8 +299,9 @@ def test_shared_informational_job_refreshes_only_unsent_current_interests(
     p.prices["124"] = 4000
     wake(p, 1801)
     drain(p)
-    expected = [(111, 10000), (222, 4000)] if second_active else [(111, 10000)]
+    expected = [(111, 10000)]
     assert [(uid, car.price) for uid, car in p.sent] == expected
+    assert len(details(p, "124")) == 1
     wake(p, 1801)
     drain(p)
     assert [(uid, car.price) for uid, car in p.sent] == expected
