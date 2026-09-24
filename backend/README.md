@@ -1,5 +1,22 @@
 # AUTODeal backend — subscriptions for new worthwhile cars
 
+## Condition labels do not block fresh alerts (2026-09-24)
+
+The owner's current rule includes ads marked by AUTO.RIA as `onRepairParts`.
+Like `damage` and an adverse `technicalCondition`, this marker now travels
+through the normal fresh-publication, valuation and Telegram delivery path.
+The card explicitly says when the source marks a car for parts or repair.
+Undamaged peers remain the comparison basis when legacy peer valuation is used;
+the paid AUTO.RIA lower-bound method is unchanged. Parts-only condition does not
+override a saved filter or its minimum discount on a confirmed priced deal.
+When AUTO.RIA does not provide a usable range, a matching freshly priced ad is
+labelled informational without a fabricated market price. `abroad` and `custom`
+remain non-condition exclusions. Already sent or uncertain deliveries are not
+replayed; stopped searches and historical ads are not reactivated.
+
+The historical release notes below describe the behavior at the time of each
+release; this section supersedes their parts-only exclusion statements.
+
 ## Client onboarding (release 20260918-51)
 
 Private `/start`, `/help` and `/stop` commands now queue durable replies in a new

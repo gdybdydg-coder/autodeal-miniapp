@@ -124,7 +124,7 @@ def test_changed_listing_or_reference_is_rejected_at_dispatch(engine):
 
 
 @pytest.mark.parametrize("flag,allowed", [("damage", True), ("technical_condition", True),
-                                        ("onRepairParts", False), ("abroad", False), ("custom", False)])
+                                        ("onRepairParts", True), ("abroad", False), ("custom", False)])
 def test_repair_notice_and_remaining_exclusions(flag, allowed):
     candidate, quote = fixture(950, 1300, 1600)
     candidate["condition_exclusions"] = [flag]
@@ -133,6 +133,13 @@ def test_repair_notice_and_remaining_exclusions(flag, allowed):
     assert (rating["market"] is not None) is allowed
     if allowed:
         assert rating["valuation_evidence"]["condition_notices"] == [flag]
+
+
+def test_parts_marker_does_not_overrule_location_or_customs_exclusions():
+    candidate, quote = fixture(950, 1300, 1600)
+    for other_flag in ("abroad", "custom"):
+        candidate["condition_exclusions"] = ["onRepairParts", other_flag]
+        assert market_range.estimate(candidate, quote)["market"] is None
 
 
 @pytest.mark.parametrize("price,expected", [(950, "Вигода: 23,1%"),

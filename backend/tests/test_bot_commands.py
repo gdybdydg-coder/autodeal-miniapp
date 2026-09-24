@@ -129,7 +129,7 @@ def test_command_menu_requires_verified_bot_and_is_idempotent(setup):
     def send(token, method, payload):
         calls.append(method)
         assert method == "setMyCommands"
-        assert {c["command"] for c in payload["commands"]} == {"start", "help", "stop"}
+        assert {c["command"] for c in payload["commands"]} == {"start", "help", "stop", "stats"}
         return {"ok": True, "result": True}
     bot_commands.configure(engine, settings, send)
     assert calls == []

@@ -251,8 +251,8 @@ def test_enabled_mode_requires_server_account_id_without_exposing_credentials(p)
     assert "test-only" not in repr(replace(p.settings, auto_ria_user_id="42"))
 
 
-@pytest.mark.parametrize("repair", [False, True])
-def test_missing_comparison_dimensions_do_not_hide_provider_pricing(p, monkeypatch, repair):
+@pytest.mark.parametrize("condition_flag", [None, "technical_condition", "onRepairParts"])
+def test_missing_comparison_dimensions_do_not_hide_provider_pricing(p, monkeypatch, condition_flag):
     calls = enable(p, monkeypatch)
     factory = p.runner.search_factory
     def sparse(engine, key):
@@ -261,8 +261,8 @@ def test_missing_comparison_dimensions_do_not_hide_provider_pricing(p, monkeypat
         def car(sid, **kw):
             candidate = original(sid, **kw)
             candidate.update(generation_id=None, modification_id=None, body_id=None, mileage=None)
-            if repair:
-                candidate.update(comparable_condition=False, condition_exclusions=["technical_condition"])
+            if condition_flag:
+                candidate.update(comparable_condition=False, condition_exclusions=[condition_flag])
             return candidate
         source.car = car
         return source
@@ -273,7 +273,7 @@ def test_missing_comparison_dimensions_do_not_hide_provider_pricing(p, monkeypat
     assert calls == ["124"] and len(p.sent) == 1
     car = p.sent[0][1]
     assert car.market == 13537.5 and fresh(car, p.clock[0], require_provider_range=True)
-    assert car.valuation_evidence["condition_notices"] == (["technical_condition"] if repair else [])
+    assert car.valuation_evidence["condition_notices"] == ([condition_flag] if condition_flag else [])
 
 
 def test_above_reference_candidate_and_nonmatching_price_filter_are_not_deals(p, monkeypatch):

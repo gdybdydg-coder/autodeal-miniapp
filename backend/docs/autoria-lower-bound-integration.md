@@ -67,9 +67,10 @@ There is no notification-comparable fallback or old-candidate scan. If no usable
 range is obtained, a freshly priced matching candidate gets an explicit
 informational card. Priced cards apply each saved minimum discount after the
 5% adjustment. A listed price above the reference is never described as profit.
-Repair candidates disclose condition markers; parts-only/abroad/custom exclusions
-remain. Candidate and range freshness, known changed/removed details, current
-filter epochs and /stop are checked again at dispatch.
+Repair and parts-only candidates disclose the source's condition markers;
+abroad/custom exclusions remain. Candidate and range freshness, known
+changed/removed details, current filter epochs and /stop are checked again
+at dispatch.
 
 On upgrade, only pending or current unsent delivery interests can request a fresh
 valuation. Finished historical jobs, stopped epochs, sent/uncertain claims and

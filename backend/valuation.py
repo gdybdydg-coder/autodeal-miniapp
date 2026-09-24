@@ -11,7 +11,7 @@ VERSION = "asking-v5"
 PRICE_ONLY_VERSION = "listing-price-v3"
 INFORMATION_REASONS = {"provider_market_range_unavailable", "incomplete_details", "insufficient_comparables", "mixed_sample",
                        "unverified_condition", "missing_valuation_details", "repair_condition"}
-REPAIR_CONDITIONS = {"damage", "technical_condition"}
+REPAIR_CONDITIONS = {"damage", "technical_condition", "onRepairParts"}
 MAX_AGE = 900
 MIN_PEERS = 5
 DIMENSIONS = ("brand_id", "model_id", "generation_id", "modification_id", "body_id", "fuel_id", "gear_id")
@@ -21,7 +21,7 @@ PRICING_METHOD = {"pricing_method": "lower_quartile", "quantile": .25, "quantile
 
 
 def notification_condition_allowed(car):
-    """The owner accepts repair candidates; other source exclusions stay intact."""
+    """Condition and parts markers cannot suppress a matching new vehicle."""
     flags = car.get("condition_exclusions") if isinstance(car, dict) else None
     return isinstance(flags, list) and all(isinstance(flag, str) and flag in REPAIR_CONDITIONS for flag in flags)
 
@@ -271,7 +271,7 @@ def policy():
             "unknown_valuation_notification": "informational_without_market_or_discount",
             "condition_basis": "no_source_damage_parts_abroad_or_custom_flags",
             "notification_repair_condition": "disclosed_not_excluded",
-            "notification_other_exclusions": ["onRepairParts", "abroad", "custom"],
+            "notification_other_exclusions": ["abroad", "custom"],
             "year_tolerance": 1, "mileage_tolerance_percent": 20, "mileage_tolerance_min_km": 30000,
             "maximum_detail_age_seconds": MAX_AGE, "sample_max_price_ratio": 2,
             "user_price_and_region_affect_estimate": False,

@@ -14,14 +14,14 @@ from backend.valuation import evidence_valid, price_only_evidence_valid
 from backend.worker import TelegramSender
 
 
-@pytest.mark.parametrize("flag", ["damage", "technical_condition"])
+@pytest.mark.parametrize("flag", ["damage", "technical_condition", "onRepairParts"])
 @pytest.mark.parametrize("with_peers", [False, True])
 def test_repair_candidate_reaches_telegram_once_with_condition_disclosed(p, monkeypatch, flag, with_peers):
     def mutate(data):
-        if flag == "damage":
-            data["autoInfoBar"]["damage"] = True
-        else:
+        if flag == "technical_condition":
             data["technicalCondition"] = {"id": 3}
+        else:
+            data["autoInfoBar"][flag] = True
     alter_details(p, mutate)
     if not with_peers:
         monkeypatch.setattr("backend.ria_search.RiaSearch.notification_comparisons", lambda *_: [])
@@ -29,6 +29,11 @@ def test_repair_candidate_reaches_telegram_once_with_condition_disclosed(p, monk
     p.prices["124"] = 1700
     wake(p)
     drain(p)
+    publication_queries = [params for path, params in p.calls
+                           if path == "search" and "published_after" in params]
+    assert publication_queries
+    assert all(not any(key in params for key in ("damage", "onRepairParts", "technicalCondition[0]"))
+               for params in publication_queries)
     assert len(p.sent) == 1
     car = p.sent[0][1]
     proof = car.valuation_evidence
@@ -50,7 +55,8 @@ def test_repair_candidate_reaches_telegram_once_with_condition_disclosed(p, monk
     monkeypatch.setattr("backend.worker.httpx.Client", lambda **kw:
                         client(transport=httpx.MockTransport(handler), **kw))
     assert TelegramSender("test-only")(111, car)["ok"]
-    assert "позначка про пошкодження / ремонт" in requests[0]["text"]
+    notice = "авто на запчастини / під ремонт" if flag == "onRepairParts" else "позначка про пошкодження / ремонт"
+    assert notice in requests[0]["text"]
     assert "/stop" in requests[0]["text"]
     wake(p)
     drain(p)
@@ -59,8 +65,14 @@ def test_repair_candidate_reaches_telegram_once_with_condition_disclosed(p, monk
         assert db.get(MonitorJob, "124").state != "excluded"
 
 
-def test_repair_candidate_still_obeys_saved_minimum_discount(p):
-    alter_details(p, lambda data: data.update(technicalCondition={"id": 3}))
+@pytest.mark.parametrize("flag", ["technical_condition", "onRepairParts"])
+def test_repair_candidate_still_obeys_saved_minimum_discount(p, flag):
+    def mutate(data):
+        if flag == "technical_condition":
+            data["technicalCondition"] = {"id": 3}
+        else:
+            data["autoInfoBar"][flag] = True
+    alter_details(p, mutate)
     p.ads["124"], p.prices["124"] = p.clock[0] + 1, 14000
     wake(p)
     drain(p)

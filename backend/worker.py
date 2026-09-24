@@ -196,8 +196,12 @@ class TelegramSender:
                 pricing.append("Ціни аналогів надто різняться; нижній орієнтир не підтверджено")
             if "unverified_condition" in reasons and not (car.valuation_evidence or {}).get("condition_notices"):
                 pricing.append("⚠️ Стан авто не підтверджено даними джерела")
-        if (car.valuation_evidence or {}).get("condition_notices"):
-            pricing.append("⚠️ У джерелі є позначка про пошкодження / ремонт — перевір опис")
+        condition_notices = (car.valuation_evidence or {}).get("condition_notices") or []
+        if condition_notices:
+            if "onRepairParts" in condition_notices:
+                pricing.append("⚠️ AUTO.RIA: авто на запчастини / під ремонт — перевір опис")
+            if any(flag in condition_notices for flag in ("damage", "technical_condition")):
+                pricing.append("⚠️ У джерелі є позначка про пошкодження / ремонт — перевір опис")
             if car.market is not None:
                 pricing.append("Витрати на ремонт не враховані" if provider_range else
                                "Орієнтир аналогів без позначених пошкоджень; витрати на ремонт не враховані")

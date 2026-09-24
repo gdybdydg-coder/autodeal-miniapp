@@ -33,46 +33,54 @@ def enable_window(p, monkeypatch):
     p.runner.search_factory = with_stock
 
 
-def test_old_active_listing_is_checked_without_claiming_it_is_new(p, monkeypatch):
+def test_first_active_page_is_a_baseline_without_replaying_old_listings(p, monkeypatch):
     enable_window(p, monkeypatch)
     drain(p)
-    assert [(uid, car.source_id) for uid, car in p.sent] == [(111, "123")]
-    assert p.sent[0][1].pipeline["discovery_kind"] == "active_window"
-    assert p.sent[0][1].market == 15000
+    assert not p.sent and not details(p, "123")
+    with Session(p.engine) as db:
+        window = db.scalar(select(MonitorActiveWindow))
+        assert window.window == ["123"] and window.status == "baseline"
     p.runner = Monitor(p.engine, p.settings, p.runner.search_factory, p.runner.sender)
     wake(p, 301)
     drain(p)
-    assert len(p.sent) == 1 and len(details(p, "123")) == 1
+    assert not p.sent and not details(p, "123")
 
 
-def test_first_page_and_one_candidate_are_hard_limits_not_a_catalog_scan(p, monkeypatch):
+def test_new_first_page_entries_are_queued_without_a_catalog_scan(p, monkeypatch):
     enable_window(p, monkeypatch)
     p.stock = [str(n) for n in range(1000, 1100)]
     drain(p)
-    assert [car.source_id for _, car in p.sent] == ["1000"]
+    assert not p.sent
     with Session(p.engine) as db:
         window = db.scalar(select(MonitorActiveWindow))
         assert len(window.window) == 50 and window.source_total == 100
-        assert window.status == "limited_window"
-        assert len(list(db.scalars(select(MonitorJob)))) == 1
-    wake(p, 301)
+        assert window.status == "baseline"
+        assert not list(db.scalars(select(MonitorJob)))
+    p.stock = ["2000", "2001"] + [str(n) for n in range(1000, 1098)]
+    wake(p, 61)
     drain(p)
-    assert [car.source_id for _, car in p.sent] == ["1000", "1001"]
+    assert [car.source_id for _, car in p.sent] == ["2000", "2001"]
+    assert not details(p, "1000")
+    with Session(p.engine) as db:
+        assert len(list(db.scalars(select(MonitorJob)))) == 2
     state = runtime_status(p.engine, True, 111, active_window_enabled=True)["active_window"]
-    assert state["coverage"] == "latest_active_window_only" and not state["historical_pagination"]
+    assert state["coverage"] == "latest_active_window_diff" and not state["historical_pagination"]
     assert "1000" not in str(state)
     assert not runtime_status(p.engine, True, 999, active_window_enabled=True)["active_window"]["state_counts"]
 
 
 def test_price_drop_on_seen_non_deal_can_qualify_once(p, monkeypatch):
     enable_window(p, monkeypatch)
-    p.prices["123"] = 16000
+    drain(p)
+    p.stock = ["124", "123"]
+    p.prices["124"] = 16000
+    wake(p, 61)
     drain(p)
     assert not p.sent
-    p.prices["123"] = 10000
+    p.prices["124"] = 10000
     wake(p, 301)
     drain(p)
-    assert not p.sent and len(details(p, "123")) == 1
+    assert not p.sent and len(details(p, "124")) == 1
     wake(p, 1801)
     drain(p)
     assert len(p.sent) == 1 and p.sent[0][1].price == 10000
@@ -109,7 +117,7 @@ def test_new_arrival_is_evaluated_before_older_supplemental_job(p, monkeypatch):
     p.ads["124"] = p.clock[0] + 1
     wake(p)
     drain(p)
-    assert [car.source_id for _, car in p.sent] == ["123", "124", "999"]
+    assert [car.source_id for _, car in p.sent] == ["124", "999"]
 
 
 def test_stop_during_supplemental_fetch_cannot_create_interest(p, monkeypatch):
@@ -137,12 +145,15 @@ def test_stop_during_supplemental_fetch_cannot_create_interest(p, monkeypatch):
 @pytest.mark.parametrize("already_queued", [True, False])
 def test_disable_supplement_retires_old_work_and_queued_alerts_but_keeps_new(p, monkeypatch, already_queued):
     enable_window(p, monkeypatch)
+    drain(p)  # Establish a baseline before the new active ID appears.
+    p.stock = ["125", "123"]
+    wake(p, 61)
     for _ in range(20):
         if not p.runner.tick():
             break
     with Session(p.engine) as db:
         listing = db.scalar(select(Listing))
-        assert listing and listing.source_id == "123"
+        assert listing and listing.source_id == "125"
         listing_id = listing.id
         db.add(Delivery(user_id=222, listing_id=listing.id, state="sent", message_id=17))
         db.add(Delivery(user_id=333, listing_id=listing.id, state="uncertain"))
@@ -152,7 +163,7 @@ def test_disable_supplement_retires_old_work_and_queued_alerts_but_keeps_new(p, 
         db.commit()
     if already_queued:
         enqueue(p.engine)
-    previous_old_checks = len(details(p, "123"))
+    previous_old_checks = len(details(p, "125"))
     p.settings = replace(p.settings, ria_active_window_enabled=False)
     p.runner = Monitor(p.engine, p.settings, p.runner.search_factory, p.runner.sender)
     p.ads["124"] = p.clock[0] + 1
@@ -160,7 +171,7 @@ def test_disable_supplement_retires_old_work_and_queued_alerts_but_keeps_new(p, 
     p.runner.deliver_tick()  # Delivery can run before the first monitor sync.
     drain(p)
     assert [car.source_id for _, car in p.sent] == ["124"]
-    assert len(details(p, "123")) == previous_old_checks and not details(p, "999")
+    assert len(details(p, "125")) == previous_old_checks and not details(p, "999")
     with Session(p.engine) as db:
         assert db.get(MonitorJob, "999").state == "cancelled"
         assert db.get(MonitorSeen, (1, "999")).state == "cancelled"
