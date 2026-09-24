@@ -341,3 +341,33 @@ def test_shared_informational_job_does_not_recheck_old_listing_or_duplicate_sent
     wake(p, 1801)
     drain(p)
     assert [(uid, car.price) for uid, car in p.sent] == expected
+
+
+def test_recent_supplemental_arrival_does_not_wait_behind_accumulated_queue(p, monkeypatch):
+    enable_window(p, monkeypatch)
+    drain(p)
+    with Session(p.engine) as db:
+        for n in range(663):
+            db.add(MonitorJob(source_id=str(20000 + n), first_seen=p.clock[0] - 21600 + n,
+                              result={"discovery_kind": active_window.KIND}))
+        db.add(MonitorJob(source_id="37319411", first_seen=p.clock[0],
+                          result={"discovery_kind": active_window.KIND}))
+        db.commit()
+    selected = []
+    monkeypatch.setattr(p.runner, "evaluate", lambda source_id, source: selected.append(source_id))
+    assert p.runner.tick()
+    assert selected == ["37319411"]
+
+
+def test_primary_job_keeps_priority_over_even_newer_supplement(p, monkeypatch):
+    enable_window(p, monkeypatch)
+    drain(p)
+    with Session(p.engine) as db:
+        db.add(MonitorJob(source_id="124", first_seen=p.clock[0] - 60))
+        db.add(MonitorJob(source_id="37319411", first_seen=p.clock[0],
+                          result={"discovery_kind": active_window.KIND}))
+        db.commit()
+    selected = []
+    monkeypatch.setattr(p.runner, "evaluate", lambda source_id, source: selected.append(source_id))
+    assert p.runner.tick()
+    assert selected == ["124"]

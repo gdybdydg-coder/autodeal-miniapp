@@ -491,7 +491,11 @@ class Monitor:
                 job_query = select(MonitorJob).where(MonitorJob.state == "pending", MonitorJob.next_run <= time.time())
                 if not self.settings.ria_active_window_enabled or not active_window.budget_available(db):
                     job_query = job_query.where(~supplemental)
+                # Newly surfaced active-page IDs must not sit behind hours of
+                # older supplemental backlog. Keep primary publication jobs
+                # first, their retry ordering, and all existing budget gates.
                 job = db.scalar(job_query.order_by(case((supplemental, 1), else_=0),
+                    case((supplemental, -MonitorJob.first_seen), else_=MonitorJob.last_attempt),
                     MonitorJob.last_attempt, MonitorJob.first_seen, MonitorJob.source_id).limit(1))
                 last = db.get(MonitorControl, "pilot").status
                 kind = "evaluate" if job and (not feed or last == "discover") else "discover" if feed else None

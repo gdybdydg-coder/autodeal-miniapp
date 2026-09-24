@@ -1,5 +1,18 @@
 # AUTODeal backend — subscriptions for new worthwhile cars
 
+## Fresh supplemental arrivals before accumulated backlog (2026-09-24)
+
+The Volvo incident `37319411` was observed at 18:37:30 UTC and still pending
+without any evaluation attempt at 18:44 UTC, with five matching active searches.
+The source was healthy, but the supplemental queue had accumulated hundreds
+of pending jobs. Within that queue, evaluation now selects the most recently
+observed arrival first instead of requiring it to wait behind older jobs.
+Primary publication jobs retain priority. Existing hourly/daily budget reserves,
+fresh positive-price checks, saved discount thresholds, stopped epochs and
+delivery deduplication are unchanged. This improves freshness under backlog;
+it does not increase throughput or promise to drain all old pending jobs.
+Regression tests reproduce the 663-job backlog and preserve primary priority.
+
 ## Client journey and support (2026-09-24)
 
 The Mini App subscription list now guides a new user through private `/start`,
