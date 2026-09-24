@@ -8,7 +8,7 @@ from sqlalchemy.orm import Session
 
 from backend import bot_commands, telegram_setup
 from backend.app import Settings, create_app
-from backend.models import BotReply, MonitorControl, Search, SourceProbe, User
+from backend.models import BotReply, MonitorControl, Search, SourceBudget, SourceProbe, User
 from backend.tests.test_backend import TOKEN, SECRET, command, headers, subscribe
 
 
@@ -88,6 +88,25 @@ def test_help_is_read_only_for_consent_and_wrong_bot_mentions_are_ignored(setup)
     with Session(engine) as db:
         assert db.get(User, 111).ready is False
     assert "Як користуватися" in calls[0]["text"]
+
+
+def test_private_admin_stats_reports_local_quota_without_source_requests(setup, monkeypatch):
+    engine, _, _ = setup
+    monkeypatch.setenv("RIA_REQUESTS_HOURLY_CAP", "900")
+    monkeypatch.setenv("RIA_REQUESTS_DAILY_CAP", "12000")
+    monkeypatch.setenv("RIA_REQUESTS_TOTAL_CAP", "90000")
+    now = time.time()
+    with Session(engine) as db:
+        budget = db.get(SourceBudget, "auto_ria")
+        budget.calls, budget.total = [now - 60] * 7 + [now - 90000], 44569
+        db.commit()
+        assert bot_commands.stats_text(db, 222, 111) == "⛔ Команда доступна лише адміністратору."
+        text = bot_commands.stats_text(db, 111, 111)
+        assert "За 24 год: 7 запитів" in text
+        assert "Залишок за нашим лімітом: 45 431" in text
+        assert "≈6490,1 дн." in text
+        assert "локальний облік" in text
+        assert db.get(SourceBudget, "auto_ria").total == 44569
 
 
 def test_abandoned_sending_and_stale_pending_commands_are_not_replayed(setup):

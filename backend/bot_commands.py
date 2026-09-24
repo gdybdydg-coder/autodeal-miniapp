@@ -8,7 +8,8 @@ from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
 from . import telegram_setup
-from .models import BotReply, Search, SourceProbe, TelegramTest, User
+from .models import BotReply, Search, SourceBudget, SourceProbe, TelegramTest, User
+from .ria_budget import BudgetLimits
 
 COMMANDS = [
     {"command": "start", "description": "Почати та відкрити AUTODeal"},
@@ -62,12 +63,29 @@ def stats_text(db, uid, admin_uid):
     active = db.scalar(select(func.count()).select_from(User).where(User.ready.is_(True))) or 0
     searches = db.scalar(select(func.count()).select_from(Search).where(Search.enabled.is_(True))) or 0
     owners = db.scalar(select(func.count(func.distinct(Search.user_id))).where(Search.enabled.is_(True))) or 0
+    budget = db.get(SourceBudget, "auto_ria")
+    if budget:
+        limits = BudgetLimits.env()
+        cutoff = time.time() - 86400
+        used_day = sum(stamp > cutoff for stamp in budget.calls)
+        remaining = max(0, limits.total - budget.total)
+        grouped = lambda value: f"{value:,}".replace(",", " ")
+        estimate = (f"≈{remaining / used_day:.1f}".replace(".", ",") + " дн."
+                    if used_day else "поки немає даних")
+        quota = ("\n\n📡 Квота AUTO.RIA (локальний облік):\n"
+                 f"За 24 год: {grouped(used_day)} запитів\n"
+                 f"Залишок за нашим лімітом: {grouped(remaining)}\n"
+                 f"За поточного темпу: {estimate}\n"
+                 "Пакет провайдера та дату поновлення перевіряй окремо.")
+    else:
+        quota = "\n\n📡 Облік квоти AUTO.RIA ще недоступний."
     return (
         "📊 AUTODeal — статистика\n\n"
         f"👥 Усього користувачів: {total}\n"
         f"🟢 Підключені до бота: {active}\n"
         f"🔎 Активних пошуків: {searches}\n"
         f"🚘 Користувачів з активним пошуком: {owners}"
+        + quota
     )
 
 

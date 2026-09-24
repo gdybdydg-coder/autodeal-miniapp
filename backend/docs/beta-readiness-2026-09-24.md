@@ -1,5 +1,12 @@
 # AUTODeal beta readiness — 2026-09-24
 
+The admin-only `/stats` reply can show the rolling 24-hour request count,
+remaining local lifetime allowance and a rough runway at the current pace.
+It reads existing accounting and makes no provider request. It is available
+only when the intended owner's `ADMIN_TELEGRAM_ID` has been configured on the
+service; the provider's own balance and billing renewal must be checked in
+the developer account separately. Current monitoring cadence remains unchanged.
+
 ## Verified without contacting AUTO.RIA or sending Telegram messages
 
 - 426 backend tests and 72 Mini App tests passed. A fresh ad enters one shared
