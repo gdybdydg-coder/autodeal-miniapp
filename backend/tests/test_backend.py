@@ -305,6 +305,23 @@ def test_rate_limit_and_stop(setup):
     assert deliver_one(engine, settings, lambda *a: pytest.fail("stopped"), now=now+31) == "empty"
 
 
+def test_two_cars_for_one_chat_obey_one_second_limit_without_losing_second(setup):
+    engine, settings, _ = setup
+    ready(setup)
+    ingest(engine, [car("one"), car("two")])
+    enqueue(engine)
+    now = time.time()
+    sent = []
+    def sender(uid, listing):
+        sent.append(listing.source_id)
+        return {"ok": True, "result": {"message_id": len(sent)}}
+    assert deliver_one(engine, settings, sender, now=now) == "sent"
+    assert deliver_one(engine, settings, sender, now=now + .1) == "pending"
+    assert sent == ["one"]
+    assert deliver_one(engine, settings, sender, now=now + 1.2) == "sent"
+    assert sent == ["one", "two"]
+
+
 def test_cors(setup):
     client = setup[2]
     good = client.options("/api/subscriptions", headers={

@@ -1,5 +1,23 @@
 # AUTODeal backend — subscriptions for new worthwhile cars
 
+## Bounded Telegram fan-out (2026-09-24)
+
+The delivery queue now starts from current `monitor_matches` and excludes
+already claimed user/listing pairs in SQL, instead of checking every historical
+listing for every connected user on each tick. One newly evaluated listing can
+therefore queue separate deliveries for many subscribers without additional
+AUTO.RIA reads. The existing unique delivery claim, subscription epoch, `/stop`,
+and fresh-price verification still apply before each Telegram request.
+
+The running worker issues at most four sends in parallel and starts batches no
+faster than every 250 ms (at most 16 attempts/s from this instance). Attempts
+for the same chat are delayed to at least 1.05 seconds apart. Telegram 429
+replies still respect the returned retry delay; timeout/unknown responses are
+never replayed automatically. This is below Telegram's ordinary broadcast
+limit and does not claim delivery to 100 or 200 devices in one second. The
+synthetic 200-subscriber test checks queue fan-out and deduplication; live
+throughput and provider quota must still be measured with a controlled beta.
+
 ## Read-only trace for a reported missing listing (2026-09-24)
 
 `GET /api/notifications/trace/{AUTO_RIA_ID}` requires the caller's signed

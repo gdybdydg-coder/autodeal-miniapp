@@ -1,10 +1,13 @@
+import asyncio
+import threading
 import time
+from concurrent.futures import ThreadPoolExecutor
 from dataclasses import replace
 from datetime import datetime
 from types import SimpleNamespace
 
 import pytest
-from sqlalchemy import create_engine, select, update
+from sqlalchemy import create_engine, event, select, update
 from sqlalchemy.orm import Session
 
 from backend.app import Settings
@@ -12,11 +15,11 @@ from backend.auto_ria import RiaError
 from backend.models import (Base, Delivery, Filters, Listing, MonitorControl, MonitorFeed, MonitorJob,
                             MonitorMatch, MonitorMembership, MonitorSeen, MonitorWatch,
                             Search, SourceBudget, SourceProbe, User)
-from backend.monitor import Monitor, initialize, poll_interval, reset_watch, runtime_status
+from backend.monitor import Monitor, delivery_batch, initialize, poll_interval, reset_watch, runtime_status
 from backend.ria_budget import BudgetLimits
 from backend.ria_search import RiaSearch, initialize_budget
 from backend.tests.test_ria_search import fixture_fetch, raw
-from backend.worker import deliver_one
+from backend.worker import deliver_one, enqueue
 
 
 def add_search(p, sid=2, uid=222, **changes):
@@ -143,6 +146,69 @@ def test_more_than_fifty_new_ads_survive_restart_and_are_all_evaluated(p):
         assert not db.scalar(select(MonitorJob).where(MonitorJob.state == "pending"))
         assert db.scalar(select(MonitorFeed)).context == {}
     assert {params["page"] for params in searches(p)} == {0, 1, 2}
+
+
+def test_one_new_listing_fans_out_to_two_hundred_subscribers_without_rescanning_history(p):
+    drain(p)
+    p.ads["124"] = p.clock[0] + 1
+    wake(p)
+    p.runner.tick()  # Discover the shared new ID.
+    p.runner.tick()  # Evaluate the car once.
+    with Session(p.engine) as db:
+        listing = db.scalar(select(Listing))
+        assert listing and db.get(MonitorMatch, (1, listing.id))
+        listing_id = listing.id
+        first = db.get(Search, 1)
+        for idx in range(2, 201):
+            db.add(User(id=1000 + idx, ready=True))
+            db.add(Search(id=idx, user_id=1000 + idx, name="Same new cars",
+                          filters=first.filters, fingerprint=first.fingerprint, enabled=True))
+            db.add(MonitorWatch(search_id=idx, epoch="fanout"))
+            db.add(MonitorMatch(search_id=idx, listing_id=listing.id,
+                                epoch="fanout", fingerprint=first.fingerprint))
+        # Historical cars without current interests must not be scanned for each user.
+        for idx in range(100):
+            db.add(Listing(source="auto_ria", source_id=str(80000 + idx), car=listing.car))
+        db.commit()
+    before = len(p.calls)
+    listing_reads = []
+    def count_reads(connection, cursor, statement, parameters, context, executemany):
+        if statement.lstrip().upper().startswith("SELECT") and "listings" in statement:
+            listing_reads.append(statement)
+    event.listen(p.engine, "before_cursor_execute", count_reads)
+    try:
+        enqueue(p.engine, now=p.clock[0])
+        enqueue(p.engine, now=p.clock[0])
+    finally:
+        event.remove(p.engine, "before_cursor_execute", count_reads)
+    with Session(p.engine) as db:
+        rows = list(db.scalars(select(Delivery)))
+        assert len(rows) == len({row.user_id for row in rows}) == 200
+        assert all(row.listing_id == listing_id for row in rows)
+    assert len(listing_reads) < 10 and len(p.calls) == before
+
+    with ThreadPoolExecutor(max_workers=4) as executor:
+        results = list(executor.map(lambda _: deliver_one(
+            p.engine, p.settings, p.runner.sender, now=p.clock[0]), range(4)))
+    assert set(results) <= {"sent", "busy"} and "sent" in results
+    assert len({uid for uid, _ in p.sent}) == len(p.sent)
+
+
+def test_delivery_batch_is_bounded_but_sends_to_distinct_chats_concurrently(monkeypatch):
+    lock = threading.Lock()
+    active = peak = 0
+    def sender(*_):
+        nonlocal active, peak
+        with lock:
+            active += 1
+            peak = max(peak, active)
+        time.sleep(.04)
+        with lock:
+            active -= 1
+        return "sent"
+    monkeypatch.setattr("backend.worker.deliver_one", sender)
+    assert asyncio.run(delivery_batch(None, None, None)) == ["sent"] * 4
+    assert peak == 4
 
 
 def test_manual_cached_price_cannot_authorize_a_notification(p):

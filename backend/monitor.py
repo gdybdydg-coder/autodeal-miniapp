@@ -566,7 +566,10 @@ class Monitor:
         from .worker import TelegramSender, deliver_one, enqueue
         enqueue(self.engine, allow_active_window=self.settings.ria_active_window_enabled,
                 require_provider_range=self.settings.ria_ai_price_enabled)
-        deliver_one(self.engine, self.settings, self.sender or TelegramSender(self.settings.bot_token))
+        # Legacy single-step test/operator helper; the running dispatcher below
+        # enforces per-chat spacing when sending batches concurrently.
+        deliver_one(self.engine, self.settings, self.sender or TelegramSender(self.settings.bot_token),
+                    enforce_chat_interval=False)
 
 
 async def run(engine, settings, stop):
@@ -584,5 +587,36 @@ async def run(engine, settings, stop):
             except TimeoutError:
                 pass
 
-    # Dispatch never waits for a slow AUTO.RIA HTTP request/valuation.
-    await asyncio.gather(loop(monitor.tick), loop(monitor.deliver_tick))
+    async def dispatch():
+        from .worker import TelegramSender, enqueue
+        sender = TelegramSender(settings.bot_token)
+        next_enqueue = 0
+        while not stop.is_set():
+            worked = False
+            try:
+                if settings.live and settings.monitor_enabled and webhook_status(engine)["status"] == "configured":
+                    if time.monotonic() >= next_enqueue:
+                        await asyncio.to_thread(enqueue, engine,
+                            allow_active_window=settings.ria_active_window_enabled,
+                            require_provider_range=settings.ria_ai_price_enabled)
+                        next_enqueue = time.monotonic() + 1
+                    # Four simultaneous requests, with at least .25s between
+                    # batches: at most 16/s, below Telegram's free broadcast cap.
+                    states = await delivery_batch(engine, settings, sender)
+                    worked = any(state not in {"empty", "busy"} for state in states)
+            except Exception as exc:
+                log.error("Delivery unavailable (%s)", type(exc).__name__)
+            try:
+                await asyncio.wait_for(stop.wait(), timeout=.25 if worked else 1)
+            except TimeoutError:
+                pass
+
+    from .telegram_setup import webhook_status
+    # A slow source HTTP request never blocks dispatch or its bounded workers.
+    await asyncio.gather(loop(monitor.tick), dispatch())
+
+
+async def delivery_batch(engine, settings, sender):
+    from .worker import deliver_one
+    return await asyncio.gather(*(asyncio.to_thread(
+        deliver_one, engine, settings, sender) for _ in range(4)))

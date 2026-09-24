@@ -3,7 +3,7 @@ import logging
 import time
 
 import httpx
-from sqlalchemy import or_, select, update
+from sqlalchemy import exists, func, select, update
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
@@ -110,31 +110,45 @@ def supplemental_listing(listing):
 def enqueue(engine, now=None, *, allow_active_window=True, require_provider_range=False):
     now = time.time() if now is None else now
     with Session(engine) as db:
-        for user in db.scalars(select(User).where(User.ready.is_(True))):
-            matched = select(MonitorMatch.listing_id).join(Search, Search.id == MonitorMatch.search_id).where(
-                Search.user_id == user.id, Search.enabled.is_(True))
-            already_queued = select(Delivery.listing_id).where(Delivery.user_id == user.id)
-            for listing in db.scalars(select(Listing).where(
-                    or_(Listing.source != "auto_ria", Listing.id.in_(matched)),
-                    Listing.id.not_in(already_queued))):
-                if not allow_active_window and supplemental_listing(listing):
-                    continue
-                refreshable = (listing.source == "auto_ria"
-                    and not fresh(Car.model_validate(listing.car), now, db, require_provider_range=require_provider_range)
-                    and db.scalar(matching_searches(user.id, listing.id).limit(1)) is not None)
-                if not refreshable and not eligible(db, user.id, listing, now, require_provider_range=require_provider_range):
-                    continue
-                exists = db.scalar(select(Delivery.id).where(Delivery.user_id == user.id, Delivery.listing_id == listing.id))
-                if exists:
-                    continue
-                try:
-                    with db.begin_nested():
-                        delivery = Delivery(user_id=user.id, listing_id=listing.id, state="pending", retry_at=0)
-                        db.add(delivery)
-                        db.flush()
-                        db.add(DeliveryTiming(delivery_id=delivery.id, queued_at=now))
-                except IntegrityError:
-                    pass  # Unique (user, source listing) is the final dedupe authority.
+        # Drive fan-out from current, enabled monitor interests instead of
+        # rescanning the entire listings table once per connected user.
+        pending_pair = ~exists(select(Delivery.id).where(
+            Delivery.user_id == User.id, Delivery.listing_id == Listing.id))
+        pairs = db.execute(select(User.id, Listing.id).select_from(MonitorMatch)
+            .join(Search, Search.id == MonitorMatch.search_id)
+            .join(MonitorWatch, MonitorWatch.search_id == Search.id)
+            .join(User, User.id == Search.user_id)
+            .join(Listing, Listing.id == MonitorMatch.listing_id)
+            .where(User.ready.is_(True), Search.enabled.is_(True),
+                   MonitorMatch.epoch == MonitorWatch.epoch,
+                   MonitorMatch.fingerprint == Search.fingerprint,
+                   Listing.source == "auto_ria", pending_pair)
+            .distinct().order_by(Listing.id.desc(), User.id)).all()
+        # Trusted non-AUTO.RIA fixture records retain their activation rule.
+        other_listings = list(db.scalars(select(Listing).where(Listing.source != "auto_ria")))
+        if other_listings:
+            for user in db.scalars(select(User).where(User.ready.is_(True))):
+                pairs.extend((user.id, listing.id) for listing in other_listings
+                             if db.scalar(select(Delivery.id).where(
+                                 Delivery.user_id == user.id,
+                                 Delivery.listing_id == listing.id)) is None)
+        for uid, listing_id in pairs:
+            listing = db.get(Listing, listing_id)
+            if not allow_active_window and supplemental_listing(listing):
+                continue
+            refreshable = (listing.source == "auto_ria"
+                and not fresh(Car.model_validate(listing.car), now, db, require_provider_range=require_provider_range)
+                and db.scalar(matching_searches(uid, listing.id).limit(1)) is not None)
+            if not refreshable and not eligible(db, uid, listing, now, require_provider_range=require_provider_range):
+                continue
+            try:
+                with db.begin_nested():
+                    delivery = Delivery(user_id=uid, listing_id=listing.id, state="pending", retry_at=0)
+                    db.add(delivery)
+                    db.flush()
+                    db.add(DeliveryTiming(delivery_id=delivery.id, queued_at=now))
+            except IntegrityError:
+                pass  # Unique (user, source listing) is the final dedupe authority.
         db.commit()
 
 
@@ -232,13 +246,14 @@ class TelegramSender:
             return {"uncertain": True}
 
 
-def deliver_one(engine, settings: Settings, sender, now=None):
+def deliver_one(engine, settings: Settings, sender, now=None, *, enforce_chat_interval=True):
     if not settings.live:
         return "disabled"
     now = time.time() if now is None else now
     with Session(engine) as db:
         row = db.scalar(select(Delivery).where(
-            Delivery.state == "pending", Delivery.retry_at <= now).order_by(Delivery.id).limit(1))
+            Delivery.state == "pending", Delivery.retry_at <= now).order_by(Delivery.id)
+            .with_for_update(skip_locked=True).limit(1))
         if row is None:
             return "empty"
         delivery_id = row.id
@@ -252,6 +267,9 @@ def deliver_one(engine, settings: Settings, sender, now=None):
         # Same lock as /stop and subscription edits; recheck immediately before send.
         user = db.scalar(select(User).where(User.id == row.user_id).with_for_update())
         listing = db.get(Listing, row.listing_id)
+        last_send = db.scalar(select(func.max(DeliveryTiming.send_started_at))
+            .join(Delivery, Delivery.id == DeliveryTiming.delivery_id)
+            .where(Delivery.user_id == row.user_id, Delivery.id != delivery_id)) if user else None
         refresh = []
         retired = not settings.ria_active_window_enabled and supplemental_listing(listing)
         if not retired and user and user.ready and listing and listing.source == "auto_ria" and not fresh(
@@ -270,6 +288,10 @@ def deliver_one(engine, settings: Settings, sender, now=None):
             db.execute(update(MonitorSeen).where(MonitorSeen.search_id.in_(refresh),
                 MonitorSeen.source_id == listing.source_id).values(state="pending"))
             row.state, row.retry_at = "pending", now + 5
+        elif enforce_chat_interval and user and user.ready and last_send and now < last_send + 1.05:
+            # Telegram limits each private chat separately; do not keep a user
+            # row locked while waiting or jeopardize other recipients' slots.
+            row.state, row.retry_at = "pending", last_send + 1.05
         elif not user or not user.ready or not listing or not eligible(
                 db, row.user_id, listing, now, require_provider_range=settings.ria_ai_price_enabled):
             row.state = "cancelled"
