@@ -284,6 +284,14 @@ def create_app(settings: Settings, engine=None):
                 "activity": launch.activity(db, uid),
                 "bot_url": "https://t.me/" + telegram_setup.BOT_USERNAME + "?start=notifications"}
 
+    @app.get("/api/notifications/trace/{source_id}")
+    def notification_trace(source_id: str, uid=Depends(identity), db=Depends(session)):
+        try:
+            notification_diagnostic.validate_id(source_id)
+        except ValueError:
+            raise HTTPException(422, "Invalid listing ID") from None
+        return launch.listing_trace(db, uid, source_id)
+
     @app.post("/api/notifications/test")
     def notification_test(uid=Depends(identity), db=Depends(session)):
         user = user_row(db, uid)

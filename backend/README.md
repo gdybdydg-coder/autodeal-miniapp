@@ -1,5 +1,18 @@
 # AUTODeal backend — subscriptions for new worthwhile cars
 
+## Read-only trace for a reported missing listing (2026-09-24)
+
+`GET /api/notifications/trace/{AUTO_RIA_ID}` requires the caller's signed
+Telegram Mini App init data. It reads only that user's recorded subscription
+interests and delivery state; an ID observed only by someone else is reported
+as `not_observed`. `checking` may expose a known quota/temporary-source reason,
+and a checked candidate can identify a saved filter mismatch or a discount
+below that subscription's threshold. `telegram_accepted` means Telegram API
+accepted a message; it does not confirm delivery to a phone. A `not_observed`
+result does not prove the provider never published the ad, since the endpoint
+deliberately makes no AUTO.RIA calls. The trace never rechecks or replays an
+old listing, modifies deduplication, or changes `/stop`.
+
 ## Newest active-page coverage with a reserved primary budget (2026-09-24)
 
 The primary publication-time search remains first. The optional newest-page

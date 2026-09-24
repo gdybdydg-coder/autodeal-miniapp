@@ -6,8 +6,8 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from backend import launch
-from backend.models import (Delivery, DeliveryTiming, MonitorJob, MonitorSeen, Search,
-                            SourceBudget, SourceProbe)
+from backend.models import (Delivery, DeliveryTiming, MonitorJob, MonitorSeen, MonitorWatch,
+                            Search, SourceBudget, SourceProbe)
 from backend.ria_search import parse_car
 from backend.tests.test_backend import setup, headers, subscribe
 from backend.tests.test_monitor import p, drain, wake
@@ -126,3 +126,51 @@ def test_authenticated_progress_is_owner_scoped_and_reads_do_not_spend_requests(
     with Session(engine) as db:
         assert db.get(SourceBudget, "auto_ria").total == before
         assert db.scalar(select(Delivery)) is None
+
+
+def test_listing_trace_is_authenticated_owner_scoped_and_never_calls_provider(setup):
+    engine, _, client = setup
+    sid = subscribe(client, enabled=False, uid=111).json()["id"]
+    with Session(engine) as db:
+        db.add(MonitorWatch(search_id=sid, epoch="current"))
+        db.add(MonitorSeen(search_id=sid, source_id="123", epoch="current",
+                           state="pending", first_seen=time.time()))
+        db.add(MonitorJob(source_id="123", first_seen=time.time(), state="pending",
+                          reason="quota_exceeded"))
+        db.commit()
+        spent = db.get(SourceBudget, "auto_ria").total
+    url = "/api/notifications/trace/123"
+    assert client.get(url).status_code == 401
+    assert client.get("/api/notifications/trace/nope", headers=headers()).status_code == 422
+    assert client.get(url, headers=headers(222)).json() == {
+        "source_id": "123", "state": "not_observed", "subscriptions": []}
+    own = client.get(url, headers=headers()).json()
+    assert own["state"] == "observed"
+    assert own["subscriptions"] == [{"search_id": sid, "state": "inactive_subscription",
+                                      "seen_state": "pending", "reason": None}]
+    assert own["delivery_state"] is None and not own["telegram_accepted"]
+    with Session(engine) as db:
+        db.get(Search, sid).enabled = True
+        db.commit()
+    own = client.get(url, headers=headers()).json()
+    assert own["subscriptions"][0]["state"] == "checking"
+    assert own["subscriptions"][0]["reason"] == "quota_exceeded"
+    with Session(engine) as db:
+        assert db.get(SourceBudget, "auto_ria").total == spent
+        assert db.scalar(select(Delivery)) is None
+
+
+def test_listing_trace_explains_below_threshold_without_rechecking_old_car(p):
+    drain(p)
+    p.prices["124"] = 14900  # Provider peers value this Golf at $15,000.
+    p.ads["124"] = p.clock[0] + 1
+    wake(p)
+    drain(p)
+    checked = len(p.calls)
+    with Session(p.engine) as db:
+        own = launch.listing_trace(db, 111, "124")
+        other = launch.listing_trace(db, 222, "124")
+        assert own["subscriptions"][0]["state"] == "below_min_discount"
+        assert own["delivery_state"] is None and not own["telegram_accepted"]
+        assert other["state"] == "not_observed"
+    assert len(p.calls) == checked and not p.sent

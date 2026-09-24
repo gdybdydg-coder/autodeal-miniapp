@@ -7,9 +7,10 @@ from sqlalchemy import func, select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
-from .models import (Delivery, DeliveryTiming, MonitorJob, MonitorSeen, Search,
-                     SourceBudget, SourceProbe, TelegramTest, User)
-from .valuation import DIMENSIONS, reason_category
+from .models import (Delivery, DeliveryTiming, Listing, MonitorJob, MonitorMatch,
+                     MonitorSeen, MonitorWatch, Search, SourceBudget, SourceProbe,
+                     TelegramTest, User)
+from .valuation import DIMENSIONS, is_deal, notification_condition_allowed, reason_category
 
 PROBE_ID = "subscription-launch-v1"
 WINDOW = 86400
@@ -70,6 +71,68 @@ def initialize(engine, enabled):
 
 def duration(start, end):
     return round(end - start, 3) if start is not None and end is not None and 0 < start <= end else None
+
+
+def listing_trace(db, uid, source_id):
+    """Only the caller's recorded interests; no provider calls or other users' jobs."""
+    from .ria_search import matches
+    seen = db.execute(select(Search, MonitorSeen, MonitorWatch)
+        .join(MonitorSeen, MonitorSeen.search_id == Search.id)
+        .outerjoin(MonitorWatch, MonitorWatch.search_id == Search.id)
+        .where(Search.user_id == uid, MonitorSeen.source_id == source_id)
+        .order_by(Search.id)).all()
+    if not seen:
+        return {"source_id": source_id, "state": "not_observed", "subscriptions": []}
+    job = db.get(MonitorJob, source_id)
+    evidence = job.result if job and isinstance(job.result, dict) else {}
+    candidate = evidence.get("candidate")
+    rating = evidence.get("rating") or {}
+    resolved = evidence.get("filters") or {}
+    listing = db.scalar(select(Listing).where(Listing.source == "auto_ria",
+                                              Listing.source_id == source_id))
+    delivery = db.scalar(select(Delivery).where(Delivery.user_id == uid,
+        Delivery.listing_id == listing.id)) if listing else None
+    entries = []
+    for search, interest, watch in seen:
+        current = bool(search.enabled and watch and interest.epoch == watch.epoch)
+        match = bool(listing and db.get(MonitorMatch, (search.id, listing.id)))
+        reason = None
+        if not current:
+            stage = "inactive_subscription"
+        elif interest.state == "pending":
+            stage = "checking"
+            reason = job.reason if job and job.reason in {
+                "quota_exceeded", "busy", "search_limit", "connection_error",
+                "upstream_error", "listing_unavailable"} else None
+        elif interest.state == "unavailable":
+            stage = "listing_unavailable"
+        elif interest.state == "cancelled":
+            stage = "cancelled"
+        elif match:
+            stage = "matched"
+        elif isinstance(candidate, dict) and isinstance(resolved, dict):
+            from .models import Filters
+            from .monitor import source_filters
+            filters = Filters.model_validate(search.filters)
+            ids = resolved.get(source_filters(search.filters).fingerprint())
+            if not notification_condition_allowed(candidate):
+                stage = "source_exclusion"
+            elif ids is None:
+                stage = "unresolved_filter"
+            elif not matches(candidate, filters, ids):
+                stage = "filter_mismatch"
+            elif rating.get("market") and not is_deal(candidate.get("price_usd"),
+                                                       rating["market"], filters.minDiscount):
+                stage = "below_min_discount"
+            else:
+                stage = "checked_without_match"
+        else:
+            stage = "checked_without_evidence"
+        entries.append({"search_id": search.id, "state": stage,
+                        "seen_state": interest.state, "reason": reason})
+    return {"source_id": source_id, "state": "observed", "subscriptions": entries,
+            "delivery_state": delivery.state if delivery else None,
+            "telegram_accepted": bool(delivery and delivery.state == "sent")}
 
 
 def activity(db, uid=None):
