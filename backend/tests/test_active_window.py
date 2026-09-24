@@ -93,7 +93,7 @@ def test_price_drop_on_seen_non_deal_can_qualify_once(p, monkeypatch):
 def test_supplement_pauses_before_consuming_reserved_primary_budget(p, monkeypatch):
     enable_window(p, monkeypatch)
     with Session(p.engine) as db:
-        db.get(SourceBudget, "auto_ria").calls = [p.clock[0]] * 430
+        db.get(SourceBudget, "auto_ria").calls = [p.clock[0]] * 450
         db.commit()
     p.ads["124"] = p.clock[0] - 1
     drain(p)
@@ -142,6 +142,29 @@ def test_supplement_still_pauses_with_only_primary_daily_headroom_left(p, monkey
         db.commit()
     with Session(p.engine) as db:
         assert not active_window.budget_available(db, limits)
+
+
+def test_one_call_newest_page_is_checked_before_bounded_valuation_can_resume(p, monkeypatch):
+    enable_window(p, monkeypatch)
+    drain(p)
+    with Session(p.engine) as db:
+        db.get(SourceBudget, "auto_ria").calls = [p.clock[0]] * 421
+        db.commit()
+    p.stock = ["39658048", "123"]
+    p.prices["39658048"] = 10000
+    wake(p, 301)
+    drain(p)
+    assert not details(p, "39658048") and not p.sent
+    with Session(p.engine) as db:
+        assert db.scalar(select(MonitorActiveWindow)).status == "watching"
+        assert db.get(MonitorJob, "39658048").state == "pending"
+        assert not active_window.budget_available(db)
+        assert active_window.budget_available(db, reserve=1)
+    # The listing is evaluated only when a full safe valuation step becomes
+    # available; delivery is still deduplicated for the same user and ID.
+    wake(p, 3601)
+    drain(p)
+    assert [(uid, car.source_id) for uid, car in p.sent] == [(111, "39658048")]
 
 
 def test_new_arrival_is_evaluated_before_older_supplemental_job(p, monkeypatch):

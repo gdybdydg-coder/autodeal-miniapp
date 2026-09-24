@@ -515,7 +515,7 @@ class Monitor:
                 if kind is None and self.settings.ria_active_window_enabled:
                     extra = active_window.due(db, groups)
                     if extra:
-                        if active_window.budget_available(db):
+                        if active_window.budget_available(db, reserve=1):
                             kind, key = active_window.KIND, extra.feed_id
                         else:
                             active_window.defer(db, extra.feed_id, "reserved_for_new_publications")
@@ -526,14 +526,15 @@ class Monitor:
                 supplemental_work = kind == active_window.KIND or (kind == "evaluate"
                         and job.result.get("discovery_kind") == active_window.KIND)
                 if supplemental_work:
-                    source.request_limit = active_window.CALL_RESERVE
+                    source.request_limit = (1 if kind == active_window.KIND else active_window.CALL_RESERVE)
                 acquired = False
                 try:
                     source.acquire()
                     acquired = True
                     if supplemental_work:
                         with Session(self.engine) as db:
-                            if not active_window.budget_available(db, source.limits):
+                            if not active_window.budget_available(db, source.limits,
+                                    reserve=source.request_limit):
                                 raise RiaError("reserved_for_new_publications")
                     if kind == active_window.KIND:
                         active_window.discover(self, key, source)

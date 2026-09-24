@@ -13,9 +13,13 @@ With seven shared groups, polling every minute would itself cost up to 10,080
 search requests per rolling day before the primary search, car details and
 valuation. The bounded newest-page check now runs at most once per group every
 five minutes (up to 2,016 searches/day for seven groups). It retains the
-32-call step reserve, half of the hourly cap, and at least the greater of 20%
-of the daily cap or two hourly caps for primary work. If those safeguards are
-reached, the supplemental window waits while new publication searches continue.
+32-call valuation-step reserve, half of the hourly cap, and at least the greater
+of 20% of the daily cap or two hourly caps for primary work. The newest-page
+search needs only a one-call reserve, so it can still record incoming IDs when
+there is not enough headroom to evaluate them immediately. The queued details
+and price quote wait until the larger reserve returns. If even the one-call
+reserve is reached, the supplemental window waits while new publication
+searches continue.
 This is first-page coverage, not a guarantee that every ad is indexed or seen.
 
 ## Condition labels do not block fresh alerts (2026-09-24)

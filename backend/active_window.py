@@ -25,19 +25,19 @@ KIND = "active_window"
 CALL_RESERVE = 32
 
 
-def budget_available(db, limits=None):
+def budget_available(db, limits=None, *, reserve=CALL_RESERVE):
     limits, now = limits or BudgetLimits.env(), time.time()
     row = db.get(SourceBudget, "auto_ria")
     if not row or budget_state(row, now, limits)["reason"] != "available":
         return False
-    # Reserve a full bounded work step and half the hourly allowance for
+    # Reserve the actual bounded work step and half the hourly allowance for
     # primary work. Reserving HALF the daily allowance permanently disabled
     # this window once ordinary publication/details traffic passed 6,000/day.
     # Keep at least a fifth of the daily cap (or two hourly caps) untouched.
-    return (sum(t > now - 3600 for t in row.calls) + CALL_RESERVE <= limits.hourly // 2
-            and sum(t > now - 86400 for t in row.calls) + CALL_RESERVE
+    return (sum(t > now - 3600 for t in row.calls) + reserve <= limits.hourly // 2
+            and sum(t > now - 86400 for t in row.calls) + reserve
                 <= limits.daily - max(limits.daily // 5, limits.hourly * 2)
-            and row.total + CALL_RESERVE <= limits.total)
+            and row.total + reserve <= limits.total)
 
 
 def sync(db, feed_ids):
@@ -72,7 +72,9 @@ def discover(monitor, feed_id, source):
     with Session(monitor.engine) as db:
         if not monitor.owned(db):
             return
-        if not budget_available(db, source.limits):
+        # The newest-page search uses exactly one request. A pending detail/AI
+        # evaluation may need up to CALL_RESERVE and is gated separately.
+        if not budget_available(db, source.limits, reserve=1):
             defer(db, feed_id, "reserved_for_new_publications")
             db.commit()
             return
