@@ -67,26 +67,76 @@ def test_filter_dictionaries_share_three_request_cap(engine, monkeypatch):
         assert db.get(SourceBudget, "auto_ria").total == 5
 
 
-def test_date_comparison_uses_only_remaining_incident_calls(engine, monkeypatch):
+def test_date_comparison_does_not_spend_calls_on_undocumented_id_filter(engine, monkeypatch):
     monkeypatch.setattr(diagnostic, "active_members", lambda db: [
         (SimpleNamespace(filters=Filters().canonical()), None, SimpleNamespace(started_at=1))])
     diagnostic.check_once(engine, "key", "123", lambda *args: raw())
     calls = []
-    def dates(key, path, params):
-        calls.append(params)
-        assert params["auto_ids[0]"] == "123" and params["countpage"] == 1
-        ids = ["123"] if "published_after" in params else []
-        return {"result": {"search_result": {"ids": ids, "count": len(ids)}}}
+    def dates(*args):
+        pytest.fail("Undocumented ID filter must not spend provider calls")
     diagnostic.check_dates_once(engine, "key", "123", dates)
     diagnostic.check_dates_once(engine, "key", "123", dates)
     with Session(engine) as db:
         probe = db.get(SourceProbe, "notification-diagnostic-v1-123")
-        assert probe.requests == probe.result["requests_used"] == 3
-        assert probe.result["date_check"]["created"] is False
-        assert probe.result["date_check"]["published"] is True
-        assert db.get(SourceBudget, "auto_ria").total == 5
+        assert probe.requests == probe.result["requests_used"] == 1
+        assert probe.result["date_check"]["status"] == "unverified_id_filter"
+        assert probe.result["date_check"]["after"] and probe.result["date_check"]["before"]
+        assert db.get(SourceBudget, "auto_ria").total == 3
         assert db.scalar(select(func.count()).select_from(MonitorJob)) == 0
-    assert len(calls) == 2
+    assert calls == []
+
+
+def test_unsupported_id_date_result_is_rechecked_with_documented_vin_filter(engine, caplog):
+    source_id = "39658048"
+    vin = "TMBHS21Z982124886"
+    with Session(engine) as db:
+        db.add(SourceProbe(id="notification-diagnostic-v1-" + source_id,
+            status="checked", checked_at=time.time(), result={"monitor_job": None,
+                "subscriptions": {"matching": 1},
+                "date_check": {"status": "checked", "created": False,
+                               "published": False, "after": "2026-09-23T00:00:00Z",
+                               "before": "2026-09-24T00:00:00Z"}}, requests=3))
+        db.commit()
+    calls = []
+
+    def fetch(key, path, params):
+        calls.append((path, params))
+        if path == "info":
+            return raw(source_id, VIN=vin)
+        assert params["VIN[0]"] == vin and "auto_ids[0]" not in params
+        ids = [source_id] if "created_after" in params else []
+        return {"result": {"search_result": {"ids": ids, "count": len(ids)}}}
+
+    diagnostic.check_vin_dates_once(engine, "private-api-key", source_id, fetch)
+    diagnostic.check_vin_dates_once(engine, "private-api-key", source_id, fetch)
+    with Session(engine) as db:
+        probe = db.get(SourceProbe, "notification-diagnostic-v2-" + source_id)
+        assert probe.status == "checked" and probe.requests == 3
+        assert probe.result["created"] is True
+        assert probe.result["published"] is False
+        assert db.get(SourceProbe, "notification-diagnostic-v1-" + source_id).requests == 3
+        assert db.scalar(select(func.count()).select_from(Delivery)) == 0
+        assert db.scalar(select(func.count()).select_from(MonitorJob)) == 0
+        assert db.get(SourceBudget, "auto_ria").total == 5
+    assert len(calls) == 3
+    for secret in (vin, "private-api-key"):
+        assert secret not in caplog.text
+
+
+def test_vin_date_check_does_not_run_for_observed_or_already_found_listing(engine):
+    for source_id, job, created in (("123", {"state": "checked"}, False),
+                                    ("124", None, True)):
+        with Session(engine) as db:
+            db.add(SourceProbe(id="notification-diagnostic-v1-" + source_id,
+                status="checked", checked_at=time.time(), result={"monitor_job": job, "subscriptions": {"matching": 1},
+                        "date_check": {"status": "checked", "created": created,
+                                       "published": False, "after": "2026-09-23T00:00:00Z",
+                                       "before": "2026-09-24T00:00:00Z"}}))
+            db.commit()
+        diagnostic.check_vin_dates_once(engine, "key", source_id,
+            lambda *_: pytest.fail("Already explained incident must not spend quota"))
+        with Session(engine) as db:
+            assert db.get(SourceProbe, "notification-diagnostic-v2-" + source_id) is None
 
 
 @pytest.mark.parametrize("value", ["../info", "12?api_key=x", "0", "１", "1" * 13])

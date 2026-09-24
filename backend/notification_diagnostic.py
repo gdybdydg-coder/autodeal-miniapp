@@ -112,11 +112,10 @@ def check_once(engine, key, source_id, fetch=fetch_json):
 
 
 def check_dates_once(engine, key, source_id, fetch=fetch_json):
-    """Use only the unspent portion of the same three-call incident allowance.
+    """Record the incident's date window without an undocumented ID search.
 
-    A listing matching subscriptions but never seen needs its creation and
-    publication windows compared. This phase never repeats details or resets
-    counters; a durable claim prevents retries after an interrupted check.
+    Older probes already contain the two inconclusive results from that search.
+    New probes proceed directly to the documented VIN-filter diagnostic.
     """
     if not source_id or not key:
         return
@@ -124,58 +123,117 @@ def check_dates_once(engine, key, source_id, fetch=fetch_json):
     probe_id = "notification-diagnostic-v1-" + source_id
     with Session(engine) as db:
         probe = db.get(SourceProbe, probe_id)
-        if (not probe or "date_check" in probe.result or probe.requests > CALL_CAP - 2
+        if (not probe or "date_check" in probe.result
                 or probe.result.get("monitor_job") is not None
                 or not probe.result.get("subscriptions", {}).get("matching")):
             return
-    source = RiaSearch(engine, key, fetch)
+    with Session(engine) as db:
+        probe = db.scalar(select(SourceProbe).where(SourceProbe.id == probe_id).with_for_update())
+        if "date_check" in probe.result:
+            return
+        members = active_members(db)
+        if not members:
+            return
+        after, before = min(member.started_at for _, _, member in members), time.time()
+        result = dict(probe.result)
+        result["date_check"] = {"status": "unverified_id_filter", "after": stamp(after),
+                                "before": stamp(before)}
+        probe.result, probe.checked_at = result, time.time()
+        db.commit()
+
+
+def check_vin_dates_once(engine, key, source_id, fetch=fetch_json):
+    """Correct an inconclusive v1 date check using the documented VIN filter.
+
+    v1 used an undocumented search parameter for the listing ID, so two empty
+    responses cannot establish that a freshly displayed listing was absent.
+    This separate durable claim preserves v1's spent-call record and allows at
+    most three additional calls for an explicitly selected incident. The VIN
+    exists only in memory and in the provider request; it is never logged or
+    stored in the result/cache payload.
+    """
+    validate_id(source_id)
+    if not source_id or not key:
+        return
+    old_id = "notification-diagnostic-v1-" + source_id
+    probe_id = "notification-diagnostic-v2-" + source_id
+    with Session(engine) as db:
+        old = db.get(SourceProbe, old_id)
+        if not old or db.get(SourceProbe, probe_id):
+            return
+        prior = old.result if isinstance(old.result, dict) else {}
+        dates = prior.get("date_check") or {}
+        legacy_inconclusive = (dates.get("status") == "checked" and dates.get("created") is False
+                               and dates.get("published") is False)
+        if (prior.get("monitor_job") is not None or not prior.get("subscriptions", {}).get("matching")
+                or not (legacy_inconclusive or dates.get("status") == "unverified_id_filter")):
+            return
+        after, before = dates["after"], dates["before"]
+
+    vin = None
+
+    def bounded_fetch(api_key, path, params):
+        nonlocal vin
+        with Session(engine) as db:
+            probe = db.get(SourceProbe, probe_id)
+            if probe.requests >= CALL_CAP:
+                raise RiaError("search_limit")
+            probe.requests += 1
+            db.commit()
+        raw = fetch(api_key, path, params)
+        if path == "info":
+            value = raw.get("VIN") if isinstance(raw, dict) else None
+            if isinstance(value, str) and re.fullmatch(r"[A-HJ-NPR-Z0-9]{17}", value.upper()):
+                vin = value.upper()
+        return raw
+
+    source = RiaSearch(engine, key, bounded_fetch)
+    source.request_limit = CALL_CAP
     try:
         source.acquire()
     except RiaError:
         return
     try:
         with Session(engine) as db:
-            probe = db.scalar(select(SourceProbe).where(SourceProbe.id == probe_id).with_for_update())
-            if "date_check" in probe.result or probe.requests > CALL_CAP - 2:
-                return
-            members = active_members(db)
-            if not members:
-                return
-            after, before = min(member.started_at for _, _, member in members), time.time()
-            result = dict(probe.result)
-            result["date_check"] = {"status": "checking", "after": stamp(after), "before": stamp(before)}
-            probe.result = result
-            source.request_limit = CALL_CAP - probe.requests
-            db.commit()
-
-        def bounded_fetch(api_key, path, params):
-            with Session(engine) as db:
-                probe = db.get(SourceProbe, probe_id)
-                if probe.requests >= CALL_CAP:
-                    raise RiaError("search_limit")
-                probe.requests += 1
+            db.add(SourceProbe(id=probe_id, status="checking", checked_at=time.time(), requests=0, result={}))
+            try:
                 db.commit()
-            return fetch(api_key, path, params)
-        source.fetch = bounded_fetch
+            except IntegrityError:
+                db.rollback()
+                return
+        result = {"source_id": source_id, "method": "documented_vin_filter",
+                  "after": after, "before": before}
+        state = "checked"
         try:
-            for field in ("created", "published"):
-                params = {"category_id": 1, "searchType": 4, "status_id": 0,
-                          "auto_ids[0]": source_id, "countpage": 1, "page": 0,
-                          field + "_after": stamp(after), field + "_before": stamp(before + 1)}
-                data = source.request("search", params, parse_ids, force=True)
-                if data["total"] > 1 or any(value != source_id for value in data["ids"]):
-                    raise RiaError("invalid_response")
-                result["date_check"][field] = source_id in data["ids"]
-            result["date_check"]["status"] = "checked"
-        except RiaError:
-            result["date_check"]["status"] = "incomplete"
-        except Exception:
-            result["date_check"]["status"] = "failed"
+            source.car(source_id, force=True)
+            if not vin:
+                state = "incomplete"
+                result["reason"] = "vin_unavailable"
+            else:
+                for field in ("created", "published"):
+                    params = {"category_id": 1, "searchType": 4, "status_id": 0,
+                              "VIN[0]": vin, "countpage": 50, "page": 0,
+                              field + "_after": after, field + "_before": before}
+                    data = source.request("search", params, parse_ids, force=True)
+                    if data["total"] > len(data["ids"]):
+                        state = "incomplete"
+                        result["reason"] = "multiple_pages"
+                        break
+                    result[field] = source_id in data["ids"]
+        except RiaError as exc:
+            state = "incomplete"
+            result["reason"] = str(exc) if str(exc) in {
+                "busy", "search_limit", "quota_exceeded", "connection_error", "upstream_error",
+                "key_rejected", "access_denied", "listing_unavailable", "invalid_response"
+            } else "source_error"
+        except Exception as exc:
+            state = "failed"
+            result["error_type"] = type(exc).__name__
         with Session(engine) as db:
             probe = db.get(SourceProbe, probe_id)
             result["requests_used"] = probe.requests
-            probe.result, probe.checked_at = result, time.time()
+            probe.status, probe.result, probe.checked_at = state, result, time.time()
             db.commit()
-        logging.warning("Notification date diagnostic %s", json.dumps(result, sort_keys=True))
+        logging.warning("Notification VIN date diagnostic %s", json.dumps(result, sort_keys=True))
     finally:
         source.release()
