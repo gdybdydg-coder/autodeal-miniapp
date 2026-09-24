@@ -73,6 +73,7 @@
       catalog:(brand="")=>request("/api/catalog"+(brand?"?brand="+encodeURIComponent(brand):"")),
       list:()=>request("/api/subscriptions"),
       notificationStatus:()=>request("/api/notifications/status"),
+      traceListing:id=>/^[1-9][0-9]{0,11}$/.test(id)?request("/api/notifications/trace/"+id):Promise.reject(Error("Введи числовий ID оголошення AUTO.RIA.")),
       testNotification:()=>request("/api/notifications/test","POST"),
       enable:(id,enabled)=>{
         if(!Number.isSafeInteger(id)||id<=0||typeof enabled!=="boolean") return Promise.reject(Error("Некоректний пошук"));

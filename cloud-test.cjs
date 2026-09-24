@@ -64,6 +64,15 @@ test('notification opt-in uses PATCH and renders specific consent errors',async(
   await assert.rejects(api.enable('../7',true),/Некоректний/);
   await assert.rejects(api.enable(7,'true'),/Некоректний/);
 });
+test('missing-ad support checks owner-scoped trace without spending provider calls',async()=>{
+  const paths=[];
+  const api=create(async(url,opts)=>{paths.push([url,opts.method]);return {ok:true,status:200,json:async()=>({state:'not_observed',source_id:'39767288'})};},()=> 'fake');
+  assert.equal((await api.traceListing('39767288')).state,'not_observed');
+  assert.deepEqual(paths,[['https://autodeal-api.onrender.com/api/notifications/trace/39767288','GET']]);
+  await assert.rejects(api.traceListing('../39767288'));
+  await assert.rejects(api.traceListing('0'));
+  assert.equal(paths.length,1);
+});
 
 test('full scan progress reads never start a provider search and ids are validated',async()=>{
   const calls=[];

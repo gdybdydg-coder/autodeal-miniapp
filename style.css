@@ -191,6 +191,9 @@ html[data-mode="subscriptions"] .navbar { grid-template-columns:repeat(3,1fr); }
 .subscription-state { display:block; margin-top:9px; color:#b3a48c; font-size:12px; line-height:1.4; }
 .subscription-state.is-active { color:#7ecf9a; }
 .subscription-readiness { padding:12px 14px; border-radius:12px; background:#201d18; color:#c7b893; font-size:13px; }
+.subscription-setup-actions { display:flex; flex-wrap:wrap; gap:8px; margin:0 0 14px; }
+.subscription-setup-actions .manager-button { flex:1 1 170px; min-height:44px; margin:0; text-align:center; text-decoration:none; }
+.subscription-setup-actions .telegram-link { color:#ff8b91; border-color:#593037; }
 .editing-hint { padding:12px 14px; border-left:2px solid #bd2c34; background:#1c1c1e; border-radius:0 10px 10px 0; }
 #searchSubtitle { overflow-wrap:anywhere; }
 .toast { max-width:calc(100vw - 32px); white-space:normal; }

@@ -1,5 +1,24 @@
 # AUTODeal backend — subscriptions for new worthwhile cars
 
+## Client journey and support (2026-09-24)
+
+The Mini App subscription list now guides a new user through private `/start`,
+confirmed chat connectivity and explicit activation of a saved search. The list
+shows a recoverable error when connectivity status fails instead of claiming
+that the account is ready. Saving a search never activates it, and a test
+message only runs after a tap. A read-only ID lookup in Settings exposes the
+owner-scoped `/api/notifications/trace/{id}` result without spending AUTO.RIA
+calls or changing subscriptions. `not_observed` cannot prove that the ad did
+not exist; Telegram acceptance does not prove device push. Customers should
+send support the listing link/ID, affected subscription and approximate posting
+time when a trace cannot explain a missed listing.
+
+Before advertising a free trial, the owner must decide its actual start/end
+date, access policy and support contact; do not promise a 30-day period in the
+app until those terms are set. Rotate the AUTO.RIA key disclosed in chat via
+the provider account and update Render's server-side variable before revoking
+the old one. Neither value belongs in this repository or client responses.
+
 ## Bounded Telegram fan-out (2026-09-24)
 
 The delivery queue now starts from current `monitor_matches` and excludes

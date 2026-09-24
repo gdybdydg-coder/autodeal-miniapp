@@ -186,6 +186,64 @@ test('notification controls require readiness and send only on an explicit tap',
   await toggle().listeners.click();assert.deepEqual(updates,[[8,true],[8,false]]);
 });
 
+test('first-time client sees the next action and confirms activation without automatic opt-in',async()=>{
+  let state={available:true,test_available:true,telegram_ready:false,test_sent:false,activity:{enabled_subscriptions:0}};
+  let enabled=false,tests=0;
+  const ui=setup({list:async()=>[{id:8,name:'Чотири області',filters:{...ui.filters(),region:[
+    'Вінницька область','Чернівецька область','Хмельницька область','Тернопільська область']},enabled}],
+    notificationStatus:async()=>state,
+    testNotification:async()=>{tests++;state={...state,test_sent:true};return{state:'sent'}},
+    enable:async(id,value)=>{assert.equal(id,8);enabled=value;state={...state,activity:{enabled_subscriptions:1}}}} ,'subscriptions');
+  await ui.nav.saved.listeners.click();
+  assert.match(ui.ids.subscriptionsHint.textContent,/Крок 1 із 3.*\/start/);
+  assert.equal(ui.ids.subscriptionOpenBot.hidden,false);
+  assert.equal(ui.ids.subscriptionTestBot.hidden,true);
+  assert.equal(enabled,false);assert.equal(tests,0);
+  state={...state,telegram_ready:true};await ui.ids.subscriptionCheckBot.listeners.click();
+  assert.match(ui.ids.subscriptionsHint.textContent,/Крок 2 із 3/);
+  assert.equal(ui.ids.subscriptionOpenBot.hidden,true);
+  assert.equal(ui.ids.subscriptionTestBot.hidden,false);
+  await ui.ids.subscriptionTestBot.listeners.click();
+  assert.equal(tests,1);assert.match(ui.ids.subscriptionsHint.textContent,/Крок 3 із 3/);
+  assert.equal(enabled,false);
+  const activate=part(ui.ids.cloudSearchList.children[0],'subscription-toggle');
+  await activate.listeners.click();
+  assert.equal(enabled,true);assert.match(ui.ids.subscriptionsHint.textContent,/Сповіщення ввімкнені/);
+});
+
+test('subscription list keeps cards but exposes a connection-status failure and recovery',async()=>{
+  let fail=true;
+  const ui=setup({list:async()=>[{id:7,name:'Golf',filters:ui.filters(),enabled:false}],
+    notificationStatus:async()=>{if(fail)throw Error('Немає відповіді сервера');return {available:true,telegram_ready:true,test_sent:true};}},'subscriptions');
+  await ui.nav.saved.listeners.click();
+  assert.equal(ui.ids.cloudSearchList.children.length,1);
+  assert.match(ui.ids.cloudStatus.textContent,/підключення не підтверджено.*Немає відповіді/);
+  assert.match(ui.ids.subscriptionsHint.textContent,/Не вдалося перевірити/);
+  assert.equal(ui.ids.subscriptionCheckBot.hidden,false);
+  fail=false;await ui.ids.subscriptionCheckBot.listeners.click();
+  assert.match(ui.ids.subscriptionsHint.textContent,/Крок 3 із 3/);
+  assert.equal(ui.ids.subscriptionCheckBot.hidden,true);
+  assert.equal(ui.ids.cloudStatus.hidden,true);
+});
+
+test('support trace explains observed and unseen ads without sending or activating',async()=>{
+  const seen=[],ui=setup({traceListing:async id=>{
+    seen.push(id);return id==='123'?{source_id:id,state:'observed',telegram_accepted:false,
+      subscriptions:[{search_id:9,state:'below_min_discount'}]}:{source_id:id,state:'not_observed',subscriptions:[]};},
+    enable:async()=>assert.fail('trace must not enable'),testNotification:async()=>assert.fail('trace must not send')},'subscriptions');
+  await ui.nav.settings.listeners.click();
+  ui.ids.listingTraceId.value='not-an-id';
+  await ui.ids.listingTraceForm.listeners.submit({preventDefault(){}});
+  assert.match(ui.ids.listingTraceResult.textContent,/числовий ID/);assert.equal(seen.length,0);
+  ui.ids.listingTraceId.value='123';
+  await ui.ids.listingTraceForm.listeners.submit({preventDefault(){}});
+  assert.match(ui.ids.listingTraceResult.textContent,/менша за заданий поріг/);
+  ui.ids.listingTraceId.value='39767288';
+  await ui.ids.listingTraceForm.listeners.submit({preventDefault(){}});
+  assert.match(ui.ids.listingTraceResult.textContent,/не доводить.*не пропустив/);
+  assert.deepEqual(seen,['123','39767288']);
+});
+
 test('Telegram-only test stays separate from subscriptions and sends only after a tap',async()=>{
   let state={available:false,test_available:true,telegram_ready:false,test_sent:false},tests=0,lists=0;
   const ui=setup({notificationStatus:async()=>state,list:async()=>{lists++;return[]},
