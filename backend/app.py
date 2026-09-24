@@ -127,6 +127,8 @@ def create_app(settings: Settings, engine=None):
                                settings.auto_ria_api_key, settings.ria_diagnostic_listing_id)
         await asyncio.to_thread(notification_diagnostic.check_vin_dates_once, engine,
                                settings.auto_ria_api_key, settings.ria_diagnostic_listing_id)
+        await asyncio.to_thread(notification_diagnostic.check_vin_presence_once, engine,
+                               settings.auto_ria_api_key, settings.ria_diagnostic_listing_id)
         if settings.ria_ai_price_enabled:
             await asyncio.to_thread(ria_ai_price.check_once, engine, settings.auto_ria_api_key,
                                    settings.auto_ria_user_id, settings.ria_ai_price_probe_id)

@@ -237,3 +237,83 @@ def check_vin_dates_once(engine, key, source_id, fetch=fetch_json):
         logging.warning("Notification VIN date diagnostic %s", json.dumps(result, sort_keys=True))
     finally:
         source.release()
+
+
+def check_vin_presence_once(engine, key, source_id, fetch=fetch_json):
+    """For a date miss, verify that the same VIN filter finds the listing at all.
+
+    Two extra counted calls (details and one current active search); no alerts,
+    price evaluation, pagination, VIN storage, or historical discovery.
+    """
+    validate_id(source_id)
+    if not source_id or not key:
+        return
+    probe_id = "notification-diagnostic-v3-" + source_id
+    with Session(engine) as db:
+        prior = db.get(SourceProbe, "notification-diagnostic-v2-" + source_id)
+        if (not prior or prior.status != "checked" or db.get(SourceProbe, probe_id)
+                or prior.result.get("created") is not False
+                or prior.result.get("published") is not False):
+            return
+
+    vin = None
+
+    def bounded_fetch(api_key, path, params):
+        nonlocal vin
+        with Session(engine) as db:
+            probe = db.get(SourceProbe, probe_id)
+            if probe.requests >= 2:
+                raise RiaError("search_limit")
+            probe.requests += 1
+            db.commit()
+        raw = fetch(api_key, path, params)
+        if path == "info":
+            value = raw.get("VIN") if isinstance(raw, dict) else None
+            if isinstance(value, str) and re.fullmatch(r"[A-HJ-NPR-Z0-9]{17}", value.upper()):
+                vin = value.upper()
+        return raw
+
+    source = RiaSearch(engine, key, bounded_fetch)
+    source.request_limit = 2
+    try:
+        source.acquire()
+    except RiaError:
+        return
+    try:
+        with Session(engine) as db:
+            db.add(SourceProbe(id=probe_id, status="checking", checked_at=time.time(), requests=0, result={}))
+            try:
+                db.commit()
+            except IntegrityError:
+                db.rollback()
+                return
+        result = {"source_id": source_id, "method": "vin_filter_without_date"}
+        state = "checked"
+        try:
+            source.car(source_id, force=True)
+            if not vin:
+                state, result["reason"] = "incomplete", "vin_unavailable"
+            else:
+                data = source.request("search", {"category_id": 1, "searchType": 4,
+                    "status_id": 0, "VIN[0]": vin, "countpage": 50, "page": 0}, parse_ids, force=True)
+                if data["total"] > len(data["ids"]):
+                    state, result["reason"] = "incomplete", "multiple_pages"
+                else:
+                    result["found"] = source_id in data["ids"]
+                    result["results"] = data["total"]
+        except RiaError as exc:
+            state = "incomplete"
+            result["reason"] = str(exc) if str(exc) in {
+                "busy", "search_limit", "quota_exceeded", "connection_error", "upstream_error",
+                "key_rejected", "access_denied", "listing_unavailable", "invalid_response"
+            } else "source_error"
+        except Exception as exc:
+            state, result["error_type"] = "failed", type(exc).__name__
+        with Session(engine) as db:
+            probe = db.get(SourceProbe, probe_id)
+            result["requests_used"] = probe.requests
+            probe.status, probe.result, probe.checked_at = state, result, time.time()
+            db.commit()
+        logging.warning("Notification VIN baseline diagnostic %s", json.dumps(result, sort_keys=True))
+    finally:
+        source.release()

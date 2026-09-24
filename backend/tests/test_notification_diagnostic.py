@@ -139,6 +139,36 @@ def test_vin_date_check_does_not_run_for_observed_or_already_found_listing(engin
             assert db.get(SourceProbe, "notification-diagnostic-v2-" + source_id) is None
 
 
+def test_vin_baseline_separates_date_index_miss_from_vin_filter_miss(engine, caplog):
+    source_id, vin = "39658048", "TMBHS21Z982124886"
+    with Session(engine) as db:
+        db.add(SourceProbe(id="notification-diagnostic-v2-" + source_id,
+            status="checked", checked_at=time.time(), requests=3,
+            result={"created": False, "published": False}))
+        db.commit()
+    calls = []
+
+    def fetch(key, path, params):
+        calls.append((path, params))
+        if path == "info":
+            return raw(source_id, VIN=vin)
+        assert params["VIN[0]"] == vin
+        assert "created_after" not in params and "published_after" not in params
+        return {"result": {"search_result": {"ids": [source_id], "count": 1}}}
+
+    diagnostic.check_vin_presence_once(engine, "private-api-key", source_id, fetch)
+    diagnostic.check_vin_presence_once(engine, "private-api-key", source_id, fetch)
+    with Session(engine) as db:
+        probe = db.get(SourceProbe, "notification-diagnostic-v3-" + source_id)
+        assert probe.status == "checked" and probe.requests == 2
+        assert probe.result["found"] is True and probe.result["results"] == 1
+        assert db.get(SourceBudget, "auto_ria").total == 4
+        assert db.scalar(select(func.count()).select_from(Delivery)) == 0
+        assert db.scalar(select(func.count()).select_from(MonitorJob)) == 0
+    assert len(calls) == 2
+    assert vin not in caplog.text and "private-api-key" not in caplog.text
+
+
 @pytest.mark.parametrize("value", ["../info", "12?api_key=x", "0", "１", "1" * 13])
 def test_diagnostic_id_cannot_change_request_path(value):
     with pytest.raises(ValueError):
