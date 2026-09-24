@@ -21,7 +21,7 @@ from .ria_search import budget_state, parse_ids
 INTERVAL = 300
 WINDOW_SIZE = 50
 KIND = "active_window"
-RETIRED_STATE = "cancelled_active_window"
+RETIRED_STATE = "window_cancelled"
 CALL_RESERVE = 32
 FRESH_ARRIVAL_SECONDS = 600
 BASELINE_ID = "active-window-fresh-only-v1"

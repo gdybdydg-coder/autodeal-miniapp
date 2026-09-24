@@ -589,3 +589,22 @@ def test_primary_search_does_not_reopen_other_cancellations(p, monkeypatch):
     wake(p, 60)
     drain(p)
     assert not p.sent and not details(p, "124")
+
+
+def test_retired_interest_respects_production_varchar_limit(p, monkeypatch):
+    enable_window(p, monkeypatch)
+    drain(p)
+    queue_supplement_without_evaluation(p)
+    # SQLite does not enforce VARCHAR lengths; reproduce PostgreSQL's bound
+    # during the actual cancellation transition, without changing the schema.
+    maximum = MonitorSeen.__table__.c.state.type.length
+    with p.engine.begin() as connection:
+        connection.exec_driver_sql(f"""CREATE TRIGGER enforce_seen_state_length
+            BEFORE UPDATE OF state ON monitor_seen
+            WHEN length(NEW.state) > {maximum}
+            BEGIN SELECT RAISE(ABORT, 'state exceeds production varchar limit'); END""")
+    p.runner.settings = replace(p.settings, ria_active_window_enabled=False)
+    p.runner.sync()
+    with Session(p.engine) as db:
+        assert db.get(MonitorSeen, (1, "124")).state == active_window.RETIRED_STATE
+        assert db.get(MonitorJob, "124").state == "cancelled"

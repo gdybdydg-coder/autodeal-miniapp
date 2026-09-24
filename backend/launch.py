@@ -106,7 +106,7 @@ def listing_trace(db, uid, source_id):
                 "upstream_error", "listing_unavailable"} else None
         elif interest.state == "unavailable":
             stage = "listing_unavailable"
-        elif interest.state in {"cancelled", "cancelled_active_window"}:
+        elif interest.state in {"cancelled", "window_cancelled"}:
             stage = "cancelled"
         elif match:
             stage = "matched"
