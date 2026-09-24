@@ -5,6 +5,7 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from backend import active_window
+from backend.ria_budget import BudgetLimits
 from backend.models import (Delivery, Listing, MonitorActiveWindow, MonitorControl, MonitorFeed,
                             MonitorJob, MonitorSeen, MonitorWatch, Range, Search, SourceBudget)
 from backend.worker import enqueue
@@ -57,7 +58,7 @@ def test_new_first_page_entries_are_queued_without_a_catalog_scan(p, monkeypatch
         assert window.status == "baseline"
         assert not list(db.scalars(select(MonitorJob)))
     p.stock = ["2000", "2001"] + [str(n) for n in range(1000, 1098)]
-    wake(p, 61)
+    wake(p, 301)
     drain(p)
     assert [car.source_id for _, car in p.sent] == ["2000", "2001"]
     assert not details(p, "1000")
@@ -74,7 +75,7 @@ def test_price_drop_on_seen_non_deal_can_qualify_once(p, monkeypatch):
     drain(p)
     p.stock = ["124", "123"]
     p.prices["124"] = 16000
-    wake(p, 61)
+    wake(p, 301)
     drain(p)
     assert not p.sent
     p.prices["124"] = 10000
@@ -102,6 +103,45 @@ def test_supplement_pauses_before_consuming_reserved_primary_budget(p, monkeypat
         assert db.scalar(select(MonitorActiveWindow)).status == "reserved_for_new_publications"
     assert not any(path == "search" and "published_after" not in params
                    and "generation_id[0][0]" not in params for path, params in p.calls)
+
+
+def test_republished_id_is_discovered_when_daily_primary_usage_exceeds_half(p, monkeypatch):
+    enable_window(p, monkeypatch)
+    monkeypatch.setenv("RIA_REQUESTS_DAILY_CAP", "12000")
+    factory = p.runner.search_factory
+    def live_limits(engine, key):
+        source = factory(engine, key)
+        source.limits = BudgetLimits(900, 12000, 90000)
+        return source
+    p.runner.search_factory = live_limits
+    drain(p)  # An existing ID forms the first-page baseline.
+    assert not p.sent
+    with Session(p.engine) as db:
+        budget = db.get(SourceBudget, "auto_ria")
+        budget.calls = [p.clock[0] - 7200] * 7244 + [p.clock[0]] * 265
+        db.commit()
+    # An older numerical ID is newly republished in the active page, but does
+    # not appear in the source's publication-window response.
+    p.stock = ["39658048", "123"]
+    p.prices["39658048"] = 10000
+    wake(p, 301)
+    drain(p)
+    assert [(uid, car.source_id) for uid, car in p.sent] == [(111, "39658048")]
+    assert details(p, "39658048")
+    assert not details(p, "123")
+    with Session(p.engine) as db:
+        assert active_window.budget_available(db, BudgetLimits(900, 12000, 90000))
+
+
+def test_supplement_still_pauses_with_only_primary_daily_headroom_left(p, monkeypatch):
+    enable_window(p, monkeypatch)
+    limits = BudgetLimits(900, 12000, 90000)
+    with Session(p.engine) as db:
+        budget = db.get(SourceBudget, "auto_ria")
+        budget.calls = [p.clock[0] - 7200] * 9510 + [p.clock[0]] * 60
+        db.commit()
+    with Session(p.engine) as db:
+        assert not active_window.budget_available(db, limits)
 
 
 def test_new_arrival_is_evaluated_before_older_supplemental_job(p, monkeypatch):
@@ -147,7 +187,7 @@ def test_disable_supplement_retires_old_work_and_queued_alerts_but_keeps_new(p, 
     enable_window(p, monkeypatch)
     drain(p)  # Establish a baseline before the new active ID appears.
     p.stock = ["125", "123"]
-    wake(p, 61)
+    wake(p, 301)
     for _ in range(20):
         if not p.runner.tick():
             break

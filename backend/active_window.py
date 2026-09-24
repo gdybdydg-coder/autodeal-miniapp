@@ -15,7 +15,10 @@ from .models import (Delivery, Filters, Listing, MonitorActiveWindow, MonitorFee
 from .ria_budget import BudgetLimits
 from .ria_search import budget_state, parse_ids
 
-INTERVAL = 60
+# Seven shared groups at one request per minute can exceed the 12,000/day
+# allowance even before publication searches and listing details. A five-minute
+# first-page poll uses at most 2,016 searches/day for seven groups.
+INTERVAL = 300
 WINDOW_SIZE = 50
 RECHECK_SECONDS = 1800
 KIND = "active_window"
@@ -27,10 +30,13 @@ def budget_available(db, limits=None):
     row = db.get(SourceBudget, "auto_ria")
     if not row or budget_state(row, now, limits)["reason"] != "available":
         return False
-    # Reserve a full bounded work step, keeping half the rolling allowances for
-    # primary work even if every permitted call in this step is consumed.
+    # Reserve a full bounded work step and half the hourly allowance for
+    # primary work. Reserving HALF the daily allowance permanently disabled
+    # this window once ordinary publication/details traffic passed 6,000/day.
+    # Keep at least a fifth of the daily cap (or two hourly caps) untouched.
     return (sum(t > now - 3600 for t in row.calls) + CALL_RESERVE <= limits.hourly // 2
-            and sum(t > now - 86400 for t in row.calls) + CALL_RESERVE <= limits.daily // 2
+            and sum(t > now - 86400 for t in row.calls) + CALL_RESERVE
+                <= limits.daily - max(limits.daily // 5, limits.hourly * 2)
             and row.total + CALL_RESERVE <= limits.total)
 
 

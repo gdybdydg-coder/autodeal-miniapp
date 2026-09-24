@@ -1,5 +1,23 @@
 # AUTODeal backend — subscriptions for new worthwhile cars
 
+## Newest active-page coverage with a reserved primary budget (2026-09-24)
+
+The primary publication-time search remains first. The optional newest-page
+diff also catches active IDs that enter the first 50 results without appearing
+in the publication-time search (for example, a newly republished ID). It does
+not page through historical results or resend existing delivery claims.
+Previously this search stopped indefinitely when regular publication traffic
+exceeded half of the 24-hour cap, despite substantial quota remaining.
+
+With seven shared groups, polling every minute would itself cost up to 10,080
+search requests per rolling day before the primary search, car details and
+valuation. The bounded newest-page check now runs at most once per group every
+five minutes (up to 2,016 searches/day for seven groups). It retains the
+32-call step reserve, half of the hourly cap, and at least the greater of 20%
+of the daily cap or two hourly caps for primary work. If those safeguards are
+reached, the supplemental window waits while new publication searches continue.
+This is first-page coverage, not a guarantee that every ad is indexed or seen.
+
 ## Condition labels do not block fresh alerts (2026-09-24)
 
 The owner's current rule includes ads marked by AUTO.RIA as `onRepairParts`.
