@@ -269,7 +269,8 @@ def create_app(settings: Settings, engine=None):
                 "valuation_check": validation_status(engine, settings.ria_validation_run_id, settings.ria_validation_profile),
                 "catalog_check": ria_rollout.status(engine),
                 "monitor": monitor.runtime_status(engine, settings.monitor_enabled,
-                    active_window_enabled=settings.ria_active_window_enabled),
+                    active_window_enabled=settings.ria_active_window_enabled,
+                    provider_pricing_enabled=settings.ria_ai_price_enabled),
                 "full_scan": full_scan.runtime_status(engine, settings.full_scan_enabled),
                 "telegram": telegram_status(),
                 "miniapp_menu": telegram_setup.menu_status(engine, settings.miniapp_release)}
@@ -278,7 +279,8 @@ def create_app(settings: Settings, engine=None):
     def notification_status(uid=Depends(identity), db=Depends(session)):
         user, test = db.get(User, uid), db.get(TelegramTest, uid)
         runtime = monitor.runtime_status(engine, settings.monitor_enabled, uid,
-                                        active_window_enabled=settings.ria_active_window_enabled)
+                                        active_window_enabled=settings.ria_active_window_enabled,
+                                        provider_pricing_enabled=settings.ria_ai_price_enabled)
         telegram = telegram_status()
         connected = telegram["status"] == "configured"
         return {**runtime, "available": settings.live and runtime["running"] and connected,

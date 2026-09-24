@@ -1,5 +1,30 @@
 # AUTODeal backend — subscriptions for new worthwhile cars
 
+## Faster primary polling within the existing request caps (2026-09-24)
+
+Publication-only monitoring with paid listing-specific AUTO.RIA pricing now
+allocates up to 75% of the planned hourly/daily call rate to discovery, leaving
+25% for fresh details, quotes and other source calls. The older 50% allocation
+was also reserving for peer comparisons and the now-disabled active-page feed.
+Under the unchanged caps of 900/hour, 12,000/day and 90,000 cumulative, seven
+distinct filter groups have a 68-second target instead of 101 seconds. This
+plans at most about 8,894 single-page searches/day, leaving over 3,100 daily
+calls for other work. Pagination and bursts can consume that reserve, so actual
+requests continue to be gated by the shared quota and provider backoff.
+
+The minimum target is 30 seconds when the number of distinct searches permits
+it (up to three groups under these caps). Seven groups every 30 seconds would
+cost 20,160 searches/day before details or pricing and is not enabled. Identical
+filters still share a poll regardless of subscriber count. Legacy peer-pricing
+or supplemental mode keeps the previous 50% allocation and 60-second minimum.
+Retries retain their existing backoff, and frozen publication windows, overlap,
+deduplication and `/stop` remain intact. Persisted schedules adopt the shorter
+interval after the next successful check, without resetting their checkpoints.
+Status endpoints report the same policy used by the worker. Network duration,
+pagination and serial processing can add latency beyond the scheduled interval;
+this change does not implement parallel valuation or promise instant Telegram
+delivery. No paid service, request cap or subscription filter is changed.
+
 ## Publication-only monitoring; supplemental search disabled (2026-09-24)
 
 The owner requires newly published ads, with no quota spent looking for older

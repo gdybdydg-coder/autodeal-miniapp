@@ -490,6 +490,72 @@ def test_interval_adapts_to_distinct_groups_without_increasing_caps():
     assert poll_interval(4, BudgetLimits(900, 12000, 90000)) == 60
 
 
+@pytest.mark.parametrize("groups,expected", [(1, 30), (3, 30), (4, 39), (7, 68), (20, 192)])
+def test_publication_only_paid_pricing_shortens_polling_with_reserved_capacity(groups, expected):
+    caps = BudgetLimits(900, 12000, 90000)
+    interval = poll_interval(groups, caps, provider_pricing_enabled=True)
+    assert interval == expected
+    assert groups * 86400 / interval <= caps.daily * 3 // 4
+    assert groups * 3600 / interval <= caps.hourly * 3 // 4
+    assert caps == BudgetLimits(900, 12000, 90000)
+
+
+def test_supplemental_mode_keeps_its_previous_polling_reserve():
+    caps = BudgetLimits(900, 12000, 90000)
+    assert poll_interval(7, caps, provider_pricing_enabled=True, active_window_enabled=True) == 101
+
+
+@pytest.mark.parametrize("distinct_groups,interval", [(1, 30), (7, 68)])
+def test_shortened_main_poll_delivers_new_listing_without_rechecking_old_ads(
+        p, monkeypatch, distinct_groups, interval):
+    from backend.models import Range
+    from backend.tests.test_ria_ai_price import enable
+    ai_calls = enable(p, monkeypatch)
+    for name, value in (("HOURLY", 900), ("DAILY", 12000), ("TOTAL", 90000)):
+        monkeypatch.setenv("RIA_REQUESTS_" + name + "_CAP", str(value))
+    factory = p.runner.search_factory
+    def live_limits(engine, key):
+        source = factory(engine, key)
+        source.limits = BudgetLimits(900, 12000, 90000)
+        return source
+    p.runner.search_factory = live_limits
+    recipients = {111}
+    for n in range(2, distinct_groups + 1):
+        add_search(p, sid=n, uid=1000 + n, price=Range.model_validate({"from": n * 100}))
+        recipients.add(1000 + n)
+    p.clock[0] += 2  # Each activation has a nonempty first publication window.
+    drain(p)
+    initial_searches = len(searches(p))
+    p.ads["124"] = p.clock[0] + 1
+    p.clock[0] += interval - 1
+    assert not p.runner.tick()
+    assert len(searches(p)) == initial_searches
+    p.clock[0] += 2
+    drain(p)  # No manual wake/reset of the persisted next_poll checkpoint.
+    assert {(uid, car.source_id) for uid, car in p.sent} == {(uid, "124") for uid in recipients}
+    assert ai_calls == ["124"] and len(details(p, "124")) == 1
+    assert not details(p, "123")
+    with Session(p.engine) as db:
+        assert all(feed.next_poll - feed.checked_at == interval for feed in db.scalars(select(MonitorFeed)))
+    report = runtime_status(p.engine, True, provider_pricing_enabled=True)
+    assert report["active_filter_groups"] == distinct_groups
+    assert report["interval_seconds"] == interval and report["minimum_interval_seconds"] == 30
+
+
+def test_shortened_poll_still_obeys_exhausted_hourly_budget(p, monkeypatch):
+    from backend.tests.test_ria_ai_price import enable
+    enable(p, monkeypatch)
+    drain(p)
+    with Session(p.engine) as db:
+        db.get(SourceBudget, "auto_ria").calls = [p.clock[0]] * 900
+        db.commit()
+    before = len(p.calls)
+    p.ads["124"] = p.clock[0] + 1
+    wake(p, 100)
+    drain(p)
+    assert len(p.calls) == before and not p.sent
+
+
 def test_delivery_can_run_while_provider_lease_is_held(p):
     drain(p)
     p.ads["124"] = p.clock[0] + 1

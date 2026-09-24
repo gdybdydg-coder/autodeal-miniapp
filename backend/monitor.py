@@ -29,6 +29,7 @@ from .reference_valuation import VERSION as REFERENCE_VERSION, VALUED as PEER_VA
 VALUED = {*PEER_VALUED, "provider_lower_bound_adjusted"}
 
 INTERVAL = 60
+FAST_POLL_INTERVAL = 30
 LEASE = 120
 PAGE_SIZE = 50
 WINDOW_SECONDS = 3600
@@ -79,11 +80,20 @@ def reset_watch(db, search_id, enabled):
         feed_id=source_filters(search.filters).fingerprint(), started_at=math.ceil(time.time())))
 
 
-def poll_interval(groups, limits=None):
-    """Scheduling target; reserve half the call rate for details/comparisons."""
+def poll_interval(groups, limits=None, *, provider_pricing_enabled=False, active_window_enabled=False):
+    """Pace distinct searches while reserving capacity for fresh valuations.
+
+    Paid listing-specific pricing needs a detail read and a quote, rather than
+    a peer search. In publication-only mode discovery can use up to 3/4 of the
+    planned rate. Legacy comparison/supplemental modes retain their 1/2 share.
+    Every actual request still passes the shared hard quota gate.
+    """
     limits = limits or BudgetLimits.env()
-    return max(INTERVAL, math.ceil(groups * 86400 / max(1, limits.daily // 2)),
-               math.ceil(groups * 3600 / max(1, limits.hourly // 2)))
+    fast = provider_pricing_enabled and not active_window_enabled
+    share = 3 if fast else 2
+    return max(FAST_POLL_INTERVAL if fast else INTERVAL,
+               math.ceil(groups * 86400 / max(1, limits.daily * share // 4)),
+               math.ceil(groups * 3600 / max(1, limits.hourly * share // 4)))
 
 
 def active_members(db):
@@ -95,12 +105,14 @@ def active_members(db):
                MonitorWatch.epoch == MonitorMembership.epoch).order_by(Search.user_id, Search.id)))
 
 
-def runtime_status(engine, enabled, uid=None, *, active_window_enabled=False):
+def runtime_status(engine, enabled, uid=None, *, active_window_enabled=False, provider_pricing_enabled=False):
     with Session(engine) as db:
         row = db.get(MonitorControl, "pilot")
         healthy = bool(enabled and row and time.time() - row.heartbeat < LEASE + 60)
         members = active_members(db)
         groups = len({member.feed_id for _, _, member in members})
+        interval = poll_interval(groups, provider_pricing_enabled=provider_pricing_enabled,
+                                 active_window_enabled=active_window_enabled)
         own_groups = {member.feed_id for search, _, member in members
                       if uid is None or search.user_id == uid}
         feeds = list(db.scalars(select(MonitorFeed).where(MonitorFeed.id.in_(own_groups))))
@@ -114,9 +126,11 @@ def runtime_status(engine, enabled, uid=None, *, active_window_enabled=False):
         discovery = {"state_counts": states, "successful_groups": len(successful),
                      "last_success_at": max(successful, default=None),
                      "oldest_cursor_at": oldest_cursor, "lag_seconds": lag,
-                     "needs_attention": bool(errors or (lag is not None and lag > max(300, poll_interval(groups) * 3)))}
+                     "needs_attention": bool(errors or (lag is not None and lag > max(300, interval * 3)))}
         return {"running": healthy, "status": row.status if healthy else "offline",
-                "interval_seconds": poll_interval(groups), "minimum_interval_seconds": INTERVAL,
+                "interval_seconds": interval,
+                "minimum_interval_seconds": (FAST_POLL_INTERVAL
+                    if provider_pricing_enabled and not active_window_enabled else INTERVAL),
                 "active_filter_groups": groups, "shared_polling": True,
                 "pending_jobs": db.scalar(select(func.count()).select_from(MonitorJob)
                     .where(MonitorJob.state == "pending")),
@@ -563,7 +577,9 @@ class Monitor:
                     if kind == active_window.KIND:
                         active_window.discover(self, key, source)
                     elif kind == "discover":
-                        self.discover(key, source, poll_interval(len(groups), source.limits))
+                        self.discover(key, source, poll_interval(len(groups), source.limits,
+                            provider_pricing_enabled=self.settings.ria_ai_price_enabled,
+                            active_window_enabled=self.settings.ria_active_window_enabled))
                     else:
                         self.evaluate(key, source)
                 except RiaError as exc:
