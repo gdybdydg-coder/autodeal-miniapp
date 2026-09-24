@@ -47,3 +47,35 @@ The current budget cannot support a 30-day promise at the measured rate.
 Slowing seven primary polls to fit the balance would delay discovery by several
 minutes and conflict with the owner's fresh-alert priority. A new quota plan
 or a reduced scope requires an explicit business decision; no caps were changed.
+
+## Quota and speed decision (checked again at 07:28 UTC)
+
+With the configured 900/hour, 12,000/day and 90,000 lifetime local caps, the
+existing scheduler reserves half the hourly/daily rate for listing details and
+quotes. Its target polling interval by *distinct discovery filter group* is:
+
+| Distinct groups | Target interval per group | Consequence |
+| ---: | ---: | --- |
+| 7 (currently active) | 101 seconds | All seven watching; most recent observed cursor lag 69 seconds. |
+| 20 | 288 seconds | More than four minutes between checks per group. |
+| 100 | 1,440 seconds | 24 minutes; this is **100 different filters**, not 100 customers. |
+| 200 | 2,880 seconds | 48 minutes for 200 different filters. |
+
+The intervals are scheduling targets, not guarantees of a Telegram push time.
+At the latest snapshot local accounting reported 7,677 calls over 24 hours and
+45,431 calls remaining. At an unchanged rate, that is roughly 5.92 days. To
+cover 30 days with that balance, average spend would have to stay below 1,515
+calls/day, about 80% lower than observed. Even with **zero** listing-detail or
+market-quote calls, seven groups alone could be polled no faster than about
+once every seven minutes within that 30-day average. Real vehicle calls demand
+more headroom. Monitoring 100/200 users with identical filters still shares
+search calls; 100/200 unique filters does not.
+
+The discovery window already excludes old listings, identical filters already
+share polling and a matching candidate uses at most one paid market-range
+quote per current evaluation. No confirmed redundant request was found whose
+removal would preserve the fresh-publication coverage. Do not silently lengthen
+the polling interval, merge owners' saved filters, enlarge the caps or purchase
+an additional package to make this table look better. Choose and fund a trial
+scope compatible with the target alert speed, then measure it with a few opted-in
+customers before promising 30 days.
