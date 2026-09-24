@@ -79,7 +79,7 @@ def test_recovery_is_disabled_by_default_and_requires_monitor_lease(p):
         assert db.get(SourceProbe, probe_id("123")) is None
 
 
-def test_old_optional_rejection_recovery_requires_supplemental_mode(p):
+def test_old_optional_rejection_is_not_reopened_by_fresh_only_supplement(p):
     p.runner.settings = replace(p.settings, ria_active_window_enabled=True)
     candidate = parse_car(raw("124"), "124")
     candidate["gear_id"] = None
@@ -94,8 +94,8 @@ def test_old_optional_rejection_recovery_requires_supplemental_mode(p):
     assert p.runner.claim()
     p.runner.sync()
     with Session(p.engine) as db:
-        assert db.get(MonitorJob, "124").state == "pending"
-        assert db.get(MonitorSeen, (1, "124")).state == "pending"
+        assert db.get(MonitorJob, "124").state == "unvalued"
+        assert db.get(MonitorSeen, (1, "124")).state == "unvalued"
         job = db.get(MonitorJob, "124")
         job.state = "unvalued"
         job.result = {"candidate": candidate, "notification_version": NOTIFICATION_VERSION,

@@ -176,6 +176,7 @@ class Monitor:
                     MonitorSeen.state == "pending").values(state="cancelled"))
                 db.execute(update(MonitorJob).where(MonitorJob.source_id.in_(retired_ids)).values(
                     state="cancelled", reason="active_window_disabled"))
+                active_window.reset(db)
             # Legacy watches have no verified creation-time checkpoint. Upgrade
             # to a new baseline, never reinterpret old windows as new arrivals.
             legacy = db.execute(select(Search.id, Search.user_id).join(User, User.id == Search.user_id)
@@ -193,23 +194,6 @@ class Monitor:
                     db.add(MonitorFeed(id=member.feed_id, filters=source_filters(search.filters).canonical(),
                         started_at=member.started_at, cursor=member.started_at))
                     db.flush()
-            # Policy changes do not reopen completed history in fresh-only mode.
-            # Legacy recovery is permitted only with explicit supplemental work.
-            outdated = db.execute(select(MonitorJob, MonitorSeen)
-                .join(MonitorSeen, MonitorSeen.source_id == MonitorJob.source_id)
-                .join(Search, Search.id == MonitorSeen.search_id)
-                .join(User, User.id == Search.user_id)
-                .join(MonitorWatch, MonitorWatch.search_id == Search.id)
-                .where(MonitorJob.state == "unvalued", MonitorSeen.state == "unvalued",
-                       Search.enabled.is_(True), User.ready.is_(True),
-                       MonitorSeen.epoch == MonitorWatch.epoch,
-                       MonitorJob.first_seen >= time.time() - 86400)).all() if self.settings.ria_active_window_enabled else []
-            for job, seen in outdated:
-                if (job.result.get("rating", {}).get("valuation_version") not in {VERSION, REFERENCE_VERSION}
-                        or job.result.get("notification_version") != NOTIFICATION_VERSION):
-                    origin = job.result.get("discovery_kind", "new_publication")
-                    job.state, job.next_run, job.result = "pending", 0, {"discovery_kind": origin}
-                    seen.state = "pending"
             if self.settings.ria_active_window_enabled:
                 active_window.sync(db, {member.feed_id for _, _, member in active_members(db)})
             db.commit()

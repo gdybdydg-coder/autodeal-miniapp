@@ -11,7 +11,7 @@ from sqlalchemy.orm import Session
 
 from .auto_ria import RiaError
 from .models import (Delivery, Filters, Listing, MonitorActiveWindow, MonitorFeed,
-                     MonitorJob, MonitorSeen, SourceBudget)
+                     MonitorJob, MonitorSeen, SourceBudget, SourceProbe)
 from .ria_budget import BudgetLimits
 from .ria_search import budget_state, parse_ids
 
@@ -22,6 +22,7 @@ INTERVAL = 300
 WINDOW_SIZE = 50
 KIND = "active_window"
 CALL_RESERVE = 32
+BASELINE_ID = "active-window-fresh-only-v1"
 
 
 def budget_available(db, limits=None, *, reserve=CALL_RESERVE):
@@ -40,9 +41,23 @@ def budget_available(db, limits=None, *, reserve=CALL_RESERVE):
 
 
 def sync(db, feed_ids):
+    # Old rows can predate this fresh-only policy. A one-time marker creates
+    # a clean baseline even if the flag was previously on, then turned off
+    # while old code left its first-page snapshot in place.
+    if db.get(SourceProbe, BASELINE_ID) is None:
+        reset(db)
+        db.add(SourceProbe(id=BASELINE_ID, status="baselined", checked_at=time.time(),
+                           requests=0, result={}))
     for feed_id in sorted(feed_ids):
         if db.get(MonitorActiveWindow, feed_id) is None:
             db.add(MonitorActiveWindow(feed_id=feed_id))
+
+
+def reset(db):
+    """Forget page snapshots when disabled, preserving jobs and delivery claims."""
+    for row in db.scalars(select(MonitorActiveWindow)):
+        row.window, row.source_total = [], 0
+        row.checked_at, row.next_poll, row.status = 0, 0, "disabled"
 
 
 def status(db, feed_ids, enabled):

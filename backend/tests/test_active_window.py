@@ -7,7 +7,7 @@ from sqlalchemy.orm import Session
 from backend import active_window
 from backend.ria_budget import BudgetLimits
 from backend.models import (Delivery, Listing, MonitorActiveWindow, MonitorControl, MonitorFeed,
-                            MonitorJob, MonitorSeen, MonitorWatch, Range, Search, SourceBudget)
+                            MonitorJob, MonitorSeen, MonitorWatch, Range, Search, SourceBudget, SourceProbe)
 from backend.worker import enqueue
 from backend.monitor import Monitor, reset_watch, runtime_status
 from backend.tests.test_monitor import p, drain, wake, details, add_search
@@ -45,6 +45,42 @@ def test_first_active_page_is_a_baseline_without_replaying_old_listings(p, monke
     wake(p, 301)
     drain(p)
     assert not p.sent and not details(p, "123")
+
+
+def test_reenabling_after_old_snapshot_rebaselines_without_replaying_current_page(p, monkeypatch):
+    enable_window(p, monkeypatch)
+    drain(p)
+    with Session(p.engine) as db:
+        row = db.scalar(select(MonitorActiveWindow))
+        row.window, row.checked_at, row.next_poll = ["999"], p.clock[0] - 3600, 0
+        db.delete(db.get(SourceProbe, active_window.BASELINE_ID))
+        db.commit()
+    wake(p, 301)
+    drain(p)
+    with Session(p.engine) as db:
+        row = db.scalar(select(MonitorActiveWindow))
+        assert row.window == ["123"] and row.status == "baseline"
+        assert db.get(SourceProbe, active_window.BASELINE_ID)
+    assert not p.sent and not details(p, "123")
+
+
+def test_disable_then_reenable_starts_from_current_page_baseline(p, monkeypatch):
+    enable_window(p, monkeypatch)
+    drain(p)
+    p.runner.settings = replace(p.settings, ria_active_window_enabled=False)
+    p.runner.sync()
+    with Session(p.engine) as db:
+        row = db.scalar(select(MonitorActiveWindow))
+        assert row.window == [] and row.checked_at == 0
+        assert db.get(SourceProbe, active_window.BASELINE_ID)
+    p.stock = ["124", "123"]
+    p.runner.settings = p.settings
+    wake(p, 301)
+    drain(p)
+    with Session(p.engine) as db:
+        row = db.scalar(select(MonitorActiveWindow))
+        assert row.window == ["124", "123"] and row.status == "baseline"
+    assert not p.sent and not details(p, "124")
 
 
 def test_new_first_page_entries_are_queued_without_a_catalog_scan(p, monkeypatch):

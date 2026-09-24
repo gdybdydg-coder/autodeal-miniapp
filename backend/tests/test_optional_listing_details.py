@@ -80,7 +80,7 @@ def test_engine_basis_still_requires_five_matching_generation_body_fuel_gear_pee
 
 @pytest.mark.parametrize("ready", [True, False])
 @pytest.mark.parametrize("supplemental", [True, False])
-def test_policy_rechecks_require_active_interests_and_supplemental_mode(p, ready, supplemental):
+def test_fresh_only_supplement_never_reopens_old_valuations(p, ready, supplemental):
     p.ads["124"] = p.clock[0] - 1
     drain(p)
     with Session(p.engine) as db:
@@ -97,9 +97,8 @@ def test_policy_rechecks_require_active_interests_and_supplemental_mode(p, ready
     finally:
         p.runner.release("idle")
     with Session(p.engine) as db:
-        expected = "pending" if ready and supplemental else "unvalued"
-        assert db.get(MonitorJob, "124").state == expected
-        assert db.scalar(select(MonitorSeen).where(MonitorSeen.source_id == "124")).state == expected
+        assert db.get(MonitorJob, "124").state == "unvalued"
+        assert db.scalar(select(MonitorSeen).where(MonitorSeen.source_id == "124")).state == "unvalued"
 
 
 def test_unknown_optional_values_match_but_known_conflicts_do_not():

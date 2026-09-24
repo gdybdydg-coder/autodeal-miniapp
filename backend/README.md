@@ -60,6 +60,9 @@ The first poll only establishes a baseline; later polls evaluate only IDs
 newly entering that page. Already evaluated older listings are not revisited
 for price drops. A published-date miss can still escape if its ID is below
 the first page or was already there at the time of the initial baseline.
+Enabling this fresh-only policy for the first time resets previously stored
+first-page snapshots once. Disabling and later reenabling it establishes a
+new baseline, without clearing delivery claims or reopening old valuations.
 Previously this search stopped indefinitely when regular publication traffic
 exceeded half of the 24-hour cap, despite substantial quota remaining.
 
