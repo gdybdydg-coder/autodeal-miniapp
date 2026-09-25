@@ -115,3 +115,25 @@ def test_missing_photo_is_refreshed_once_with_accounted_provider_call(p, monkeyp
 @pytest.mark.parametrize('value', ['1,,2', '1,1', 'a', '1,2,3,4,5,6'])
 def test_invalid_repair_selector_is_rejected(value):
     with pytest.raises(ValueError): photo_repair.ids(value)
+
+
+def test_failed_preflight_can_retry_once_but_never_repeats_issued_edit(p, monkeypatch):
+    configured(p, monkeypatch)
+    run(p, lambda *_: {'ok': False, 'photo_unavailable': True})
+    run(p, lambda *_: pytest.fail('retry too soon'))
+    p.clock[0] += 61
+    run(p, lambda uid, mid, car: {'ok': True, 'result': {'message_id': mid, 'photo': [{}]}})
+    p.clock[0] += 61
+    run(p, lambda *_: pytest.fail('issued edit must not repeat'))
+    with Session(p.engine) as db:
+        probe = db.get(SourceProbe, 'owner-photo-repair-v1-111-124')
+        assert probe.status == 'edited' and probe.result['attempts'] == 2
+
+
+def test_preflight_retry_is_bounded_to_two_attempts(p, monkeypatch):
+    configured(p, monkeypatch)
+    run(p, lambda *_: {'ok': False, 'photo_unavailable': True})
+    p.clock[0] += 61
+    run(p, lambda *_: {'ok': False, 'photo_unavailable': True})
+    p.clock[0] += 61
+    run(p, lambda *_: pytest.fail('preflight retry exhausted'))

@@ -82,7 +82,7 @@ class PhotoLoader:
                 event, leader = threading.Event(), True
                 self.flights[url] = event
         if not leader:
-            event.wait(10)
+            event.wait(18)
             with self.lock:
                 cached = self.cache.get(url)
                 return cached[1] if cached and cached[0] > time.monotonic() else None
@@ -100,8 +100,20 @@ class PhotoLoader:
                 self.flights.pop(url, None)
                 event.set()
 
+    @classmethod
+    def download(cls, url):
+        value = cls.fetch(url)
+        if value is None:
+            parts = urlsplit(url)
+            if parts.hostname != 'cdn.riastatic.com':
+                # Same public photo path on AUTO.RIA's shared CDN alias.
+                # A failed image GET cannot have sent a Telegram message.
+                alias = urlunsplit(('https', 'cdn.riastatic.com', parts.path, '', ''))
+                value = cls.fetch(alias)
+        return value
+
     @staticmethod
-    def download(url):
+    def fetch(url):
         started = time.monotonic()
         try:
             with httpx.Client(timeout=httpx.Timeout(8, connect=4), follow_redirects=False) as client:

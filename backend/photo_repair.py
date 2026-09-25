@@ -28,6 +28,14 @@ def ids(value):
     return result
 
 
+def retryable(probe):
+    # photo_unavailable is returned before editMessageMedia is called.
+    # Allow one later preflight retry; never retry an issued/ambiguous edit.
+    return bool(probe and probe.status == 'photo_unavailable'
+                and probe.result.get('attempts', 1) < 2
+                and time.time() - probe.checked_at >= 60)
+
+
 def run_once(monitor, sender=None):
     settings, uid = monitor.settings, monitor.settings.admin_telegram_id
     if not uid or not settings.live or not settings.monitor_enabled:
@@ -35,7 +43,8 @@ def run_once(monitor, sender=None):
     for source_id in ids(settings.ria_photo_repair_ids):
         key = 'owner-photo-repair-v1-' + str(uid) + '-' + source_id
         with Session(monitor.engine) as db:
-            if db.get(SourceProbe, key):
+            previous = db.get(SourceProbe, key)
+            if previous and not retryable(previous):
                 continue
             user = db.get(User, uid)
             listing = db.scalar(select(Listing).where(Listing.source == 'auto_ria', Listing.source_id == source_id))
@@ -80,7 +89,8 @@ def run_once(monitor, sender=None):
                 car = car.model_copy(update={'photo': refreshed_photo})
         with Session(monitor.engine) as db:
             user = db.scalar(select(User).where(User.id == uid).with_for_update())
-            if not monitor.owned(db) or db.get(SourceProbe, key):
+            previous = db.get(SourceProbe, key)
+            if not monitor.owned(db) or (previous and not retryable(previous)):
                 continue
             delivery = db.scalar(select(Delivery).where(Delivery.user_id == uid,
                 Delivery.listing_id == listing.id).with_for_update())
@@ -88,8 +98,13 @@ def run_once(monitor, sender=None):
                     and db.scalar(matching_searches(uid, listing.id).limit(1)) is not None):
                 continue
             message_id = delivery.message_id
-            db.add(SourceProbe(id=key, requests=requests_used, checked_at=time.time(),
-                status='editing', result={'source_id': source_id, 'message_id': message_id}))
+            attempts = previous.result.get('attempts', 1) + 1 if previous else 1
+            if previous is None:
+                previous = SourceProbe(id=key, requests=0)
+                db.add(previous)
+            previous.requests += requests_used
+            previous.checked_at, previous.status = time.time(), 'editing'
+            previous.result = {'source_id': source_id, 'message_id': message_id, 'attempts': attempts}
             db.commit()  # Never repeat an ambiguous edit after restart.
         with Session(monitor.engine) as db:
             # Respect /stop immediately before the network edit, same lock as delivery.
@@ -110,7 +125,7 @@ def run_once(monitor, sender=None):
                      'rejected' if result.get('ok') is False else 'uncertain')
             report = {'scope': 'configured_admin', 'source_id': source_id, 'message_id': message_id,
                       'state': state, 'photo_confirmed': confirmed, 'stored_photo': had_photo,
-                      'refreshed_photo': bool(refreshed_photo)}
+                      'refreshed_photo': bool(refreshed_photo), 'attempts': attempts}
             probe = db.get(SourceProbe, key)
             probe.status, probe.result, probe.checked_at = state, report, time.time()
             db.commit()

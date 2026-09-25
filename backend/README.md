@@ -1265,7 +1265,8 @@ AUTO.RIA CDN images are downloaded with a bounded timeout and size, decoded,
 stripped of metadata, and uploaded to Telegram as JPEG multipart files. Public
 photo bytes are cached for five minutes (16 entries / 8 MiB) and shared across
 concurrent recipients. Downloads accept only known HTTPS riastatic CDN photo
-paths, validating every redirect. The parser also accepts the provider's F/M/SX
+paths, validating every redirect. A failed image GET can try the same public photo path
+on AUTO.RIA's shared CDN alias once. The parser also accepts the provider's F/M/SX
 photo fields and upgrades known legacy HTTP photo URLs to HTTPS.
 
 If the image cannot be downloaded, the existing URL attempt remains available.
@@ -1278,4 +1279,6 @@ new alert or resets Delivery/epoch/uncertain claims. The owner must still be rea
 with a current enabled match. A durable claim is written before the edit. Missing
 photos receive at most one accounted provider detail request. Successful photo
 responses are confirmed from the returned Message.photo field. Clear the flag
-after verifying the owner-scoped report; restarts never repeat the edit.
+after verifying the owner-scoped report; restarts never repeat an issued edit.
+A confirmed failure to load the image before any Telegram edit may receive one
+later preflight retry after 60 seconds; ambiguous edits remain protected.

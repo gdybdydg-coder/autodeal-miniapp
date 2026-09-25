@@ -84,7 +84,8 @@ def test_bad_source_photo_is_bounded_and_does_not_crash(monkeypatch, response):
     requests = []
     mock_client(monkeypatch, lambda req: requests.append(req) or response)
     assert PhotoLoader().load(URL) is None
-    assert len(requests) == 1
+    assert len(requests) <= 2
+    assert all(r.url.host in {"cdn0.riastatic.com", "cdn.riastatic.com"} for r in requests)
 
 
 @pytest.mark.parametrize('reply', [httpx.ReadTimeout('secret'), httpx.Response(502),
@@ -129,4 +130,17 @@ def test_edit_adds_photo_to_exact_existing_message_without_sending(monkeypatch):
         return accepted()
     mock_client(monkeypatch, handler)
     assert TelegramSender('test').add_photo(111, 71, car(photo=URL))['result']['photo']
+    assert len(requests) == 2
+
+
+def test_photo_node_failure_uses_same_path_on_shared_official_cdn(monkeypatch):
+    requests = []
+    def handler(req):
+        requests.append(req)
+        assert req.url.path == '/photosnew/auto/photo/skoda_fabia__659038815m.jpg'
+        if req.url.host == 'cdn0.riastatic.com': return httpx.Response(503)
+        assert req.url.host == 'cdn.riastatic.com'
+        return httpx.Response(200, content=picture())
+    mock_client(monkeypatch, handler)
+    assert PhotoLoader().load(URL).startswith(b'\xff\xd8')
     assert len(requests) == 2
