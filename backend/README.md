@@ -1,5 +1,42 @@
 # AUTODeal backend — subscriptions for new worthwhile cars
 
+## Bounded parallel processing of new publications (2026-09-25)
+
+Production had CPU usage below 9% of its allocation and an empty queue at the
+inspection instant, but the latest receipt spent 73.7 seconds between discovery
+and evaluation versus 0.1 seconds inside the Telegram request. The primary
+monitor serialized every discovery/detail/quote operation through one source
+lease. Publication-only mode with paid listing pricing now runs up to four
+operations concurrently under that same lease. A due publication page has one
+reserved slot; up to three distinct cars can be evaluated alongside it, or four
+when no page is due. Each finished car becomes eligible for the independent
+dispatcher immediately, without waiting for the slowest quote in its batch.
+
+The monitor still chooses durable jobs, joins all children before releasing its
+global lease, and commits only while it owns the lease. Each child has its own
+request state/session and the parent's original deadline. Short budget updates
+are serialized and row-locked; HTTP waits hold no DB transaction. Identical
+concurrent catalog/cache reads share one request. Every network call, including
+failures, consumes the unchanged 900/hour, 12,000/day and 90,000 cumulative caps.
+Provider cooldown, fresh positive prices, saved filters, minimum discounts,
+subscription epochs and sent/uncertain delivery claims remain authoritative.
+One operation failure defers that job without aborting the other operations.
+The supplemental/peer-pricing path retains serial processing. No schema or
+subscription migration, paid upgrade, recovery replay or quota reset is needed.
+
+Status reports `source_parallelism`; multi-operation batches log task count,
+actual peak simultaneous source requests and elapsed time without credentials
+or subscriber data. Event-controlled tests hold one quote open while another
+car and due discovery finish, enforce a four-operation ceiling, exercise stop,
+lease replacement, cache sharing and all three hard quota boundaries. A
+synthetic 200-subscriber test queues 800 unique notifications from four detail
+reads and four quotes. It does not establish real Telegram/device throughput.
+
+This addresses serial queueing, not the provider's indexing delay or finite
+request allowance. Eleven distinct groups now have a 106-second poll target
+under the same caps, versus seven groups at 68 seconds. Bursts, provider errors
+and quota waits can still form a queue. Old active-page scanning stays disabled.
+
 ## Faster primary polling within the existing request caps (2026-09-24)
 
 Publication-only monitoring with paid listing-specific AUTO.RIA pricing now

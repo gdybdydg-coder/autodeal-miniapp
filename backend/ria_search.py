@@ -8,6 +8,7 @@ import hashlib
 import json
 import math
 import re
+import threading
 import time
 import uuid
 from urllib.parse import urlsplit
@@ -240,8 +241,30 @@ class RiaSearch:
         self.observed_at = time.time()
         self.requests_made = 0
         self.request_limit = None
+        self._budget_lock = threading.RLock()
+        self._request_locks = {}
+        self._lease_state = {"in_flight": 0, "peak": 0}
+        self._acquired = False
+        self._borrowed = False
+
+    def fork(self):
+        """Independent request state under one acquired, bounded source lease.
+
+        Only the parent releases it, after joining all children. Every child
+        still reserves each call against the same durable, row-locked budget.
+        Cache single-flight locks and short accounting locks are shared; HTTP
+        waits do not hold either the accounting lock or a database transaction.
+        """
+        if not self._acquired or self._borrowed:
+            raise RiaError("busy")
+        child = copy.copy(self)
+        child.requests_made, child.stage = 0, "acquire"
+        child._borrowed, child._acquired = True, False
+        return child
 
     def acquire(self):
+        if self._borrowed:
+            raise RiaError("busy")
         if not self.key:
             raise RiaError("not_configured")
         with Session(self.engine) as db:
@@ -250,19 +273,29 @@ class RiaSearch:
                 raise RiaError("busy")
             row.owner, row.busy_until = self.owner, time.time() + 90
             db.commit()
+            self._acquired = True
 
     def release(self):
+        if self._borrowed:
+            return
         with Session(self.engine) as db:
             row = db.scalar(select(SourceBudget).where(SourceBudget.id == "auto_ria").with_for_update())
             if row.owner == self.owner:
                 row.busy_until = 0
                 db.commit()
+        self._acquired = False
 
     def request(self, path, params, parser, ttl=900, *, force=False, fetcher=None):
         self.stage = path
         cache_key = [path, params, "car-v5"] if path == "info" else [path, params]
         digest = hashlib.sha256(json.dumps(cache_key, sort_keys=True).encode()).hexdigest()
-        with Session(self.engine) as db:
+        with self._budget_lock:
+            lock = self._request_locks.setdefault(digest, threading.Lock())
+        with lock:
+            return self._request(path, params, parser, ttl, digest, force=force, fetcher=fetcher)
+
+    def _request(self, path, params, parser, ttl, digest, *, force, fetcher):
+        with self._budget_lock, Session(self.engine) as db:
             cached = db.get(SourceCache, digest)
             if not force and cached and cached.expires_at > time.time():
                 if ttl == FRESH_SECONDS:
@@ -271,7 +304,7 @@ class RiaSearch:
             row = db.scalar(select(SourceBudget).where(SourceBudget.id == "auto_ria").with_for_update())
             now = time.time()
             calls = [t for t in row.calls if t > now - 86400]
-            if row.owner != self.owner or time.monotonic() > self.deadline:
+            if row.owner != self.owner or row.busy_until <= now or time.monotonic() > self.deadline:
                 raise RiaError("search_limit")
             if self.request_limit is not None and self.requests_made >= self.request_limit:
                 raise RiaError("search_limit")
@@ -280,21 +313,26 @@ class RiaSearch:
             row.calls, row.total = calls + [now], row.total + 1
             db.commit()  # Failed calls consume budget too, even on a process crash.
             self.requests_made += 1
+            self._lease_state["in_flight"] += 1
+            self._lease_state["peak"] = max(self._lease_state["peak"], self._lease_state["in_flight"])
         try:
             payload = parser(fetcher() if fetcher is not None else self.fetch(self.key, path, params))
         except RiaError as exc:
             if path == "info" and str(exc) in {"listing_unavailable", "invalid_response"}:
                 peer_cache.invalidate(self.engine, params["auto_id"])
-                with Session(self.engine) as db:
+                with self._budget_lock, Session(self.engine) as db:
                     db.execute(delete(SourceCache).where(SourceCache.id == digest))
                     db.commit()
             if str(exc) in {"quota_exceeded", "key_rejected", "access_denied"}:
-                with Session(self.engine) as db:
+                with self._budget_lock, Session(self.engine) as db:
                     row = db.scalar(select(SourceBudget).where(SourceBudget.id == "auto_ria").with_for_update())
                     row.blocked_until = time.time() + 3600
                     db.commit()
             raise
-        with Session(self.engine) as db:
+        finally:
+            with self._budget_lock:
+                self._lease_state["in_flight"] -= 1
+        with self._budget_lock, Session(self.engine) as db:
             db.execute(delete(SourceCache).where(SourceCache.expires_at < time.time()))
             row = db.get(SourceCache, digest)
             if row is None:

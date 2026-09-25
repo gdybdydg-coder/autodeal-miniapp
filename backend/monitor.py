@@ -7,9 +7,11 @@ import asyncio
 import copy
 import logging
 import math
+import threading
 import time
 import uuid
 from collections import Counter
+from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime, timezone
 
 from sqlalchemy import case, delete, exists, func, select, update
@@ -30,6 +32,7 @@ VALUED = {*PEER_VALUED, "provider_lower_bound_adjusted"}
 
 INTERVAL = 60
 FAST_POLL_INTERVAL = 30
+PARALLEL_TASKS = 4
 LEASE = 120
 PAGE_SIZE = 50
 WINDOW_SECONDS = 3600
@@ -38,6 +41,11 @@ EVIDENCE_SECONDS = 60
 OPTIONAL_DETAIL_FIELDS = ("body_id", "fuel_id", "gear_id", "mileage")
 NOTIFICATION_VERSION = "informational-v3"
 log = logging.getLogger(__name__)
+batch_log = logging.getLogger("autodeal.monitor_batches")
+batch_log.setLevel(logging.INFO)
+batch_log.propagate = False
+if not batch_log.handlers:
+    batch_log.addHandler(logging.StreamHandler())
 
 
 def initialize(engine):
@@ -134,6 +142,7 @@ def runtime_status(engine, enabled, uid=None, *, active_window_enabled=False, pr
                 "active_filter_groups": groups, "shared_polling": True,
                 "pending_jobs": db.scalar(select(func.count()).select_from(MonitorJob)
                     .where(MonitorJob.state == "pending")),
+                "source_parallelism": PARALLEL_TASKS if provider_pricing_enabled and not active_window_enabled else 1,
                 "strategy": "publications_with_bounded_active_window" if active_window_enabled else "new_publications_v3",
                 "index_overlap_seconds": INDEX_OVERLAP,
                 "active_window": active_window.status(db, own_groups, active_window_enabled),
@@ -149,6 +158,9 @@ class Monitor:
         self.engine, self.settings, self.search_factory = engine, settings, search_factory
         self.owner = uuid.uuid4().hex
         self.sender = sender
+        # Keep state transitions ordered while independent HTTP calls overlap.
+        # Sessions are never shared between threads or held across network waits.
+        self._state_lock = threading.RLock()
 
     def claim(self):
         now = time.time()
@@ -219,7 +231,7 @@ class Monitor:
             db.commit()
 
     def prepare_window(self, feed_id):
-        with Session(self.engine) as db:
+        with self._state_lock, Session(self.engine) as db:
             if not self.owned(db):
                 return None
             feed = db.get(MonitorFeed, feed_id)
@@ -273,7 +285,7 @@ class Monitor:
                 or (len(ids) < PAGE_SIZE and context["page"] * PAGE_SIZE + len(ids) < total)):
             raise RiaError("invalid_response")
         now = time.time()
-        with Session(self.engine) as db:
+        with self._state_lock, Session(self.engine) as db:
             if not self.owned(db):
                 return
             feed = db.get(MonitorFeed, feed_id)
@@ -349,7 +361,7 @@ class Monitor:
             .order_by(Search.user_id, Search.id)))
 
     def complete(self, source_id, evidence, outcome):
-        with Session(self.engine) as db:
+        with self._state_lock, Session(self.engine) as db:
             if not self.owned(db):
                 return
             job = db.get(MonitorJob, source_id)
@@ -411,7 +423,9 @@ class Monitor:
             db.commit()
 
     def evaluate(self, source_id, source):
-        with Session(self.engine) as db:
+        with self._state_lock, Session(self.engine) as db:
+            if not self.owned(db):
+                return
             interests = self.interests(db, source_id)
             job = db.get(MonitorJob, source_id)
             evidence = copy.deepcopy(job.result)
@@ -492,7 +506,7 @@ class Monitor:
         quota = quota_status(self.engine, limits)
         wait = (quota["retry_after_seconds"] or 3600) if reason == "quota_exceeded" else (
             1 if reason in {"busy", "search_limit"} else INTERVAL)
-        with Session(self.engine) as db:
+        with self._state_lock, Session(self.engine) as db:
             if not self.owned(db):
                 return
             if kind == active_window.KIND:
@@ -507,6 +521,58 @@ class Monitor:
                 job = db.get(MonitorJob, key)
                 job.reason, job.next_run = reason, time.time() + wait
             db.commit()
+
+    def parallel_step(self, tasks, groups):
+        """At most four operations under the original global monitor/source leases.
+
+        A due publication page owns one slot; the rest evaluate distinct jobs.
+        Completion is per car, so delivery need not wait for the slowest quote.
+        Joining all tasks before release also fences overlapping deployments.
+        """
+        source = self.search_factory(self.engine, self.settings.auto_ria_api_key)
+        status = "evaluate" if any(kind == "evaluate" for kind, _ in tasks) else "discover"
+        try:
+            source.acquire()
+        except RiaError as exc:
+            for kind, key in tasks:
+                self.defer(kind, key, str(exc), source.limits)
+            return status, True
+        started = time.monotonic()
+        try:
+            interval = poll_interval(groups, source.limits, provider_pricing_enabled=True)
+            with Session(self.engine) as db:
+                db.execute(update(MonitorControl).where(MonitorControl.id == "pilot",
+                    MonitorControl.owner == self.owner).values(status=status, heartbeat=time.time()))
+                db.commit()
+            def process(task):
+                kind, key = task
+                child = source.fork()
+                try:
+                    if kind == "discover":
+                        self.discover(key, child, interval)
+                    else:
+                        self.evaluate(key, child)
+                except RiaError as exc:
+                    if kind == "evaluate" and str(exc) == "listing_unavailable":
+                        self.complete(key, {}, "unavailable")
+                    else:
+                        self.defer(kind, key, str(exc), child.limits)
+                except Exception as exc:
+                    log.error("Monitor operation failed kind=%s (%s)", kind, type(exc).__name__)
+                    self.defer(kind, key, "processing_error", child.limits)
+                    return False
+                return True
+            with ThreadPoolExecutor(max_workers=PARALLEL_TASKS) as pool:
+                results = list(pool.map(process, tasks))
+            if not all(results):
+                status = "error"
+            if len(tasks) > 1:
+                batch_log.info("Monitor parallel batch tasks=%s evaluations=%s peak_requests=%s elapsed_seconds=%.3f",
+                    len(tasks), sum(kind == "evaluate" for kind, _ in tasks),
+                    source._lease_state["peak"], time.monotonic() - started)
+        finally:
+            source.release()
+        return status, True
 
     def tick(self):
         if not self.settings.live or not self.settings.monitor_enabled or not self.claim():
@@ -536,9 +602,10 @@ class Monitor:
                 # Newly surfaced active-page IDs must not sit behind hours of
                 # older supplemental backlog. Keep primary publication jobs
                 # first, their retry ordering, and all existing budget gates.
-                job = db.scalar(job_query.order_by(case((supplemental, 1), else_=0),
+                jobs = list(db.scalars(job_query.order_by(case((supplemental, 1), else_=0),
                     case((supplemental, -MonitorJob.first_seen), else_=MonitorJob.last_attempt),
-                    MonitorJob.last_attempt, MonitorJob.first_seen, MonitorJob.source_id).limit(1))
+                    MonitorJob.last_attempt, MonitorJob.first_seen, MonitorJob.source_id).limit(PARALLEL_TASKS)))
+                job = jobs[0] if jobs else None
                 last = db.get(MonitorControl, "pilot").status
                 kind = "evaluate" if job and (not feed or last == "discover") else "discover" if feed else None
                 key = job.source_id if kind == "evaluate" else feed.id if kind else None
@@ -556,7 +623,11 @@ class Monitor:
                         else:
                             active_window.defer(db, extra.feed_id, "reserved_for_new_publications")
                             db.commit()
-            if kind:
+            if kind and self.settings.ria_ai_price_enabled and not self.settings.ria_active_window_enabled:
+                tasks = [("discover", feed.id)] if feed else []
+                tasks.extend(("evaluate", row.source_id) for row in jobs[:PARALLEL_TASKS - len(tasks)])
+                status, worked = self.parallel_step(tasks, len(groups))
+            elif kind:
                 status, worked = kind, True
                 source = self.search_factory(self.engine, self.settings.auto_ria_api_key)
                 supplemental_work = kind == active_window.KIND or (kind == "evaluate"
