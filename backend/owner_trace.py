@@ -12,7 +12,7 @@ from sqlalchemy.orm import Session
 
 from .launch import listing_trace
 from .models import (Delivery, DeliveryTiming, Filters, Listing, MonitorJob,
-                     MonitorSeen, Search, User)
+                     MonitorSeen, Search, SourceProbe, User)
 from .notification_diagnostic import validate_id
 from .delivery_diagnostic import receipt
 
@@ -28,6 +28,8 @@ def snapshot(db, uid, source_id):
         return {"source_id": source_id, "scope": "configured_admin", "account_found": False}
     result = {"source_id": source_id, "scope": "configured_admin", "account_found": True,
               "telegram_ready": user.ready, "trace": listing_trace(db, uid, source_id)}
+    repair = db.get(SourceProbe, 'owner-photo-repair-v1-' + str(uid) + '-' + source_id)
+    result['photo_repair'] = {'status': repair.status, 'result': repair.result} if repair else None
     result["searches"] = []
     for search in db.scalars(select(Search).where(Search.user_id == uid).order_by(Search.id).limit(100)):
         filters = Filters.model_validate(search.filters)
@@ -77,6 +79,7 @@ def log_once(engine, settings):
         with Session(engine) as db:
             result = snapshot(db, settings.admin_telegram_id, settings.ria_owner_trace_listing_id)
         if result:
+            result['photo_repair_selected'] = settings.ria_owner_trace_listing_id in settings.ria_photo_repair_ids.split(',')
             log.warning("Owner listing trace %s", json.dumps(result, ensure_ascii=False, sort_keys=True))
     except Exception as exc:
         log.warning("Owner listing trace unavailable (%s)", type(exc).__name__)
