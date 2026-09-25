@@ -2,6 +2,7 @@
 from collections import OrderedDict
 from io import BytesIO
 import re
+import logging
 import threading
 import time
 from urllib.parse import urlsplit, urlunsplit
@@ -13,6 +14,7 @@ from PIL import Image, ImageOps
 MAX_INPUT = 5 * 1024 * 1024
 MAX_PIXELS = 16_000_000
 CACHE_BYTES = 8 * 1024 * 1024
+log = logging.getLogger(__name__)
 
 
 def safe_url(value):
@@ -67,6 +69,7 @@ class PhotoLoader:
     def load(self, value):
         url = safe_url(value)
         if not url:
+            log.warning('Telegram photo download unavailable reason=unapproved_url')
             return None
         with self.lock:
             cached = self.cache.get(url)
@@ -110,6 +113,7 @@ class PhotoLoader:
                                 return None
                             continue
                         if response.status_code != 200:
+                            log.warning('Telegram photo download unavailable reason=http_status status=%s', response.status_code)
                             return None
                         length = response.headers.get('content-length', '')
                         if length.isdecimal() and int(length) > MAX_INPUT:
@@ -120,6 +124,7 @@ class PhotoLoader:
                             if len(data) > MAX_INPUT or time.monotonic() - started > 8:
                                 return None
                         return jpeg(data)
-        except (httpx.HTTPError, OSError, ValueError, Image.DecompressionBombWarning, Image.DecompressionBombError):
+        except (httpx.HTTPError, OSError, ValueError, Image.DecompressionBombWarning, Image.DecompressionBombError) as exc:
+            log.warning('Telegram photo download unavailable reason=%s', type(exc).__name__)
             return None
         return None

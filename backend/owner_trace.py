@@ -5,6 +5,7 @@ public endpoint, or arbitrary recipient selector. Failures never block startup.
 """
 import json
 import logging
+from urllib.parse import urlsplit
 
 from sqlalchemy import select
 from sqlalchemy.orm import Session
@@ -44,6 +45,13 @@ def snapshot(db, uid, source_id):
                     ("brand", "model", "year", "price_usd", "region", "fuel", "transmission")},
             "market": rating.get("market"), "valuation": rating.get("valuation")}
     listing = db.scalar(select(Listing).where(Listing.source == "auto_ria", Listing.source_id == source_id))
+    if listing:
+        photo = listing.car.get('photo')
+        parts = urlsplit(photo) if isinstance(photo, str) else urlsplit('')
+        approved_host = (parts.hostname or '').endswith('.riastatic.com')
+        result['photo'] = {'present': bool(photo), 'scheme': parts.scheme,
+            'host': parts.hostname if approved_host else None,
+            'path': parts.path[:1000] if approved_host else None}
     delivery = db.scalar(select(Delivery).where(Delivery.user_id == uid,
         Delivery.listing_id == listing.id)) if listing else None
     result["delivery"] = None
