@@ -43,7 +43,7 @@ def p(tmp_path, monkeypatch):
     initialize_budget(engine)
     initialize(engine)
     settings = Settings("unused", "test-token", "x" * 32, True, True,
-                        auto_ria_api_key="test-only", monitor_enabled=True)
+                        auto_ria_api_key="test-only", monitor_enabled=True, ria_poll_schedule_enabled=False)
     filters = Filters(brand="Volkswagen", model="Golf", region="Хмельницька область", fuel=["Дизель"])
     with Session(engine) as db:
         db.add(SourceProbe(id="telegram-webhook-v1", status="configured", checked_at=time.time(), result={}))

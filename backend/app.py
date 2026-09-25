@@ -54,6 +54,7 @@ class Settings:
     ria_ai_price_enabled: bool = False
     ria_ai_price_probe_id: str = ""
     admin_telegram_id: int = 0
+    ria_poll_schedule_enabled: bool = True
 
     @classmethod
     def env(cls):
@@ -80,6 +81,7 @@ class Settings:
             ria_ai_price_enabled=os.getenv("RIA_AI_PRICE_ENABLED") == "true",
             ria_ai_price_probe_id=os.getenv("RIA_AI_PRICE_PROBE_ID", "").strip(),
             admin_telegram_id=int(os.getenv("ADMIN_TELEGRAM_ID", "0") or 0),
+            ria_poll_schedule_enabled=os.getenv("RIA_POLL_SCHEDULE_ENABLED", "true") == "true",
         )
 
     @property
@@ -270,7 +272,8 @@ def create_app(settings: Settings, engine=None):
                 "catalog_check": ria_rollout.status(engine),
                 "monitor": monitor.runtime_status(engine, settings.monitor_enabled,
                     active_window_enabled=settings.ria_active_window_enabled,
-                    provider_pricing_enabled=settings.ria_ai_price_enabled),
+                    provider_pricing_enabled=settings.ria_ai_price_enabled,
+                    schedule_enabled=settings.ria_poll_schedule_enabled),
                 "full_scan": full_scan.runtime_status(engine, settings.full_scan_enabled),
                 "telegram": telegram_status(),
                 "miniapp_menu": telegram_setup.menu_status(engine, settings.miniapp_release)}
@@ -280,7 +283,8 @@ def create_app(settings: Settings, engine=None):
         user, test = db.get(User, uid), db.get(TelegramTest, uid)
         runtime = monitor.runtime_status(engine, settings.monitor_enabled, uid,
                                         active_window_enabled=settings.ria_active_window_enabled,
-                                        provider_pricing_enabled=settings.ria_ai_price_enabled)
+                                        provider_pricing_enabled=settings.ria_ai_price_enabled,
+                                        schedule_enabled=settings.ria_poll_schedule_enabled)
         telegram = telegram_status()
         connected = telegram["status"] == "configured"
         return {**runtime, "available": settings.live and runtime["running"] and connected,

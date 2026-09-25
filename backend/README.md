@@ -1,5 +1,42 @@
 # AUTODeal backend — subscriptions for new worthwhile cars
 
+## Kyiv polling schedule with existing quota protection (2026-09-25)
+
+The owner requested these local-time targets, using `Europe/Kyiv` including
+seasonal UTC-offset changes:
+
+| Local period | Requested polling interval |
+| --- | --- |
+| 23:00–08:00 | 140 seconds |
+| 08:00–18:00 | 110 seconds |
+| 18:00–23:00 | 60 seconds |
+
+`RIA_POLL_SCHEDULE_ENABLED` defaults to `true`. It applies only to publication-only
+monitoring with paid listing-specific pricing. Set it to `false` to restore the
+previous constant, budget-derived interval. Missing system timezone data also
+falls back to that policy rather than stopping the monitor or assuming an offset.
+
+These are targets, not permission to exceed or increase purchased quota. The
+existing 900/hour, 12,000/rolling-24-hours and 90,000 cumulative caps are unchanged.
+At 15 distinct groups, the requested schedule costs approximately 12,881 search
+calls per normal 24-hour day before details, AI quotes, extra pages and retries.
+To preserve the 75% planned discovery allocation, every target is scaled by the
+same daily-budget factor, then clamped against the hourly discovery allowance.
+With these caps and 15 groups the effective intervals are 201/158/86 seconds
+(night/day/evening). At least 1,200/hour and 17,175/day would be needed for the
+targets under this planning model; these are software-budget calculations, not a
+verified provider plan or a guarantee that the remaining allowance covers bursts.
+No cap is raised automatically. Actual calls, including on DST transition dates,
+continue through the persisted rolling quota and provider backoff gate.
+
+`monitor.schedule` reports the local period, requested and effective intervals,
+whether budget slows it down, and the calculation basis. `interval_seconds`
+continues to report the effective value. Boundary/group changes only re-time
+ordinary healthy waits from the last completed check. Checkpoints, frozen pages,
+catch-up work, error/quota retry times, subscription epochs, stopped subscriptions,
+budget accounting, and sent/uncertain claims retain their existing state. The
+independent Telegram dispatcher continues working while discovery waits.
+
 ## Bounded parallel processing of new publications (2026-09-25)
 
 Production had CPU usage below 9% of its allocation and an empty queue at the

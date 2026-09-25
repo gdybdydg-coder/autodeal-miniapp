@@ -25,7 +25,7 @@ from .ria_budget import BudgetLimits
 from .ria_search import RiaSearch, estimate, matches, parse_ids, quota_status
 from .valuation import (MAX_AGE, VERSION, PeerBatch, is_deal, price_only_evidence,
                         notification_condition_allowed, repair_notices)
-from . import active_window, ria_market_range
+from . import active_window, ria_market_range, poll_schedule
 from .reference_valuation import VERSION as REFERENCE_VERSION, VALUED as PEER_VALUED, notification_estimate
 
 VALUED = {*PEER_VALUED, "provider_lower_bound_adjusted"}
@@ -88,7 +88,8 @@ def reset_watch(db, search_id, enabled):
         feed_id=source_filters(search.filters).fingerprint(), started_at=math.ceil(time.time())))
 
 
-def poll_interval(groups, limits=None, *, provider_pricing_enabled=False, active_window_enabled=False):
+def poll_interval(groups, limits=None, *, provider_pricing_enabled=False, active_window_enabled=False,
+                  schedule_enabled=False, now=None):
     """Pace distinct searches while reserving capacity for fresh valuations.
 
     Paid listing-specific pricing needs a detail read and a quote, rather than
@@ -98,6 +99,10 @@ def poll_interval(groups, limits=None, *, provider_pricing_enabled=False, active
     """
     limits = limits or BudgetLimits.env()
     fast = provider_pricing_enabled and not active_window_enabled
+    if fast and schedule_enabled:
+        schedule = poll_schedule.policy(groups, limits, now)
+        if schedule["enabled"]:
+            return schedule["interval_seconds"]
     share = 3 if fast else 2
     return max(FAST_POLL_INTERVAL if fast else INTERVAL,
                math.ceil(groups * 86400 / max(1, limits.daily * share // 4)),
@@ -113,14 +118,18 @@ def active_members(db):
                MonitorWatch.epoch == MonitorMembership.epoch).order_by(Search.user_id, Search.id)))
 
 
-def runtime_status(engine, enabled, uid=None, *, active_window_enabled=False, provider_pricing_enabled=False):
+def runtime_status(engine, enabled, uid=None, *, active_window_enabled=False, provider_pricing_enabled=False,
+                   schedule_enabled=False):
     with Session(engine) as db:
         row = db.get(MonitorControl, "pilot")
         healthy = bool(enabled and row and time.time() - row.heartbeat < LEASE + 60)
         members = active_members(db)
         groups = len({member.feed_id for _, _, member in members})
         interval = poll_interval(groups, provider_pricing_enabled=provider_pricing_enabled,
-                                 active_window_enabled=active_window_enabled)
+                                 active_window_enabled=active_window_enabled, schedule_enabled=schedule_enabled)
+        schedule = (poll_schedule.policy(groups, BudgetLimits.env())
+                    if schedule_enabled and provider_pricing_enabled and not active_window_enabled
+                    else {"enabled": False})
         own_groups = {member.feed_id for search, _, member in members
                       if uid is None or search.user_id == uid}
         feeds = list(db.scalars(select(MonitorFeed).where(MonitorFeed.id.in_(own_groups))))
@@ -137,6 +146,7 @@ def runtime_status(engine, enabled, uid=None, *, active_window_enabled=False, pr
                      "needs_attention": bool(errors or (lag is not None and lag > max(300, interval * 3)))}
         return {"running": healthy, "status": row.status if healthy else "offline",
                 "interval_seconds": interval,
+                "schedule": schedule,
                 "minimum_interval_seconds": (FAST_POLL_INTERVAL
                     if provider_pricing_enabled and not active_window_enabled else INTERVAL),
                 "active_filter_groups": groups, "shared_polling": True,
@@ -161,6 +171,35 @@ class Monitor:
         # Keep state transitions ordered while independent HTTP calls overlap.
         # Sessions are never shared between threads or held across network waits.
         self._state_lock = threading.RLock()
+        self._schedule_key = None
+
+    def reschedule(self, db, groups):
+        """Change only ordinary healthy waits; retain cursors, retries and claims."""
+        if not self.owned(db):
+            return
+        if not (self.settings.ria_poll_schedule_enabled and self.settings.ria_ai_price_enabled
+                and not self.settings.ria_active_window_enabled):
+            return
+        schedule = poll_schedule.policy(len(groups), BudgetLimits.env())
+        if not schedule["enabled"]:
+            return
+        interval = schedule["interval_seconds"]
+        key = (frozenset(groups), schedule["active_period"], interval)
+        if key == self._schedule_key:
+            return
+        changed = {}
+        for feed in db.scalars(select(MonitorFeed).where(MonitorFeed.id.in_(groups),
+                                                        MonitorFeed.status == "watching")):
+            # Immediate catch-up pages and error/quota backoffs are not timers
+            # created by the ordinary schedule and must never be rewritten.
+            if not feed.context and feed.checked_at > 0 and feed.next_poll > feed.checked_at:
+                feed.next_poll = feed.checked_at + interval
+                changed[feed.id] = feed.next_poll
+        for _, watch, member in active_members(db):
+            if member.feed_id in changed:
+                watch.next_poll = changed[member.feed_id]
+        db.commit()
+        self._schedule_key = key
 
     def claim(self):
         now = time.time()
@@ -539,7 +578,8 @@ class Monitor:
             return status, True
         started = time.monotonic()
         try:
-            interval = poll_interval(groups, source.limits, provider_pricing_enabled=True)
+            interval = poll_interval(groups, source.limits, provider_pricing_enabled=True,
+                                     schedule_enabled=self.settings.ria_poll_schedule_enabled)
             with Session(self.engine) as db:
                 db.execute(update(MonitorControl).where(MonitorControl.id == "pilot",
                     MonitorControl.owner == self.owner).values(status=status, heartbeat=time.time()))
@@ -590,6 +630,7 @@ class Monitor:
                 report(self.engine, self.settings.ria_recovery_listing_id)
             with Session(self.engine) as db:
                 groups = {member.feed_id for _, _, member in active_members(db)}
+                self.reschedule(db, groups)
                 feed = db.scalar(select(MonitorFeed).where(MonitorFeed.id.in_(groups),
                     MonitorFeed.next_poll <= time.time()).order_by(MonitorFeed.next_poll, MonitorFeed.id).limit(1))
                 supplemental = func.coalesce(MonitorJob.result["discovery_kind"].as_string(), "") == active_window.KIND
@@ -650,7 +691,8 @@ class Monitor:
                     elif kind == "discover":
                         self.discover(key, source, poll_interval(len(groups), source.limits,
                             provider_pricing_enabled=self.settings.ria_ai_price_enabled,
-                            active_window_enabled=self.settings.ria_active_window_enabled))
+                            active_window_enabled=self.settings.ria_active_window_enabled,
+                            schedule_enabled=self.settings.ria_poll_schedule_enabled))
                     else:
                         self.evaluate(key, source)
                 except RiaError as exc:
