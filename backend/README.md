@@ -1282,3 +1282,13 @@ responses are confirmed from the returned Message.photo field. Clear the flag
 after verifying the owner-scoped report; restarts never repeat an issued edit.
 A confirmed failure to load the image before any Telegram edit may receive one
 later preflight retry after 60 seconds; ambiguous edits remain protected.
+
+
+Historical photo edits validate the unchanged listing snapshot at the original
+Telegram receipt time and require its evaluation timestamp to match that receipt.
+They preserve the existing caption; ordinary new alerts still require a fresh
+provider quote. Caption validation runs before the durable edit claim, and new
+claims carry `prepared: true`. Compatibility recovery is limited to an old,
+unprepared attempt-2 claim whose unchanged receipt snapshot was already too old
+for the former formatter at claim time: that formatter necessarily raised before
+any Telegram request. Prepared or uncertain edits never enter that path.

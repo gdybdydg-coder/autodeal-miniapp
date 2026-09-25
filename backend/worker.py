@@ -164,7 +164,7 @@ class TelegramSender:
         logging.getLogger("httpcore").setLevel(logging.WARNING)
 
     @staticmethod
-    def card(car):
+    def card(car, *, historical_at=None):
         price = f"${car.price:,.0f}".replace(",", " ")
         details = []
         if car.fuel:
@@ -179,7 +179,7 @@ class TelegramSender:
         pricing = [f"💰 Ціна: {price}"]
         provider_range = (car.valuation_evidence or {}).get("version") == ria_market_range.VERSION
         if car.market is not None and provider_range:
-            pricing.extend(ria_market_range.pricing_lines(car))
+            pricing.extend(ria_market_range.pricing_lines(car, historical_at=historical_at))
             if (not (car.valuation_evidence or {}).get("condition_notices")
                     and (car.valuation_evidence or {}).get("candidate", {}).get("comparable_condition") is not True):
                 pricing.append("⚠️ Стан авто не підтверджено даними джерела")
@@ -279,12 +279,12 @@ class TelegramSender:
         attempts.append(delivery_diagnostic.summary(result, method))
         return {**result, "_delivery_attempts": attempts, "_photo_transport": transport}
 
-    def add_photo(self, user_id, message_id, car):
+    def add_photo(self, user_id, message_id, car, *, historical_at=None):
         """Edit one existing text card in place; never sends a new message."""
         photo = self.photos.load(str(car.photo)) if car.photo else None
         if not photo:
             return {"ok": False, "photo_unavailable": True}
-        text, markup = self.card(car)
+        text, markup = self.card(car, historical_at=historical_at)
         form = {"chat_id": str(user_id), "message_id": str(message_id),
                 "media": json.dumps({"type": "photo", "media": "attach://photo", "caption": text[:1000]}, ensure_ascii=False),
                 "reply_markup": json.dumps(markup, ensure_ascii=False)}

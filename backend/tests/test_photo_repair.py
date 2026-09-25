@@ -26,7 +26,7 @@ def configured(p, monkeypatch, state='sent', receipt=True):
 
 def run(p, reply):
     class Sender:
-        def add_photo(self, uid, mid, car):
+        def add_photo(self, uid, mid, car, *, historical_at=None):
             return reply(uid, mid, car)
     assert p.runner.claim()
     try:
@@ -137,3 +137,26 @@ def test_preflight_retry_is_bounded_to_two_attempts(p, monkeypatch):
     run(p, lambda *_: {'ok': False, 'photo_unavailable': True})
     p.clock[0] += 61
     run(p, lambda *_: pytest.fail('preflight retry exhausted'))
+
+
+def test_legacy_stale_formatter_failure_can_resume_without_changing_sent_claim(p, monkeypatch):
+    configured(p, monkeypatch)
+    p.clock[0] += 1000
+    with Session(p.engine) as db:
+        db.add(SourceProbe(id='owner-photo-repair-v1-111-124', status='editing', requests=0,
+            checked_at=p.clock[0], result={'source_id':'124', 'message_id':71, 'attempts':2}))
+        db.commit()
+    run(p, lambda uid, mid, car: {'ok':True, 'result':{'message_id':mid,'photo':[{}]}})
+    with Session(p.engine) as db:
+        assert db.get(SourceProbe, 'owner-photo-repair-v1-111-124').status == 'edited'
+        assert db.scalar(select(Delivery).where(Delivery.user_id == 111)).state == 'sent'
+
+
+def test_prepared_edit_claim_cannot_be_replayed_even_when_quote_is_old(p, monkeypatch):
+    configured(p, monkeypatch)
+    p.clock[0] += 1000
+    with Session(p.engine) as db:
+        db.add(SourceProbe(id='owner-photo-repair-v1-111-124', status='editing', requests=0,
+            checked_at=p.clock[0], result={'source_id':'124','message_id':71,'attempts':2,'prepared':True}))
+        db.commit()
+    run(p, lambda *_: pytest.fail('possibly issued edit must not replay'))

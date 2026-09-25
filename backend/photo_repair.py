@@ -6,6 +6,7 @@ import time
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
+from . import ria_market_range
 from .auto_ria import RiaError
 from .delivery_diagnostic import receipt
 from .models import Car, Delivery, DeliveryTiming, Listing, SourceProbe, User
@@ -36,6 +37,24 @@ def retryable(probe):
                 and time.time() - probe.checked_at >= 60)
 
 
+def legacy_preparation_failure(probe, car, timing):
+    """Old formatter necessarily raised before HTTP on this expired snapshot.
+
+    New claims are tagged prepared and can never enter this compatibility path.
+    Issued/uncertain edits and every Delivery claim remain untouched.
+    """
+    proof = car.valuation_evidence or {}
+    quote = proof.get('source_range') or {}
+    return bool(probe and probe.status == 'editing'
+        and set(probe.result) == {'source_id', 'message_id', 'attempts'}
+        and probe.result.get('attempts') == 2 and timing and timing.accepted_at
+        and proof.get('version') == ria_market_range.VERSION
+        and (car.pipeline or {}).get('evaluated_at') == timing.evaluated_at
+        and isinstance(quote.get('observed_at'), (int, float))
+        and probe.checked_at - quote['observed_at'] > ria_market_range.MAX_AGE
+        and ria_market_range.evidence_valid(car, timing.accepted_at))
+
+
 def run_once(monitor, sender=None):
     settings, uid = monitor.settings, monitor.settings.admin_telegram_id
     if not uid or not settings.live or not settings.monitor_enabled:
@@ -44,7 +63,7 @@ def run_once(monitor, sender=None):
         key = 'owner-photo-repair-v1-' + str(uid) + '-' + source_id
         with Session(monitor.engine) as db:
             previous = db.get(SourceProbe, key)
-            if previous and not retryable(previous):
+            if previous and not retryable(previous) and previous.status != 'editing':
                 continue
             user = db.get(User, uid)
             listing = db.scalar(select(Listing).where(Listing.source == 'auto_ria', Listing.source_id == source_id))
@@ -56,6 +75,13 @@ def run_once(monitor, sender=None):
                     and db.scalar(matching_searches(uid, listing.id).limit(1)) is not None):
                 continue
             car = Car.model_validate(listing.car)
+            legacy = legacy_preparation_failure(previous, car, timing)
+            if previous and not retryable(previous) and not legacy:
+                continue
+            # Only reconstruct the exact snapshot used by the original receipt.
+            if (car.pipeline or {}).get('evaluated_at') != timing.evaluated_at:
+                continue
+            historical_at = timing.accepted_at
             had_photo = bool(car.photo)
             attempts = (receipt(db, delivery.id) or {}).get('attempts', [])
             known_text = bool(attempts and attempts[-1].get('method') == 'sendMessage'
@@ -87,10 +113,13 @@ def run_once(monitor, sender=None):
                 source.release()
             if refreshed_photo:
                 car = car.model_copy(update={'photo': refreshed_photo})
+        # Validate the original receipt snapshot BEFORE committing an edit claim.
+        TelegramSender.card(car, historical_at=historical_at)
         with Session(monitor.engine) as db:
             user = db.scalar(select(User).where(User.id == uid).with_for_update())
             previous = db.get(SourceProbe, key)
-            if not monitor.owned(db) or (previous and not retryable(previous)):
+            if not monitor.owned(db) or (previous and not retryable(previous)
+                    and not legacy_preparation_failure(previous, car, timing)):
                 continue
             delivery = db.scalar(select(Delivery).where(Delivery.user_id == uid,
                 Delivery.listing_id == listing.id).with_for_update())
@@ -104,7 +133,7 @@ def run_once(monitor, sender=None):
                 db.add(previous)
             previous.requests += requests_used
             previous.checked_at, previous.status = time.time(), 'editing'
-            previous.result = {'source_id': source_id, 'message_id': message_id, 'attempts': attempts}
+            previous.result = {'source_id': source_id, 'message_id': message_id, 'attempts': attempts, 'prepared': True}
             db.commit()  # Never repeat an ambiguous edit after restart.
         with Session(monitor.engine) as db:
             # Respect /stop immediately before the network edit, same lock as delivery.
@@ -116,7 +145,7 @@ def run_once(monitor, sender=None):
                     and db.scalar(matching_searches(uid, listing.id).limit(1)) is not None):
                 result = {'cancelled': True}
             else:
-                result = (sender or TelegramSender(settings.bot_token)).add_photo(uid, message_id, car)
+                result = (sender or TelegramSender(settings.bot_token)).add_photo(uid, message_id, car, historical_at=historical_at)
             message = result.get('result')
             confirmed = bool(result.get('ok') is True and isinstance(message, dict)
                              and message.get('message_id') == message_id and message.get('photo'))

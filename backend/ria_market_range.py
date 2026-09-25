@@ -93,9 +93,9 @@ def evidence_valid(car, now):
             and proof.get("condition_notices") == repair_notices(candidate))
 
 
-def pricing_lines(car):
+def pricing_lines(car, *, historical_at=None):
     """Only for a validated provider-range proof, not an asking-price proof."""
-    if not evidence_valid(car, time.time()):
+    if not evidence_valid(car, time.time() if historical_at is None else historical_at):
         raise ValueError("invalid_provider_range_evidence")
 
     def money(value):

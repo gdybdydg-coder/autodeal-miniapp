@@ -144,3 +144,27 @@ def test_photo_node_failure_uses_same_path_on_shared_official_cdn(monkeypatch):
     mock_client(monkeypatch, handler)
     assert PhotoLoader().load(URL).startswith(b'\xff\xd8')
     assert len(requests) == 2
+
+
+def test_historical_photo_edit_preserves_original_caption_but_new_alert_requires_fresh_quote(monkeypatch):
+    from backend.tests.test_ria_market_range import fixture, priced_car
+    import time
+    candidate, quote = fixture()
+    original = priced_car(candidate, quote).model_copy(update={'photo': URL})
+    accepted_at = time.time()
+    caption, markup = TelegramSender.card(original)
+    monkeypatch.setattr(time, 'time', lambda: accepted_at + 1200)
+    requests = []
+    def handler(req):
+        requests.append(req)
+        if req.method == 'GET': return httpx.Response(200, content=picture())
+        assert req.url.path.endswith('/editMessageMedia')
+        assert json.loads(parts(req)['media'])['caption'] == caption
+        return accepted()
+    mock_client(monkeypatch, handler)
+    sender = TelegramSender('test')
+    assert sender.add_photo(111, 71, original, historical_at=accepted_at)['ok']
+    count = len(requests)
+    with pytest.raises(ValueError, match='invalid_provider_range_evidence'):
+        sender(111, original)
+    assert len(requests) == count
