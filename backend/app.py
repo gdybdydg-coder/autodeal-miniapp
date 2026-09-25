@@ -26,7 +26,7 @@ from .models import (Base, BotReply, Delivery, EnabledRequest, Filters, Listing,
                      MonitorFeed, MonitorJob, MonitorMembership, MonitorSeen, MonitorWatch,
                      Search, SearchEditRequest, SearchRequest, TelegramTest, User)
 from . import monitor, telegram_setup, ria_rollout, full_scan, launch, notification_diagnostic, valuation_audit, ria_ai_price, ria_market_range
-from . import bot_commands
+from . import bot_commands, owner_trace
 
 
 @dataclass(frozen=True)
@@ -55,6 +55,7 @@ class Settings:
     ria_ai_price_probe_id: str = ""
     admin_telegram_id: int = 0
     ria_poll_schedule_enabled: bool = True
+    ria_owner_trace_listing_id: str = ""
 
     @classmethod
     def env(cls):
@@ -82,6 +83,7 @@ class Settings:
             ria_ai_price_probe_id=os.getenv("RIA_AI_PRICE_PROBE_ID", "").strip(),
             admin_telegram_id=int(os.getenv("ADMIN_TELEGRAM_ID", "0") or 0),
             ria_poll_schedule_enabled=os.getenv("RIA_POLL_SCHEDULE_ENABLED", "true") == "true",
+            ria_owner_trace_listing_id=os.getenv("RIA_OWNER_TRACE_LISTING_ID", "").strip(),
         )
 
     @property
@@ -114,6 +116,7 @@ def create_app(settings: Settings, engine=None):
         initialize_budget(engine)
         monitor.initialize(engine)
         launch.initialize(engine, settings.live and settings.monitor_enabled)
+        await asyncio.to_thread(owner_trace.log_once, engine, settings)
         await asyncio.to_thread(valuation_audit.check_once, engine, settings.valuation_audit_run_id)
         if not settings.full_scan_enabled:
             full_scan.pause_all(engine)
