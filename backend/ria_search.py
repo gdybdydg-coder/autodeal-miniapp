@@ -210,9 +210,8 @@ def parse_car(data, source_id):
         return value[:150] if isinstance(value, str) else ""
     def ident(value):
         return value if valid_id(value) else None
-    photo = (data.get("photoData") or {}).get("seoLinkM", "")
-    url = urlsplit(photo) if isinstance(photo, str) else urlsplit("")
-    photo = photo if url.scheme == "https" and (url.hostname or "").endswith(".riastatic.com") else None
+    from .telegram_photo import from_details
+    photo = from_details(data)
     return {**preview, "brand": label(data.get("markName")), "model": label(data.get("modelName")),
             "brand_id": ident(data.get("markId")), "model_id": ident(data.get("modelId")),
             "region_id": ident(state.get("stateId")), "region": label(state.get("regionName")),

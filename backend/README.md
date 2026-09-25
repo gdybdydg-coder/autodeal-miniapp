@@ -1257,3 +1257,25 @@ expired prices/quotes and rechecks eligibility and /stop before sending. A durab
 per-owner/listing claim prevents repeated retries across restarts. Deploy the new
 sender and wait for old instances to stop before enabling a recovery, then clear
 the recovery flag after observing its outcome. No provider quota reset is needed.
+
+
+### Photo delivery and explicit card repair
+
+AUTO.RIA CDN images are downloaded with a bounded timeout and size, decoded,
+stripped of metadata, and uploaded to Telegram as JPEG multipart files. Public
+photo bytes are cached for five minutes (16 entries / 8 MiB) and shared across
+concurrent recipients. Downloads accept only known HTTPS riastatic CDN photo
+paths, validating every redirect. The parser also accepts the provider's F/M/SX
+photo fields and upgrades known legacy HTTP photo URLs to HTTPS.
+
+If the image cannot be downloaded, the existing URL attempt remains available.
+Only an explicit negative 400 Telegram response permits the final text fallback;
+timeouts and ambiguous results retain the existing no-blind-retry behavior.
+
+`RIA_PHOTO_REPAIR_IDS` (blank by default, up to five comma-separated IDs) edits
+selected **existing owner text cards** using `editMessageMedia`. It never sends a
+new alert or resets Delivery/epoch/uncertain claims. The owner must still be ready
+with a current enabled match. A durable claim is written before the edit. Missing
+photos receive at most one accounted provider detail request. Successful photo
+responses are confirmed from the returned Message.photo field. Clear the flag
+after verifying the owner-scoped report; restarts never repeat the edit.

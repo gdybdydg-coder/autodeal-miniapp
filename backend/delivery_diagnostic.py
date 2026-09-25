@@ -41,6 +41,11 @@ def receipt(db, delivery_id):
 def record(db, delivery, car, result, logger):
     # Normal successes already have a durable receipt. Record rejections and
     # fallback outcomes, including uncertain outcomes after a rejected photo.
+    if result.get('_photo_transport') == 'upload':
+        message = result.get('result')
+        confirmed = bool(result.get('ok') is True and isinstance(message, dict) and message.get('photo'))
+        logger.info('Telegram photo delivery source_id=%s state=%s transport=upload photo_confirmed=%s',
+                    car.source_id, delivery.state, confirmed)
     raw = result.get('_delivery_attempts')
     attempts = []
     if isinstance(raw, list) and 1 <= len(raw) <= 2:

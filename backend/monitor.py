@@ -634,6 +634,9 @@ class Monitor:
                 status = "telegram_unavailable"
                 return False
             self.sync()
+            if self.settings.ria_photo_repair_ids:
+                from .photo_repair import run_once
+                run_once(self)
             if self.settings.ria_failed_delivery_recovery_id:
                 from .failed_delivery_recovery import recover_once, report
                 recover_once(self)

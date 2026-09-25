@@ -58,6 +58,7 @@ class Settings:
     ria_owner_trace_listing_id: str = ""
     ria_active_window_include_initial: bool = False
     ria_failed_delivery_recovery_id: str = ""
+    ria_photo_repair_ids: str = ""
 
     @classmethod
     def env(cls):
@@ -87,6 +88,7 @@ class Settings:
             ria_poll_schedule_enabled=os.getenv("RIA_POLL_SCHEDULE_ENABLED", "true") == "true",
             ria_owner_trace_listing_id=os.getenv("RIA_OWNER_TRACE_LISTING_ID", "").strip(),
             ria_active_window_include_initial=os.getenv("RIA_ACTIVE_WINDOW_INCLUDE_INITIAL") == "true",
+            ria_photo_repair_ids=os.getenv("RIA_PHOTO_REPAIR_IDS", "").strip(),
             ria_failed_delivery_recovery_id=os.getenv("RIA_FAILED_DELIVERY_RECOVERY_ID", "").strip(),
         )
 
@@ -103,6 +105,8 @@ def create_app(settings: Settings, engine=None):
     notification_diagnostic.validate_id(settings.ria_diagnostic_listing_id)
     notification_diagnostic.validate_id(settings.ria_recovery_listing_id)
     notification_diagnostic.validate_id(settings.ria_failed_delivery_recovery_id)
+    from .photo_repair import ids as photo_repair_ids
+    photo_repair_ids(settings.ria_photo_repair_ids)
     valuation_audit.validate_run_id(settings.valuation_audit_run_id)
     if settings.ria_ai_price_enabled and (not settings.auto_ria_api_key or not ria_ai_price.valid_id(settings.auto_ria_user_id)):
         raise ValueError("Configure server-only AUTO.RIA AI credentials")

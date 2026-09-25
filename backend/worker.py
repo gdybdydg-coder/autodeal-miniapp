@@ -1,4 +1,5 @@
 """Explicit one-shot worker. Never started by importing the API."""
+import json
 import logging
 import time
 
@@ -15,6 +16,7 @@ from .peer_cache import evidence_current
 from .reference_valuation import VERSION as REFERENCE_VERSION
 from . import ria_market_range
 from . import delivery_diagnostic
+from .telegram_photo import PhotoLoader
 
 delivery_log = logging.getLogger("autodeal.delivery")
 delivery_log.setLevel(logging.INFO)
@@ -156,11 +158,13 @@ def enqueue(engine, now=None, *, allow_active_window=True, require_provider_rang
 class TelegramSender:
     def __init__(self, token):
         self.token = token
+        self.photos = PhotoLoader()
         # httpx INFO logs include request URL, which contains the bot token.
         logging.getLogger("httpx").setLevel(logging.WARNING)
         logging.getLogger("httpcore").setLevel(logging.WARNING)
 
-    def __call__(self, user_id, car):
+    @staticmethod
+    def card(car):
         price = f"${car.price:,.0f}".replace(",", " ")
         details = []
         if car.fuel:
@@ -227,8 +231,14 @@ class TelegramSender:
             sections.append("\n".join(details))
         sections.extend(("\n".join(pricing), "/stop — вимкнути сповіщення"))
         text = "\n\n".join(sections)
-        payload = {"chat_id": user_id, "reply_markup": {"inline_keyboard": [
-            [{"text": "🔗 Відкрити оголошення", "url": str(car.url)}]]}}
+        return text, {"inline_keyboard": [
+            [{"text": "🔗 Відкрити оголошення", "url": str(car.url)}]]}
+
+    def __call__(self, user_id, car):
+        text, markup = self.card(car)
+        payload = {"chat_id": user_id, "reply_markup": markup}
+        photo = self.photos.load(str(car.photo)) if car.photo else None
+        transport = "upload" if photo else "url" if car.photo else "none"
         if car.photo:
             method = "sendPhoto"
             payload.update(photo=str(car.photo), caption=text[:1000])
@@ -238,7 +248,13 @@ class TelegramSender:
         attempts = []
         try:
             with httpx.Client(timeout=15, follow_redirects=False) as client:
-                response = client.post(f"https://api.telegram.org/bot{self.token}/{method}", json=payload)
+                if photo:
+                    form = {"chat_id": str(user_id), "caption": payload["caption"],
+                            "reply_markup": json.dumps(markup, ensure_ascii=False)}
+                    response = client.post(f"https://api.telegram.org/bot{self.token}/{method}",
+                        data=form, files={"photo": ("car.jpg", photo, "image/jpeg")})
+                else:
+                    response = client.post(f"https://api.telegram.org/bot{self.token}/{method}", json=payload)
                 result = response.json()
                 if response.status_code >= 500:
                     result = {"uncertain": True}
@@ -261,7 +277,25 @@ class TelegramSender:
             # A timeout may mean Telegram accepted the message. Never blindly retry.
             result = {"uncertain": True}
         attempts.append(delivery_diagnostic.summary(result, method))
-        return {**result, "_delivery_attempts": attempts}
+        return {**result, "_delivery_attempts": attempts, "_photo_transport": transport}
+
+    def add_photo(self, user_id, message_id, car):
+        """Edit one existing text card in place; never sends a new message."""
+        photo = self.photos.load(str(car.photo)) if car.photo else None
+        if not photo:
+            return {"ok": False, "photo_unavailable": True}
+        text, markup = self.card(car)
+        form = {"chat_id": str(user_id), "message_id": str(message_id),
+                "media": json.dumps({"type": "photo", "media": "attach://photo", "caption": text[:1000]}, ensure_ascii=False),
+                "reply_markup": json.dumps(markup, ensure_ascii=False)}
+        try:
+            with httpx.Client(timeout=15, follow_redirects=False) as client:
+                response = client.post(f"https://api.telegram.org/bot{self.token}/editMessageMedia",
+                    data=form, files={"photo": ("car.jpg", photo, "image/jpeg")})
+                result = response.json()
+                return result if response.status_code < 500 and isinstance(result, dict) else {"uncertain": True}
+        except (httpx.HTTPError, ValueError):
+            return {"uncertain": True}
 
 
 def deliver_one(engine, settings: Settings, sender, now=None, *, enforce_chat_interval=True):
