@@ -11,8 +11,8 @@ seasonal UTC-offset changes:
 | 08:00–18:00 | 110 seconds |
 | 18:00–23:00 | 60 seconds |
 
-`RIA_POLL_SCHEDULE_ENABLED` defaults to `true`. It applies only to publication-only
-monitoring with paid listing-specific pricing. Set it to `false` to restore the
+`RIA_POLL_SCHEDULE_ENABLED` defaults to `true`. It applies to monitoring with paid
+listing-specific pricing, including the optional active supplement. Set it to `false` to restore the
 previous constant, budget-derived interval. Missing system timezone data also
 falls back to that policy rather than stopping the monitor or assuming an offset.
 
@@ -1210,3 +1210,25 @@ report for AUTO.RIA 39767288 changed to `delivery_states={"sent":1}` with fresh
 price USD 6200 and no market estimate (zero eligible comparables). This proves
 Telegram API acceptance through the normal worker, not a phone push receipt or
 automatic discovery of that ID by the supplemental window.
+
+## Active listings enabled by owner (2026-09-25, supersedes earlier defaults)
+
+The owner now permits older active listings after incident 40345395: it is found
+without date bounds, but absent from the official created/published date searches.
+Enable `RIA_ACTIVE_WINDOW_ENABLED=true` and, to include unseen cars already on the
+first page at activation, `RIA_ACTIVE_WINDOW_INCLUDE_INITIAL=true`. Both remain
+false in example/default configuration. This is a top-50 page per existing filter
+group every 300 seconds, not an exhaustive historical catalog scan. Following
+pages are not fetched. Seen IDs, stopped subscriptions, epochs, sent and uncertain
+claims are preserved. Existing non-deals are not periodically reevaluated for
+price drops. Reappearing previously seen IDs do not generate duplicate interest.
+
+Paid mode keeps the Kyiv 140/110/60-second publication schedule and up to four
+parallel discovery/evaluation operations. Active-page searches run one bounded
+step at a time; due publication searches and primary jobs retain priority. Fresh
+details and provider quotes are shared across groups. Supplemental calls retain
+quota headroom and the durable global caps. At 16 groups, the supplement adds up
+to 4,608 search requests per 24 hours, on top of about 13,740 scheduled publication
+searches; detail/AI calls, retries and extra publication pages are additional.
+The live software caps are 4,500/hour, 90,000/day and 90,000 cumulative, below the
+owner-confirmed 5,000/hour provider cap. Accounting is never reset by activation.

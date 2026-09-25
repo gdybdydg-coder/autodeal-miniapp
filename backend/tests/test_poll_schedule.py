@@ -15,6 +15,7 @@ from backend.monitor import Monitor, poll_interval, reset_watch
 from backend.ria_budget import BudgetLimits
 from backend.tests.test_monitor import p, drain, searches, details
 from backend.tests.test_ria_ai_price import enable
+from backend.tests.test_active_window import enable_window
 
 
 def utc(value):
@@ -93,7 +94,10 @@ def configured(p, monkeypatch, instant="2026-09-25T14:58:30+00:00"):
     return ai_calls
 
 
-def test_morning_transition_uses_new_interval_before_previous_timer_expires(p, monkeypatch):
+@pytest.mark.parametrize("active_supplement", [False, True])
+def test_morning_transition_uses_new_interval_before_previous_timer_expires(p, monkeypatch, active_supplement):
+    if active_supplement:
+        enable_window(p, monkeypatch)
     configured(p, monkeypatch, "2026-09-25T04:58:10+00:00")
     drain(p)
     before = len(searches(p))
@@ -107,7 +111,10 @@ def test_morning_transition_uses_new_interval_before_previous_timer_expires(p, m
         assert feed.next_poll - feed.checked_at == 110
 
 
-def test_transition_and_restart_deliver_only_new_ads_without_changing_epochs(p, monkeypatch):
+@pytest.mark.parametrize("active_supplement", [False, True])
+def test_transition_and_restart_deliver_only_new_ads_without_changing_epochs(p, monkeypatch, active_supplement):
+    if active_supplement:
+        enable_window(p, monkeypatch)
     ai_calls = configured(p, monkeypatch)
     drain(p)  # 17:58:30 Kyiv: next check would be 18:00:20 at daytime spacing.
     before = len(searches(p))

@@ -1,6 +1,7 @@
 """Supplement new publications with a deliberately limited active-listing window.
 
-One newest-page search per group. After an initial baseline, every new ID entering that page is queued.
+One newest-page search per group. Every new ID entering that page is queued.
+An explicit operator option also includes unseen IDs on the initial page.
 No historical pagination. New publications/jobs always take scheduling priority.
 """
 import time
@@ -65,9 +66,10 @@ def reset(db):
         row.checked_at, row.next_poll, row.status = 0, 0, "disabled"
 
 
-def status(db, feed_ids, enabled):
+def status(db, feed_ids, enabled, include_initial=False):
     rows = list(db.scalars(select(MonitorActiveWindow).where(MonitorActiveWindow.feed_id.in_(feed_ids))))
     return {"enabled": enabled, "coverage": "latest_active_window_diff",
+            "include_initial": include_initial,
             "window_size": WINDOW_SIZE, "interval_seconds": INTERVAL,
             "maximum_candidates_per_poll": WINDOW_SIZE, "historical_pagination": False,
             "state_counts": dict(Counter(row.status for row in rows)) if enabled else {},
@@ -120,12 +122,13 @@ def discover(monitor, feed_id, source):
         now = time.time()
         baseline = row.checked_at <= 0 and not row.window
         previous = set(row.window or [])
-        arrivals = [] if baseline else [source_id for source_id in ids if source_id not in previous]
+        include_initial = monitor.settings.ria_active_window_include_initial
+        arrivals = ([] if baseline and not include_initial else
+                    [source_id for source_id in ids if source_id not in previous])
         selected = []
 
-        # Queue every newly-entered ID in the newest-page window. The first
-        # successful page is only a baseline, so enabling a subscription never
-        # replays old catalog entries.
+        # Including the initial page is an explicit active-listing opt-in.
+        # Every path still preserves existing seen IDs and delivery claims.
         for source_id in arrivals:
             listing = db.scalar(select(Listing).where(Listing.source == "auto_ria",
                                                       Listing.source_id == source_id))
@@ -154,9 +157,12 @@ def discover(monitor, feed_id, source):
             if job is None:
                 db.add(MonitorJob(source_id=source_id, first_seen=now, result={"discovery_kind": KIND}))
             elif job.state != "pending":
-                job.state, job.next_run, job.result = "pending", 0, {"discovery_kind": KIND}
+                # Reuse fresh details/quote when another group finds this car.
+                # This new interest is supplemental; normal age checks still run.
+                job.state, job.next_run = "pending", 0
+                job.result = {**job.result, "discovery_kind": KIND}
 
         row.window, row.source_total = ids, result["total"]
-        row.status = "baseline" if baseline else "watching"
+        row.status = "baseline" if baseline and not include_initial else "watching"
         row.checked_at, row.next_poll = now, now + INTERVAL
         db.commit()

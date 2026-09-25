@@ -34,7 +34,8 @@ def test_start_reply_confirms_connection_without_enabling_search_or_spending_sou
     engine, settings, api = setup
     saved = subscribe(api, enabled=False).json()
     calls = []
-    assert command(api, "/start").status_code == 200
+    event_date = int(time.time())
+    assert command(api, "/start", date=event_date).status_code == 200
     assert api.get("/api/notifications/status", headers=headers()).json()["test_sent"] is False
     assert bot_commands.deliver_one(engine, settings, accepted(calls)) == "sent"
     status = api.get("/api/notifications/status", headers=headers()).json()
@@ -44,7 +45,7 @@ def test_start_reply_confirms_connection_without_enabling_search_or_spending_sou
     assert calls[0]["chat_id"] == 111
     assert "Вітаємо" in calls[0]["text"]
     assert calls[0]["reply_markup"]["inline_keyboard"][0][0]["web_app"]["url"].endswith("?v=onboarding")
-    command(api, "/start")  # Telegram webhook retry.
+    command(api, "/start", date=event_date)  # Retry of the exact Telegram event.
     assert bot_commands.deliver_one(engine, settings, accepted(calls)) == "idle"
     assert len(calls) == 1
 

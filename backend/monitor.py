@@ -99,7 +99,7 @@ def poll_interval(groups, limits=None, *, provider_pricing_enabled=False, active
     """
     limits = limits or BudgetLimits.env()
     fast = provider_pricing_enabled and not active_window_enabled
-    if fast and schedule_enabled:
+    if provider_pricing_enabled and schedule_enabled:
         schedule = poll_schedule.policy(groups, limits, now)
         if schedule["enabled"]:
             return schedule["interval_seconds"]
@@ -119,7 +119,7 @@ def active_members(db):
 
 
 def runtime_status(engine, enabled, uid=None, *, active_window_enabled=False, provider_pricing_enabled=False,
-                   schedule_enabled=False):
+                   schedule_enabled=False, active_window_include_initial=False):
     with Session(engine) as db:
         row = db.get(MonitorControl, "pilot")
         healthy = bool(enabled and row and time.time() - row.heartbeat < LEASE + 60)
@@ -128,7 +128,7 @@ def runtime_status(engine, enabled, uid=None, *, active_window_enabled=False, pr
         interval = poll_interval(groups, provider_pricing_enabled=provider_pricing_enabled,
                                  active_window_enabled=active_window_enabled, schedule_enabled=schedule_enabled)
         schedule = (poll_schedule.policy(groups, BudgetLimits.env())
-                    if schedule_enabled and provider_pricing_enabled and not active_window_enabled
+                    if schedule_enabled and provider_pricing_enabled
                     else {"enabled": False})
         own_groups = {member.feed_id for search, _, member in members
                       if uid is None or search.user_id == uid}
@@ -152,10 +152,11 @@ def runtime_status(engine, enabled, uid=None, *, active_window_enabled=False, pr
                 "active_filter_groups": groups, "shared_polling": True,
                 "pending_jobs": db.scalar(select(func.count()).select_from(MonitorJob)
                     .where(MonitorJob.state == "pending")),
-                "source_parallelism": PARALLEL_TASKS if provider_pricing_enabled and not active_window_enabled else 1,
+                "source_parallelism": PARALLEL_TASKS if provider_pricing_enabled else 1,
                 "strategy": "publications_with_bounded_active_window" if active_window_enabled else "new_publications_v3",
                 "index_overlap_seconds": INDEX_OVERLAP,
-                "active_window": active_window.status(db, own_groups, active_window_enabled),
+                "active_window": active_window.status(db, own_groups, active_window_enabled,
+                                                     active_window_include_initial),
                 "discovery": discovery}
 
 
@@ -177,8 +178,7 @@ class Monitor:
         """Change only ordinary healthy waits; retain cursors, retries and claims."""
         if not self.owned(db):
             return
-        if not (self.settings.ria_poll_schedule_enabled and self.settings.ria_ai_price_enabled
-                and not self.settings.ria_active_window_enabled):
+        if not (self.settings.ria_poll_schedule_enabled and self.settings.ria_ai_price_enabled):
             return
         schedule = poll_schedule.policy(len(groups), BudgetLimits.env())
         if not schedule["enabled"]:
@@ -579,6 +579,7 @@ class Monitor:
         started = time.monotonic()
         try:
             interval = poll_interval(groups, source.limits, provider_pricing_enabled=True,
+                                     active_window_enabled=self.settings.ria_active_window_enabled,
                                      schedule_enabled=self.settings.ria_poll_schedule_enabled)
             with Session(self.engine) as db:
                 db.execute(update(MonitorControl).where(MonitorControl.id == "pilot",
@@ -591,6 +592,15 @@ class Monitor:
                     if kind == "discover":
                         self.discover(key, child, interval)
                     else:
+                        # Supplemental valuations keep their own reserve and
+                        # bounded request count even in a shared parallel batch.
+                        with self._state_lock, Session(self.engine) as db:
+                            job = db.get(MonitorJob, key)
+                            if job.result.get("discovery_kind") == active_window.KIND:
+                                child.request_limit = active_window.CALL_RESERVE
+                                if not active_window.budget_available(db, child.limits,
+                                        backlog=job.first_seen < time.time() - active_window.FRESH_ARRIVAL_SECONDS):
+                                    raise RiaError("reserved_for_new_publications")
                         self.evaluate(key, child)
                 except RiaError as exc:
                     if kind == "evaluate" and str(exc) == "listing_unavailable":
@@ -664,7 +674,9 @@ class Monitor:
                         else:
                             active_window.defer(db, extra.feed_id, "reserved_for_new_publications")
                             db.commit()
-            if kind and self.settings.ria_ai_price_enabled and not self.settings.ria_active_window_enabled:
+            # Active-page discovery remains a single bounded step. Both kinds
+            # of valuation may overlap; due publication search keeps its slot.
+            if kind and self.settings.ria_ai_price_enabled and kind != active_window.KIND:
                 tasks = [("discover", feed.id)] if feed else []
                 tasks.extend(("evaluate", row.source_id) for row in jobs[:PARALLEL_TASKS - len(tasks)])
                 status, worked = self.parallel_step(tasks, len(groups))

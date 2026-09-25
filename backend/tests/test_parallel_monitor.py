@@ -15,6 +15,7 @@ from backend.ria_budget import BudgetLimits
 from backend.ria_search import RiaSearch
 from backend.tests.test_monitor import p, add_search, drain, wake, details
 from backend.tests.test_ria_ai_price import enable, wire
+from backend.tests.test_active_window import enable_window
 from backend.worker import enqueue
 
 
@@ -37,7 +38,10 @@ def dispatch(p, count=20):
         p.runner.deliver_tick()
 
 
-def test_slow_quote_does_not_hold_other_cars_or_due_discovery(p, monkeypatch):
+@pytest.mark.parametrize("active_supplement", [False, True])
+def test_slow_quote_does_not_hold_other_cars_or_due_discovery(p, monkeypatch, active_supplement):
+    if active_supplement:
+        enable_window(p, monkeypatch)
     enable(p, monkeypatch)
     drain(p)
     queue(p, 3)
@@ -85,7 +89,10 @@ def test_slow_quote_does_not_hold_other_cars_or_due_discovery(p, monkeypatch):
     assert all(len(details(p, sid)) == 1 for sid in ("200", "201", "202"))
 
 
-def test_at_most_four_cars_and_no_second_monitor_can_duplicate_work(p, monkeypatch):
+@pytest.mark.parametrize("active_supplement", [False, True])
+def test_at_most_four_cars_and_no_second_monitor_can_duplicate_work(p, monkeypatch, active_supplement):
+    if active_supplement:
+        enable_window(p, monkeypatch)
     enable(p, monkeypatch)
     drain(p)
     queue(p, 8)
@@ -117,7 +124,10 @@ def test_at_most_four_cars_and_no_second_monitor_can_duplicate_work(p, monkeypat
     assert len(p.sent) == 8
 
 
-def test_stop_during_parallel_quote_preserves_other_subscriber(p, monkeypatch):
+@pytest.mark.parametrize("active_supplement", [False, True])
+def test_stop_during_parallel_quote_preserves_other_subscriber(p, monkeypatch, active_supplement):
+    if active_supplement:
+        enable_window(p, monkeypatch)
     add_search(p)
     enable(p, monkeypatch)
     drain(p)
