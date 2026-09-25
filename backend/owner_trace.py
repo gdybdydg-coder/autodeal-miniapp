@@ -13,6 +13,7 @@ from .launch import listing_trace
 from .models import (Delivery, DeliveryTiming, Filters, Listing, MonitorJob,
                      MonitorSeen, Search, User)
 from .notification_diagnostic import validate_id
+from .delivery_diagnostic import receipt
 
 log = logging.getLogger(__name__)
 
@@ -49,6 +50,7 @@ def snapshot(db, uid, source_id):
     if delivery:
         timing = db.get(DeliveryTiming, delivery.id)
         result["delivery"] = {"state": delivery.state, "message_id": delivery.message_id,
+            "attempts": receipt(db, delivery.id),
             "retry_at": delivery.retry_at,
             "timing": {key: getattr(timing, key) for key in
                 ("queued_at", "discovered_at", "evaluated_at", "send_started_at", "accepted_at", "telegram_date")}

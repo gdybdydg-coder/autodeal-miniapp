@@ -14,6 +14,7 @@ from .valuation import evidence_valid, is_deal, price_only_evidence_valid
 from .peer_cache import evidence_current
 from .reference_valuation import VERSION as REFERENCE_VERSION
 from . import ria_market_range
+from . import delivery_diagnostic
 
 delivery_log = logging.getLogger("autodeal.delivery")
 delivery_log.setLevel(logging.INFO)
@@ -234,16 +235,33 @@ class TelegramSender:
         else:
             method = "sendMessage"
             payload.update(text=text)
+        attempts = []
         try:
             with httpx.Client(timeout=15, follow_redirects=False) as client:
                 response = client.post(f"https://api.telegram.org/bot{self.token}/{method}", json=payload)
-            result = response.json()
+                result = response.json()
+                if response.status_code >= 500:
+                    result = {"uncertain": True}
+                # Only an explicit negative Bot API response permits fallback.
+                # Timeout, malformed JSON, 5xx and ambiguous success never do.
+                if (method == "sendPhoto" and isinstance(result, dict)
+                        and result.get("ok") is False and result.get("error_code") == 400
+                        and response.status_code < 500):
+                    attempts.append(delivery_diagnostic.summary(result, method))
+                    method = "sendMessage"
+                    plain = {"chat_id": user_id, "reply_markup": payload["reply_markup"],
+                             "text": text[:4096], "link_preview_options": {"is_disabled": True}}
+                    response = client.post(f"https://api.telegram.org/bot{self.token}/{method}", json=plain)
+                    result = response.json()
+                    if response.status_code >= 500:
+                        result = {"uncertain": True}
             if not isinstance(result, dict):
-                return {"uncertain": True}
-            return result
+                result = {"uncertain": True}
         except (httpx.HTTPError, ValueError):
             # A timeout may mean Telegram accepted the message. Never blindly retry.
-            return {"uncertain": True}
+            result = {"uncertain": True}
+        attempts.append(delivery_diagnostic.summary(result, method))
+        return {**result, "_delivery_attempts": attempts}
 
 
 def deliver_one(engine, settings: Settings, sender, now=None, *, enforce_chat_interval=True):
@@ -312,11 +330,15 @@ def deliver_one(engine, settings: Settings, sender, now=None, *, enforce_chat_in
                 result = sender(row.user_id, car)
             except Exception:
                 result = {"uncertain": True}
-            if result.get("ok") is True and type(result.get("result", {}).get("message_id")) is int:
+            if not isinstance(result, dict):
+                result = {"uncertain": True}
+            message = result.get("result")
+            message = message if isinstance(message, dict) else {}
+            if result.get("ok") is True and type(message.get("message_id")) is int:
                 row.state = "sent"
-                row.message_id = result["result"]["message_id"]
+                row.message_id = message["message_id"]
                 timing.accepted_at = time.time()
-                stamp = result["result"].get("date")
+                stamp = message.get("date")
                 timing.telegram_date = stamp if type(stamp) is int and stamp > 0 else None
                 if car.source == "auto_ria" and car.market is not None:
                     proof = car.valuation_evidence or {}
@@ -349,6 +371,7 @@ def deliver_one(engine, settings: Settings, sender, now=None, *, enforce_chat_in
                 row.state = "failed"
             else:
                 row.state = "uncertain"
+            delivery_diagnostic.record(db, row, car, result, delivery_log)
         db.commit()
         return row.state
 

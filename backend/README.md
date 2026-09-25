@@ -1232,3 +1232,28 @@ to 4,608 search requests per 24 hours, on top of about 13,740 scheduled publicat
 searches; detail/AI calls, retries and extra publication pages are additional.
 The live software caps are 4,500/hour, 90,000/day and 90,000 cumulative, below the
 owner-confirmed 5,000/hour provider cap. Accounting is never reset by activation.
+
+## Telegram rejection recovery (2026-09-25 evening)
+
+Incident 38840273 matched the owner's filter and a valid paid quote, but the
+owner's delivery entered `failed` before any Telegram acceptance. Prior code
+retained no rejection category and never sent a text card after a rejected photo.
+
+`TelegramSender` now permits one text fallback only after `sendPhoto` returns an
+explicit `ok=false`, code 400 response without a server-error HTTP status. Text
+retains the listing, price, valuation and button, and disables the link preview.
+Successful or uncertain photo outcomes, malformed responses, transport failures,
+403, 429 and server errors do not trigger fallback. The final response still uses
+the ordinary durable sent/pending/failed/uncertain rules. Allowlisted error
+categories and methods are stored in `SourceProbe`; raw Telegram error strings,
+bot URLs, chat IDs, seller content and credentials are not retained or logged.
+
+`RIA_FAILED_DELIVERY_RECOVERY_ID` is empty by default. Explicitly setting a listing
+ID permits one recovery of an existing `failed` delivery for `ADMIN_TELEGRAM_ID`
+only, with no message ID or acceptance time and a ready account/current matching
+subscription. It does not activate users or searches, reset epochs, or touch any
+sent, uncertain, cancelled, pending or sending claim. The normal worker refreshes
+expired prices/quotes and rechecks eligibility and /stop before sending. A durable
+per-owner/listing claim prevents repeated retries across restarts. Deploy the new
+sender and wait for old instances to stop before enabling a recovery, then clear
+the recovery flag after observing its outcome. No provider quota reset is needed.

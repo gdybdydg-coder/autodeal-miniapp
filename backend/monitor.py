@@ -634,6 +634,10 @@ class Monitor:
                 status = "telegram_unavailable"
                 return False
             self.sync()
+            if self.settings.ria_failed_delivery_recovery_id:
+                from .failed_delivery_recovery import recover_once, report
+                recover_once(self)
+                report(self.engine, self.settings)
             if self.settings.ria_recovery_listing_id:
                 from .notification_recovery import recover_once, report
                 recover_once(self, self.settings.ria_recovery_listing_id)
