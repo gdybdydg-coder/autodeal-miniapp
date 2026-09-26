@@ -20,9 +20,9 @@ from sqlalchemy.orm import Session
 
 from .auto_ria import RiaError
 from .models import (Car, Filters, Listing, MonitorControl, MonitorFeed, MonitorJob,
-                     MonitorMatch, MonitorMembership, MonitorSeen, MonitorWatch, Search, User)
+                     MonitorMatch, MonitorMembership, MonitorSeen, MonitorWatch, Search, SourceBudget, User)
 from .ria_budget import BudgetLimits
-from .ria_search import RiaSearch, estimate, matches, parse_ids, quota_status
+from .ria_search import RiaSearch, estimate, matches, parse_ids, quota_status, budget_state
 from .valuation import (MAX_AGE, VERSION, PeerBatch, is_deal, price_only_evidence,
                         notification_condition_allowed, repair_notices)
 from . import active_window, ria_market_range, poll_schedule
@@ -200,6 +200,24 @@ class Monitor:
                 watch.next_poll = changed[member.feed_id]
         db.commit()
         self._schedule_key = key
+
+    def resume_available_quota(self, db, groups):
+        """Wake only quota waits after all actual budget gates are available."""
+        budget = db.get(SourceBudget, 'auto_ria')
+        now = time.time()
+        if not self.owned(db) or budget is None or budget_state(budget, now)['reason'] != 'available':
+            return
+        changed = set()
+        for feed in db.scalars(select(MonitorFeed).where(MonitorFeed.id.in_(groups),
+                MonitorFeed.status == 'quota_exceeded', MonitorFeed.next_poll > now)):
+            feed.next_poll = now
+            changed.add(feed.id)
+        for _, watch, member in active_members(db):
+            if member.feed_id in changed:
+                watch.next_poll = now
+        db.execute(update(MonitorJob).where(MonitorJob.state == 'pending',
+            MonitorJob.reason == 'quota_exceeded', MonitorJob.next_run > now).values(next_run=now))
+        db.commit()
 
     def claim(self):
         now = time.time()
@@ -647,6 +665,7 @@ class Monitor:
                 report(self.engine, self.settings.ria_recovery_listing_id)
             with Session(self.engine) as db:
                 groups = {member.feed_id for _, _, member in active_members(db)}
+                self.resume_available_quota(db, groups)
                 self.reschedule(db, groups)
                 feed = db.scalar(select(MonitorFeed).where(MonitorFeed.id.in_(groups),
                     MonitorFeed.next_poll <= time.time()).order_by(MonitorFeed.next_poll, MonitorFeed.id).limit(1))

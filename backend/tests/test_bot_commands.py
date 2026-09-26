@@ -159,3 +159,15 @@ def test_command_menu_requires_verified_bot_and_is_idempotent(setup):
     bot_commands.configure(engine, settings, send)
     bot_commands.configure(engine, settings, send)
     assert calls == ["setMyCommands"]
+
+
+def test_exhausted_local_cap_does_not_claim_provider_package_is_empty(setup, monkeypatch):
+    engine, _, _ = setup
+    for name,value in [('HOURLY','4500'),('DAILY','90000'),('TOTAL','90000')]:
+        monkeypatch.setenv('RIA_REQUESTS_'+name+'_CAP', value)
+    with Session(engine) as db:
+        budget=db.get(SourceBudget,'auto_ria');budget.total=90000;db.commit()
+        text=bot_commands.stats_text(db,111,111)
+        assert 'внутрішній ліміт бота, а не баланс пакета AUTO.RIA' in text
+        assert 'у пакеті AUTO.RIA ще можуть бути запити' in text
+        assert budget.total==90000
