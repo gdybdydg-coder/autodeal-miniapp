@@ -159,7 +159,8 @@ def runtime_status(engine, enabled, uid=None, *, active_window_enabled=False, pr
                 "strategy": "publications_with_bounded_active_window" if active_window_enabled else "new_publications_v3",
                 "index_overlap_seconds": INDEX_OVERLAP,
                 "active_window": active_window.status(db, own_groups, active_window_enabled,
-                                                     active_window_include_initial),
+                                                     active_window_include_initial,
+                    schedule_enabled=schedule_enabled and provider_pricing_enabled),
                 "discovery": discovery}
 
 
@@ -198,6 +199,8 @@ class Monitor:
             if not feed.context and feed.checked_at > 0 and feed.next_poll > feed.checked_at:
                 feed.next_poll = feed.checked_at + interval
                 changed[feed.id] = feed.next_poll
+        if self.settings.ria_active_window_enabled:
+            active_window.reschedule(db, groups)
         for _, watch, member in active_members(db):
             if member.feed_id in changed:
                 watch.next_poll = changed[member.feed_id]
@@ -602,7 +605,8 @@ class Monitor:
             if not self.owned(db):
                 return
             if kind == active_window.KIND:
-                active_window.defer(db, key, reason)
+                active_window.defer(db, key, reason, schedule_enabled=
+                    self.settings.ria_poll_schedule_enabled and self.settings.ria_ai_price_enabled)
             elif kind == "discover":
                 feed = db.get(MonitorFeed, key)
                 feed.status, feed.next_poll = reason, time.time() + wait
@@ -747,7 +751,8 @@ class Monitor:
                         if active_window.budget_available(db, reserve=1):
                             kind, key = active_window.KIND, extra.feed_id
                         else:
-                            active_window.defer(db, extra.feed_id, "reserved_for_new_publications")
+                            active_window.defer(db, extra.feed_id, "reserved_for_new_publications",
+                                schedule_enabled=self.settings.ria_poll_schedule_enabled and self.settings.ria_ai_price_enabled)
                             db.commit()
             # Active-page discovery remains a single bounded step. Both kinds
             # of valuation may overlap; due publication search keeps its slot.

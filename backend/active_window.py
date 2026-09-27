@@ -6,6 +6,9 @@ No historical pagination. New publications/jobs always take scheduling priority.
 """
 import time
 from collections import Counter
+from datetime import datetime
+
+from . import poll_schedule
 
 from sqlalchemy import select
 from sqlalchemy.orm import Session
@@ -26,6 +29,24 @@ RETIRED_STATE = "window_cancelled"
 CALL_RESERVE = 32
 FRESH_ARRIVAL_SECONDS = 600
 BASELINE_ID = "active-window-fresh-only-v1"
+
+
+def poll_interval(*, schedule_enabled=False, now=None):
+    if schedule_enabled and poll_schedule.KYIV is not None:
+        hour = datetime.fromtimestamp(time.time() if now is None else now, poll_schedule.KYIV).hour
+        if hour >= 23 or hour < 8:
+            return 3600
+    return INTERVAL
+
+
+def reschedule(db, feed_ids):
+    """Retiming healthy waits preserves page snapshots and error backoffs."""
+    interval = poll_interval(schedule_enabled=True)
+    for row in db.scalars(select(MonitorActiveWindow).where(
+            MonitorActiveWindow.feed_id.in_(feed_ids),
+            MonitorActiveWindow.status.in_(["watching", "baseline"]))):
+        if row.checked_at > 0 and row.next_poll > row.checked_at:
+            row.next_poll = row.checked_at + interval
 
 
 def budget_available(db, limits=None, *, reserve=CALL_RESERVE, backlog=False):
@@ -66,11 +87,11 @@ def reset(db):
         row.checked_at, row.next_poll, row.status = 0, 0, "disabled"
 
 
-def status(db, feed_ids, enabled, include_initial=False):
+def status(db, feed_ids, enabled, include_initial=False, *, schedule_enabled=False):
     rows = list(db.scalars(select(MonitorActiveWindow).where(MonitorActiveWindow.feed_id.in_(feed_ids))))
     return {"enabled": enabled, "coverage": "latest_active_window_diff",
             "include_initial": include_initial,
-            "window_size": WINDOW_SIZE, "interval_seconds": INTERVAL,
+            "window_size": WINDOW_SIZE, "interval_seconds": poll_interval(schedule_enabled=schedule_enabled),
             "maximum_candidates_per_poll": WINDOW_SIZE, "historical_pagination": False,
             "state_counts": dict(Counter(row.status for row in rows)) if enabled else {},
             "discovery_budget_available": bool(enabled and budget_available(db, reserve=1)),
@@ -85,13 +106,14 @@ def due(db, feed_ids):
                                                               MonitorActiveWindow.feed_id).limit(1))
 
 
-def defer(db, feed_id, reason):
+def defer(db, feed_id, reason, *, schedule_enabled=False):
     row = db.get(MonitorActiveWindow, feed_id)
-    row.status, row.next_poll = reason, time.time() + INTERVAL
+    row.status, row.next_poll = reason, time.time() + poll_interval(schedule_enabled=schedule_enabled)
 
 
 def discover(monitor, feed_id, source):
     from .monitor import active_members
+    scheduled = monitor.settings.ria_poll_schedule_enabled and monitor.settings.ria_ai_price_enabled
 
     with Session(monitor.engine) as db:
         if not monitor.owned(db):
@@ -99,7 +121,7 @@ def discover(monitor, feed_id, source):
         # The newest-page search uses exactly one request. A pending detail/AI
         # evaluation may need up to CALL_RESERVE and is gated separately.
         if not budget_available(db, source.limits, reserve=1):
-            defer(db, feed_id, "reserved_for_new_publications")
+            defer(db, feed_id, "reserved_for_new_publications", schedule_enabled=scheduled)
             db.commit()
             return
         members = [(search.id, search.user_id, watch.epoch)
@@ -165,5 +187,5 @@ def discover(monitor, feed_id, source):
 
         row.window, row.source_total = ids, result["total"]
         row.status = "baseline" if baseline and not include_initial else "watching"
-        row.checked_at, row.next_poll = now, now + INTERVAL
+        row.checked_at, row.next_poll = now, now + poll_interval(schedule_enabled=scheduled, now=now)
         db.commit()
