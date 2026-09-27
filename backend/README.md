@@ -122,8 +122,9 @@ With these caps and 15 groups the effective intervals are 3818/117/80 seconds
 (night/day/evening). At least 1,200/hour and 12,726/day would be needed for the
 targets under this planning model; these are software-budget calculations, not a
 verified provider plan or a guarantee that the remaining allowance covers bursts.
-The hourly night setting also retimes healthy supplemental active-window waits.
-Supplemental searches remain at 300 seconds outside the night period. In-flight
+Supplemental active-window discovery is paused from 23:00 to 08:00 Kyiv.
+It resumes every 300 seconds at 08:00 without clearing snapshots, seen IDs or
+delivery claims. New-publication discovery remains hourly overnight. In-flight
 publication pages and provider backoffs keep their persisted deadlines. New
 publication windows are paginated from the saved cursor; an hour of new ads is
 not limited to one page. Catch-up windows and page verification can require
@@ -1323,8 +1324,10 @@ without date bounds, but absent from the official created/published date searche
 Enable `RIA_ACTIVE_WINDOW_ENABLED=true` and, to include unseen cars already on the
 first page at activation, `RIA_ACTIVE_WINDOW_INCLUDE_INITIAL=true`. Both remain
 false in example/default configuration. This is a top-50 page per existing filter
-group every 300 seconds by day/evening, and every 3600 seconds from 23:00 to
-08:00 Kyiv when paid scheduled monitoring is enabled. It is not an exhaustive
+group every 300 seconds by day/evening, paused from 23:00 to
+08:00 Kyiv when paid scheduled monitoring is enabled. Runtime status reports
+`paused=true`, `pause_reason=night_schedule` and no active interval during this
+pause. Already queued valuations and the Telegram sender continue. It is not an exhaustive
 historical catalog scan. Following pages are not fetched. Seen IDs, stopped subscriptions, epochs, sent and uncertain
 claims are preserved. Existing non-deals are not periodically reevaluated for
 price drops. Reappearing previously seen IDs do not generate duplicate interest.
@@ -1334,7 +1337,7 @@ parallel discovery/evaluation operations. Active-page searches run one bounded
 step at a time; due publication searches and primary jobs retain priority. Fresh
 details and provider quotes are shared across groups. Supplemental calls retain
 quota headroom and the durable global caps. At 16 groups, the supplement adds up
-to 3,024 search requests per normal 24-hour day under the hourly night schedule,
+to 2,880 search requests per normal 24-hour day with the night pause,
 on top of about 10,181 scheduled publication searches; detail/AI calls, retries and extra publication pages are additional.
 At the initial active-window activation, software caps were 4,500/hour,
 90,000/day and 90,000 cumulative. Current limits are reported by the live budget

@@ -31,12 +31,17 @@ FRESH_ARRIVAL_SECONDS = 600
 BASELINE_ID = "active-window-fresh-only-v1"
 
 
-def poll_interval(*, schedule_enabled=False, now=None):
+def night_paused(*, schedule_enabled=False, now=None):
     if schedule_enabled and poll_schedule.KYIV is not None:
         hour = datetime.fromtimestamp(time.time() if now is None else now, poll_schedule.KYIV).hour
-        if hour >= 23 or hour < 8:
-            return 3600
-    return INTERVAL
+        return hour >= 23 or hour < 8
+    return False
+
+
+def poll_interval(*, schedule_enabled=False, now=None):
+    # Keep durable retry waits bounded; the night gate prevents discovery even
+    # when a saved deadline expires. Morning retiming resumes healthy waits.
+    return 3600 if night_paused(schedule_enabled=schedule_enabled, now=now) else INTERVAL
 
 
 def reschedule(db, feed_ids):
@@ -89,18 +94,23 @@ def reset(db):
 
 def status(db, feed_ids, enabled, include_initial=False, *, schedule_enabled=False):
     rows = list(db.scalars(select(MonitorActiveWindow).where(MonitorActiveWindow.feed_id.in_(feed_ids))))
+    paused = bool(enabled and night_paused(schedule_enabled=schedule_enabled))
     return {"enabled": enabled, "coverage": "latest_active_window_diff",
+            "paused": paused, "pause_reason": "night_schedule" if paused else None,
+            "resume_local_time": "08:00" if paused else None,
             "include_initial": include_initial,
-            "window_size": WINDOW_SIZE, "interval_seconds": poll_interval(schedule_enabled=schedule_enabled),
+            "window_size": WINDOW_SIZE, "interval_seconds": None if paused else INTERVAL,
             "maximum_candidates_per_poll": WINDOW_SIZE, "historical_pagination": False,
             "state_counts": dict(Counter(row.status for row in rows)) if enabled else {},
-            "discovery_budget_available": bool(enabled and budget_available(db, reserve=1)),
+            "discovery_budget_available": bool(enabled and not paused and budget_available(db, reserve=1)),
             "valuation_budget_available": bool(enabled and budget_available(db)),
             "backlog_budget_available": bool(enabled and budget_available(db, backlog=True)),
             "last_checked_at": max((row.checked_at for row in rows), default=0) if enabled else None}
 
 
-def due(db, feed_ids):
+def due(db, feed_ids, *, schedule_enabled=False):
+    if night_paused(schedule_enabled=schedule_enabled):
+        return None
     return db.scalar(select(MonitorActiveWindow).where(MonitorActiveWindow.feed_id.in_(feed_ids),
         MonitorActiveWindow.next_poll <= time.time()).order_by(MonitorActiveWindow.next_poll,
                                                               MonitorActiveWindow.feed_id).limit(1))
@@ -131,6 +141,9 @@ def discover(monitor, feed_id, source):
         filters = Filters.model_validate(db.get(MonitorFeed, feed_id).filters)
     params, _ = source.discovery_parameters(filters)
     params.update(countpage=WINDOW_SIZE, page=0, order_by=7)
+    # Recheck at the request boundary: selection may have happened before 23:00.
+    if night_paused(schedule_enabled=scheduled):
+        return
     result = source.request("search", params, parse_ids, force=True)
     ids = result["ids"]
     if len(ids) < min(WINDOW_SIZE, result["total"]):

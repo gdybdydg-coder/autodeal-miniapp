@@ -746,7 +746,8 @@ class Monitor:
                     job.result.get("discovery_kind") == active_window.KIND)
                 if self.settings.ria_active_window_enabled and (kind is None or
                         (not feed and supplemental_selected)):
-                    extra = active_window.due(db, groups)
+                    extra = active_window.due(db, groups, schedule_enabled=
+                        self.settings.ria_poll_schedule_enabled and self.settings.ria_ai_price_enabled)
                     if extra:
                         if active_window.budget_available(db, reserve=1):
                             kind, key = active_window.KIND, extra.feed_id

@@ -177,7 +177,10 @@ def test_transition_preserves_backoffs_and_in_progress_pages(p, monkeypatch, sta
         p.runner.release("idle")
 
 
-def test_night_transition_extends_wait_and_does_not_reenable_stopped_search(p, monkeypatch):
+@pytest.mark.parametrize("active_supplement", [False, True])
+def test_night_transition_extends_wait_and_does_not_reenable_stopped_search(p, monkeypatch, active_supplement):
+    if active_supplement:
+        enable_window(p, monkeypatch)
     configured(p, monkeypatch)
     p.clock[0] = utc("2026-09-25T19:59:30+00:00")
     drain(p)
@@ -193,6 +196,8 @@ def test_night_transition_extends_wait_and_does_not_reenable_stopped_search(p, m
         reset_watch(db, 1, False)
         db.commit()
     p.clock[0] += 3601
+    assert not p.runner.tick()
+    p.clock[0] = utc("2026-09-26T05:00:00+00:00")
     assert not p.runner.tick()
     with Session(p.engine) as db:
         assert not db.get(Search, 1).enabled and not db.get(User, 111).ready
@@ -289,6 +294,8 @@ def test_hour_of_new_ads_is_paginated_past_fifty_and_delivered_once(p, monkeypat
 def test_supplement_respects_kyiv_night_boundaries(instant, expected):
     from backend import active_window
     assert active_window.poll_interval(schedule_enabled=True, now=utc(instant)) == expected
+    assert active_window.night_paused(schedule_enabled=True, now=utc(instant)) == (expected == 3600)
+    assert not active_window.night_paused(schedule_enabled=False, now=utc(instant))
     assert active_window.poll_interval(schedule_enabled=False, now=utc(instant)) == 300
 
 
@@ -296,6 +303,7 @@ def test_supplement_missing_timezone_keeps_normal_monitoring(monkeypatch):
     from backend import active_window
     monkeypatch.setattr(poll_schedule, 'KYIV', None)
     assert active_window.poll_interval(schedule_enabled=True) == 300
+    assert not active_window.night_paused(schedule_enabled=True)
 
 
 def supplemental_searches(p):
@@ -303,22 +311,22 @@ def supplemental_searches(p):
             and 'published_after' not in params and 'generation_id[0][0]' not in params]
 
 
-def test_night_supplement_waits_hour_and_morning_retimes_without_reset(p, monkeypatch):
+def test_night_supplement_pauses_and_morning_resumes_without_reset(p, monkeypatch):
     from backend.models import MonitorActiveWindow
     from backend.monitor import runtime_status
     enable_window(p, monkeypatch)
-    configured(p, monkeypatch, '2026-09-25T04:00:00+00:00')
+    configured(p, monkeypatch, '2026-09-24T19:59:00+00:00')
     drain(p)
     before = len(supplemental_searches(p))
     with Session(p.engine) as db:
         row = db.scalar(select(MonitorActiveWindow))
-        assert row.next_poll - row.checked_at == 3600
+        assert row.next_poll - row.checked_at == 300
         snapshot = list(row.window)
         epoch = db.get(MonitorWatch, 1).epoch
         row.next_poll = row.checked_at + 300  # previous release's persisted wait
         db.commit()
     p.runner = Monitor(p.engine, p.runner.settings, p.runner.search_factory, p.runner.sender)
-    p.clock[0] += 301
+    p.clock[0] = utc('2026-09-25T04:59:59+00:00')
     drain(p)
     assert len(supplemental_searches(p)) == before
     with Session(p.engine) as db:
@@ -327,7 +335,10 @@ def test_night_supplement_waits_hour_and_morning_retimes_without_reset(p, monkey
         assert db.get(MonitorWatch, 1).epoch == epoch
     report = runtime_status(p.engine, True, active_window_enabled=True,
         provider_pricing_enabled=True, schedule_enabled=True)
-    assert report['active_window']['interval_seconds'] == 3600
+    assert report['active_window']['interval_seconds'] is None
+    assert report['active_window']['paused']
+    assert report['active_window']['pause_reason'] == 'night_schedule'
+    assert report['active_window']['resume_local_time'] == '08:00'
     p.stock = ['124','123']
     p.clock[0] = utc('2026-09-25T05:00:00+00:00')
     drain(p)
@@ -336,6 +347,9 @@ def test_night_supplement_waits_hour_and_morning_retimes_without_reset(p, monkey
         row = db.scalar(select(MonitorActiveWindow))
         assert row.next_poll - row.checked_at == 300
         assert db.get(MonitorWatch, 1).epoch == epoch
+    assert [car.source_id for _,car in p.sent] == ['124']
+    p.clock[0] += 301
+    drain(p)
     assert [car.source_id for _,car in p.sent] == ['124']
 
 
@@ -354,3 +368,67 @@ def test_night_supplement_keeps_error_backoff_and_snapshot(p, monkeypatch, statu
         assert (row.next_poll, row.window, row.checked_at) == expected
         active_window.defer(db, row.feed_id, status, schedule_enabled=True)
         assert row.next_poll == p.clock[0] + 3600
+
+
+def test_new_night_subscription_skips_active_initial_page_but_finds_publications(p, monkeypatch):
+    enable_window(p, monkeypatch)
+    configured(p, monkeypatch, '2026-09-25T20:00:00+00:00')
+    p.runner.settings = replace(p.runner.settings, ria_active_window_include_initial=True)
+    drain(p)
+    assert not supplemental_searches(p) and not p.sent
+    p.ads['124'] = p.clock[0] + 1
+    p.clock[0] += 3601
+    drain(p)
+    assert not supplemental_searches(p)
+    assert [car.source_id for _, car in p.sent] == ['124']
+    p.runner = Monitor(p.engine, p.runner.settings, p.runner.search_factory, p.runner.sender)
+    drain(p)
+    assert not supplemental_searches(p) and len(p.sent) == 1
+
+
+def test_active_request_selected_before_23_is_blocked_at_request_boundary(p, monkeypatch):
+    from backend import active_window
+    enable_window(p, monkeypatch)
+    configured(p, monkeypatch, '2026-09-25T19:59:59+00:00')
+    drain(p)
+    before = len(p.calls)
+    assert p.runner.claim()
+    try:
+        with Session(p.engine) as db:
+            feed_id = db.scalar(select(MonitorFeed)).id
+        source = p.runner.search_factory(p.engine, p.runner.settings.auto_ria_api_key)
+        p.clock[0] += 1
+        source.acquire()
+        try:
+            active_window.discover(p.runner, feed_id, source)
+        finally:
+            source.release()
+        assert len(p.calls) == before
+    finally:
+        p.runner.release('idle')
+
+
+def test_already_queued_active_car_is_delivered_during_night_pause(p, monkeypatch):
+    from backend import active_window
+    enable_window(p, monkeypatch)
+    configured(p, monkeypatch, '2026-09-25T19:59:59+00:00')
+    drain(p)
+    p.stock = ['124', '123']
+    assert p.runner.claim()
+    try:
+        with Session(p.engine) as db:
+            feed_id = db.scalar(select(MonitorFeed)).id
+        source = p.runner.search_factory(p.engine, p.runner.settings.auto_ria_api_key)
+        source.acquire()
+        try:
+            active_window.discover(p.runner, feed_id, source)
+        finally:
+            source.release()
+    finally:
+        p.runner.release('idle')
+    before = len(supplemental_searches(p))
+    p.clock[0] += 1
+    drain(p)
+    assert len(supplemental_searches(p)) == before
+    assert [car.source_id for _, car in p.sent] == ['124']
+    assert len(details(p, '124')) == 1
