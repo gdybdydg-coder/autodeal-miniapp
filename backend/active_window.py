@@ -13,7 +13,7 @@ from sqlalchemy.orm import Session
 from .auto_ria import RiaError
 from .models import (Delivery, Filters, Listing, MonitorActiveWindow, MonitorFeed,
                      MonitorJob, MonitorSeen, SourceBudget, SourceProbe)
-from .ria_budget import BudgetLimits
+from .ria_budget import BudgetLimits, total_cap
 from .ria_search import budget_state, parse_ids
 
 # Seven shared groups at one request per minute can exceed the 12,000/day
@@ -31,7 +31,7 @@ BASELINE_ID = "active-window-fresh-only-v1"
 def budget_available(db, limits=None, *, reserve=CALL_RESERVE, backlog=False):
     limits, now = limits or BudgetLimits.env(), time.time()
     row = db.get(SourceBudget, "auto_ria")
-    if not row or budget_state(row, now, limits)["reason"] != "available":
+    if not row or budget_state(row, now, limits, db=db)["reason"] != "available":
         return False
     # Primary searches have scheduling priority and keep 20% hourly headroom,
     # with at least one full bounded evaluation step reserved. Counting primary
@@ -43,7 +43,7 @@ def budget_available(db, limits=None, *, reserve=CALL_RESERVE, backlog=False):
     return (sum(t > now - 3600 for t in row.calls) + reserve <= hourly_ceiling
             and sum(t > now - 86400 for t in row.calls) + reserve
                 <= limits.daily - max(limits.daily // 5, limits.hourly * 2)
-            and row.total + reserve <= limits.total)
+            and row.total + reserve <= total_cap(db, limits))
 
 
 def sync(db, feed_ids):

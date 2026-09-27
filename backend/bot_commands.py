@@ -9,7 +9,7 @@ from sqlalchemy.orm import Session
 
 from . import telegram_setup
 from .models import BotReply, Search, SourceBudget, SourceProbe, TelegramTest, User
-from .ria_budget import BudgetLimits
+from .ria_budget import BudgetLimits, total_cap
 
 COMMANDS = [
     {"command": "start", "description": "Почати та відкрити AUTODeal"},
@@ -68,7 +68,7 @@ def stats_text(db, uid, admin_uid):
         limits = BudgetLimits.env()
         cutoff = time.time() - 86400
         used_day = sum(stamp > cutoff for stamp in budget.calls)
-        remaining = max(0, limits.total - budget.total)
+        remaining = max(0, total_cap(db, limits) - budget.total)
         grouped = lambda value: f"{value:,}".replace(",", " ")
         estimate = (f"≈{remaining / used_day:.1f}".replace(".", ",") + " дн."
                     if used_day else "поки немає даних")
@@ -154,11 +154,21 @@ def configure(engine, settings, request=None):
 
 
 async def run(engine, settings, stop):
+    from . import quota_management
+    next_warning = 0
     while not stop.is_set():
         try:
             await asyncio.to_thread(deliver_one, engine, settings)
         except Exception:
             logging.getLogger(__name__).error("Bot command reply processing failed")
+        if settings.ria_quota_management_enabled:
+            try:
+                if time.monotonic() >= next_warning:
+                    await asyncio.to_thread(quota_management.check_warning, engine, settings)
+                    next_warning = time.monotonic()+60
+                await asyncio.to_thread(quota_management.deliver_one, engine, settings)
+            except Exception:
+                logging.getLogger(__name__).error("Quota owner reply processing failed")
         try:
             await asyncio.wait_for(stop.wait(), timeout=1)
         except TimeoutError:

@@ -19,7 +19,7 @@ from sqlalchemy.orm import Session
 
 from .auto_ria import RiaError, fetch_json, listing_preview
 from .models import Filters, SourceBudget, SourceCache, SourceProbe
-from .ria_budget import BudgetLimits, peer_scan_limit
+from .ria_budget import BudgetLimits, peer_scan_limit, total_cap
 from . import peer_cache
 from . import reference_valuation as reference
 from .valuation import DIMENSIONS, VERSION, PeerBatch, comparison_dimensions, estimate, is_deal, number, reasons, vehicle_key
@@ -127,9 +127,9 @@ def valid_id(value):
     return type(value) is int and value > 0
 
 
-def budget_state(row, now, limits=None):
+def budget_state(row, now, limits=None, *, db=None):
     limits = limits or BudgetLimits.env()
-    if row.total >= limits.total:
+    if row.total >= (total_cap(db, limits) if db is not None else limits.total):
         return {"reason": "total", "retry_after_seconds": None}
     calls = sorted(t for t in row.calls if t > now - 86400)
     hourly = [t for t in calls if t > now - 3600]
@@ -149,7 +149,7 @@ def budget_state(row, now, limits=None):
 def quota_status(engine, limits=None):
     with Session(engine) as db:
         row = db.get(SourceBudget, "auto_ria")
-        return budget_state(row, time.time(), limits) if row else {"reason": "unavailable", "retry_after_seconds": None}
+        return budget_state(row, time.time(), limits, db=db) if row else {"reason": "unavailable", "retry_after_seconds": None}
 
 
 def budget_usage(engine):
@@ -162,8 +162,9 @@ def budget_usage(engine):
             return {"status": "unavailable", "limits": limits.public()}
         used = {"hourly": sum(t > now - 3600 for t in row.calls),
                 "daily": sum(t > now - 86400 for t in row.calls), "total": row.total}
-        return {"status": "local_accounting", "limits": limits.public(), "used": used,
-                "remaining": {key: max(0, cap - used[key]) for key, cap in limits.public().items()},
+        caps = {**limits.public(), "total": total_cap(db, limits)}
+        return {"status": "local_accounting", "limits": caps, "used": used,
+                "remaining": {key: max(0, cap - used[key]) for key, cap in caps.items()},
                 "total_resets_automatically": False}
 
 
@@ -307,7 +308,7 @@ class RiaSearch:
                 raise RiaError("search_limit")
             if self.request_limit is not None and self.requests_made >= self.request_limit:
                 raise RiaError("search_limit")
-            if budget_state(row, now, self.limits)["reason"] != "available":
+            if budget_state(row, now, self.limits, db=db)["reason"] != "available":
                 raise RiaError("quota_exceeded")
             row.calls, row.total = calls + [now], row.total + 1
             db.commit()  # Failed calls consume budget too, even on a process crash.

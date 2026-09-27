@@ -24,9 +24,9 @@ from .ria_validation import validate_once, validate_run_id, validate_profile, va
 from .valuation import policy as valuation_policy, reason_category
 from .models import (Base, BotReply, Delivery, EnabledRequest, Filters, Listing, MonitorControl,
                      MonitorFeed, MonitorJob, MonitorMembership, MonitorSeen, MonitorWatch,
-                     Search, SearchEditRequest, SearchRequest, TelegramTest, User)
+                     Search, SearchEditRequest, SearchRequest, SourceProbe, TelegramTest, User)
 from . import monitor, telegram_setup, ria_rollout, full_scan, launch, notification_diagnostic, valuation_audit, ria_ai_price, ria_market_range
-from . import bot_commands, owner_trace
+from . import bot_commands, owner_trace, quota_management
 
 
 @dataclass(frozen=True)
@@ -61,6 +61,7 @@ class Settings:
     ria_photo_repair_ids: str = ""
     ria_shared_distribution_enabled: bool = False
     ria_confirmed_deals_only: bool = False
+    ria_quota_management_enabled: bool = False
 
     @classmethod
     def env(cls):
@@ -93,6 +94,7 @@ class Settings:
             ria_photo_repair_ids=os.getenv("RIA_PHOTO_REPAIR_IDS", "").strip(),
             ria_shared_distribution_enabled=os.getenv("RIA_SHARED_DISTRIBUTION_ENABLED") == "true",
             ria_confirmed_deals_only=os.getenv("RIA_CONFIRMED_DEALS_ONLY") == "true",
+            ria_quota_management_enabled=os.getenv("RIA_QUOTA_MANAGEMENT_ENABLED") == "true",
             ria_failed_delivery_recovery_id=os.getenv("RIA_FAILED_DELIVERY_RECOVERY_ID", "").strip(),
         )
 
@@ -141,6 +143,7 @@ def create_app(settings: Settings, engine=None):
         await asyncio.to_thread(telegram_setup.configure, engine, settings)
         await asyncio.to_thread(telegram_setup.configure_menu, engine, settings)
         await asyncio.to_thread(bot_commands.configure, engine, settings)
+        await asyncio.to_thread(quota_management.configure, engine, settings)
         await asyncio.to_thread(notification_diagnostic.check_once, engine,
                                settings.auto_ria_api_key, settings.ria_diagnostic_listing_id)
         await asyncio.to_thread(notification_diagnostic.check_dates_once, engine,
@@ -153,7 +156,8 @@ def create_app(settings: Settings, engine=None):
             await asyncio.to_thread(ria_ai_price.check_once, engine, settings.auto_ria_api_key,
                                    settings.auto_ria_user_id, settings.ria_ai_price_probe_id)
         stop = asyncio.Event()
-        reply_task = asyncio.create_task(bot_commands.run(engine, settings, stop)) if settings.configure_webhook else None
+        reply_task = asyncio.create_task(bot_commands.run(engine, settings, stop)) if (
+            settings.configure_webhook or settings.ria_quota_management_enabled) else None
         task = asyncio.create_task(monitor.run(engine, settings, stop)) if settings.monitor_enabled else None
         scan_task = asyncio.create_task(full_scan.run(engine, settings.auto_ria_api_key, stop)) if settings.auto_ria_api_key and settings.full_scan_enabled else None
         validation_stop = threading.Event()
@@ -283,7 +287,7 @@ def create_app(settings: Settings, engine=None):
     def source_status():
         # Cached public diagnostic only; refreshing NEVER spends API requests.
         return {**probe_status(engine, bool(settings.auto_ria_api_key)), "quota": quota_status(engine),
-                "budget": budget_usage(engine),
+                "budget": {**budget_usage(engine), "owner_management": quota_management.public_status(engine, settings)},
                 "valuation_policy": ria_market_range.policy(confirmed_deals_only=settings.ria_confirmed_deals_only)
                     if settings.ria_ai_price_enabled else valuation_policy(),
                 "launch": launch.status(engine, settings.live and settings.monitor_enabled),
@@ -517,12 +521,22 @@ def create_app(settings: Settings, engine=None):
         command, _, mention = token.partition("@")
         if mention and mention.lower() != telegram_setup.BOT_USERNAME.lower():
             return {"ok": True}
-        if command not in ("/start", "/stop", "/help", "/stats"):
+        is_quota = command in quota_management.COMMANDS
+        if command not in ("/start", "/stop", "/help", "/stats") and not is_quota:
+            return {"ok": True}
+        if is_quota and (not settings.ria_quota_management_enabled or uid != settings.admin_telegram_id):
             return {"ok": True}
         if type(command_at) is not int or command_at <= 0:
             raise HTTPException(422, "Invalid message date")
         with Session(engine) as db:
             user = user_row(db, uid)
+            if is_quota:
+                # Quota event dedupe is separate: an out-of-order admin command
+                # must never cause an earlier /stop to be ignored.
+                if db.get(SourceProbe, quota_management.OUTBOX+str(update_id)) is None:
+                    quota_management.handle(db, settings, uid, command, text, update_id, command_at)
+                db.commit()
+                return {"ok": True}
             if (command_at, update_id) <= (user.last_command_at, user.last_update):
                 return {"ok": True}
             user.last_update = update_id

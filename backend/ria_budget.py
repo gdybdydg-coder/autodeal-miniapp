@@ -2,6 +2,24 @@
 import os
 from dataclasses import dataclass
 
+TOTAL_OVERRIDE_ID = "auto-ria-total-cap-v1"
+
+
+def total_cap(db, limits=None):
+    """Durable owner-confirmed ceiling, without resetting any request counts.
+
+    A later server total-cap edit supersedes the old snapshot. Hourly/daily
+    edits do not silently withdraw a package the owner already confirmed.
+    """
+    from .models import SourceProbe
+    limits = limits or BudgetLimits.env()
+    row = db.get(SourceProbe, TOTAL_OVERRIDE_ID)
+    data = row.result if row and row.status == "confirmed" else {}
+    value = data.get("total_cap")
+    if data.get("base_total_cap") == limits.total and type(value) is int and value >= 0:
+        return value
+    return limits.total
+
 
 def peer_scan_limit():
     value = os.getenv("RIA_COMPARABLE_SCAN_LIMIT", "6")

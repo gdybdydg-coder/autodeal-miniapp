@@ -208,7 +208,7 @@ class Monitor:
         """Wake only quota waits after all actual budget gates are available."""
         budget = db.get(SourceBudget, 'auto_ria')
         now = time.time()
-        if not self.owned(db) or budget is None or budget_state(budget, now)['reason'] != 'available':
+        if not self.owned(db) or budget is None or budget_state(budget, now, db=db)['reason'] != 'available':
             return
         changed = set()
         for feed in db.scalars(select(MonitorFeed).where(MonitorFeed.id.in_(groups),

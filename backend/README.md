@@ -1,5 +1,49 @@
 # AUTODeal backend — subscriptions for new worthwhile cars
 
+## Owner-managed package transitions and warnings (2026-09-27)
+
+`RIA_QUOTA_MANAGEMENT_ENABLED=true` enables private commands for the configured
+`ADMIN_TELEGRAM_ID` only. `/quota` shows the local remaining allowance, rolling
+hour/day use and the actual blocking gate. `/quota_set N` prepares a snapshot of
+the **remaining requests in an already active provider package**, not a purchase
+or an addition to the current allowance. The owner confirms with the one-use
+`/quota_confirm CODE` within five minutes or cancels with `/quota_cancel CODE`.
+The command menu is scoped to that owner's private chat.
+
+At preparation, the same budget row lock used by paid requests fixes the new
+cumulative ceiling at `lifetime_used + owner_reported_remaining`. Calls consumed
+while awaiting confirmation therefore reduce the effective remaining allowance.
+Confirmation never resets counters, hourly/day caps, provider backoff, leases,
+subscription epochs, stopped searches or delivery claims. Replayed updates/codes
+are idempotent; confirmation of a newer draft invalidates older drafts. Budget
+commands have separate event deduplication so they cannot suppress an out-of-order
+`/stop`. Missing-owner, wrong-chat, wrong-user, stale and unauthenticated commands
+cannot change the ceiling. Ordinary quota waits resume through the monitor's
+existing gate checks without deployment or manual queue reset.
+
+The durable override, drafts and owner reply outbox use dedicated SourceProbe
+IDs. No deployed table is altered. A later change to the server total-cap setting
+supersedes its previous snapshot; an hourly/day-cap edit leaves it in place.
+Disabling the management flag stops commands/warnings but does not silently undo
+an already confirmed ceiling. No real balance is changed just by enabling this
+feature. A balance can be zero or below the daily cap: rolling rate limits and
+remaining package capacity are independent guards.
+
+Owner warnings are checked once a minute, only while that owner's bot connection
+is ready. Stages are at no more than three days of recent use (or 10,000 requests),
+one day (or 1,000), then zero. Each stage is queued once per confirmed snapshot or
+server ceiling; exhausted/obsolete warnings are rechecked before sending. Reply
+claims persist across restarts; unknown delivery is never replayed, and explicit
+Telegram 429 rejection permits at most two bounded retries. Warning failure never
+stops car discovery or its independent notification dispatcher.
+
+`budget.owner_management` exposes only enabled/menu/check state and whether the
+ceiling comes from server configuration or an owner snapshot. It does not expose
+owner identifiers, confirmation codes or private replies. The provider balance
+is **not** fetched automatically: the owner must verify activation and remaining
+requests in the AUTO.RIA account. Paid but queued packages must not be confirmed.
+There are no purchases or attempts to bypass provider limits.
+
 ## Confirmed deals only (2026-09-27)
 
 The owner rejected unpriced informational alerts after a $6,900 Golf appeared
