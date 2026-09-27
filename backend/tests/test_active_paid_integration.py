@@ -102,7 +102,7 @@ def test_initial_active_cards_respect_price_discount_and_unknown_market(p, monke
     assert quotes == ([] if mode == 'price' else ['123'])
 
 
-@pytest.mark.parametrize('instant,expected', [(1790326800, 110), (1790348400, 60), (1790366400, 140)])
+@pytest.mark.parametrize('instant,expected', [(1790326800, 110), (1790348400, 60), (1790366400, 250)])
 def test_paid_active_mode_preserves_kyiv_targets(p, monkeypatch, instant, expected):
     configured(p, monkeypatch)
     caps = BudgetLimits(4500, 90000, 90000)

@@ -98,11 +98,11 @@ an individual notification.
 ## Kyiv polling schedule with existing quota protection (2026-09-25)
 
 The owner requested these local-time targets, using `Europe/Kyiv` including
-seasonal UTC-offset changes:
+seasonal UTC-offset changes. The night target was later increased to 250 seconds:
 
 | Local period | Requested polling interval |
 | --- | --- |
-| 23:00–08:00 | 140 seconds |
+| 23:00–08:00 | 250 seconds |
 | 08:00–18:00 | 110 seconds |
 | 18:00–23:00 | 60 seconds |
 
@@ -112,13 +112,14 @@ previous constant, budget-derived interval. Missing system timezone data also
 falls back to that policy rather than stopping the monitor or assuming an offset.
 
 These are targets, not permission to exceed or increase purchased quota. The
-existing 900/hour, 12,000/rolling-24-hours and 90,000 cumulative caps are unchanged.
-At 15 distinct groups, the requested schedule costs approximately 12,881 search
+configured caps are unchanged by this schedule. For an example with
+900/hour, 12,000/rolling-24-hours and 90,000 cumulative caps:
+At 15 distinct groups, the requested schedule costs approximately 11,354 search
 calls per normal 24-hour day before details, AI quotes, extra pages and retries.
 To preserve the 75% planned discovery allocation, every target is scaled by the
 same daily-budget factor, then clamped against the hourly discovery allowance.
-With these caps and 15 groups the effective intervals are 201/158/86 seconds
-(night/day/evening). At least 1,200/hour and 17,175/day would be needed for the
+With these caps and 15 groups the effective intervals are 316/139/80 seconds
+(night/day/evening). At least 1,200/hour and 15,138/day would be needed for the
 targets under this planning model; these are software-budget calculations, not a
 verified provider plan or a guarantee that the remaining allowance covers bursts.
 No cap is raised automatically. Actual calls, including on DST transition dates,
@@ -1318,12 +1319,12 @@ pages are not fetched. Seen IDs, stopped subscriptions, epochs, sent and uncerta
 claims are preserved. Existing non-deals are not periodically reevaluated for
 price drops. Reappearing previously seen IDs do not generate duplicate interest.
 
-Paid mode keeps the Kyiv 140/110/60-second publication schedule and up to four
+Paid mode keeps the Kyiv 250/110/60-second publication schedule and up to four
 parallel discovery/evaluation operations. Active-page searches run one bounded
 step at a time; due publication searches and primary jobs retain priority. Fresh
 details and provider quotes are shared across groups. Supplemental calls retain
 quota headroom and the durable global caps. At 16 groups, the supplement adds up
-to 4,608 search requests per 24 hours, on top of about 13,740 scheduled publication
+to 4,608 search requests per 24 hours, on top of about 12,110 scheduled publication
 searches; detail/AI calls, retries and extra publication pages are additional.
 The live software caps are 4,500/hour, 90,000/day and 90,000 cumulative, below the
 owner-confirmed 5,000/hour provider cap. Accounting is never reset by activation.

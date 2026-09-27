@@ -12,7 +12,7 @@ except ZoneInfoNotFoundError:
     # Missing system tzdata must not stop discovery or guess a UTC offset.
     KYIV = None
 
-PERIODS = (("night", 23, 8, 140), ("day", 8, 18, 110), ("evening", 18, 23, 60))
+PERIODS = (("night", 23, 8, 250), ("day", 8, 18, 110), ("evening", 18, 23, 60))
 
 
 def policy(groups, limits, now=None):

@@ -23,20 +23,20 @@ def utc(value):
 
 
 @pytest.mark.parametrize("instant,period,interval", [
-    ("2026-09-25T04:59:59+00:00", "night", 140),
+    ("2026-09-25T04:59:59+00:00", "night", 250),
     ("2026-09-25T05:00:00+00:00", "day", 110),
     ("2026-09-25T14:59:59+00:00", "day", 110),
     ("2026-09-25T15:00:00+00:00", "evening", 60),
     ("2026-09-25T19:59:59+00:00", "evening", 60),
-    ("2026-09-25T20:00:00+00:00", "night", 140),
-    ("2026-09-25T21:00:00+00:00", "night", 140),
+    ("2026-09-25T20:00:00+00:00", "night", 250),
+    ("2026-09-25T21:00:00+00:00", "night", 250),
     ("2026-01-25T06:00:00+00:00", "day", 110),
     ("2026-01-25T16:00:00+00:00", "evening", 60),
-    ("2026-01-25T21:00:00+00:00", "night", 140),
-    ("2026-03-29T00:30:00+00:00", "night", 140),
-    ("2026-03-29T01:30:00+00:00", "night", 140),
-    ("2026-10-25T00:30:00+00:00", "night", 140),
-    ("2026-10-25T01:30:00+00:00", "night", 140),
+    ("2026-01-25T21:00:00+00:00", "night", 250),
+    ("2026-03-29T00:30:00+00:00", "night", 250),
+    ("2026-03-29T01:30:00+00:00", "night", 250),
+    ("2026-10-25T00:30:00+00:00", "night", 250),
+    ("2026-10-25T01:30:00+00:00", "night", 250),
 ])
 def test_kyiv_boundaries_include_winter_and_both_dst_transitions(instant, period, interval):
     caps = BudgetLimits(1200, 18000, 90000)
@@ -59,8 +59,8 @@ def test_budget_guard_reserves_capacity_and_never_raises_caps(groups):
     assert searches_per_day <= caps.daily * .75
     assert caps == BudgetLimits(900, 12000, 90000)
     if groups == 15:
-        assert [p["interval_seconds"] for p in report["periods"]] == [201, 158, 86]
-        assert report["requested_search_calls_per_day"] == 12881
+        assert [p["interval_seconds"] for p in report["periods"]] == [316, 139, 80]
+        assert report["requested_search_calls_per_day"] == 11354
         assert report["minimum_planning_limits"]["hourly"] == 1200
 
 
@@ -187,7 +187,7 @@ def test_night_transition_extends_wait_and_does_not_reenable_stopped_search(p, m
     assert len(searches(p)) == before
     with Session(p.engine) as db:
         feed = db.scalar(select(MonitorFeed))
-        assert feed.next_poll - feed.checked_at == 140
+        assert feed.next_poll - feed.checked_at == 250
         db.get(User, 111).ready = False
         db.get(Search, 1).enabled = False
         reset_watch(db, 1, False)
@@ -225,3 +225,27 @@ def test_environment_can_disable_schedule_without_changing_limits(monkeypatch):
     assert Settings.env().ria_poll_schedule_enabled
     monkeypatch.setenv("RIA_POLL_SCHEDULE_ENABLED", "false")
     assert not Settings.env().ria_poll_schedule_enabled
+
+
+def test_existing_140_second_night_wait_extends_without_losing_new_ads(p, monkeypatch):
+    configured(p, monkeypatch, "2026-09-25T21:00:00+00:00")
+    drain(p)
+    before = len(searches(p))
+    with Session(p.engine) as db:
+        feed = db.scalar(select(MonitorFeed))
+        feed.next_poll = feed.checked_at + 140  # persisted by the previous release
+        cursor, epoch = feed.cursor, db.get(MonitorWatch, 1).epoch
+        db.commit()
+    p.runner = Monitor(p.engine, p.runner.settings, p.runner.search_factory, p.runner.sender)
+    p.ads["124"] = p.clock[0] + 1
+    p.clock[0] += 141
+    assert not p.runner.tick()
+    assert len(searches(p)) == before and not p.sent
+    with Session(p.engine) as db:
+        feed = db.scalar(select(MonitorFeed))
+        assert feed.next_poll - feed.checked_at == 250
+        assert feed.cursor == cursor and db.get(MonitorWatch, 1).epoch == epoch
+    p.clock[0] += 110
+    drain(p)
+    assert len(searches(p)) == before + 1
+    assert [car.source_id for _, car in p.sent] == ["124"]
