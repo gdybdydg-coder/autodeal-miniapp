@@ -406,20 +406,45 @@ class RiaSearch:
             result.append(matches.pop())
         return result
 
-    def parameters(self, filters):
+    @staticmethod
+    def cached_parameters(db, filters):
+        """Resolve official IDs locally; missing/expired dictionaries fail closed.
+
+        Cross-subscription distribution must never turn one found car into N
+        extra provider requests. Normal discovery populates these dictionaries.
+        """
+        def resolve(path, names):
+            if not names:
+                return []
+            digest = hashlib.sha256(json.dumps([path, {}], sort_keys=True).encode()).hexdigest()
+            row = db.get(SourceCache, digest)
+            if row is None or row.expires_at <= time.time():
+                raise RiaError("catalog_not_cached")
+            result = []
+            for name in names:
+                values = {item["value"] for item in row.payload["items"]
+                          if normalize(item["name"]) == normalize(name)}
+                if len(values) != 1:
+                    raise RiaError("unsupported_filter")
+                result.append(values.pop())
+            return result
+        return RiaSearch.parameters(None, filters, resolver=resolve)
+
+    def parameters(self, filters, *, resolver=None):
+        resolve = resolver or self.resolve
         params = {"category_id": 1, "searchType": 4, "status_id": 0, "page": 0,
                   "order_by": 7, "countpage": PAGE_SIZE, "currency": 1}
         ids = {}
         if filters.model and not filters.brand:
             raise RiaError("unsupported_filter")
         if filters.brand:
-            ids["brand_id"] = self.resolve("categories/1/marks", [filters.brand])[0]
+            ids["brand_id"] = resolve("categories/1/marks", [filters.brand])[0]
             params["marka_id[0]"] = ids["brand_id"]
         if filters.model:
-            ids["model_id"] = self.resolve(f"categories/1/marks/{ids['brand_id']}/models", [filters.model])[0]
+            ids["model_id"] = resolve(f"categories/1/marks/{ids['brand_id']}/models", [filters.model])[0]
             params["model_id[0]"] = ids["model_id"]
         if filters.regions:
-            states = self.resolve("states", [region.removesuffix(" область") for region in filters.regions])
+            states = resolve("states", [region.removesuffix(" область") for region in filters.regions])
             ids["region_id"] = states if len(states) > 1 else states[0]
             for index, state in enumerate(states):
                 params[f"state[{index}]"] = state
@@ -428,7 +453,7 @@ class RiaSearch:
             ("body", "categories/1/bodystyles", "bodystyle", "body_id"),
             ("fuel", "type", "type", "fuel_id"),
             ("transmission", "categories/1/gearboxes", "gearbox", "gear_id")):
-            values = self.resolve(path, getattr(filters, field))
+            values = resolve(path, getattr(filters, field))
             ids[id_field] = values
             for i, value in enumerate(values):
                 params[f"{param}[{i}]"] = value

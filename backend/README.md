@@ -1,5 +1,37 @@
 # AUTODeal backend — subscriptions for new worthwhile cars
 
+## Shared distribution across compatible searches (2026-09-27)
+
+`RIA_SHARED_DISTRIBUTION_ENABLED=true` lets one fresh detail read and valuation
+serve other compatible active subscriptions before their individual search
+groups next poll. The flag defaults to false for staged rollout and can be
+disabled without deleting jobs, matches, claims, or checkpoints.
+`monitor.shared_distribution` reports the configured state.
+
+The fan-out uses the same strict official-ID, numeric-range, optional-detail,
+condition and minimum-discount checks as ordinary notifications. Extra groups
+resolve IDs only from unexpired official dictionary caches; a missing dictionary
+leaves that group to its normal poll instead of issuing additional provider
+requests. Subscription epochs and readiness are re-read under ascending user
+locks, and every existing delivery claim or seen ID remains authoritative.
+
+Publication jobs persist the lower bound of the provider's frozen search window.
+Only subscriptions activated no later than that proven boundary may join the
+shared result. A local first-seen timestamp is not proof of publication time.
+Supplemental active-page jobs instead retain their original observation time;
+cross-group sharing requires both active-window and include-initial opt-ins.
+Legacy jobs without these boundaries continue through their existing interests.
+No historical backfill or old-job replay is triggered by enabling the flag.
+
+Fresh primary jobs lead valuation batches; one slot remains available for old
+eligible primary work so it progresses too. Due publication discovery keeps its
+reserved slot, total source concurrency stays four, and all quota/backoff and
+supplemental-budget gates remain in force. This change does not increase caps
+or alter the Kyiv polling schedule. Log lines report source ID and shared match
+counts without subscriber identifiers. Shared matches are not a Telegram or
+phone delivery receipt; provider indexing, backlog and Telegram can still delay
+an individual notification.
+
 ## Kyiv polling schedule with existing quota protection (2026-09-25)
 
 The owner requested these local-time targets, using `Europe/Kyiv` including

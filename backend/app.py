@@ -59,6 +59,7 @@ class Settings:
     ria_active_window_include_initial: bool = False
     ria_failed_delivery_recovery_id: str = ""
     ria_photo_repair_ids: str = ""
+    ria_shared_distribution_enabled: bool = False
 
     @classmethod
     def env(cls):
@@ -89,6 +90,7 @@ class Settings:
             ria_owner_trace_listing_id=os.getenv("RIA_OWNER_TRACE_LISTING_ID", "").strip(),
             ria_active_window_include_initial=os.getenv("RIA_ACTIVE_WINDOW_INCLUDE_INITIAL") == "true",
             ria_photo_repair_ids=os.getenv("RIA_PHOTO_REPAIR_IDS", "").strip(),
+            ria_shared_distribution_enabled=os.getenv("RIA_SHARED_DISTRIBUTION_ENABLED") == "true",
             ria_failed_delivery_recovery_id=os.getenv("RIA_FAILED_DELIVERY_RECOVERY_ID", "").strip(),
         )
 
@@ -288,7 +290,8 @@ def create_app(settings: Settings, engine=None):
                     active_window_enabled=settings.ria_active_window_enabled,
                     provider_pricing_enabled=settings.ria_ai_price_enabled,
                     schedule_enabled=settings.ria_poll_schedule_enabled,
-                    active_window_include_initial=settings.ria_active_window_include_initial),
+                    active_window_include_initial=settings.ria_active_window_include_initial,
+                    shared_distribution_enabled=settings.ria_shared_distribution_enabled),
                 "full_scan": full_scan.runtime_status(engine, settings.full_scan_enabled),
                 "telegram": telegram_status(),
                 "miniapp_menu": telegram_setup.menu_status(engine, settings.miniapp_release)}
@@ -300,7 +303,8 @@ def create_app(settings: Settings, engine=None):
                                         active_window_enabled=settings.ria_active_window_enabled,
                                         provider_pricing_enabled=settings.ria_ai_price_enabled,
                                         schedule_enabled=settings.ria_poll_schedule_enabled,
-                                        active_window_include_initial=settings.ria_active_window_include_initial)
+                                        active_window_include_initial=settings.ria_active_window_include_initial,
+                                        shared_distribution_enabled=settings.ria_shared_distribution_enabled)
         telegram = telegram_status()
         connected = telegram["status"] == "configured"
         return {**runtime, "available": settings.live and runtime["running"] and connected,

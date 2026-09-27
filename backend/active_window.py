@@ -155,7 +155,8 @@ def discover(monitor, feed_id, source):
                     seen.state = "pending"
             job = db.get(MonitorJob, source_id)
             if job is None:
-                db.add(MonitorJob(source_id=source_id, first_seen=now, result={"discovery_kind": KIND}))
+                db.add(MonitorJob(source_id=source_id, first_seen=now,
+                    result={"discovery_kind": KIND, "shared_observed_at": now}))
             elif job.state != "pending":
                 # Reuse fresh details/quote when another group finds this car.
                 # This new interest is supplemental; normal age checks still run.

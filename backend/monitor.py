@@ -25,7 +25,7 @@ from .ria_budget import BudgetLimits
 from .ria_search import RiaSearch, estimate, matches, parse_ids, quota_status, budget_state
 from .valuation import (MAX_AGE, VERSION, PeerBatch, is_deal, price_only_evidence,
                         notification_condition_allowed, repair_notices)
-from . import active_window, ria_market_range, poll_schedule
+from . import active_window, ria_market_range, poll_schedule, shared_distribution
 from .reference_valuation import VERSION as REFERENCE_VERSION, VALUED as PEER_VALUED, notification_estimate
 
 VALUED = {*PEER_VALUED, "provider_lower_bound_adjusted"}
@@ -119,7 +119,7 @@ def active_members(db):
 
 
 def runtime_status(engine, enabled, uid=None, *, active_window_enabled=False, provider_pricing_enabled=False,
-                   schedule_enabled=False, active_window_include_initial=False):
+                   schedule_enabled=False, active_window_include_initial=False, shared_distribution_enabled=False):
     with Session(engine) as db:
         row = db.get(MonitorControl, "pilot")
         healthy = bool(enabled and row and time.time() - row.heartbeat < LEASE + 60)
@@ -150,6 +150,7 @@ def runtime_status(engine, enabled, uid=None, *, active_window_enabled=False, pr
                 "minimum_interval_seconds": (FAST_POLL_INTERVAL
                     if provider_pricing_enabled and not active_window_enabled else INTERVAL),
                 "active_filter_groups": groups, "shared_polling": True,
+                "shared_distribution": shared_distribution_enabled,
                 "pending_jobs": db.scalar(select(func.count()).select_from(MonitorJob)
                     .where(MonitorJob.state == "pending")),
                 "source_parallelism": PARALLEL_TASKS if provider_pricing_enabled else 1,
@@ -241,8 +242,9 @@ class Monitor:
 
     def current(self, db, sid, uid, epoch):
         # Same lock order as subscription edits and delivery: user before control.
-        user = db.scalar(select(User).where(User.id == uid).with_for_update())
-        row, watch = db.get(Search, sid), db.get(MonitorWatch, sid)
+        user = db.scalar(select(User).where(User.id == uid).with_for_update()
+                         .execution_options(populate_existing=True))
+        row, watch = db.get(Search, sid, populate_existing=True), db.get(MonitorWatch, sid, populate_existing=True)
         if (not user or not user.ready or not row or not row.enabled or not watch
                 or watch.epoch != epoch or not self.owned(db)):
             return None
@@ -362,7 +364,8 @@ class Monitor:
                         if seen.epoch == epoch and seen.state == "pending":
                             job = db.get(MonitorJob, source_id)
                             if job:
-                                job.result = {**job.result, "discovery_kind": "new_publication"}
+                                job.result = {**job.result, "discovery_kind": "new_publication",
+                                              "publication_after": current_slice["after"]}
                         continue
                     if seen is None:
                         db.add(MonitorSeen(search_id=sid, source_id=source_id, epoch=epoch,
@@ -375,11 +378,13 @@ class Monitor:
                         seen.state = "pending"
                     job = db.get(MonitorJob, source_id)
                     if job is None:
-                        db.add(MonitorJob(source_id=source_id, first_seen=now))
+                        db.add(MonitorJob(source_id=source_id, first_seen=now,
+                            result={"discovery_kind": "new_publication", "publication_after": current_slice["after"]}))
                     else:
                         if job.state != "pending":
                             job.state, job.next_run, job.reason = "pending", 0, ""
-                        job.result = {**job.result, "discovery_kind": "new_publication"}
+                        job.result = {**job.result, "discovery_kind": "new_publication",
+                                      "publication_after": current_slice["after"]}
                     context["added"] = True
                 watch.initialized, watch.window, watch.checked_at = True, ids, now
             more = bool(ids) and (context["page"] + 1) * PAGE_SIZE < total
@@ -424,12 +429,28 @@ class Monitor:
             job = db.get(MonitorJob, source_id)
             evidence = {**evidence, "discovered_at": job.first_seen, "evaluated_at": time.time(),
                         "notification_version": NOTIFICATION_VERSION}
-            for sid, uid, epoch, _ in self.interests(db, source_id):
+            # Keep publication evidence promoted by a concurrent search while
+            # the HTTP valuation was in flight; never infer it from job age.
+            evidence.update(shared_distribution.proof(job.result))
+            if job.result.get("discovery_kind") == "new_publication":
+                evidence["discovery_kind"] = "new_publication"
+            original = self.interests(db, source_id)
+            original_ids = {row[0] for row in original}
+            additional = shared_distribution.targets(db, self.settings, source_id, evidence)
+            shared_matches = total_matches = 0
+            # Same ascending user lock order for existing and new recipients.
+            for sid, uid, epoch, _ in sorted([*original, *additional], key=lambda row: (row[1], row[0])):
                 state = self.current(db, sid, uid, epoch)
                 if not state:
                     continue
                 search, _ = state
                 seen = db.get(MonitorSeen, (sid, source_id))
+                if sid not in original_ids:
+                    if seen is not None or shared_distribution.claimed(db, uid, source_id):
+                        continue
+                    seen = MonitorSeen(search_id=sid, source_id=source_id, epoch=epoch,
+                                       state="pending", first_seen=time.time())
+                    db.add(seen)
                 fingerprint = source_filters(search.filters).fingerprint()
                 # Dispatch may request a refresh for another subscription while
                 # this evaluation is in flight. Resolve its filters on the next
@@ -472,12 +493,17 @@ class Monitor:
                 db.flush()
                 db.merge(MonitorMatch(search_id=sid, listing_id=listing.id,
                                       epoch=epoch, fingerprint=search.fingerprint))
+                total_matches += 1
+                shared_matches += sid not in original_ids
             db.flush()
             job.state = "pending" if self.interests(db, source_id) else outcome
             job.reason, job.result = "", evidence
             if job.state == "pending":
                 job.next_run = 0
             db.commit()
+            if shared_matches:
+                batch_log.info("Monitor shared distribution source_id=%s added_matches=%s total_matches=%s",
+                               source_id, shared_matches, total_matches)
 
     def evaluate(self, source_id, source):
         with self._state_lock, Session(self.engine) as db:
@@ -497,6 +523,7 @@ class Monitor:
         if not reusable:
             candidate = source.car(source_id, force=True)
             evidence = {"candidate": candidate, "filters": {},
+                        **shared_distribution.proof(evidence),
                         "discovery_kind": evidence.get("discovery_kind", "new_publication")}
         any_match = False
         for _, _, _, raw_filters in interests:
@@ -506,6 +533,9 @@ class Monitor:
                 _, resolved = source.parameters(filters)
                 evidence["filters"][fingerprint] = resolved
             any_match |= matches(candidate, filters, evidence["filters"][fingerprint])
+        if not any_match:
+            with Session(self.engine) as db:
+                any_match = bool(shared_distribution.targets(db, self.settings, source_id, evidence))
         partial = incomplete_optional_details(candidate)
         excluded = not notification_condition_allowed(candidate)
         rating = evidence.get("rating", {})
@@ -679,9 +709,23 @@ class Monitor:
                 # Newly surfaced active-page IDs must not sit behind hours of
                 # older supplemental backlog. Keep primary publication jobs
                 # first, their retry ordering, and all existing budget gates.
-                jobs = list(db.scalars(job_query.order_by(case((supplemental, 1), else_=0),
-                    case((supplemental, -MonitorJob.first_seen), else_=MonitorJob.last_attempt),
-                    MonitorJob.last_attempt, MonitorJob.first_seen, MonitorJob.source_id).limit(PARALLEL_TASKS)))
+                if self.settings.ria_shared_distribution_enabled and self.settings.ria_ai_price_enabled:
+                    slots = PARALLEL_TASKS - bool(feed)
+                    fresh_after = time.time() - active_window.FRESH_ARRIVAL_SECONDS
+                    jobs = list(db.scalars(job_query.order_by(case((supplemental, 1), else_=0),
+                        case((MonitorJob.first_seen >= fresh_after, 0), else_=1),
+                        case((supplemental, -MonitorJob.first_seen), else_=MonitorJob.last_attempt),
+                        MonitorJob.first_seen, MonitorJob.source_id).limit(slots)))
+                    # Fresh primary arrivals get the front of each batch, but
+                    # an eligible old primary job retains one slot to progress.
+                    oldest = db.scalar(job_query.where(~supplemental, MonitorJob.first_seen < fresh_after)
+                        .order_by(MonitorJob.last_attempt, MonitorJob.first_seen, MonitorJob.source_id).limit(1))
+                    if oldest is not None and all(row.source_id != oldest.source_id for row in jobs):
+                        jobs = [*jobs[:slots - 1], oldest]
+                else:
+                    jobs = list(db.scalars(job_query.order_by(case((supplemental, 1), else_=0),
+                        case((supplemental, -MonitorJob.first_seen), else_=MonitorJob.last_attempt),
+                        MonitorJob.last_attempt, MonitorJob.first_seen, MonitorJob.source_id).limit(PARALLEL_TASKS)))
                 job = jobs[0] if jobs else None
                 last = db.get(MonitorControl, "pilot").status
                 kind = "evaluate" if job and (not feed or last == "discover") else "discover" if feed else None
