@@ -1387,3 +1387,34 @@ claims carry `prepared: true`. Compatibility recovery is limited to an old,
 unprepared attempt-2 claim whose unchanged receipt snapshot was already too old
 for the former formatter at claim time: that formatter necessarily raised before
 any Telegram request. Prepared or uncertain edits never enter that path.
+
+
+### Owner operational alerts
+
+`OWNER_ALERTS_ENABLED=true` enables a separate in-process watchdog for the
+configured `ADMIN_TELEGRAM_ID`. It reads existing database observations every
+60 seconds after a 3-minute startup grace; it makes no AUTO.RIA health requests.
+Only a ready owner receives alerts; stopped/disabled subscription epochs do not
+count toward work queues. No queue claims, budgets or subscriptions are changed.
+
+Checks cover a stale monitor heartbeat (>3 min), publication progress lag
+(>10 min or four scheduled intervals), new-publication valuation work waiting
+>10 min, current recipient delivery work waiting >10 min, quota/backoff pauses,
+and repeated Telegram failures (>=3, >=2 recipients, failures >= successes in
+10 min). Supplemental active-window backlog is excluded from the new-car queue
+alarm because it intentionally yields budget to fresh arrivals. Exhausted total
+budget uses the existing quota warning when quota management is enabled.
+
+A condition must persist across observations for 2 minutes before one alert is
+queued. Recovery also requires 2 minutes of positive evidence and an accepted
+original alert. Lack of new ads or Telegram attempts is not a failure or proof of
+recovery; a quota pause does not falsely clear discovery incidents. Persistent
+incident episodes and a separate durable outbox survive restarts. Stale, resolved
+or stopped-owner messages are cancelled before sending. Claims are committed
+before HTTP; uncertain/crashed sends are never replayed. Only explicit Telegram
+429 rejection permits a bounded retry. No artificial live test messages are sent.
+
+Sanitized status is at `budget.owner_alerts` in `/api/source-status`, without
+owner IDs or message content. This is not external uptime monitoring: a completely
+down process/database or unavailable Telegram prevents immediate notification.
+Telegram acceptance does not prove delivery of a phone push.

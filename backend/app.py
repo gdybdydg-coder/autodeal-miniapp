@@ -26,7 +26,7 @@ from .models import (Base, BotReply, Delivery, EnabledRequest, Filters, Listing,
                      MonitorFeed, MonitorJob, MonitorMembership, MonitorSeen, MonitorWatch,
                      Search, SearchEditRequest, SearchRequest, SourceProbe, TelegramTest, User)
 from . import monitor, telegram_setup, ria_rollout, full_scan, launch, notification_diagnostic, valuation_audit, ria_ai_price, ria_market_range
-from . import bot_commands, owner_trace, quota_management
+from . import bot_commands, owner_trace, quota_management, owner_alerts
 
 
 @dataclass(frozen=True)
@@ -62,6 +62,7 @@ class Settings:
     ria_shared_distribution_enabled: bool = False
     ria_confirmed_deals_only: bool = False
     ria_quota_management_enabled: bool = False
+    owner_alerts_enabled: bool = False
 
     @classmethod
     def env(cls):
@@ -94,6 +95,7 @@ class Settings:
             ria_photo_repair_ids=os.getenv("RIA_PHOTO_REPAIR_IDS", "").strip(),
             ria_shared_distribution_enabled=os.getenv("RIA_SHARED_DISTRIBUTION_ENABLED") == "true",
             ria_confirmed_deals_only=os.getenv("RIA_CONFIRMED_DEALS_ONLY") == "true",
+            owner_alerts_enabled=os.getenv("OWNER_ALERTS_ENABLED") == "true",
             ria_quota_management_enabled=os.getenv("RIA_QUOTA_MANAGEMENT_ENABLED") == "true",
             ria_failed_delivery_recovery_id=os.getenv("RIA_FAILED_DELIVERY_RECOVERY_ID", "").strip(),
         )
@@ -158,6 +160,7 @@ def create_app(settings: Settings, engine=None):
         stop = asyncio.Event()
         reply_task = asyncio.create_task(bot_commands.run(engine, settings, stop)) if (
             settings.configure_webhook or settings.ria_quota_management_enabled) else None
+        alert_task = asyncio.create_task(owner_alerts.run(engine, settings, stop)) if settings.owner_alerts_enabled else None
         task = asyncio.create_task(monitor.run(engine, settings, stop)) if settings.monitor_enabled else None
         scan_task = asyncio.create_task(full_scan.run(engine, settings.auto_ria_api_key, stop)) if settings.auto_ria_api_key and settings.full_scan_enabled else None
         validation_stop = threading.Event()
@@ -172,6 +175,8 @@ def create_app(settings: Settings, engine=None):
             validation_stop.set()
             if reply_task:
                 await reply_task
+            if alert_task:
+                await alert_task
             if task:
                 await task
             if scan_task:
@@ -287,7 +292,8 @@ def create_app(settings: Settings, engine=None):
     def source_status():
         # Cached public diagnostic only; refreshing NEVER spends API requests.
         return {**probe_status(engine, bool(settings.auto_ria_api_key)), "quota": quota_status(engine),
-                "budget": {**budget_usage(engine), "owner_management": quota_management.public_status(engine, settings)},
+                "budget": {**budget_usage(engine), "owner_management": quota_management.public_status(engine, settings),
+                           "owner_alerts": owner_alerts.public_status(engine, settings)},
                 "valuation_policy": ria_market_range.policy(confirmed_deals_only=settings.ria_confirmed_deals_only)
                     if settings.ria_ai_price_enabled else valuation_policy(),
                 "launch": launch.status(engine, settings.live and settings.monitor_enabled),

@@ -209,11 +209,16 @@ def check_warning(engine, settings):
 def deliver_one(engine, settings, request=None):
     if not settings.ria_quota_management_enabled or not settings.admin_telegram_id:
         return "disabled"
+    return deliver_reply(engine, settings, request)
+
+
+def deliver_reply(engine, settings, request=None, *, prefix=OUTBOX, validate=None, require_ready=False):
+    """Shared durable sender; callers gate their own feature before dispatch."""
     from .telegram_setup import call
     request = request or call
     now = time.time()
     with Session(engine) as db:
-        row = db.scalar(select(SourceProbe).where(SourceProbe.id.startswith(OUTBOX),
+        row = db.scalar(select(SourceProbe).where(SourceProbe.id.startswith(prefix),
             SourceProbe.status == "pending", SourceProbe.checked_at <= now)
             .order_by(SourceProbe.checked_at, SourceProbe.id).with_for_update(skip_locked=True).limit(1))
         if row is None:
@@ -230,7 +235,8 @@ def deliver_one(engine, settings, request=None):
             return "busy"
         row = db.get(SourceProbe, ident)
         owner = db.get(User, settings.admin_telegram_id, with_for_update=True)
-        if not owner:
+        if (not owner or (require_ready and not owner.ready)
+                or (validate and not validate(db, settings, data, now))):
             row.status = "cancelled"
         elif data.get("warning_level") and (not owner.ready or
                 (state := snapshot(db, now)) is None or state["generation"] != data["generation"]
