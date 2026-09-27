@@ -35,13 +35,13 @@ def range_valid(quote, source_id, now):
         and -30 <= now - quote["observed_at"] <= MAX_AGE)
 
 
-def policy():
+def policy(*, confirmed_deals_only=False):
     return {"version": VERSION, "basis": BASIS,
             "pricing_method": "provider_lower_bound_minus_5_percent",
             "adjustment_percent": 5, "threshold_scope": "subscription",
             "period_hours": 168, "provider_calls_per_uncached_listing": 1,
             "notification_comparable_requests": 0,
-            "missing_range": "informational_without_market_price",
+            "missing_range": "suppress_notification" if confirmed_deals_only else "informational_without_market_price",
             "native_app_range_identity_verified": False}
 
 

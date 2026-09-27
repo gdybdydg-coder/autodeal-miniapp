@@ -89,14 +89,16 @@ def matching_searches(user_id, listing_id):
         MonitorMatch.epoch == MonitorWatch.epoch, MonitorMatch.fingerprint == Search.fingerprint)
 
 
-def eligible(db, user_id, listing, now, *, require_provider_range=False):
+def eligible(db, user_id, listing, now, *, require_provider_range=False, require_confirmed_deal=False):
     car = Car.model_validate(listing.car)
+    if require_confirmed_deal and car.source == "auto_ria" and car.market is None:
+        return False
     if not fresh(car, now, db, require_provider_range=require_provider_range):
         return False
     if car.source == "auto_ria":
         # Production matches use official catalog IDs, not translated labels.
         # The trusted monitor records the filter fingerprint and enable epoch.
-        price_only = price_only_evidence_valid(car, now)
+        price_only = not require_confirmed_deal and price_only_evidence_valid(car, now)
         return any(price_only or is_deal(car.price, car.market, Filters.model_validate(search.filters).minDiscount)
                    for search in db.scalars(select(Search).where(
                        Search.id.in_(matching_searches(user_id, listing.id)))))
@@ -110,7 +112,11 @@ def supplemental_listing(listing):
                 and (listing.car.get("pipeline") or {}).get("discovery_kind") == "active_window")
 
 
-def enqueue(engine, now=None, *, allow_active_window=True, require_provider_range=False):
+def unpriced_listing(listing):
+    return bool(listing and listing.source == "auto_ria" and listing.car.get("market") is None)
+
+
+def enqueue(engine, now=None, *, allow_active_window=True, require_provider_range=False, require_confirmed_deal=False):
     now = time.time() if now is None else now
     with Session(engine) as db:
         # Drive fan-out from current, enabled monitor interests instead of
@@ -139,10 +145,15 @@ def enqueue(engine, now=None, *, allow_active_window=True, require_provider_rang
             listing = db.get(Listing, listing_id)
             if not allow_active_window and supplemental_listing(listing):
                 continue
+            # Do this before stale-price refresh: legacy informational cards
+            # must not be queued or revived by enabling confirmed-only mode.
+            if require_confirmed_deal and unpriced_listing(listing):
+                continue
             refreshable = (listing.source == "auto_ria"
                 and not fresh(Car.model_validate(listing.car), now, db, require_provider_range=require_provider_range)
                 and db.scalar(matching_searches(uid, listing.id).limit(1)) is not None)
-            if not refreshable and not eligible(db, uid, listing, now, require_provider_range=require_provider_range):
+            if not refreshable and not eligible(db, uid, listing, now,
+                    require_provider_range=require_provider_range, require_confirmed_deal=require_confirmed_deal):
                 continue
             try:
                 with db.begin_nested():
@@ -324,11 +335,14 @@ def deliver_one(engine, settings: Settings, sender, now=None, *, enforce_chat_in
             .where(Delivery.user_id == row.user_id, Delivery.id != delivery_id)) if user else None
         refresh = []
         retired = not settings.ria_active_window_enabled and supplemental_listing(listing)
-        if not retired and user and user.ready and listing and listing.source == "auto_ria" and not fresh(
+        unconfirmed = settings.ria_confirmed_deals_only and unpriced_listing(listing)
+        if not retired and not unconfirmed and user and user.ready and listing and listing.source == "auto_ria" and not fresh(
                 Car.model_validate(listing.car), now, db, require_provider_range=settings.ria_ai_price_enabled):
             refresh = list(db.scalars(matching_searches(user.id, listing.id)))
-        if retired:
+        if retired or unconfirmed:
             row.state = "cancelled"
+            if unconfirmed:
+                delivery_log.info("Unconfirmed notification suppressed source_id=%s", listing.source_id)
         elif refresh:
             # A long Telegram queue is not grounds to send an old price or silently
             # discard the opportunity. Revalidate through the normal budgeted job.
@@ -349,7 +363,8 @@ def deliver_one(engine, settings: Settings, sender, now=None, *, enforce_chat_in
             # row locked while waiting or jeopardize other recipients' slots.
             row.state, row.retry_at = "pending", last_send + 1.05
         elif not user or not user.ready or not listing or not eligible(
-                db, row.user_id, listing, now, require_provider_range=settings.ria_ai_price_enabled):
+                db, row.user_id, listing, now, require_provider_range=settings.ria_ai_price_enabled,
+                require_confirmed_deal=settings.ria_confirmed_deals_only):
             row.state = "cancelled"
         else:
             car = Car.model_validate(listing.car)
@@ -417,7 +432,9 @@ def main():
         print("Delivery disabled; no network requests made.")
         return
     engine = create_engine(settings.database_url, pool_pre_ping=True)
-    enqueue(engine)
+    enqueue(engine, allow_active_window=settings.ria_active_window_enabled,
+            require_provider_range=settings.ria_ai_price_enabled,
+            require_confirmed_deal=settings.ria_confirmed_deals_only)
     sender = TelegramSender(settings.bot_token)
     # Explicit invocation handles one message; schedule deliberately after approval.
     print(deliver_one(engine, settings, sender))

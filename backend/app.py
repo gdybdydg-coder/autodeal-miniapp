@@ -60,6 +60,7 @@ class Settings:
     ria_failed_delivery_recovery_id: str = ""
     ria_photo_repair_ids: str = ""
     ria_shared_distribution_enabled: bool = False
+    ria_confirmed_deals_only: bool = False
 
     @classmethod
     def env(cls):
@@ -91,6 +92,7 @@ class Settings:
             ria_active_window_include_initial=os.getenv("RIA_ACTIVE_WINDOW_INCLUDE_INITIAL") == "true",
             ria_photo_repair_ids=os.getenv("RIA_PHOTO_REPAIR_IDS", "").strip(),
             ria_shared_distribution_enabled=os.getenv("RIA_SHARED_DISTRIBUTION_ENABLED") == "true",
+            ria_confirmed_deals_only=os.getenv("RIA_CONFIRMED_DEALS_ONLY") == "true",
             ria_failed_delivery_recovery_id=os.getenv("RIA_FAILED_DELIVERY_RECOVERY_ID", "").strip(),
         )
 
@@ -282,7 +284,8 @@ def create_app(settings: Settings, engine=None):
         # Cached public diagnostic only; refreshing NEVER spends API requests.
         return {**probe_status(engine, bool(settings.auto_ria_api_key)), "quota": quota_status(engine),
                 "budget": budget_usage(engine),
-                "valuation_policy": ria_market_range.policy() if settings.ria_ai_price_enabled else valuation_policy(),
+                "valuation_policy": ria_market_range.policy(confirmed_deals_only=settings.ria_confirmed_deals_only)
+                    if settings.ria_ai_price_enabled else valuation_policy(),
                 "launch": launch.status(engine, settings.live and settings.monitor_enabled),
                 "valuation_check": validation_status(engine, settings.ria_validation_run_id, settings.ria_validation_profile),
                 "catalog_check": ria_rollout.status(engine),
@@ -291,7 +294,8 @@ def create_app(settings: Settings, engine=None):
                     provider_pricing_enabled=settings.ria_ai_price_enabled,
                     schedule_enabled=settings.ria_poll_schedule_enabled,
                     active_window_include_initial=settings.ria_active_window_include_initial,
-                    shared_distribution_enabled=settings.ria_shared_distribution_enabled),
+                    shared_distribution_enabled=settings.ria_shared_distribution_enabled,
+                    confirmed_deals_only=settings.ria_confirmed_deals_only),
                 "full_scan": full_scan.runtime_status(engine, settings.full_scan_enabled),
                 "telegram": telegram_status(),
                 "miniapp_menu": telegram_setup.menu_status(engine, settings.miniapp_release)}
@@ -304,7 +308,8 @@ def create_app(settings: Settings, engine=None):
                                         provider_pricing_enabled=settings.ria_ai_price_enabled,
                                         schedule_enabled=settings.ria_poll_schedule_enabled,
                                         active_window_include_initial=settings.ria_active_window_include_initial,
-                                        shared_distribution_enabled=settings.ria_shared_distribution_enabled)
+                                        shared_distribution_enabled=settings.ria_shared_distribution_enabled,
+                                        confirmed_deals_only=settings.ria_confirmed_deals_only)
         telegram = telegram_status()
         connected = telegram["status"] == "configured"
         return {**runtime, "available": settings.live and runtime["running"] and connected,

@@ -119,7 +119,8 @@ def active_members(db):
 
 
 def runtime_status(engine, enabled, uid=None, *, active_window_enabled=False, provider_pricing_enabled=False,
-                   schedule_enabled=False, active_window_include_initial=False, shared_distribution_enabled=False):
+                   schedule_enabled=False, active_window_include_initial=False, shared_distribution_enabled=False,
+                   confirmed_deals_only=False):
     with Session(engine) as db:
         row = db.get(MonitorControl, "pilot")
         healthy = bool(enabled and row and time.time() - row.heartbeat < LEASE + 60)
@@ -151,6 +152,7 @@ def runtime_status(engine, enabled, uid=None, *, active_window_enabled=False, pr
                     if provider_pricing_enabled and not active_window_enabled else INTERVAL),
                 "active_filter_groups": groups, "shared_polling": True,
                 "shared_distribution": shared_distribution_enabled,
+                "confirmed_deals_only": confirmed_deals_only,
                 "pending_jobs": db.scalar(select(func.count()).select_from(MonitorJob)
                     .where(MonitorJob.state == "pending")),
                 "source_parallelism": PARALLEL_TASKS if provider_pricing_enabled else 1,
@@ -470,7 +472,7 @@ class Monitor:
                     and is_deal(candidate["price_usd"], rating["market"], filters.minDiscount))
                 if (not candidate or not notification_condition_allowed(candidate) or resolved is None
                         or not matches(candidate, filters, resolved)
-                        or not (partial or priced_deal)):
+                        or not (priced_deal or (partial and not self.settings.ria_confirmed_deals_only))):
                     continue
                 proof = (price_only_evidence(candidate, evidence["evaluated_at"], evidence["uncertainty_reasons"],
                          pricing_policy=ria_market_range.VERSION if self.settings.ria_ai_price_enabled else None)
@@ -554,8 +556,8 @@ class Monitor:
                 try:
                     quote = source.market_range(source_id, self.settings.auto_ria_user_id)
                 except RiaError as exc:
-                    # A method outage/permission/quota failure cannot hide the
-                    # matching candidate whose positive price is already fresh.
+                    # Record unavailable valuation without inventing a market.
+                    # The notification policy decides whether it may be sent.
                     log.warning("AUTO.RIA AI valuation unavailable source_id=%s reason=%s", source_id, str(exc))
                 evidence["rating"] = ria_market_range.estimate(candidate, quote)
             else:
@@ -587,6 +589,9 @@ class Monitor:
         evidence["informational_notification"] = bool(uncertainty)
         outcome = ("excluded" if excluded else "informational" if uncertainty else "checked"
                    if not any_match or rating.get("valuation") in VALUED else "unvalued")
+        if uncertainty and self.settings.ria_confirmed_deals_only:
+            outcome = "unvalued"
+            batch_log.info("Unconfirmed valuation withheld source_id=%s", source_id)
         self.complete(source_id, evidence, outcome)
 
     def defer(self, kind, key, reason, limits):
@@ -800,7 +805,8 @@ class Monitor:
             return
         from .worker import TelegramSender, deliver_one, enqueue
         enqueue(self.engine, allow_active_window=self.settings.ria_active_window_enabled,
-                require_provider_range=self.settings.ria_ai_price_enabled)
+                require_provider_range=self.settings.ria_ai_price_enabled,
+                require_confirmed_deal=self.settings.ria_confirmed_deals_only)
         # Legacy single-step test/operator helper; the running dispatcher below
         # enforces per-chat spacing when sending batches concurrently.
         deliver_one(self.engine, self.settings, self.sender or TelegramSender(self.settings.bot_token),
@@ -833,7 +839,8 @@ async def run(engine, settings, stop):
                     if time.monotonic() >= next_enqueue:
                         await asyncio.to_thread(enqueue, engine,
                             allow_active_window=settings.ria_active_window_enabled,
-                            require_provider_range=settings.ria_ai_price_enabled)
+                            require_provider_range=settings.ria_ai_price_enabled,
+                            require_confirmed_deal=settings.ria_confirmed_deals_only)
                         next_enqueue = time.monotonic() + 1
                     # Four simultaneous requests, with at least .25s between
                     # batches: at most 16/s, below Telegram's free broadcast cap.

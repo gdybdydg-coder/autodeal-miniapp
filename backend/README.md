@@ -1,5 +1,24 @@
 # AUTODeal backend — subscriptions for new worthwhile cars
 
+## Confirmed deals only (2026-09-27)
+
+The owner rejected unpriced informational alerts after a $6,900 Golf appeared
+without a usable market quote. `RIA_CONFIRMED_DEALS_ONLY=true` changes notification
+policy: missing/invalid/unavailable valuations remain `unvalued`, create no
+notification matches, and never bypass the saved minimum discount. Existing
+unpriced matches cannot enter the queue, and pending unpriced deliveries are
+cancelled before HTTP sending or stale-price refresh. Sent, uncertain and other
+final claims are never reopened. No historical rescanning or quote retry loop is
+introduced. The flag defaults to false for rollout compatibility; production is
+explicitly enabled. `monitor.confirmed_deals_only` reports its actual value.
+
+This intentionally suppresses even potentially worthwhile cars if the provider
+cannot confirm their value. Missing optional vehicle specifications and repair
+markers still do not block a car with a valid qualifying quote. Abroad/customs
+exclusions, per-search thresholds, current positive prices, stop/epochs, shared
+distribution, quotas and the polling schedule retain their existing rules.
+No guessed $5,500 price, brand/year cap, or new valuation source is introduced.
+
 ## Shared distribution across compatible searches (2026-09-27)
 
 `RIA_SHARED_DISTRIBUTION_ENABLED=true` lets one fresh detail read and valuation
