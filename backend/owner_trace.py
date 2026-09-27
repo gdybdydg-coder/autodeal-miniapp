@@ -10,9 +10,10 @@ from urllib.parse import urlsplit
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from .launch import listing_trace
+from .launch import activity, listing_trace
 from .models import (Delivery, DeliveryTiming, Filters, Listing, MonitorJob,
-                     MonitorSeen, Search, SourceProbe, User)
+                     MonitorFeed, MonitorMembership, MonitorSeen, MonitorWatch,
+                     Search, SourceProbe, User)
 from .notification_diagnostic import validate_id
 from .delivery_diagnostic import receipt
 
@@ -28,14 +29,31 @@ def snapshot(db, uid, source_id):
         return {"source_id": source_id, "scope": "configured_admin", "account_found": False}
     result = {"source_id": source_id, "scope": "configured_admin", "account_found": True,
               "telegram_ready": user.ready, "trace": listing_trace(db, uid, source_id)}
+    result["activity"] = activity(db, uid)
+    result["recent_accepted"] = [
+        {"source_id": listing.source_id, "message_id": delivery.message_id,
+         "accepted_at": timing.accepted_at}
+        for delivery, timing, listing in db.execute(
+            select(Delivery, DeliveryTiming, Listing)
+            .join(DeliveryTiming, DeliveryTiming.delivery_id == Delivery.id)
+            .join(Listing, Listing.id == Delivery.listing_id)
+            .where(Delivery.user_id == uid, Delivery.state == "sent",
+                   DeliveryTiming.accepted_at.is_not(None))
+            .order_by(DeliveryTiming.accepted_at.desc(), Delivery.id.desc()).limit(5))]
     repair = db.get(SourceProbe, 'owner-photo-repair-v1-' + str(uid) + '-' + source_id)
     result['photo_repair'] = {'status': repair.status, 'result': repair.result} if repair else None
     result["searches"] = []
     for search in db.scalars(select(Search).where(Search.user_id == uid).order_by(Search.id).limit(100)):
         filters = Filters.model_validate(search.filters)
         seen = db.get(MonitorSeen, (search.id, source_id))
+        watch = db.get(MonitorWatch, search.id)
+        member = db.get(MonitorMembership, search.id)
+        feed = db.get(MonitorFeed, member.feed_id) if member else None
         result["searches"].append({"search_id": search.id, "enabled": search.enabled,
             "filters": filters.model_dump(by_alias=True),
+            "monitor": {"status": watch.status, "checked_at": watch.checked_at,
+                "next_poll_at": watch.next_poll, "cursor_at": feed.cursor if feed else None}
+                if watch else None,
             "first_seen_at": seen.first_seen if seen else None})
     job = db.get(MonitorJob, source_id)
     if job:

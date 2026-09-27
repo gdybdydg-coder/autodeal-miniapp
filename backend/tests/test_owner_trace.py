@@ -37,11 +37,36 @@ def test_trace_reports_only_owners_receipt_and_preserves_all_state(p, delivery_s
             assert report["delivery"]["message_id"] == 12345
             assert report["delivery"]["timing"]["accepted_at"] is not None
             assert len(report["searches"]) == 1 and report["searches"][0]["search_id"] == 1
+            assert report["searches"][0]["monitor"]["cursor_at"] is not None
+            assert report["activity"]["messages_accepted"] == (1 if delivery_state == "sent" else 0)
+            assert [r["message_id"] for r in report["recent_accepted"]] == ([12345] if delivery_state == "sent" else [])
             assert "99999" not in json.dumps(report) and "user_id" not in json.dumps(report)
             assert db.get(SourceBudget, "auto_ria").total == spent
     finally:
         event.remove(p.engine, "before_cursor_execute", capture)
     assert not writes and (len(p.calls), len(p.sent)) == (calls, sent)
+
+
+def test_recent_receipts_are_bounded_ordered_and_private(p):
+    drain(p)
+    p.ads.update({str(n): p.clock[0] + 1 for n in range(124, 132)})
+    wake(p)
+    drain(p)
+    with Session(p.engine) as db:
+        own = list(db.scalars(select(Delivery).where(Delivery.user_id == 111).order_by(Delivery.id)))
+        assert len(own) == 8
+        for n, row in enumerate(own):
+            db.get(DeliveryTiming, row.id).accepted_at = p.clock[0] + n
+        other = Delivery(user_id=222, listing_id=own[0].listing_id, state="sent", message_id=99999)
+        db.add(other)
+        db.flush()
+        db.add(DeliveryTiming(delivery_id=other.id, queued_at=p.clock[0], accepted_at=p.clock[0] + 100))
+        db.commit()
+        report = owner_trace.snapshot(db, 111, "124")
+        assert len(report["recent_accepted"]) == 5
+        assert [r["message_id"] for r in report["recent_accepted"]] == [row.message_id for row in reversed(own[-5:])]
+        assert report["activity"]["messages_accepted"] == 8
+        assert "99999" not in json.dumps(report)
 
 
 def test_trace_explains_owner_threshold_without_evaluating_again(p):
