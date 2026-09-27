@@ -126,6 +126,8 @@ def create_app(settings: Settings, engine=None):
         monitor.initialize(engine)
         launch.initialize(engine, settings.live and settings.monitor_enabled)
         await asyncio.to_thread(owner_trace.log_once, engine, settings)
+        from .delivery_cohort_audit import log_once as audit_delivery_cohorts
+        await asyncio.to_thread(audit_delivery_cohorts, engine)
         await asyncio.to_thread(valuation_audit.check_once, engine, settings.valuation_audit_run_id)
         if not settings.full_scan_enabled:
             full_scan.pause_all(engine)
