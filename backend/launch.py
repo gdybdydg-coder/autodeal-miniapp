@@ -137,6 +137,7 @@ def listing_trace(db, uid, source_id):
 
 def activity(db, uid=None):
     """A bounded 24h view. Private callers see only their subscription interests."""
+    from . import operational_stats
     cutoff = time.time() - WINDOW
     subscriptions = select(Search.id)
     if uid is not None:
@@ -184,7 +185,8 @@ def activity(db, uid=None):
             "excluded_condition": count(MonitorJob, *jobs, MonitorJob.state == "excluded"),
             "latest_unknown_reason": unknown_reason,
             "unknown_breakdown": unknown_breakdown(db, jobs),
-            "messages_accepted": sent, "last_delivery": last, "receipt_basis": "telegram_api_acceptance"}
+            "messages_accepted": sent, "last_delivery": last, "receipt_basis": "telegram_api_acceptance",
+            "queues": operational_stats.queues(db, uid), "latency": operational_stats.latency(db, uid)}
 
 
 def status(engine, enabled):

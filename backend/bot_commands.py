@@ -53,12 +53,13 @@ def connection_confirmed(db, uid):
         BotReply.user_id == uid, BotReply.command == "/start", BotReply.state == "sent").limit(1)))
 
 
-def stats_text(db, uid, admin_uid):
+def stats_text(db, uid, admin_uid, *, settings=None):
     if not admin_uid:
         logging.getLogger(__name__).warning("AUTODeal admin bootstrap requested by Telegram user %s", uid)
         return f"🔐 Адмін ще не налаштований. Ваш Telegram ID: {uid}"
     if uid != admin_uid:
         return "⛔ Команда доступна лише адміністратору."
+    from . import operational_stats
     total = db.scalar(select(func.count()).select_from(User)) or 0
     active = db.scalar(select(func.count()).select_from(User).where(User.ready.is_(True))) or 0
     searches = db.scalar(select(func.count()).select_from(Search).where(Search.enabled.is_(True))) or 0
@@ -88,7 +89,7 @@ def stats_text(db, uid, admin_uid):
         f"🟢 Підключені до бота: {active}\n"
         f"🔎 Активних пошуків: {searches}\n"
         f"🚘 Користувачів з активним пошуком: {owners}"
-        + quota
+        + "\n\n" + operational_stats.text(db, settings) + quota
     )
 
 
@@ -125,7 +126,8 @@ def deliver_one(engine, settings, request=None):
             try:
                 result = request(settings.bot_token, "sendMessage", payload(
                     reply.command, reply.user_id, settings.miniapp_release,
-                    stats_text(db, reply.user_id, settings.admin_telegram_id) if reply.command == "/stats" else None))
+                    stats_text(db, reply.user_id, settings.admin_telegram_id, settings=settings)
+                    if reply.command == "/stats" else None))
                 message_id = (result.get("result") or {}).get("message_id")
                 if result.get("ok") is True and type(message_id) is int and message_id > 0:
                     reply.state, reply.message_id = "sent", message_id

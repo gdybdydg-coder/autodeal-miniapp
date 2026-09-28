@@ -1433,3 +1433,31 @@ Sanitized status is at `budget.owner_alerts` in `/api/source-status`, without
 owner IDs or message content. This is not external uptime monitoring: a completely
 down process/database or unavailable Telegram prevents immediate notification.
 Telegram acceptance does not prove delivery of a phone push.
+
+### Owner statistics and delivery distributions (plan step 5)
+
+The existing owner-only `/stats` command now includes the monitor heartbeat,
+active shared group count, latest successful publication-search page, oldest
+successful check among those groups, and groups never successfully checked.
+It shows the current primary interval and the supplemental night pause using
+Europe/Kyiv. A recent successful page is not proof that every group or listing
+has been covered. Quota remains explicitly local accounting, not provider balance.
+
+Current queues count unique pending cars with a current ready subscription
+interest (new publications and supplemental work separately), and pending/sending
+messages with a current recipient match. They include old pending backlog, not
+only the last 24 hours, and exclude stopped users, retired epochs and stale
+filter matches. A shared car or multiply matched message is counted once.
+
+Delivery distributions use all `sent` records accepted by Telegram in the last
+24 hours with valid observed timestamps. They report sample size, median (p50),
+and nearest-rank p95 for discovery-to-acceptance and queue-to-acceptance. Missing,
+reversed and future timestamps do not become zero latency. Failed/uncertain sends
+are excluded; small discovery samples are labelled. These measure accepted
+messages, not unique cars, publication-to-discovery delay or phone push receipts.
+
+The same aggregate `queues` and `latency` objects are available under
+`launch.activity` in the public source status, without identifiers. Authenticated
+notification activity scopes both to the caller. Numeric timing columns stream
+in batches; no listing payloads or per-delivery queries are loaded. All statistics
+are read-only and make no AUTO.RIA calls, schema changes, sends or state resets.
