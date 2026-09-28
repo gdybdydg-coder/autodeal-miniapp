@@ -1461,3 +1461,34 @@ The same aggregate `queues` and `latency` objects are available under
 notification activity scopes both to the caller. Numeric timing columns stream
 in batches; no listing payloads or per-delivery queries are loaded. All statistics
 are read-only and make no AUTO.RIA calls, schema changes, sends or state resets.
+
+### Owner listing explanations (plan step 6)
+
+`/check ID` or `/check AUTO.RIA_URL`
+reads only the configured owner's saved subscription history, without AUTO.RIA
+requests, probing the supplied URL, changing subscriptions or re-sending a car.
+The private owner menu advertises this command alongside `/quota`; its persisted
+menu marker is upgraded once. The existing reply loop runs for a configured owner
+even if automatic webhook configuration or quota management is disabled.
+
+The report distinguishes pending work and its saved retry reason, known filter
+conflicts, invalid price, source exclusions, missing usable valuation, insufficient
+discount, current matches and sent/pending/sending/failed/uncertain/cancelled
+delivery records. It includes the saved observation/evaluation and acceptance
+times when available. A match must have the current epoch and fingerprint.
+An absent observation is explicitly unknown, not a claim that AUTO.RIA had no ad
+or that filters rejected it. Saved receipts remain visible even after subscription
+history is removed; another user's jobs and receipts are never disclosed.
+
+The authenticated trace API shares those classifications, scoped to its caller.
+Reports contain at most eight subscription explanations with an omitted count.
+Official listing URLs are parsed locally with an exact host/path allowlist; raw
+invalid arguments, seller text, credentials and pricing formulas are not echoed.
+This is saved evidence, not a new appraisal or a current listing availability test.
+
+`/check` uses a separate durable SourceProbe outbox and update deduplication so an
+out-of-order check cannot hide a delayed `/stop`. Webhook authentication, private
+owner scope and command age are checked before lookup. The shared reply sender
+claims before HTTP and never retries uncertain/crashed sends; explicit Telegram
+429 rejection retains its existing bounded retry. No database migration or
+environment change is required. No artificial live diagnostic messages are sent.

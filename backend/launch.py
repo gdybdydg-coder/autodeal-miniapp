@@ -73,6 +73,27 @@ def duration(start, end):
     return round(end - start, 3) if start is not None and end is not None and 0 < start <= end else None
 
 
+def trace_filter_reason(candidate, filters, ids):
+    labels = {"brand_id": "brand", "model_id": "model", "region_id": "region",
+              "body_id": "body", "fuel_id": "fuel", "gear_id": "gear"}
+    for key, value in ids.items():
+        actual = candidate.get(key)
+        mismatch = (bool(value) and actual not in value and
+                    (actual is not None or key not in {"body_id", "fuel_id", "gear_id"})) if isinstance(value, list) else actual != value
+        if mismatch:
+            return "filter_"+labels.get(key, "other")
+    for key, value, bounds in (("price", candidate["price_usd"], filters.price),
+                              ("year", candidate["year"], filters.year),
+                              ("mileage", candidate.get("mileage"), filters.mileage)):
+        if value is None:
+            continue
+        value = value/1000 if key == "mileage" else value
+        if ((bounds.from_ is not None and value < bounds.from_) or
+                (bounds.to is not None and value > bounds.to)):
+            return "filter_"+key
+    return None
+
+
 def listing_trace(db, uid, source_id):
     """Only the caller's recorded interests; no provider calls or other users' jobs."""
     from .ria_search import matches
@@ -81,21 +102,27 @@ def listing_trace(db, uid, source_id):
         .outerjoin(MonitorWatch, MonitorWatch.search_id == Search.id)
         .where(Search.user_id == uid, MonitorSeen.source_id == source_id)
         .order_by(Search.id)).all()
-    if not seen:
-        return {"source_id": source_id, "state": "not_observed", "subscriptions": []}
-    job = db.get(MonitorJob, source_id)
-    evidence = job.result if job and isinstance(job.result, dict) else {}
-    candidate = evidence.get("candidate")
-    rating = evidence.get("rating") or {}
-    resolved = evidence.get("filters") or {}
     listing = db.scalar(select(Listing).where(Listing.source == "auto_ria",
                                               Listing.source_id == source_id))
     delivery = db.scalar(select(Delivery).where(Delivery.user_id == uid,
         Delivery.listing_id == listing.id)) if listing else None
+    if not seen:
+        result = {"source_id": source_id, "state": "not_observed", "subscriptions": []}
+        # A deleted subscription must not erase the caller's durable receipt.
+        if delivery:
+            result.update(delivery_state=delivery.state, telegram_accepted=delivery.state == "sent")
+        return result
+    job = db.get(MonitorJob, source_id)
+    evidence = job.result if job and isinstance(job.result, dict) else {}
+    candidate = evidence.get("candidate")
+    rating = evidence.get("rating") if isinstance(evidence.get("rating"), dict) else {}
+    resolved = evidence.get("filters") or {}
     entries = []
     for search, interest, watch in seen:
         current = bool(search.enabled and watch and interest.epoch == watch.epoch)
-        match = bool(listing and db.get(MonitorMatch, (search.id, listing.id)))
+        saved_match = db.get(MonitorMatch, (search.id, listing.id)) if listing else None
+        match = bool(current and saved_match and saved_match.epoch == watch.epoch
+                     and saved_match.fingerprint == search.fingerprint)
         reason = None
         if not current:
             stage = "inactive_subscription"
@@ -103,7 +130,8 @@ def listing_trace(db, uid, source_id):
             stage = "checking"
             reason = job.reason if job and job.reason in {
                 "quota_exceeded", "busy", "search_limit", "connection_error",
-                "upstream_error", "listing_unavailable"} else None
+                "upstream_error", "listing_unavailable", "reserved_for_new_publications",
+                "invalid_response", "unsupported_filter"} else None
         elif interest.state == "unavailable":
             stage = "listing_unavailable"
         elif interest.state in {"cancelled", "window_cancelled"}:
@@ -112,16 +140,26 @@ def listing_trace(db, uid, source_id):
             stage = "matched"
         elif isinstance(candidate, dict) and isinstance(resolved, dict):
             from .models import Filters
-            from .monitor import source_filters
+            from .monitor import source_filters, VALUED
+            from .valuation import number
             filters = Filters.model_validate(search.filters)
             ids = resolved.get(source_filters(search.filters).fingerprint())
-            if not notification_condition_allowed(candidate):
+            if not number(candidate.get("price_usd"), positive=True):
+                stage = "invalid_price"
+            elif not notification_condition_allowed(candidate):
                 stage = "source_exclusion"
+                flags = candidate.get("condition_exclusions")
+                reason = next((flag for flag in ("abroad", "custom") if isinstance(flags, list) and flag in flags), None)
             elif ids is None:
                 stage = "unresolved_filter"
+            elif not isinstance(ids, dict) or not number(candidate.get("year")):
+                stage = "checked_without_evidence"
             elif not matches(candidate, filters, ids):
                 stage = "filter_mismatch"
-            elif rating.get("market") and not is_deal(candidate.get("price_usd"),
+                reason = trace_filter_reason(candidate, filters, ids)
+            elif rating.get("valuation") not in VALUED or not number(rating.get("market"), positive=True):
+                stage = "market_unconfirmed"
+            elif not is_deal(candidate.get("price_usd"),
                                                        rating["market"], filters.minDiscount):
                 stage = "below_min_discount"
             else:

@@ -26,7 +26,7 @@ from .models import (Base, BotReply, Delivery, EnabledRequest, Filters, Listing,
                      MonitorFeed, MonitorJob, MonitorMembership, MonitorSeen, MonitorWatch,
                      Search, SearchEditRequest, SearchRequest, SourceProbe, TelegramTest, User)
 from . import monitor, telegram_setup, ria_rollout, full_scan, launch, notification_diagnostic, valuation_audit, ria_ai_price, ria_market_range
-from . import bot_commands, owner_trace, quota_management, owner_alerts
+from . import bot_commands, owner_trace, quota_management, owner_alerts, listing_check
 
 
 @dataclass(frozen=True)
@@ -159,7 +159,7 @@ def create_app(settings: Settings, engine=None):
                                    settings.auto_ria_user_id, settings.ria_ai_price_probe_id)
         stop = asyncio.Event()
         reply_task = asyncio.create_task(bot_commands.run(engine, settings, stop)) if (
-            settings.configure_webhook or settings.ria_quota_management_enabled) else None
+            settings.configure_webhook or settings.ria_quota_management_enabled or settings.admin_telegram_id) else None
         alert_task = asyncio.create_task(owner_alerts.run(engine, settings, stop)) if settings.owner_alerts_enabled else None
         task = asyncio.create_task(monitor.run(engine, settings, stop)) if settings.monitor_enabled else None
         scan_task = asyncio.create_task(full_scan.run(engine, settings.auto_ria_api_key, stop)) if settings.auto_ria_api_key and settings.full_scan_enabled else None
@@ -528,7 +528,9 @@ def create_app(settings: Settings, engine=None):
         if mention and mention.lower() != telegram_setup.BOT_USERNAME.lower():
             return {"ok": True}
         is_quota = command in quota_management.COMMANDS
-        if command not in ("/start", "/stop", "/help", "/stats") and not is_quota:
+        if command not in ("/start", "/stop", "/help", "/stats", "/check") and not is_quota:
+            return {"ok": True}
+        if command == "/check" and (not settings.admin_telegram_id or uid != settings.admin_telegram_id):
             return {"ok": True}
         if is_quota and (not settings.ria_quota_management_enabled or uid != settings.admin_telegram_id):
             return {"ok": True}
@@ -536,6 +538,12 @@ def create_app(settings: Settings, engine=None):
             raise HTTPException(422, "Invalid message date")
         with Session(engine) as db:
             user = user_row(db, uid)
+            if command == "/check":
+                # Separate dedupe: a read-only command arriving out of order
+                # must never mask an earlier /stop or reactivate subscriptions.
+                listing_check.handle(db, settings, uid, text, update_id, command_at)
+                db.commit()
+                return {"ok": True}
             if is_quota:
                 # Quota event dedupe is separate: an out-of-order admin command
                 # must never cause an earlier /stop to be ignored.

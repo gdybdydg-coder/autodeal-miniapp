@@ -156,13 +156,17 @@ def configure(engine, settings, request=None):
 
 
 async def run(engine, settings, stop):
-    from . import quota_management
+    from . import quota_management, listing_check
     next_warning = 0
     while not stop.is_set():
         try:
             await asyncio.to_thread(deliver_one, engine, settings)
         except Exception:
             logging.getLogger(__name__).error("Bot command reply processing failed")
+        try:
+            await asyncio.to_thread(listing_check.deliver_one, engine, settings)
+        except Exception:
+            logging.getLogger(__name__).error("Listing check reply processing failed")
         if settings.ria_quota_management_enabled:
             try:
                 if time.monotonic() >= next_warning:

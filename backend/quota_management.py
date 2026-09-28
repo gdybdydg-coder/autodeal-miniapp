@@ -168,6 +168,9 @@ def public_status(engine, settings):
                 "owner_configured": bool(settings.admin_telegram_id),
                 "menu_configured": bool(menu and menu.status == "configured"
                     and menu.result.get("uid") == settings.admin_telegram_id),
+                "listing_check_command": bool(menu and menu.status == "configured"
+                    and menu.result.get("uid") == settings.admin_telegram_id
+                    and menu.result.get("listing_check_command") is True),
                 "alerts_checked_at": alert.checked_at if alert else None,
                 "balance_source": "owner_confirmed_snapshot" if confirmed else "server_limit",
                 "provider_balance_read_automatically": False}
@@ -270,9 +273,11 @@ def configure(engine, settings, request=None):
     ident = "telegram-quota-owner-menu-v1"
     with Session(engine) as db:
         row = db.get(SourceProbe, ident)
-        if row and row.status == "configured" and row.result.get("uid") == settings.admin_telegram_id:
+        if (row and row.status == "configured" and row.result.get("uid") == settings.admin_telegram_id
+                and row.result.get("listing_check_command") is True):
             return
         commands = [*bot_commands.COMMANDS,
+                    {"command": "check", "description": "Чому авто не надійшло: ID або посилання"},
                     {"command": "quota", "description": "Залишок та ліміти запитів"},
                     {"command": "quota_set", "description": "Вказати залишок активного пакета"}]
         try:
@@ -282,5 +287,5 @@ def configure(engine, settings, request=None):
         except Exception:
             ok = False
         db.merge(SourceProbe(id=ident, status="configured" if ok else "unavailable", checked_at=time.time(),
-                            requests=0, result={"uid": settings.admin_telegram_id}))
+                            requests=0, result={"uid": settings.admin_telegram_id, "listing_check_command": True}))
         db.commit()
