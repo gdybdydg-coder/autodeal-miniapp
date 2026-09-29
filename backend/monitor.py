@@ -151,6 +151,12 @@ def runtime_status(engine, enabled, uid=None, *, active_window_enabled=False, pr
                 "minimum_interval_seconds": (FAST_POLL_INTERVAL
                     if provider_pricing_enabled and not active_window_enabled else INTERVAL),
                 "active_filter_groups": groups, "shared_polling": True,
+                "compatible_searches": {
+                    "enabled": True,
+                    "subscription_filter_groups": len({source_filters(search.filters).fingerprint()
+                                                       for search, _, _ in members}),
+                    "discovery_groups": groups,
+                    "scope": "identical_provider_discovery_constraints"},
                 "shared_distribution": shared_distribution_enabled,
                 "confirmed_deals_only": confirmed_deals_only,
                 "pending_jobs": db.scalar(select(func.count()).select_from(MonitorJob)
@@ -292,6 +298,9 @@ class Monitor:
                     db.flush()
             if self.settings.ria_active_window_enabled:
                 active_window.sync(db, {member.feed_id for _, _, member in active_members(db)})
+            db.flush()
+            from .compatible_searches import merge
+            merge(self, db)
             db.commit()
 
     def prepare_window(self, feed_id):

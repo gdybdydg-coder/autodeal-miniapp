@@ -1,6 +1,7 @@
 """Real queue membership, acceptance-only distributions and read-only owner output."""
 from dataclasses import replace
 from datetime import datetime
+import time
 
 import pytest
 from fastapi.testclient import TestClient
@@ -150,8 +151,10 @@ def test_command_transport_contains_extended_stats_and_does_not_replay(setup, mo
         return {'ok': True, 'result': {'message_id': 99}}
     monkeypatch.setattr(telegram_setup, 'call', fake_send)
     with TestClient(create_app(settings, engine)) as api:
-        assert command(api, '/stats').status_code == 200
-        assert command(api, '/stats').status_code == 200
+        # A redelivered Telegram update retains its original message date.
+        message_date = int(time.time())
+        assert command(api, '/stats', date=message_date).status_code == 200
+        assert command(api, '/stats', date=message_date).status_code == 200
     assert 'Черги зараз' in calls[0]['text'] and 'Затримки за останні 24 год' in calls[0]['text']
     assert 'Додаткова перевірка: вимкнено' in calls[0]['text']
     assert len(calls) == 1

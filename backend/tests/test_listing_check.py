@@ -226,6 +226,8 @@ def test_check_reply_never_replays_uncertain_send(q, failure):
 @pytest.mark.parametrize('text,age', [('/check', 0), ('/check https://evil.test/?id=40345395', 0),
     ('/check 40345395', 301), ('/check 40345395', -31)])
 def test_bad_or_stale_command_does_not_read_listing(q, monkeypatch, text, age):
+    now = time.time()
+    monkeypatch.setattr(check.time, 'time', lambda: now)
     monkeypatch.setattr(check, 'explain', lambda *a: pytest.fail('unexpected lookup'))
     command(q[2], text, update=10, date=int(time.time())-age)
     with Session(q[0]) as db:
