@@ -26,7 +26,7 @@ from .models import (Base, BotReply, Delivery, EnabledRequest, Filters, Listing,
                      MonitorFeed, MonitorJob, MonitorMembership, MonitorSeen, MonitorWatch,
                      Search, SearchEditRequest, SearchRequest, SourceProbe, TelegramTest, User)
 from . import monitor, telegram_setup, ria_rollout, full_scan, launch, notification_diagnostic, valuation_audit, ria_ai_price, ria_market_range
-from . import bot_commands, owner_trace, quota_management, owner_alerts, listing_check
+from . import bot_commands, owner_trace, quota_management, owner_alerts, listing_check, html_shadow
 
 
 @dataclass(frozen=True)
@@ -63,6 +63,7 @@ class Settings:
     ria_confirmed_deals_only: bool = False
     ria_quota_management_enabled: bool = False
     owner_alerts_enabled: bool = False
+    ria_html_shadow_run_id: str = ""
 
     @classmethod
     def env(cls):
@@ -96,6 +97,7 @@ class Settings:
             ria_shared_distribution_enabled=os.getenv("RIA_SHARED_DISTRIBUTION_ENABLED") == "true",
             ria_confirmed_deals_only=os.getenv("RIA_CONFIRMED_DEALS_ONLY") == "true",
             owner_alerts_enabled=os.getenv("OWNER_ALERTS_ENABLED") == "true",
+            ria_html_shadow_run_id=os.getenv("RIA_HTML_SHADOW_RUN_ID", "").strip(),
             ria_quota_management_enabled=os.getenv("RIA_QUOTA_MANAGEMENT_ENABLED") == "true",
             ria_failed_delivery_recovery_id=os.getenv("RIA_FAILED_DELIVERY_RECOVERY_ID", "").strip(),
         )
@@ -162,6 +164,7 @@ def create_app(settings: Settings, engine=None):
             settings.configure_webhook or settings.ria_quota_management_enabled or settings.admin_telegram_id) else None
         alert_task = asyncio.create_task(owner_alerts.run(engine, settings, stop)) if settings.owner_alerts_enabled else None
         task = asyncio.create_task(monitor.run(engine, settings, stop)) if settings.monitor_enabled else None
+        shadow_task = asyncio.create_task(html_shadow.run(settings, stop)) if html_shadow.key(settings) else None
         scan_task = asyncio.create_task(full_scan.run(engine, settings.auto_ria_api_key, stop)) if settings.auto_ria_api_key and settings.full_scan_enabled else None
         validation_stop = threading.Event()
         validation_task = asyncio.create_task(asyncio.to_thread(
@@ -177,6 +180,8 @@ def create_app(settings: Settings, engine=None):
                 await reply_task
             if alert_task:
                 await alert_task
+            if shadow_task:
+                await shadow_task
             if task:
                 await task
             if scan_task:
@@ -287,6 +292,10 @@ def create_app(settings: Settings, engine=None):
     @app.get("/api/subscriptions")
     def subscriptions(uid=Depends(identity), db=Depends(session)):
         return [view(row, db) for row in db.scalars(select(Search).where(Search.user_id == uid))]
+
+    @app.get("/api/html-shadow-status")
+    def html_shadow_status():
+        return html_shadow.status(engine, settings)
 
     @app.get("/api/source-status")
     def source_status():

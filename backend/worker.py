@@ -321,7 +321,8 @@ def deliver_one(engine, settings: Settings, sender, now=None, *, enforce_chat_in
             return "empty"
         delivery_id = row.id
         claimed = db.execute(update(Delivery).where(
-            Delivery.id == delivery_id, Delivery.state == "pending").values(state="sending", retry_at=now))
+            Delivery.id == delivery_id, Delivery.state == "pending",
+            Delivery.retry_at <= now).values(state="sending", retry_at=now))
         db.commit()
         if claimed.rowcount != 1:
             return "busy"
