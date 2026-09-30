@@ -35,3 +35,19 @@ no redirects/cookies, request reservations, source backoff and bounded retries.
 This module has no fetcher and no paid fallback.
 
 Checkpoint: ../../backend/docs/zero-paid-api-parser-2026-10-01.md
+
+`parse_public_cards(html)` is a separate bounded, offline parser for public
+listing cards. It keeps the add date distinct from the update date and treats
+the preview USD value as non-authoritative. Promotion markers, duplicate IDs,
+bad links, ambiguous dates and conflicting preview prices are explicit issues.
+
+`advance_publications(state, cards, observed_at)` establishes a no-send first
+baseline, accepts only add dates after that baseline and within a one-hour
+window, and persists each ID's last accepted add date. A later update timestamp,
+preview price change, first appearance or raising action does not create a
+candidate. A genuinely later add date can admit a repeated old ID. State has a
+strict serializable round trip for restart-safe offline tests.
+
+Candidates only authorize a later public-details/category/filter check. They do
+not contain valuation or delivery decisions. The parser does not establish
+whole-market coverage and does not fetch old pages.
