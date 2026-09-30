@@ -227,7 +227,10 @@ def parse_car(data, source_id):
             "image": photo, "vehicle_key": vehicle_key(data.get("VIN")),
             "comparable_condition": comparable_condition(data),
             "condition_exclusions": condition_exclusions(data),
-            "source_added_at": source_added_at(data.get("addDate")), "observed_at": time.time()}
+            "source_added_at": source_added_at(data.get("addDate")),
+            "source_add_date_text": (data.get("addDate") if isinstance(data.get("addDate"), str)
+                                     and len(data["addDate"]) <= 40 else None),
+            "category_id": ident(auto.get("categoryId")), "observed_at": time.time()}
 
 
 class RiaSearch:
@@ -241,6 +244,7 @@ class RiaSearch:
         self.observed_at = time.time()
         self.requests_made = 0
         self.request_limit = None
+        self.request_policy = None
         self._budget_lock = threading.RLock()
         self._request_locks = {}
         self._lease_state = {"in_flight": 0, "peak": 0}
@@ -310,6 +314,8 @@ class RiaSearch:
                 raise RiaError("search_limit")
             if budget_state(row, now, self.limits, db=db)["reason"] != "available":
                 raise RiaError("quota_exceeded")
+            if self.request_policy is not None:
+                self.request_policy(db, now, self.limits)
             row.calls, row.total = calls + [now], row.total + 1
             db.commit()  # Failed calls consume budget too, even on a process crash.
             self.requests_made += 1

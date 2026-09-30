@@ -25,7 +25,7 @@ from .ria_budget import BudgetLimits
 from .ria_search import RiaSearch, estimate, matches, parse_ids, quota_status, budget_state
 from .valuation import (MAX_AGE, VERSION, PeerBatch, is_deal, price_only_evidence,
                         notification_condition_allowed, repair_notices)
-from . import active_window, ria_market_range, poll_schedule, shared_distribution
+from . import active_window, ria_market_range, poll_schedule, shared_distribution, recent_publications
 from .reference_valuation import VERSION as REFERENCE_VERSION, VALUED as PEER_VALUED, notification_estimate
 
 VALUED = {*PEER_VALUED, "provider_lower_bound_adjusted"}
@@ -263,6 +263,14 @@ class Monitor:
 
     def sync(self):
         with Session(self.engine) as db:
+            if not recent_publications.enabled(self.settings):
+                recent_publications.disable(db)
+                retired_ids = select(MonitorJob.source_id).where(MonitorJob.state == "pending",
+                    MonitorJob.result["discovery_kind"].as_string() == recent_publications.KIND)
+                db.execute(update(MonitorSeen).where(MonitorSeen.source_id.in_(retired_ids),
+                    MonitorSeen.state == "pending").values(state="html_cancelled"))
+                db.execute(update(MonitorJob).where(MonitorJob.source_id.in_(retired_ids)).values(
+                    state="cancelled", reason="recent_publications_disabled"))
             if not self.settings.ria_active_window_enabled:
                 # Retire only queued supplemental work. Keep publication cursors,
                 # subscription epochs and sent/uncertain delivery records intact.
@@ -499,6 +507,7 @@ class Monitor:
                     valuation_evidence=proof,
                     pipeline={"discovered_at": job.first_seen, "evaluated_at": evidence["evaluated_at"],
                               "discovery_kind": evidence.get("discovery_kind", "new_publication"),
+                              "html_expires_at": evidence.get("html_expires_at"),
                               "source_added_at": candidate.get("source_added_at")})
                 if listing is None:
                     listing = Listing(source="auto_ria", source_id=source_id)
@@ -528,6 +537,12 @@ class Monitor:
             evidence = copy.deepcopy(job.result)
             job.last_attempt, job.attempts = time.time(), job.attempts + 1
             db.commit()
+        html_job = evidence.get("discovery_kind") == recent_publications.KIND
+        if html_job and (not recent_publications.enabled(self.settings) or not recent_publications.valid_proof(evidence)):
+            self.complete(source_id, {}, "cancelled")
+            return
+        if html_job:
+            source.request_policy = recent_publications.reserve_api
         if not interests:
             self.complete(source_id, {}, "cancelled")
             return
@@ -539,6 +554,10 @@ class Monitor:
             evidence = {"candidate": candidate, "filters": {},
                         **shared_distribution.proof(evidence),
                         "discovery_kind": evidence.get("discovery_kind", "new_publication")}
+        if html_job and (candidate.get("category_id") != 1 or
+                recent_publications.added_at(candidate.get("source_add_date_text")) != evidence["html_added_at"]):
+            self.complete(source_id, {}, "cancelled")
+            return
         any_match = False
         for _, _, _, raw_filters in interests:
             filters = source_filters(raw_filters)
@@ -568,6 +587,8 @@ class Monitor:
                 try:
                     quote = source.market_range(source_id, self.settings.auto_ria_user_id)
                 except RiaError as exc:
+                    if html_job and str(exc) in {"reserved_for_new_publications", "quota_exceeded", "search_limit"}:
+                        raise
                     # Record unavailable valuation without inventing a market.
                     # The notification policy decides whether it may be sent.
                     log.warning("AUTO.RIA AI valuation unavailable source_id=%s reason=%s", source_id, str(exc))
@@ -663,6 +684,8 @@ class Monitor:
                         # bounded request count even in a shared parallel batch.
                         with self._state_lock, Session(self.engine) as db:
                             job = db.get(MonitorJob, key)
+                            if job.result.get("discovery_kind") == recent_publications.KIND:
+                                child.request_policy = recent_publications.reserve_api
                             if job.result.get("discovery_kind") == active_window.KIND:
                                 child.request_limit = active_window.CALL_RESERVE
                                 if not active_window.budget_available(db, child.limits,
@@ -721,7 +744,10 @@ class Monitor:
                     .limit(PARALLEL_TASKS)))
                 feed = feeds[0] if feeds else None
                 supplemental = func.coalesce(MonitorJob.result["discovery_kind"].as_string(), "") == active_window.KIND
+                html_job = func.coalesce(MonitorJob.result["discovery_kind"].as_string(), "") == recent_publications.KIND
                 job_query = select(MonitorJob).where(MonitorJob.state == "pending", MonitorJob.next_run <= time.time())
+                if not recent_publications.enabled(self.settings):
+                    job_query = job_query.where(~html_job)
                 if not self.settings.ria_active_window_enabled or not active_window.budget_available(db):
                     job_query = job_query.where(~supplemental)
                 elif not active_window.budget_available(db, backlog=True):
@@ -733,18 +759,18 @@ class Monitor:
                 if self.settings.ria_shared_distribution_enabled and self.settings.ria_ai_price_enabled:
                     slots = PARALLEL_TASKS - bool(feed)
                     fresh_after = time.time() - active_window.FRESH_ARRIVAL_SECONDS
-                    jobs = list(db.scalars(job_query.order_by(case((supplemental, 1), else_=0),
+                    jobs = list(db.scalars(job_query.order_by(case((supplemental, 2), (html_job, 1), else_=0),
                         case((MonitorJob.first_seen >= fresh_after, 0), else_=1),
                         case((supplemental, -MonitorJob.first_seen), else_=MonitorJob.last_attempt),
                         MonitorJob.first_seen, MonitorJob.source_id).limit(slots)))
                     # Fresh primary arrivals get the front of each batch, but
                     # an eligible old primary job retains one slot to progress.
-                    oldest = db.scalar(job_query.where(~supplemental, MonitorJob.first_seen < fresh_after)
+                    oldest = db.scalar(job_query.where(~supplemental, ~html_job, MonitorJob.first_seen < fresh_after)
                         .order_by(MonitorJob.last_attempt, MonitorJob.first_seen, MonitorJob.source_id).limit(1))
                     if oldest is not None and all(row.source_id != oldest.source_id for row in jobs):
                         jobs = [*jobs[:slots - 1], oldest]
                 else:
-                    jobs = list(db.scalars(job_query.order_by(case((supplemental, 1), else_=0),
+                    jobs = list(db.scalars(job_query.order_by(case((supplemental, 2), (html_job, 1), else_=0),
                         case((supplemental, -MonitorJob.first_seen), else_=MonitorJob.last_attempt),
                         MonitorJob.last_attempt, MonitorJob.first_seen, MonitorJob.source_id).limit(PARALLEL_TASKS)))
                 job = jobs[0] if jobs else None
@@ -769,6 +795,11 @@ class Monitor:
                             db.commit()
             # Active-page discovery remains a single bounded step. Both kinds
             # of valuation may overlap; due publication search keeps its slot.
+            if kind is None and self.settings.ria_diagnostic_listing_id:
+                from .notification_diagnostic import retry_selected
+                if retry_selected(self):
+                    status = "diagnostic"
+                    return True
             if kind and self.settings.ria_ai_price_enabled and kind != active_window.KIND:
                 tasks = [("discover", feed.id)] if feed else []
                 tasks.extend(("evaluate", row.source_id) for row in jobs[:PARALLEL_TASKS - len(tasks)])
@@ -812,6 +843,22 @@ class Monitor:
                 finally:
                     if acquired:
                         source.release()
+            elif recent_publications.enabled(self.settings) and recent_publications.due(self.engine):
+                # Existing due searches and valuations own all scheduling priority.
+                # Validate one shared HTML candidate only in an otherwise idle tick.
+                source = self.search_factory(self.engine, self.settings.auto_ria_api_key)
+                acquired = False
+                try:
+                    source.acquire()
+                    acquired = True
+                    worked = recent_publications.take(self, source)
+                    if worked:
+                        status = "recent_publication"
+                except RiaError:
+                    pass
+                finally:
+                    if acquired:
+                        source.release()
         except Exception as exc:
             status = "error"
             log.error("Monitor cycle failed (%s)", type(exc).__name__)
@@ -827,6 +874,7 @@ class Monitor:
             return
         from .worker import TelegramSender, deliver_one, enqueue
         enqueue(self.engine, allow_active_window=self.settings.ria_active_window_enabled,
+                allow_recent_publications=recent_publications.enabled(self.settings),
                 require_provider_range=self.settings.ria_ai_price_enabled,
                 require_confirmed_deal=self.settings.ria_confirmed_deals_only)
         # Legacy single-step test/operator helper; the running dispatcher below
@@ -861,6 +909,7 @@ async def run(engine, settings, stop):
                     if time.monotonic() >= next_enqueue:
                         await asyncio.to_thread(enqueue, engine,
                             allow_active_window=settings.ria_active_window_enabled,
+                            allow_recent_publications=recent_publications.enabled(settings),
                             require_provider_range=settings.ria_ai_price_enabled,
                             require_confirmed_deal=settings.ria_confirmed_deals_only)
                         next_enqueue = time.monotonic() + 1

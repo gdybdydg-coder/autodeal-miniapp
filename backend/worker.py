@@ -116,7 +116,17 @@ def unpriced_listing(listing):
     return bool(listing and listing.source == "auto_ria" and listing.car.get("market") is None)
 
 
-def enqueue(engine, now=None, *, allow_active_window=True, require_provider_range=False, require_confirmed_deal=False):
+def recent_listing(listing, now):
+    if not listing or listing.source != "auto_ria":
+        return False, False
+    pipeline = listing.car.get("pipeline") or {}
+    recent = pipeline.get("discovery_kind") == "html_new_publication"
+    expires = pipeline.get("html_expires_at")
+    return recent, recent and (type(expires) not in (int, float) or expires < now)
+
+
+def enqueue(engine, now=None, *, allow_active_window=True, allow_recent_publications=True,
+            require_provider_range=False, require_confirmed_deal=False):
     now = time.time() if now is None else now
     with Session(engine) as db:
         # Drive fan-out from current, enabled monitor interests instead of
@@ -144,6 +154,9 @@ def enqueue(engine, now=None, *, allow_active_window=True, require_provider_rang
         for uid, listing_id in pairs:
             listing = db.get(Listing, listing_id)
             if not allow_active_window and supplemental_listing(listing):
+                continue
+            recent, expired = recent_listing(listing, now)
+            if expired or (recent and not allow_recent_publications):
                 continue
             # Do this before stale-price refresh: legacy informational cards
             # must not be queued or revived by enabling confirmed-only mode.
@@ -336,6 +349,8 @@ def deliver_one(engine, settings: Settings, sender, now=None, *, enforce_chat_in
             .where(Delivery.user_id == row.user_id, Delivery.id != delivery_id)) if user else None
         refresh = []
         retired = not settings.ria_active_window_enabled and supplemental_listing(listing)
+        recent, expired = recent_listing(listing, now)
+        retired |= expired or (recent and not getattr(settings, "ria_recent_publications_enabled", False))
         unconfirmed = settings.ria_confirmed_deals_only and unpriced_listing(listing)
         if not retired and not unconfirmed and user and user.ready and listing and listing.source == "auto_ria" and not fresh(
                 Car.model_validate(listing.car), now, db, require_provider_range=settings.ria_ai_price_enabled):
@@ -355,7 +370,8 @@ def deliver_one(engine, settings: Settings, sender, now=None, *, enforce_chat_in
             elif job.state != "pending":
                 origin = job.result.get("discovery_kind") or origin
                 job.state, job.next_run = "pending", 0
-                job.result = {"discovery_kind": origin}
+                from .shared_distribution import proof
+                job.result = {"discovery_kind": origin, **proof(job.result)}
             db.execute(update(MonitorSeen).where(MonitorSeen.search_id.in_(refresh),
                 MonitorSeen.source_id == listing.source_id).values(state="pending"))
             row.state, row.retry_at = "pending", now + 5

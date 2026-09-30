@@ -23,6 +23,50 @@ def validate_id(value):
         raise ValueError("Invalid diagnostic listing ID")
 
 
+def needs_retry(engine, source_id):
+    with Session(engine) as db:
+        first = db.get(SourceProbe, "notification-diagnostic-v1-" + source_id)
+        if first is None:
+            return True
+        prior = first.result
+        if first.status == "checking" or prior.get("monitor_job") is not None or not prior.get("subscriptions", {}).get("matching"):
+            return False
+        dates = prior.get("date_check") or {}
+        if not dates:
+            return True
+        eligible = (dates.get("status") == "unverified_id_filter" or
+                    dates.get("created") is False and dates.get("published") is False)
+        if not eligible:
+            return False
+        second = db.get(SourceProbe, "notification-diagnostic-v2-" + source_id)
+        if second is None:
+            return True
+        return bool(second.status == "checked" and second.result.get("created") is False
+                    and second.result.get("published") is False
+                    and db.get(SourceProbe, "notification-diagnostic-v3-" + source_id) is None)
+
+
+def retry_selected(monitor, fetch=fetch_json):
+    """Retry only unclaimed diagnostic stages, at most six idle startup ticks.
+
+    Busy startup leases spend no calls and used to leave the selected incident
+    unexamined indefinitely. Existing durable probes and their per-stage caps
+    are never reopened, including a process exit after claiming a probe.
+    """
+    source_id = monitor.settings.ria_diagnostic_listing_id
+    if not source_id or not monitor.settings.auto_ria_api_key:
+        return False
+    validate_id(source_id)
+    now = time.time()
+    count, next_at = getattr(monitor, "_diagnostic_retry", (0, 0))
+    if count >= 6 or now < next_at or not needs_retry(monitor.engine, source_id):
+        return False
+    monitor._diagnostic_retry = (count + 1, now + 15)
+    for check in (check_once, check_dates_once, check_vin_dates_once, check_vin_presence_once):
+        check(monitor.engine, monitor.settings.auto_ria_api_key, source_id, fetch)
+    return True
+
+
 def condition_fields(raw):
     """Only known condition primitives; no seller text, VIN or credentials."""
     technical = raw.get("technicalCondition")

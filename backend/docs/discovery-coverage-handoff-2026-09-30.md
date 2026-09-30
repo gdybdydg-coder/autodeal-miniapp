@@ -9,8 +9,41 @@ delivery batch. Five added tests cover four simultaneous due feeds, unchanged
 poll deadlines, one shared detail/AI evaluation, last-request hourly/daily/total
 caps, the global lease, and /stop during concurrent search.
 
-The scheduler change is ready for ordinary main deployment. It changes no
+The scheduler change was deployed as `b918c958ee0a01573fd3d5a77ae47aa585931b96`,
+tree `a995fc703687a47c06f8c6b41e1757e96989ba11`. Render deployment
+`dep-dauki8s9v7es739u8ih0` became live at 17:39:51 UTC. It changes no
 configured cadence, hard caps, epochs, delivery claims or active-window policy.
+Post-deploy cursor lag samples were 86s and 100s, needs_attention=false, with
+empty queues. Active groups rose from 54 to 56 through ordinary user activity;
+these are samples, not a worst-case latency guarantee.
+
+The follow-up also implements an opt-in shared dated-publication fallback, in
+`backend/recent_publications.py`; see `backend/RECENT_PUBLICATIONS.md` for its
+evidence, source-clock assumption, bounds and limitations. Full backend
+regression: **937 passed** (284.36s). Selected fallback/diagnostic tests: 57
+passed. It does not enable active-window scanning or reuse the old HTML shadow
+as production evidence. The feature starts with a durable baseline when the
+operator enables `RIA_RECENT_PUBLICATIONS_ENABLED`.
+
+Mazda 32704870 was now diagnosed: no job/seen record, 15 matching active
+subscriptions, absent in documented created/published VIN searches since
+September 18, found using the same VIN filter without date bounds. Six counted
+requests; no VIN retained. This proves the date-search omission, not a seller
+action or exact initial publication time.
+
+The explicit diagnostic selectors now select Leaf 40369208. Startup of the
+configuration-only deployment `dep-dauks1e0tbcc73bmheig` (live 18:00:34 UTC)
+was blocked by a busy source lease. The follow-up code retries only unclaimed
+selected probe stages on at most six idle monitor ticks; durable used probes
+and their caps are never reset. Leaf remains unconfirmed until these logs are
+read after the new code is live.
+
+HTML shadow 20260929-v1 completed: 274 successful cycles, 558 reserved HTTP
+requests, 821861263 downloaded bytes, 8192 unique IDs, 200 baseline IDs,
+3032 IDs also in existing API jobs and 2835 post-baseline overlaps. It created
+no notifications/valuations/jobs and used zero paid API calls. This does not
+establish complete recall or net request savings.
+
 The original production baseline at the start of this follow-up remains
 `297a9a7920b9af4a1af06002ae1ff8217a8388d3`, tree
 `3782b3e204dab97ee5a2dc2338591612e5658a32`.
@@ -61,7 +94,7 @@ delivery regression. Add explicit four-feed overlap, quota and /stop tests, then
 run the complete regression suite before merging. No full suite was run for
 this partial change. Main's previous 887 passing tests are not its validation.
 
-## Proposed next work — NOT implemented
+## Original proposal — implemented in the follow-up
 
 Investigate a shared fallback using two public /uk/last/hour/ pages, instead of
 adding one paid active-page search per filter. Existing shadow is observation
@@ -75,12 +108,13 @@ adequate new-publication proof. Exclude promoted/new-car cards and old additions
 confirm passenger-car category, current positive price and full subscriber
 filters through the official API before valuation/delivery.
 
-Design a durable initial baseline, bounded candidate queue, /stop/activation
+The original requirements were a durable initial baseline, bounded candidate queue, /stop/activation
 cutoffs, restart-safe deduplication, global shared details/AI quotes, and explicit
 rolling HTTP/API budgets. Yield to production load, respect robots and deny/429
 responses; never use cookies, hidden endpoints or CAPTCHA/IP bypass. Do not
-scan the old catalog or periodically reevaluate old prices. No parser, production
-collector, fallback intake or configuration for this proposal exists yet.
+scan the old catalog or periodically reevaluate old prices. The follow-up
+implementation adds these safeguards and requires matching official/API and
+HTML addition dates; details are in RECENT_PUBLICATIONS.md.
 
 On the September 30 follow-up, the user explicitly selected inclusion of fresh
 repeat publications under an old ID, provided there is fresh addition-date

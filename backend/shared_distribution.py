@@ -8,7 +8,8 @@ from .auto_ria import RiaError
 from .models import Delivery, Listing, MonitorSeen
 from .ria_search import RiaSearch, matches
 
-PROOF_FIELDS = ("publication_after", "shared_observed_at")
+PROOF_FIELDS = ("publication_after", "shared_observed_at", "html_added_at", "html_baseline_at",
+                "html_expires_at", "html_verified")
 
 
 def proof(evidence):
@@ -22,6 +23,11 @@ def cutoff(settings, evidence):
         if not (settings.ria_active_window_enabled and settings.ria_active_window_include_initial):
             return None
         value = evidence.get("shared_observed_at")
+    elif evidence.get("discovery_kind") == "html_new_publication":
+        from .recent_publications import enabled, valid_proof
+        if not enabled(settings) or not valid_proof(evidence):
+            return None
+        value = evidence.get("html_added_at")
     else:
         # A local observation timestamp does not prove a new publication.
         value = evidence.get("publication_after")
