@@ -714,6 +714,51 @@ class Monitor:
             source.release()
         return status, True
 
+    def after_primary(self, groups):
+        """Progress bounded extra work after a full healthy primary batch.
+
+        A continuously busy main loop otherwise never reaches its idle branch.
+        Complete all four selected operations first, then allow one extra detail
+        at most every 15 seconds. Primary backlog, catch-up, errors or cursor lag
+        suppress this step; normal deadlines and the four-operation cap remain.
+        """
+        if not (recent_publications.enabled(self.settings) or self.settings.ria_diagnostic_listing_id):
+            return False
+        source = self.search_factory(self.engine, self.settings.auto_ria_api_key)
+        interval = poll_interval(len(groups), source.limits, provider_pricing_enabled=True,
+            active_window_enabled=self.settings.ria_active_window_enabled,
+            schedule_enabled=self.settings.ria_poll_schedule_enabled)
+        now = time.time()
+        with Session(self.engine) as db:
+            if not self.owned(db):
+                return False
+            feeds = list(db.scalars(select(MonitorFeed).where(MonitorFeed.id.in_(groups))))
+            if len(feeds) != len(groups) or any(feed.status != "watching" or feed.context
+                    or feed.cursor < now - max(120, interval * 2) for feed in feeds):
+                return False
+            primary = func.coalesce(MonitorJob.result["discovery_kind"].as_string(), "").not_in(
+                [active_window.KIND, recent_publications.KIND])
+            if db.scalar(select(MonitorJob.source_id).where(MonitorJob.state == "pending",
+                    MonitorJob.next_run <= now, primary).limit(1)) is not None:
+                return False
+        if self.settings.ria_diagnostic_listing_id:
+            from .notification_diagnostic import retry_selected
+            if retry_selected(self):
+                return True
+        if not recent_publications.enabled(self.settings) or not recent_publications.due(self.engine):
+            return False
+        acquired = False
+        try:
+            source.acquire()
+            acquired = True
+            source.request_limit = 1
+            return recent_publications.take(self, source, after_primary=True)
+        except RiaError:
+            return False
+        finally:
+            if acquired:
+                source.release()
+
     def tick(self):
         if not self.settings.live or not self.settings.monitor_enabled or not self.claim():
             return False
@@ -808,6 +853,8 @@ class Monitor:
                 # feeds, without changing any poll deadline or quota gate.
                 tasks.extend(("discover", row.id) for row in feeds[1:PARALLEL_TASKS - len(tasks) + 1])
                 status, worked = self.parallel_step(tasks, len(groups))
+                if worked and status != "error" and len(tasks) == PARALLEL_TASKS:
+                    self.after_primary(groups)
             elif kind:
                 status, worked = kind, True
                 source = self.search_factory(self.engine, self.settings.auto_ria_api_key)

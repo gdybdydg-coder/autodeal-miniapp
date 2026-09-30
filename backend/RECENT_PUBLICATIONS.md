@@ -29,7 +29,7 @@ values must resolve to exactly the same second. Ambiguous or nonexistent DST
 times are rejected. This assumption is exposed in operator diagnostics and is
 not used to invent publication-to-phone latency.
 
-The idle monitor checks official active/unsold status, current positive USD
+The monitor checks official active/unsold status, current positive USD
 price, the matching addition date, category, saved filters and activation
 epochs. Only matching interests become one shared normal valuation job. Missing
 optional characteristics and damage/repair do not exclude a car; known filter
@@ -60,8 +60,16 @@ Primary API confirmation may promote the job to the normal publication source.
   20% of hourly/daily provider capacity for primary work. Cached responses do
   not consume either budget.
 - Primary due searches and valuation jobs take scheduling priority. Intake uses
-  one otherwise idle monitor step. Details are shared across subscribers;
-  valuation shares the existing cache/queue and four-operation source limit.
+  one otherwise idle monitor step. A September 30 live check also showed that
+  continuously full four-operation batches could leave the queue untouched
+  (18 candidates, zero validations/API calls after eight collector cycles).
+  After completing such a batch, one intake is therefore allowed at most every
+  15 seconds, with its throttle persisted across restarts. It is suppressed by
+  due primary valuation jobs, unhealthy/catching-up feeds or a cursor older than
+  twice the planned interval (minimum 120s). No selected primary operation is
+  displaced. Details are shared across subscribers; valuation shares the
+  existing cache/queue and four-operation source limit. The extra HTTP detail
+  request retains the normal bounded timeout and all paid quota/headroom gates.
 - Collector has one worker and one dedicated DB connection and yields to bot
   backlog or memory pressure. HTTP waits hold no DB transaction. Persisted
   ownership, reservations and latest-state merging fence overlapping processes.
@@ -89,11 +97,15 @@ and restart baselines, promotions/old update dates, official date/category/price
 and filter failures, missing optional data, condition flags, /stop, late
 activation, sent/uncertain claims, queue and API/HTTP caps, concurrent collection,
 primary priority, proof-preserving stale-price refresh and confirmed-only
-withholding. Full follow-up validation: **937 backend tests passed**, including
-57 selected fallback/diagnostic tests. The remote tree must match this tested
+withholding. The initial fallback passed 937 backend tests before its live
+check exposed the busy-loop starvation. Follow-up tests explicitly keep four
+searches due, verify search-before-detail order, shared valuation/delivery,
+restart-safe throttling, primary backlog/lag suppression, all three budget
+boundaries and /stop during the extra detail call. Full follow-up validation
+is recorded in the discovery handoff. The remote tree must match the tested
 local tree before main is advanced without force.
 
 The selected incident diagnostic also retries only unclaimed probe stages on
-six otherwise idle monitor ticks when a startup source lease was busy. Existing
+six idle or healthy completed-batch monitor ticks when a startup source lease was busy. Existing
 per-stage durable claims and request caps remain unchanged; no diagnostic
 creates jobs, valuations or messages.

@@ -1,6 +1,6 @@
 """Shared, opt-in intake of dated public publications, never an active catalog.
 
-The collector only writes a bounded SourceProbe queue. An idle monitor validates
+The collector only writes a bounded SourceProbe queue. A bounded monitor step validates
 each candidate with official details before sharing the existing AI/delivery path.
 Publication evidence requires matching HTML and API addition dates. Update dates,
 first-seen IDs and preview prices never authorize a notification.
@@ -318,8 +318,8 @@ def due(engine):
                     and any(item["next_at"] <= time.time() for item in row.result.get("pending", {}).values()))
 
 
-def take(monitor, source):
-    """One idle-slot detail validation, with no per-filter paid searches."""
+def take(monitor, source, *, after_primary=False):
+    """One shared detail validation, with a durable saturated-loop throttle."""
     if not enabled(monitor.settings):
         return False
     from .monitor import active_members, source_filters
@@ -332,10 +332,14 @@ def take(monitor, source):
         if row is None or row.result.get("baseline_at") is None or row.result.get("blocked") in DENIED:
             return False
         data = copy.deepcopy(row.result)
+        if after_primary and data.get("after_primary_next_at", 0) > now:
+            return False
         choices = [(sid, item) for sid, item in data["pending"].items() if item["next_at"] <= now]
         if not choices:
             return False
         sid, item = min(choices, key=lambda pair: (pair[1]["added_at"], pair[0]))
+        if after_primary:
+            data["after_primary_next_at"] = now + 15
         baseline = data["baseline_at"]
         targets = []
         if item["added_at"] > now - MAX_AGE and db.get(MonitorJob, sid) is None:

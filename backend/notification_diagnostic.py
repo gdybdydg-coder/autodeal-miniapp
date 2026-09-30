@@ -47,7 +47,7 @@ def needs_retry(engine, source_id):
 
 
 def retry_selected(monitor, fetch=fetch_json):
-    """Retry only unclaimed diagnostic stages, at most six idle startup ticks.
+    """Retry only unclaimed stages, at most six idle or completed-batch ticks.
 
     Busy startup leases spend no calls and used to leave the selected incident
     unexamined indefinitely. Existing durable probes and their per-stage caps

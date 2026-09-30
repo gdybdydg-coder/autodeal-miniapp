@@ -11,11 +11,12 @@ from sqlalchemy.orm import Session
 
 from backend import recent_publications as rp, html_shadow
 from backend.auto_ria import RiaError
-from backend.models import (Delivery, Listing, MonitorJob, MonitorSeen, MonitorWatch, Range,
+from backend.models import (Delivery, Listing, MonitorFeed, MonitorJob, MonitorSeen, MonitorWatch, Range,
                             Search, SourceBudget, SourceProbe, User)
 from backend.monitor import Monitor, delivery_batch, reset_watch
 from backend.tests.test_monitor import p, add_search, drain, wake, details, searches
 from backend.tests.test_ria_ai_price import enable
+from backend.tests.test_parallel_discovery import four_groups
 
 
 def date(at):
@@ -399,6 +400,121 @@ def test_due_primary_publication_precedes_html_intake(p, monkeypatch):
     drain(p)
     dispatch(p)
     assert len(details(p, "77")) == 1
+
+
+def test_saturated_primary_searches_still_validate_html_after_all_four_finish(p, monkeypatch):
+    quotes = setup(p, monkeypatch)
+    four_groups(p)
+    drain(p)
+    offer(p)
+    wake(p, seconds=0)
+    before = len(searches(p))
+    assert p.runner.tick()
+    assert len(searches(p)) - before == 4
+    assert len(details(p, "77")) == 1 and not quotes
+    info = next(i for i, (path, params) in enumerate(p.calls)
+                if path == "info" and params["auto_id"] == "77")
+    assert sum(path == "search" and "published_after" in params
+               for path, params in p.calls[:info]) == len(searches(p))
+    # More continuously due searches cannot prevent the shared quote/dispatcher.
+    wake(p, seconds=5)
+    assert p.runner.tick()
+    drain(p)
+    dispatch(p)
+    assert quotes == ["77"] and len(details(p, "77")) == 1
+    assert {(uid, car.source_id) for uid, car in p.sent} == {
+        (111, "77"), (1002, "77"), (1003, "77"), (1004, "77")}
+
+
+def test_after_primary_throttle_survives_restart_without_delaying_primary(p, monkeypatch):
+    setup(p, monkeypatch)
+    four_groups(p)
+    drain(p)
+    offer(p)
+    # Keep the collector heartbeat current without yet reaching a full batch.
+    assert p.runner.tick() and not details(p, "77")
+    offer(p, "78")
+    wake(p, seconds=0)
+    before = len(searches(p))
+    assert p.runner.tick() and len(details(p, "77")) == 1
+    next_at = probe(p)["after_primary_next_at"]
+    p.runner = Monitor(p.engine, p.settings, p.runner.search_factory, p.runner.sender)
+    wake(p, seconds=5)
+    assert p.runner.tick()
+    assert len(searches(p)) - before >= 7 and not details(p, "78")
+    assert probe(p)["after_primary_next_at"] == next_at
+    wake(p, seconds=11)
+    assert p.runner.tick() and len(details(p, "78")) == 1
+
+
+@pytest.mark.parametrize("cap", ["hourly", "daily", "total"])
+def test_four_primary_calls_keep_budget_priority_over_after_batch_intake(p, monkeypatch, cap):
+    setup(p, monkeypatch)
+    four_groups(p)
+    drain(p)
+    offer(p)
+    wake(p, seconds=0)
+    with Session(p.engine) as db:
+        budget = db.get(SourceBudget, "auto_ria")
+        if cap == "hourly": budget.calls = [p.clock[0]] * 720
+        if cap == "daily": budget.calls = [p.clock[0] - 4000] * 2400
+        if cap == "total": budget.total = 90000 - 4
+        initial = budget.total
+        db.commit()
+    before = len(searches(p))
+    assert p.runner.tick()
+    assert len(searches(p)) - before == 4 and not details(p, "77")
+    with Session(p.engine) as db:
+        assert db.get(SourceBudget, "auto_ria").total == initial + 4
+        assert db.get(MonitorJob, "77") is None
+
+
+def test_stop_during_after_batch_details_keeps_only_other_epochs(p, monkeypatch):
+    quotes = setup(p, monkeypatch)
+    four_groups(p)
+    drain(p)
+    def stop(raw):
+        with Session(p.engine) as db:
+            db.get(User, 111).ready = False
+            db.get(Search, 1).enabled = False
+            reset_watch(db, 1, False)
+            db.commit()
+    offer(p, mutate=stop)
+    wake(p, seconds=0)
+    assert p.runner.tick() and len(details(p, "77")) == 1
+    drain(p)
+    dispatch(p)
+    assert quotes == ["77"]
+    assert {(uid, car.source_id) for uid, car in p.sent} == {
+        (1002, "77"), (1003, "77"), (1004, "77")}
+    with Session(p.engine) as db:
+        assert db.get(User, 111).ready is False
+        assert db.get(Search, 1).enabled is False
+        assert db.get(MonitorWatch, 1) is None
+
+
+@pytest.mark.parametrize("pressure", ["lag", "catching_up", "pending_primary"])
+def test_primary_pressure_suppresses_after_batch_intake(p, monkeypatch, pressure):
+    setup(p, monkeypatch)
+    four_groups(p)
+    add_search(p, sid=5, uid=1005, price=Range.model_validate({"from": 500}))
+    drain(p)
+    offer(p)
+    wake(p, seconds=0)
+    with Session(p.engine) as db:
+        feeds = list(db.scalars(select(MonitorFeed).order_by(MonitorFeed.id)))
+        hold = feeds[-1]
+        hold.next_poll = p.clock[0] + 300
+        if pressure == "lag":
+            hold.cursor = p.clock[0] - 600
+        elif pressure == "catching_up":
+            hold.status, hold.context = "catching_up", {"after": p.clock[0] - 100}
+        else:
+            p.ads["124"] = p.clock[0] - 1
+        db.commit()
+    assert p.runner.tick() and not details(p, "77")
+    with Session(p.engine) as db:
+        assert db.get(MonitorJob, "77") is None
 
 
 def test_collector_finishes_with_latest_intake_and_budget_state(p, monkeypatch):

@@ -9,6 +9,35 @@ delivery batch. Five added tests cover four simultaneous due feeds, unchanged
 poll deadlines, one shared detail/AI evaluation, last-request hourly/daily/total
 caps, the global lease, and /stop during concurrent search.
 
+## Live fallback follow-up
+
+Fallback commit `38d8ee4d55289be66acba9fbd44a47c47d96527d`, tree
+`94f6c34f4cdd3fe173d0e336fa4b4b89242925b0`, was tested with 937 passing backend
+tests and deployed as `dep-daulbd41nsns73eoe1bg`, live 18:33:20 UTC. The flag
+was enabled through a safe environment merge; that update automatically created
+the single deployment, so no additional manual deploy was triggered.
+
+The baseline completed at about 18:33:16 UTC. After eight cycles, 18 fresh
+candidates were queued but none had reached details and no fallback API call
+was spent. Primary batches continuously filled all four slots, so the idle-only
+intake branch could starve. All 59 primary groups were successful, sampled cursor
+lag was 91–98s (needs_attention=false), and Telegram delivery remained healthy.
+
+The follow-up permits one shared intake after a completed full primary batch,
+at most every 15s with a durable throttle. All selected primary searches/quotes
+finish first. Due primary valuation backlog, catch-up/error feeds and cursor
+lag over twice the planned interval (minimum 120s) suppress the extra step.
+Each actual call still obeys the unchanged global ledger, 20% primary headroom
+and 200/hour, 1000/day extra cap. Bounded selected diagnostics may use the same
+healthy post-batch opportunity. No epochs, delivery claims or accounting are reset.
+Ten additional regression cases cover saturation, operation ordering, restarts,
+primary pressure, hourly/daily/total gates, /stop and diagnostic scheduling.
+The final full backend regression passed **947 tests in 264.95s**; the selected
+fallback, diagnostic and parallel-discovery run passed 60 tests. No failures or
+skips; the one Starlette deprecation warning predates this change. Before moving
+main without force, compare the remote tree with this tested local tree, then
+check whether Render started an automatic deployment before a manual trigger.
+
 The scheduler change was deployed as `b918c958ee0a01573fd3d5a77ae47aa585931b96`,
 tree `a995fc703687a47c06f8c6b41e1757e96989ba11`. Render deployment
 `dep-dauki8s9v7es739u8ih0` became live at 17:39:51 UTC. It changes no
@@ -34,7 +63,7 @@ action or exact initial publication time.
 The explicit diagnostic selectors now select Leaf 40369208. Startup of the
 configuration-only deployment `dep-dauks1e0tbcc73bmheig` (live 18:00:34 UTC)
 was blocked by a busy source lease. The follow-up code retries only unclaimed
-selected probe stages on at most six idle monitor ticks; durable used probes
+selected probe stages on at most six idle or healthy post-batch ticks; durable used probes
 and their caps are never reset. Leaf remains unconfirmed until these logs are
 read after the new code is live.
 
@@ -75,7 +104,7 @@ Mazda's owner trace is also not_observed. Its API diagnostic did NOT run because
 the source lease was busy. Leaf's precise database/API path is unconfirmed.
 Do not present Colt's result as proof for all three.
 
-## Current partial change and validation
+## Initial WIP and validation (superseded)
 
 The scheduler implementation changes backend/monitor.py. Selection reads up to four due feeds;
 after reserving the existing due-search and valuation slots, otherwise idle
@@ -122,7 +151,7 @@ evidence, official details/valuation and subscriber-filter validation. Updating,
 raising or repricing an old ad is not sufficient evidence. Historical active
 catalog scanning remains forbidden.
 
-## Operational safeguards
+## Operational safeguards (initial snapshot)
 
 Render service srv-dal2h35g1s2s73e0sj80, workspace
 tea-dakrf02fngtc73dvk4dg. Live deploy at this handoff:

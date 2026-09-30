@@ -5,7 +5,9 @@ from sqlalchemy.orm import Session
 
 from backend import notification_diagnostic as diagnostic
 from backend.models import Delivery, MonitorJob, SourceBudget, SourceProbe
-from backend.tests.test_monitor import p, drain
+from backend.tests.test_monitor import p, drain, wake
+from backend.tests.test_parallel_discovery import four_groups
+from backend.tests.test_ria_ai_price import enable
 from backend.tests.test_ria_search import raw
 
 
@@ -57,3 +59,21 @@ def test_busy_diagnostic_retries_are_bounded_without_resetting_claimed_probes(p)
                            checked_at=p.clock[0], requests=1, result={}))
         db.commit()
     assert not diagnostic.needs_retry(p.engine, "77")
+
+
+def test_saturated_search_loop_runs_bounded_diagnostic_after_primary(p, monkeypatch):
+    enable(p, monkeypatch)
+    four_groups(p)
+    drain(p)
+    p.runner.settings = replace(p.runner.settings, ria_diagnostic_listing_id="77")
+    wake(p, seconds=100)
+    observations = []
+    def retry(monitor):
+        with Session(p.engine) as db:
+            from backend.models import MonitorFeed
+            observations.append([feed.checked_at for feed in db.scalars(select(MonitorFeed))])
+        return True
+    monkeypatch.setattr(diagnostic, "retry_selected", retry)
+    assert p.runner.tick()
+    assert len(observations) == 1 and len(observations[0]) == 4
+    assert all(checked == p.clock[0] for checked in observations[0])
