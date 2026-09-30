@@ -715,8 +715,10 @@ class Monitor:
                 groups = {member.feed_id for _, _, member in active_members(db)}
                 self.resume_available_quota(db, groups)
                 self.reschedule(db, groups)
-                feed = db.scalar(select(MonitorFeed).where(MonitorFeed.id.in_(groups),
-                    MonitorFeed.next_poll <= time.time()).order_by(MonitorFeed.next_poll, MonitorFeed.id).limit(1))
+                feeds = list(db.scalars(select(MonitorFeed).where(MonitorFeed.id.in_(groups),
+                    MonitorFeed.next_poll <= time.time()).order_by(MonitorFeed.next_poll, MonitorFeed.id)
+                    .limit(PARALLEL_TASKS)))
+                feed = feeds[0] if feeds else None
                 supplemental = func.coalesce(MonitorJob.result["discovery_kind"].as_string(), "") == active_window.KIND
                 job_query = select(MonitorJob).where(MonitorJob.state == "pending", MonitorJob.next_run <= time.time())
                 if not self.settings.ria_active_window_enabled or not active_window.budget_available(db):
@@ -769,6 +771,10 @@ class Monitor:
             if kind and self.settings.ria_ai_price_enabled and kind != active_window.KIND:
                 tasks = [("discover", feed.id)] if feed else []
                 tasks.extend(("evaluate", row.source_id) for row in jobs[:PARALLEL_TASKS - len(tasks)])
+                # Valuations keep their slots and the first due search always
+                # progresses. Use otherwise idle capacity for independent due
+                # feeds, without changing any poll deadline or quota gate.
+                tasks.extend(("discover", row.id) for row in feeds[1:PARALLEL_TASKS - len(tasks) + 1])
                 status, worked = self.parallel_step(tasks, len(groups))
             elif kind:
                 status, worked = kind, True
