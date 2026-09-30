@@ -532,10 +532,22 @@ def test_shortened_main_poll_delivers_new_listing_without_rechecking_old_ads(
     assert len(searches(p)) == initial_searches
     p.clock[0] += 2
     drain(p)  # No manual wake/reset of the persisted next_poll checkpoint.
+    # Source work can finish before the independent Telegram queue. Verify
+    # every recipient is persisted, then exercise the live batch dispatcher.
+    with Session(p.engine) as db:
+        deliveries = list(db.scalars(select(Delivery)))
+        assert {row.user_id for row in deliveries} == recipients
+        assert len(deliveries) == distinct_groups
+        assert {row.state for row in deliveries} <= {"pending", "sent"}
+    before_dispatch = len(p.calls)
+    for _ in range(distinct_groups):
+        asyncio.run(delivery_batch(p.engine, p.settings, p.runner.sender))
     assert {(uid, car.source_id) for uid, car in p.sent} == {(uid, "124") for uid in recipients}
+    assert len(p.sent) == distinct_groups and len(p.calls) == before_dispatch
     assert ai_calls == ["124"] and len(details(p, "124")) == 1
     assert not details(p, "123")
     with Session(p.engine) as db:
+        assert all(row.state == "sent" for row in db.scalars(select(Delivery)))
         assert all(feed.next_poll - feed.checked_at == interval for feed in db.scalars(select(MonitorFeed)))
     report = runtime_status(p.engine, True, provider_pricing_enabled=True)
     assert report["active_filter_groups"] == distinct_groups

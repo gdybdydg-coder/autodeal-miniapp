@@ -630,7 +630,8 @@ class Monitor:
     def parallel_step(self, tasks, groups):
         """At most four operations under the original global monitor/source leases.
 
-        A due publication page owns one slot; the rest evaluate distinct jobs.
+        A due publication page owns one slot; valuations keep their reserved
+        slots, and idle slots may search other independently due feeds.
         Completion is per car, so delivery need not wait for the slowest quote.
         Joining all tasks before release also fences overlapping deployments.
         """

@@ -1,6 +1,17 @@
 # Discovery coverage handoff — 2026-09-30
 
-This branch is work in progress, NOT deployed. Production main remains
+The initial investigation below was saved as an undeployed WIP. The September
+30 follow-up validated the idle-slot scheduler: **892 backend tests passed**.
+The failing seven-recipient test was inspected: all seven durable Delivery rows
+existed (three sent, four pending), and independent dispatch sent the remaining
+four. The test now checks all persisted recipients and runs the production
+delivery batch. Five added tests cover four simultaneous due feeds, unchanged
+poll deadlines, one shared detail/AI evaluation, last-request hourly/daily/total
+caps, the global lease, and /stop during concurrent search.
+
+The scheduler change is ready for ordinary main deployment. It changes no
+configured cadence, hard caps, epochs, delivery claims or active-window policy.
+The original production baseline at the start of this follow-up remains
 `297a9a7920b9af4a1af06002ae1ff8217a8388d3`, tree
 `3782b3e204dab97ee5a2dc2338591612e5658a32`.
 
@@ -33,13 +44,13 @@ Do not present Colt's result as proof for all three.
 
 ## Current partial change and validation
 
-Only backend/monitor.py is changed. Selection now reads up to four due feeds;
+The scheduler implementation changes backend/monitor.py. Selection reads up to four due feeds;
 after reserving the existing due-search and valuation slots, otherwise idle
 slots can process independent due feeds. Poll deadlines, quota gates, global
 leases, epochs and delivery deduplication are retained. This targets observed
 search lag without increasing scheduled polling frequency.
 
-The base code passed 71 selected parallel/active-window/HTML-shadow tests before
+Initial WIP validation (superseded by the 892-test follow-up above): the base code passed 71 selected parallel/active-window/HTML-shadow tests before
 the edit. After the edit, parallel + monitor tests returned 54 passed, 1 failed:
 `test_shortened_main_poll_delivers_new_listing_without_rechecking_old_ads[7-68]`.
 Only 3 of 7 expected recipients were sent by the test helper. Hypothesis: the
@@ -71,10 +82,11 @@ responses; never use cookies, hidden endpoints or CAPTCHA/IP bypass. Do not
 scan the old catalog or periodically reevaluate old prices. No parser, production
 collector, fallback intake or configuration for this proposal exists yet.
 
-The user asked to fix missing ads while saving requests. A question about
-including fresh repeat publications under an old ID was shown; no choice was
-received. The user asked what it meant, and the assistant explained the proposal.
-Do not record that as explicit approval to enable historical active scanning.
+On the September 30 follow-up, the user explicitly selected inclusion of fresh
+repeat publications under an old ID, provided there is fresh addition-date
+evidence, official details/valuation and subscriber-filter validation. Updating,
+raising or repricing an old ad is not sufficient evidence. Historical active
+catalog scanning remains forbidden.
 
 ## Operational safeguards
 
