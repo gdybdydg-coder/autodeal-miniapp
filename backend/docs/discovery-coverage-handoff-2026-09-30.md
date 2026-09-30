@@ -1,5 +1,33 @@
 # Discovery coverage handoff — 2026-09-30
 
+The b613bbdf live runtime snapshot is recorded in
+[discovery-coverage-verification-2026-09-30.md](discovery-coverage-verification-2026-09-30.md).
+It includes the now-confirmed Leaf diagnostic, live fallback processing and
+the subsequent source errors/queue limitations. The current recovery follow-up
+is described below; the fixed snapshot retains the code/deployment of its stage.
+
+## Recovery from a stale frozen publication window
+
+The live incident later showed successful primary retries but a 306s-old cursor
+even when all 61 groups were watching. A frozen window's catchup flag reflected
+its opening time, so completing it after an error/quota wait could add a normal
+poll interval before moving to fresh publications. The follow-up checks window
+age at completion: after closing a window older than the planned interval,
+continue immediately from its preserved end. Short normal HTTP latency still
+uses the planned wait. No cursor gaps, filter/activation resets, old-catalog
+searches or delivery claim changes are introduced.
+
+Four new regression cases cover connection/upstream/quota waits, exact frozen
+window replay, accounting failed requests, immediate bounded catch-up, shared
+evaluation/dispatcher deduplication and /stop during the wait. Selected catch-up,
+monitor, parallel, quota-resume and fallback tests: **108 passed**. Full backend
+regression: **951 passed in 265.07s**, no failures or skips. The Starlette
+deprecation warning predates this change. Before the follow-up deployment,
+the source recovered by ordinary retries: all 61 groups watching, cursor lag
+115s, needs_attention=false, empty Telegram delivery queue and quota available.
+The catchup change avoids the extra planned wait on the next such incident;
+it does not claim to prevent upstream failures or prove maximum delivery delay.
+
 The initial investigation below was saved as an undeployed WIP. The September
 30 follow-up validated the idle-slot scheduler: **892 backend tests passed**.
 The failing seven-recipient test was inspected: all seven durable Delivery rows

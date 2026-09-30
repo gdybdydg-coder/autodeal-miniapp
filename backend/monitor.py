@@ -429,7 +429,11 @@ class Monitor:
                     feed.context = copy.deepcopy(context)
             else:
                 feed.cursor, feed.context, feed.status = context["finish_at"], {}, "watching"
-                feed.next_poll = now + (0 if context["catchup"] else interval)
+                # A window that was current when opened may become stale after
+                # a quota/error wait. Catch up from its preserved end promptly;
+                # short ordinary HTTP latency still keeps the planned interval.
+                catchup = context["catchup"] or context["finish_at"] < now - interval
+                feed.next_poll = now + (0 if catchup else interval)
             for _, watch, member in active_members(db):
                 if member.feed_id == feed_id:
                     watch.status = feed.status if watch.initialized else "starting"
