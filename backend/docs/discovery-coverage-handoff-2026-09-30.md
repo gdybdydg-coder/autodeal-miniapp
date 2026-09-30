@@ -1,5 +1,42 @@
 # Discovery coverage handoff — 2026-09-30
 
+## Verified release at 19:54 UTC / 22:54 Europe/Kyiv
+
+Current deployed main: `901d96fe1f7e10196155ef6dd329da9d62f2a250`, tested tree
+`0f1392a7cc7a3f5c8e2eba7af0851561b97e4ef2`. Render
+`dep-daumfo59fdbs739haga0` became live at 19:50:59 UTC. All **951 backend
+tests passed** (265.07s); 108 selected recovery/monitor/quota/fallback tests
+passed. Local/remote trees matched before non-force main update. Render had no
+automatic deployment after 146 seconds of rechecking; one manual deployment
+was started, with no duplicate.
+
+Post-deploy health: PostgreSQL connected, delivery available, no runtime error
+logs. All 61 groups watching/successful, oldest cursor lag 110s,
+needs_attention=false; valuation and Telegram queues empty. Provider calls
+were available under unchanged 4500/hour, 90000/day, 1102160 total limits:
+2750/hour, 32670/day, total used 228316, local remaining total 873844.
+This is local accounting, not the provider's package balance.
+
+The new shared source retained its baseline `1790793196.5574977` and accounting
+across the restart: watching, 63 cycles, 46 API-validated publication jobs,
+113 extra paid requests, 123 waiting candidates, cumulative overflow 195.
+Validated jobs are not a count of profitable cars or sent messages. Category
+rejections 19, no eligible subscriptions 34, mismatched addition date 1,
+unavailable details 1. Last unexpected_html is historical; successful collection
+resumed afterward. Whole-market recall and net request savings remain unproved.
+Two-page sampling, bounded queue/budget and source failures remain limitations.
+
+Active window/initial inclusion remain false, confirmed-only true. /stop,
+recipient epochs, sent/uncertain claims, saved filters and minDiscount are
+preserved. The two historical recoveries were not repeated. Diagnostics still
+select Leaf, whose six-request VIN/date probe is complete and is never reopened.
+Night polling remains enabled at 3600s; day target 110s, evening target 60s
+(current 61-group budget-adjusted interval 66s).
+
+This final handoff update changes documentation only on the WIP branch; the
+deployed main above remains the exact tested code/tree. Later source behavior
+must be checked anew; this is a timestamped sample, not a delivery-time guarantee.
+
 The b613bbdf live runtime snapshot is recorded in
 [discovery-coverage-verification-2026-09-30.md](discovery-coverage-verification-2026-09-30.md).
 It includes the now-confirmed Leaf diagnostic, live fallback processing and
