@@ -81,3 +81,12 @@ in-flight send to `uncertain`, never to a replayable pending claim. Any existing
 claim state remains the final dedupe authority. The module has no sender and
 cannot deliver. Checkpoint:
 ../../backend/docs/zero-paid-api-offline-queue-2026-10-01.md
+
+`http_budget.py` is a network-free state machine for a hypothetical shared
+fetcher. It requires explicit terms, robots and public-route approval; reserves
+rolling request and byte budgets before hypothetical GET I/O; forbids redirects
+and cookies; and bounds queue, in-flight work, body size, retries and backoff.
+429 pauses the source, HTTP denials persistently block it, and a restart retains
+the full uncertain reservation charge before any delayed retry. Test budget
+values are synthetic and do not authorize live collection. Checkpoint:
+../../backend/docs/zero-paid-api-http-budget-2026-10-01.md
