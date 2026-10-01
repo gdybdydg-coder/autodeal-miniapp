@@ -62,8 +62,10 @@ offline сценарії entitlement-перевірки без вмикання 
 3. Виконано в поточній WIP-гілці: валідація reference/часу, durable
    clarification/resubmit, offline outbox dedup/restart і guard-сценарії
    `/stop`/epoch/claims без автоматичного ввімкнення пошуку.
-4. Інтеграційний offline сценарій create -> receipt -> approval -> renewal
-   -> expiry, audit trail, concurrent requests, admin auth boundary.
+4. Виконано: наскрізний offline сценарій create -> receipt -> clarification
+   -> approval -> renewal -> expiry, audit/outbox, concurrent create/workers,
+   fixture session auth boundary. Див. stage-4-handoff.md. 33 Python тести
+   й Node workflow пройшли; це не production auth чи доставка.
 5. Підсумковий review і конкретний перелік даних від власника; без merge/deploy.
 
 Перед кожним записом перевіряти актуальний head цієї гілки. Main, Render,
