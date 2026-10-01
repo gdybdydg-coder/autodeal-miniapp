@@ -5,6 +5,7 @@ import re
 import secrets
 import time
 from datetime import datetime
+from html import escape
 from zoneinfo import ZoneInfo
 
 from sqlalchemy import select, update
@@ -18,7 +19,7 @@ OWNER = 777292211
 AMOUNT_UAH, DAYS = 250, 30
 PAYMENTS_ENABLED = False
 MAX_ORDERS = 20
-COMMANDS = {"/subtest", "/subscription_test"}
+COMMANDS = {"/subtest", "/subscription_test", "/subtest_admin"}
 PREFIX = "subtest:"
 
 
@@ -100,35 +101,54 @@ def apply(engine, action, order_id, update_id, now):
     raise RuntimeError("Owner subscription preview busy")
 
 
-def render(state, now, note=""):
-    text = ("🧪 AUTODeal — приватний тест абонемента\n\n"
-            f"Погоджений тариф: {AMOUNT_UAH} грн за {DAYS} днів.\n"
-            "Оплата й платні обмеження вимкнені. AUTODeal поки безкоштовний.\n"
-            "Не переказуй кошти й не надсилай справжню квитанцію.\n")
+def render(state, now, note="", *, admin=False, owner_controls=False):
+    """Compact customer-style preview; identifiers/actions have an owner view."""
     order = state["orders"][-1] if state["orders"] else None
+    amount, days = (order["amount"], order["days"]) if order else (AMOUNT_UAH, DAYS)
+    sections = ["🛠 <b>AUTODeal · Кабінет власника</b>" if admin else
+                "🚘 <b>AUTODeal</b>\nВигідні авто у твоєму Telegram",
+                f"💳 <b>{escape(str(amount))} грн</b>  ·  📅 <b>{escape(str(days))} днів</b>",
+                "🧪 <b>Тест без оплати</b>\nБот поки безкоштовний. Не переказуй кошти."]
     keyboard = []
-    if order:
-        names = {"awaiting": "очікує тестової квитанції", "review": "на тестовій перевірці",
-                 "approved": "тест підтверджено", "rejected": "відхилено"}
-        text += f"\nЗаявка AD-{order['id'].upper()}: {names[order['status']]}.\n"
-        text += f"Сума заявки: {order['amount']} грн · {order['days']} днів.\n"
-        if order["status"] == "awaiting":
-            keyboard.append([{"text": "Тестова квитанція", "callback_data": PREFIX+"receipt:"+order["id"]}])
-        elif order["status"] == "review":
-            keyboard.append([{"text": "Підтвердити тестові 30 днів", "callback_data": PREFIX+"approve:"+order["id"]}])
-        if order["status"] in ("awaiting", "review"):
-            keyboard.append([{"text": "Відхилити тестову заявку", "callback_data": PREFIX+"reject:"+order["id"]}])
+    active = state["expires_at"] > now
     if state["expires_at"]:
-        until = datetime.fromtimestamp(state["expires_at"], ZoneInfo("Europe/Kyiv")).strftime("%d.%m.%Y %H:%M")
-        active = "активний" if now < state["expires_at"] else "завершений"
-        text += f"\nТестовий абонемент {active} до {until}.\n"
+        until = datetime.fromtimestamp(state["expires_at"], ZoneInfo("Europe/Kyiv")).strftime("%d.%m.%Y · %H:%M")
+        sections.append(("💎 <b>Абонемент активний</b>" if active else "⌛ <b>Абонемент завершений</b>")
+                        +f"\n📅 До <b>{until}</b>")
+    if order:
+        labels = {"awaiting": "📝 <b>Заявку створено</b>", "review": "⏳ <b>Заявка на перевірці</b>",
+                  "approved": "✅ <b>Тест підтверджено</b>", "rejected": "❌ <b>Заявку відхилено</b>"}
+        if not admin and active and order["status"] == "rejected":
+            sections.append("❌ <b>Продовження відхилено</b>\nЧинний абонемент залишається активним.")
+        else:
+            sections.append(labels[order["status"]])
+        if admin:
+            sections.append(f"🧾 <b>ID заявки</b>\n<code>AD-{escape(str(order['id']).upper())}</code>")
+        if order["status"] == "awaiting":
+            if not admin:
+                sections.append("Додай тестову квитанцію кнопкою нижче.")
+                keyboard.append([{"text": "📎 Тестова квитанція", "callback_data": PREFIX+"receipt:"+order["id"]}])
+        elif order["status"] == "review" and admin:
+            keyboard.append([{"text": "✅ Підтвердити 30 днів", "callback_data": PREFIX+"approve:"+order["id"]}])
+        elif order["status"] == "review":
+            sections.append("Тестову квитанцію отримано. Очікуємо підтвердження.")
+            keyboard.append([{"text": "🔄 Оновити статус", "callback_data": PREFIX+"view"}])
+        if admin and order["status"] in ("awaiting", "review"):
+            keyboard.append([{"text": "❌ Відхилити заявку", "callback_data": PREFIX+"reject:"+order["id"]}])
     if not order or order["status"] in ("approved", "rejected"):
-        keyboard.append([{"text": "Тест продовження" if state["expires_at"] > now else "Створити тестову заявку",
+        keyboard.append([{"text": "🔄 Тест продовження" if active else "📝 Створити тестову заявку",
                           "callback_data": PREFIX+"create"}])
-    if note:
-        text += "\n"+note+"\n"
-    text += "\nЦе окремий тест: пошуки, /stop і доступ інших користувачів не змінюються."
-    return {"method": "sendMessage", "chat_id": OWNER, "text": text,
+    repeated = {"Тестову заявку створено. Гроші не переказуй.",
+                "Демонстраційну квитанцію позначено для перевірки.",
+                "Підтверджено лише тестовий абонемент. Реальної оплати немає.",
+                "Тестову заявку відхилено."}
+    if note and note not in repeated:
+        sections.append("ℹ️ "+escape(note))
+    if admin:
+        keyboard.append([{"text": "👤 Перегляд клієнта", "callback_data": PREFIX+"view"}])
+    elif owner_controls:
+        keyboard.append([{"text": "🛠 Деталі власника", "callback_data": PREFIX+"admin"}])
+    return {"method": "sendMessage", "chat_id": OWNER, "text": "\n\n".join(sections), "parse_mode": "HTML",
             "reply_markup": {"inline_keyboard": keyboard}, "protect_content": True}
 
 
@@ -163,22 +183,25 @@ def handle(engine, settings, event, request=None, now=None):
         command, _, mention = token.partition("@")
         if command not in COMMANDS or (mention and mention.lower() != telegram_setup.BOT_USERNAME.lower()):
             return None
-        return render(view(engine), now)
+        return render(view(engine), now, admin=command == "/subtest_admin", owner_controls=True)
     update_id = event.get("update_id")
     callback_id = callback.get("id")
-    match = re.fullmatch(r"subtest:(create|(?:receipt|approve|reject):[a-f0-9]{32})", data)
+    match = re.fullmatch(r"subtest:(view|admin|create|(?:receipt|approve|reject):[a-f0-9]{32})", data)
     if (match is None or type(update_id) is not int or not 0 <= update_id < 2**63
             or not isinstance(callback_id, str) or not 1 <= len(callback_id) <= 256):
         return {"ok": True}
     action, _, order_id = data[len(PREFIX):].partition(":")
-    state, note = apply(engine, action, order_id, update_id, now)
+    if action in ("view", "admin"):
+        state, note = view(engine), ""
+    else:
+        state, note = apply(engine, action, order_id, update_id, now)
     # Acknowledge only this owner's authenticated button; no messages are pushed.
     request = request or telegram_setup.call
     try:
         request(settings.bot_token, "answerCallbackQuery", {"callback_query_id": callback_id}, timeout=5)
     except Exception:
         pass  # Committed synthetic state remains retry-safe; never log credentials.
-    return render(state, now, note)
+    return render(state, now, note, admin=action in ("admin", "approve", "reject"), owner_controls=True)
 
 
 def configure(engine, settings, request=None):
@@ -195,19 +218,20 @@ def configure(engine, settings, request=None):
             {"command": "quota_set", "description": "Вказати залишок активного пакета"},
         ]
     with Session(engine) as db:
-        row = db.get(SourceProbe, "subscription-owner-menu-v1")
+        row = db.get(SourceProbe, "subscription-owner-menu-v2")
         if row and row.status == "configured":
             return
         response = request(settings.bot_token, "setMyCommands", {
             "scope": {"type": "chat", "chat_id": OWNER},
             "commands": public_commands+quota_commands+[
                 {"command": "subtest", "description": "Приватний тест абонемента без оплати"},
+                {"command": "subtest_admin", "description": "Деталі та підтвердження тестових заявок"},
                 {"command": "paytest", "description": "Тест оплати 1 ⭐ (лише власник)"},
                 {"command": "payment", "description": "Статус тестового доступу Stars"},
                 {"command": "refundtest", "description": "Повернути тестову оплату Stars"},
                 {"command": "paysupport", "description": "Підтримка тестової оплати"},
             ]})
         ok = response.get("ok") is True and response.get("result") is True
-        db.merge(SourceProbe(id="subscription-owner-menu-v1", status="configured" if ok else "unavailable",
+        db.merge(SourceProbe(id="subscription-owner-menu-v2", status="configured" if ok else "unavailable",
                              checked_at=time.time(), requests=0, result={}))
         db.commit()

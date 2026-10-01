@@ -18,6 +18,13 @@ Telegram callback updates are enabled without dropping pending updates.
 Deployment scope, tests and collection restrictions are documented in
 [subscription preview handoff](docs/subscription-preview-handoff-2026-10-01.md).
 
+Subscription trial presentation update (2026-10-01): `/subtest` uses compact
+HTML cards with no visible IDs or approval controls in the customer-style view.
+The owner can select «🛠 Деталі власника» or send `/subtest_admin` for the private
+ID and confirmation/rejection controls. Navigation is read-only; public payment
+and access restrictions remain off. See
+[card design verification](docs/subscription-card-design-2026-10-01.md).
+
 ## Owner-managed package transitions and warnings (2026-09-27)
 
 `RIA_QUOTA_MANAGEMENT_ENABLED=true` enables private commands for the configured

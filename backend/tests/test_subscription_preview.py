@@ -2,6 +2,7 @@ import copy
 import time
 from concurrent.futures import ThreadPoolExecutor
 from dataclasses import replace
+from html.parser import HTMLParser
 
 import pytest
 from fastapi.testclient import TestClient
@@ -46,8 +47,9 @@ def create(api, update=10):
 def test_owner_sees_disabled_tariff_and_private_durable_trial(setup):
     engine, settings, api, calls = setup
     status = command(api,"/subtest",uid=preview.OWNER).json()
-    assert "250 грн за 30 днів" in status["text"]
-    assert "вимкнені" in status["text"] and "безкоштовний" in status["text"]
+    assert "250 грн" in status["text"] and "30 днів" in status["text"]
+    assert "Тест без оплати" in status["text"] and "безкоштовний" in status["text"]
+    assert status["parse_mode"] == "HTML"
     assert "Не переказуй" in status["text"] and status["protect_content"] is True
     assert preview.PAYMENTS_ENABLED is False
     assert preview.view(engine)["orders"] == []
@@ -56,7 +58,7 @@ def test_owner_sees_disabled_tariff_and_private_durable_trial(setup):
     assert preview.view(engine)["expires_at"] == 0
     button(api,"subtest:receipt:"+oid,12)
     approved = button(api,"subtest:approve:"+oid,13).json()
-    assert "лише тестовий" in approved["text"] and "Реальної оплати немає" in approved["text"]
+    assert "Тест підтверджено" in approved["text"] and "Тест без оплати" in approved["text"]
     state = preview.view(engine)
     assert state["orders"][0]["amount"] == 250 and state["orders"][0]["days"] == 30
     assert state["orders"][0]["status"] == "approved"
@@ -70,7 +72,7 @@ def test_owner_sees_disabled_tariff_and_private_durable_trial(setup):
         assert len(db.scalars(select(SubscriptionPreview)).all()) == 1
 
 
-@pytest.mark.parametrize("cmd",["/subtest","/subscription_test"])
+@pytest.mark.parametrize("cmd",["/subtest","/subscription_test","/subtest_admin"])
 def test_public_users_never_see_preview_and_still_have_free_searches(setup, cmd):
     engine, _, api, calls = setup
     assert command(api,cmd,uid=111).json() == {"ok":True}
@@ -222,9 +224,97 @@ def test_menu_is_owner_scoped_idempotent_and_preserves_public_commands(setup, qu
     assert method == "setMyCommands"
     assert payload["scope"] == {"type":"chat","chat_id":preview.OWNER}
     names = {c["command"] for c in payload["commands"]}
-    assert {"start","stop","subtest","payment","refundtest"} <= names
+    assert {"start","stop","subtest","subtest_admin","payment","refundtest"} <= names
     quota_names = {"check", "quota", "quota_set"}
     assert (quota_names <= names) is (quota_enabled and admin_id == preview.OWNER)
     if not (quota_enabled and admin_id == preview.OWNER):
         assert not quota_names & names
     assert len(names) == len(payload["commands"])
+
+
+class TelegramHTML(HTMLParser):
+    """Check balanced Telegram-supported tags and their visible text."""
+    def __init__(self, source):
+        super().__init__(convert_charrefs=True)
+        self.tags, self.visible = [], []
+        self.feed(source)
+        self.close()
+        assert not self.tags
+
+    def handle_starttag(self, tag, attrs):
+        assert tag in {"b", "code"} and not attrs
+        self.tags.append(tag)
+
+    def handle_endtag(self, tag):
+        assert self.tags and self.tags.pop() == tag
+
+    def handle_data(self, text):
+        self.visible.append(text)
+
+
+@pytest.mark.parametrize("status", [None,"awaiting","review","approved","rejected"])
+def test_customer_card_hides_identifiers_and_owner_actions_in_every_state(status):
+    oid = "b"*32
+    state = preview.initial()
+    if status:
+        state["orders"] = [{"id":oid,"amount":250,"days":30,"status":status}]
+    state["expires_at"] = 2000
+    customer = preview.render(state,1000)
+    assert customer["parse_mode"] == "HTML"
+    visible = "".join(TelegramHTML(customer["text"]).visible)
+    assert oid not in visible and "AD-" not in visible and "ID" not in visible
+    assert str(preview.OWNER) not in visible and "SYNTH" not in visible
+    assert "250 грн" in visible and "30 днів" in visible and "Тест без оплати" in visible
+    assert "Не переказуй" in visible
+    actions = [b["callback_data"] for row in customer["reply_markup"]["inline_keyboard"] for b in row]
+    assert not any(a.startswith(("subtest:approve:","subtest:reject:")) or a=="subtest:admin" for a in actions)
+    if status == "rejected":
+        assert "Продовження відхилено" in visible and "залишається активним" in visible
+    if status:
+        admin = preview.render(state,1000,admin=True)
+        assert "AD-"+oid.upper() in "".join(TelegramHTML(admin["text"]).visible)
+
+
+def test_owner_details_are_read_only_and_cannot_mask_a_pending_trial_action(setup):
+    engine,_,api,_ = setup
+    oid = create(api,10)
+    with Session(engine) as db:
+        row = db.get(SubscriptionPreview,preview.OWNER)
+        before = (copy.deepcopy(row.state),row.version,row.updated_at)
+    admin = button(api,"subtest:admin",1000).json()
+    assert "AD-"+oid.upper() in admin["text"]
+    client = button(api,"subtest:view",1001).json()
+    assert oid.upper() not in client["text"]
+    assert "AD-"+oid.upper() in command(api,"/subtest_admin",uid=preview.OWNER,update=1002).json()["text"]
+    with Session(engine) as db:
+        row = db.get(SubscriptionPreview,preview.OWNER)
+        assert (row.state,row.version,row.updated_at) == before
+    # Read-only views with a later ID must not suppress a queued earlier action.
+    button(api,"subtest:receipt:"+oid,11)
+    assert preview.view(engine)["orders"][-1]["status"] == "review"
+    review = command(api,"/subtest_admin",uid=preview.OWNER,update=1003).json()
+    assert any(b["callback_data"]=="subtest:approve:"+oid
+               for row in review["reply_markup"]["inline_keyboard"] for b in row)
+
+
+@pytest.mark.parametrize("data",["subtest:admin","subtest:view"])
+def test_public_callbacks_cannot_read_owner_details(setup, data):
+    engine,_,api,calls = setup
+    create(api,10)
+    calls.clear()
+    assert button(api,data,1000,uid=111).json() == {"ok":True}
+    assert button(api,data,1001,**{"message":{"chat":{"id":-1,"type":"group"}}}).json() == {"ok":True}
+    assert not calls
+
+
+def test_dynamic_text_is_escaped_and_does_not_break_telegram_formatting():
+    state = preview.initial()
+    state["orders"] = [{"id":"x<&>","amount":"250<&>","days":30,"status":"review"}]
+    note = '<script>bad & "test"</script>'
+    for admin in (False,True):
+        reply = preview.render(state,1000,note,admin=admin)
+        assert "<script>" not in reply["text"] and "250&lt;&amp;&gt;" in reply["text"]
+        visible = "".join(TelegramHTML(reply["text"]).visible)
+        assert note in visible
+        if admin:
+            assert "AD-X<&>" in visible
