@@ -1,0 +1,33 @@
+.autodeal-trial{color-scheme:light dark;--ad-bg:light-dark(#fff,#121820);--ad-text:light-dark(#13202b,#e6eef5);--ad-muted:light-dark(#536273,#a9b9c9);--ad-panel:light-dark(#f2f5f7,#1c2631);--ad-line:light-dark(#d6dee6,#354553);--ad-blue:light-dark(#007b9f,#46d3ed);--ad-onblue:light-dark(#fff,#08242b);--ad-red:light-dark(#ae1635,#ff8098);font-family:system-ui,sans-serif;font-size:15px;line-height:1.45;font-weight:400;background:var(--ad-bg);color:var(--ad-text);max-width:460px;margin:16px auto;border:1px solid var(--ad-line);border-radius:20px;overflow:hidden}
+.autodeal-trial *{box-sizing:border-box}
+.autodeal-trial [hidden]{display:none!important}
+.autodeal-trial header{padding:20px;display:flex;flex-wrap:wrap;gap:8px;align-items:center;justify-content:space-between}
+.autodeal-trial header strong{font-size:22px;font-weight:500}.autodeal-trial header span{color:var(--ad-blue)}
+.autodeal-trial small,.autodeal-trial footer{color:var(--ad-muted);font-size:12px;font-weight:400}
+.autodeal-trial nav{display:flex;gap:6px;padding:0 20px 12px}
+.autodeal-trial button{font:inherit;min-height:44px;border-radius:10px;border:1px solid var(--ad-line);background:var(--ad-bg);color:var(--ad-text);padding:10px 12px;font-weight:500}
+.autodeal-trial button[aria-pressed=true]{background:var(--ad-panel);border-color:var(--ad-blue)}
+.autodeal-trial button:disabled{opacity:.55}
+.autodeal-trial .ad-main{display:block;width:100%;background:var(--ad-blue);color:var(--ad-onblue);border-color:var(--ad-blue);margin:12px 0}
+.autodeal-trial main{padding:0 20px 16px}
+.autodeal-trial .ad-plan{background:var(--ad-panel);padding:16px;border-radius:12px}
+.autodeal-trial h2{font-size:18px;font-weight:500;margin:7px 0}
+.autodeal-trial p{margin:12px 0}
+.autodeal-trial label{display:block;margin:12px 0}
+.autodeal-trial input:not([type=checkbox]),.autodeal-trial textarea{display:block;width:100%;font:inherit;font-size:16px;background:var(--ad-bg);color:var(--ad-text);border:1px solid var(--ad-line);border-radius:8px;padding:10px;margin-top:5px}
+.autodeal-trial .ad-check{display:flex;align-items:center;gap:8px;min-height:44px}
+.autodeal-trial .ad-check input{width:20px;height:20px;flex:none}
+.autodeal-trial .ad-actions{display:flex;flex-wrap:wrap;gap:8px}
+.autodeal-trial .ad-receipt{padding:14px;background:var(--ad-panel);border-radius:10px}
+.autodeal-trial .ad-receipt small{display:block}
+.autodeal-trial .ad-note{padding:10px;border-left:3px solid var(--ad-blue);background:var(--ad-panel)}
+.autodeal-trial .ad-error{color:var(--ad-red)}
+.autodeal-trial .ad-error:empty{display:none}
+.autodeal-trial footer{padding:12px 20px;background:var(--ad-panel)}
+.autodeal-trial.ad-login,#owner-session.autodeal-trial{padding:20px}
+.autodeal-trial .ad-payment{margin:16px 0;padding:14px;background:var(--ad-panel);border-radius:12px}
+.autodeal-trial .ad-payment h3{font-size:16px;font-weight:500;margin:0 0 12px}
+.autodeal-trial .ad-payment dt{font-size:12px;color:var(--ad-muted);margin-top:10px}
+.autodeal-trial .ad-payment dd{margin:3px 0 12px;overflow-wrap:anywhere}
+.autodeal-trial .ad-iban{font-family:ui-monospace,monospace;user-select:text}
+@media(max-width:360px){.autodeal-trial{margin:4px auto}.autodeal-trial header,.autodeal-trial main{padding-left:14px;padding-right:14px}.autodeal-trial nav{padding-left:14px;padding-right:14px}.autodeal-trial nav button{flex:1}}

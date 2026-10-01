@@ -1,0 +1,8 @@
+__pycache__/
+*.py[cod]
+*.sqlite
+*.sqlite-wal
+*.sqlite-shm
+*.sqlite-journal
+*.local-invitations.json
+*.private.json

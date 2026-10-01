@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="uk">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AUTODeal — тест підтвердження</title>
+<style>
+*{box-sizing:border-box}body{margin:0;background:#10141c;color:#eef2f7;font:16px system-ui,sans-serif}main{max-width:1040px;margin:auto;padding:28px 18px}h1{font-size:28px;margin:0 0 8px}h2{font-size:21px;margin:0 0 20px}.muted{color:#aab7c8}aside{background:#302916;color:#ffe8a8;padding:16px;border-radius:12px;margin:20px 0}.grid{display:grid;grid-template-columns:1fr 1fr;gap:20px}.card{background:#1c2330;border:1px solid #354054;border-radius:18px;padding:24px}label{display:block;margin:16px 0 8px}input:not([type=checkbox]),textarea{width:100%;padding:12px;border:1px solid #536078;border-radius:8px;background:#10141c;color:#fff;font:inherit}textarea{min-height:90px}button{padding:13px 16px;border:0;border-radius:9px;background:#54dcc6;color:#081a18;font:600 15px system-ui;cursor:pointer;margin:12px 5px 0 0}button.secondary{background:#36465c;color:#fff}button.danger{background:#653540;color:#ffe7e9}button:disabled{opacity:.4;cursor:default}.status{padding:12px;background:#26354b;border-radius:9px}dl{display:grid;grid-template-columns:1fr 1fr;gap:12px}dd{margin:0;text-align:right}#feedback{min-height:28px;color:#ffdf97;margin-top:16px}small{display:block;margin-top:12px;color:#aab7c8}@media(max-width:760px){.grid{grid-template-columns:1fr}.card{padding:20px}}
+</style>
+<main>
+<h1>AUTODeal · ручне підтвердження</h1>
+<p class="muted">Окремий прототип клієнтської заявки й панелі адміністратора</p>
+<aside><strong>Демо на вигаданих даних.</strong> Кошти не переказуються. Файл не завантажується на сервер. 249 грн — тестова сума, тариф ще не затверджено. Обидві ролі показано разом лише для огляду.</aside>
+<div class="grid">
+<section class="card"><h2>Екран клієнта</h2>
+<dl><dt>Замовлення</dt><dd>AD-DEMO-1042</dd><dt>Тариф</dt><dd>30 днів</dd><dt>Тестова сума</dt><dd>249 грн</dd></dl>
+<p class="muted">Реквізити отримувача ще не задано. Не переказуй кошти за цим макетом.</p>
+<p class="status" id="client-status"></p>
+<p id="client-note"></p>
+<label for="receipt">Тестова квитанція (назва файлу)</label><input id="receipt" type="file" accept="image/jpeg,image/png,application/pdf">
+<label for="receipt-reference">Вигаданий номер квитанції</label><input id="receipt-reference" value="SYNTH-RECEIPT-001" maxlength="100">
+<label for="paid-at">Час тестового переказу</label><input id="paid-at" type="datetime-local">
+<button id="submit">Я оплатив — надіслати в демо</button>
+<small>Квитанція сама не активує абонемент. Потрібне підтвердження фактичного надходження.</small>
+</section>
+<section class="card"><h2>Екран адміністратора</h2>
+<dl><dt>Клієнт</dt><dd>Тестовий клієнт</dd><dt>Тестовий ID</dt><dd>111</dd><dt>Квитанція</dt><dd id="receipt-name">Ще немає</dd><dt>Номер квитанції</dt><dd id="receipt-reference-view">Ще немає</dd></dl>
+<label for="reference">Вигаданий номер банківського платежу</label><input id="reference" value="DEMO-BANK-001" maxlength="100">
+<label for="amount">Звірена тестова сума, грн</label><input id="amount" type="number" min="1" step="1" value="249">
+<label><input id="verified" type="checkbox"> Підтверджую тестову звірку надходження</label>
+<label for="note">Що потрібно уточнити</label><textarea id="note" placeholder="Наприклад: вкажіть час переказу"></textarea>
+<button id="approve">Підтвердити на 30 днів</button><button class="secondary" id="clarify">Попросити уточнення</button><button class="danger" id="reject">Відхилити</button>
+<small>Цей локальний макет не має справжньої авторизації адміністратора й не керує доступом до бота.</small>
+</section></div>
+<p id="feedback" role="status" aria-live="polite"></p>
+<button class="secondary" id="reset">Скинути демо</button>
+<small>Перезавантаження скидає лише цей макет. PostgreSQL, Telegram, банк та AUTO.RIA не підключені.</small>
+</main>
+<script src="workflow.js"></script>
+<script>
+'use strict';
+const el=id=>document.getElementById(id);
+let order,usedReferences;
+const now=()=>Math.floor(Date.now()/1000);
+function render(){
+ const labels={awaiting:'Очікуємо квитанцію',review:'Квитанцію отримано — очікує підтвердження',clarification:'Потрібне уточнення',approved:'Тестовий абонемент активований',rejected:'Заявку відхилено'};
+ el('client-status').textContent=labels[order.state];
+ el('client-note').textContent=order.state==='approved'?'Доступ у демо до '+new Date(order.expires*1000).toLocaleString('uk-UA',{timeZone:'Europe/Kyiv'}):order.note||'';
+ el('receipt-name').textContent=order.receipt||'Ще немає';
+ el('receipt-reference-view').textContent=order.receiptReference||'Ще немає';
+ el('submit').disabled=!['awaiting','clarification'].includes(order.state);
+ el('approve').disabled=order.state!=='review';el('clarify').disabled=order.state!=='review';el('reject').disabled=!['review','clarification'].includes(order.state);
+}
+function act(action){try{order=ManualDemo.transition(order,action,now());if(action.type==='approve')usedReferences.push(order.reference);el('feedback').textContent='Демо-дію виконано. Реальні дані не змінювалися.';render()}catch(e){el('feedback').textContent=e.message}}
+function reset(){const local=new Date(Date.now()-new Date().getTimezoneOffset()*60000);const paidValue=local.toISOString().slice(0,16);el('paid-at').value=paidValue;const created=Math.floor(new Date(paidValue).getTime()/1000);order={id:'AD-DEMO-1042',uid:111,amount:249,days:30,state:'awaiting',created};usedReferences=[];el('receipt').value='';el('receipt-reference').value='SYNTH-RECEIPT-001';el('verified').checked=false;el('note').value='';el('feedback').textContent='';render()}
+el('submit').onclick=()=>act({type:'receipt',filename:el('receipt').files[0]?.name||'',receiptReference:el('receipt-reference').value,paidAt:Math.floor(new Date(el('paid-at').value).getTime()/1000)});
+el('approve').onclick=()=>act({type:'approve',reference:el('reference').value,amount:Number(el('amount').value),bankVerified:el('verified').checked,usedReferences});
+el('clarify').onclick=()=>act({type:'clarify',note:el('note').value});el('reject').onclick=()=>act({type:'reject'});el('reset').onclick=reset;reset();
+</script>
+</html>
