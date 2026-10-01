@@ -66,7 +66,9 @@ offline сценарії entitlement-перевірки без вмикання 
    -> approval -> renewal -> expiry, audit/outbox, concurrent create/workers,
    fixture session auth boundary. Див. stage-4-handoff.md. 33 Python тести
    й Node workflow пройшли; це не production auth чи доставка.
-5. Підсумковий review і конкретний перелік даних від власника; без merge/deploy.
+5. Виконано: фінальний review/readiness і мінімальний перелік рішень власника.
+   Прототип готовий лише до огляду, не до merge/deploy або реальних оплат.
+   Див. `stage-5-readiness.md`; 36 Python тестів і Node workflow пройшли.
 
 Перед кожним записом перевіряти актуальний head цієї гілки. Main, Render,
 runtime jobs, production підписки, Stars pilot та API ledger не змінювати.
