@@ -72,3 +72,28 @@ After deployment, send `/subtest` for the new card, then «🛠 Деталі в�
 `/subtest_admin` for ID and test confirmation controls. New replies use the new
 format; no previous Telegram message is deleted or rewritten. Re-opening a view
 does not activate access, restore stopped searches or transfer money.
+
+## Post-release checkpoint (documentation-only WIP)
+
+- Production commit: `71bbf246870479362f7fbc48f2ba1afd29a8edd3`.
+- Tested/deployed tree: `c7f556e42ec8f78c8869c9f15f154a1b06240d05`.
+- Render deployment: `dep-davb3unavr4c73b9e0lg`, live on the exact tested commit.
+- Created: `2026-10-01T19:18:18.43751Z`; finished: `2026-10-01T19:19:17.026463Z` (UTC).
+- Commit included `[skip render]`; deploy history was checked before one manual
+  request. Final history shows exactly one deployment for this code commit.
+- Main and the design WIP were verified at the code commit before this record.
+- Post-live health: successful; PostgreSQL connected; delivery available.
+- Bounded application-error log query returned 0 error entries, no additional
+  page, through `2026-10-01T19:20:18.967331813Z`.
+- Projected source status: monitor running, 76 groups and
+  76 successful groups; oldest cursor lag 191 seconds,
+  `needs_attention=false`; valuation and delivery queues empty.
+- Confirmed-only policy remains true; active-window/include-initial remain false.
+- Caps remain 4500/hour, 90000/day and 1102160 lifetime. Lifetime local use
+  266425, remaining local allowance 835735; quota available. These are local
+  accounting snapshots, not the AUTO.RIA account balance.
+
+This checkpoint changes documentation only on the WIP branch; it does not
+update production main or request another deployment. Actual display on the
+owner's phone awaits a new `/subtest` command. No trial state was reset or
+proactively changed during the release.
