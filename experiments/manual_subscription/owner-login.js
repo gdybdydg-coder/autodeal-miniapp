@@ -33,7 +33,10 @@
     resetRoot();root.hidden=false;login.hidden=true;byId('owner-session').hidden=false;
     const api={...transport,download:async id=>downloadFile(await transport.download(id))};
     // Replace DOM before remount: old handlers/sensitive view do not survive login.
-    app=window.AutoDealPaymentUI.mount(root,api,{role});
+    app=window.AutoDealPaymentUI.mount(root,api,{role,copy:async value=>{
+      if(!window.navigator?.clipboard?.writeText)throw Error('Копіювання недоступне. Скопіюй текст вручну.');
+      await window.navigator.clipboard.writeText(value);
+    }});
     await app.ready;
   }));
   byId('owner-rotate').addEventListener('click',()=>locked(async()=>deadline((await transport.rotate()).expires_at)));

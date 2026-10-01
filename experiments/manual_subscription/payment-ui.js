@@ -18,7 +18,7 @@
     let reviewKey=null;
     let receiptSequence=0, paymentSequence=0;
     const buttons=['client-tab','admin-tab','create','paid','receipt','approve','clarify','reject'];
-    if(files) buttons.push('download');
+    if(files) buttons.push('download','copy-iban','copy-purpose');
     if(fixed) for(const id of ['client-tab','admin-tab']) $(id).hidden=true;
     if(files) {
       $('file-area').hidden=false;
@@ -47,6 +47,15 @@
       $('order-id').textContent=order ? 'Заявка '+order.id : 'Заявку ще не створено';
       $('status').textContent=order ? names[state] : 'Почни тестову заявку';
       $('access').textContent=view.membership.active ? 'Абонемент активний до '+date(view.membership.expires_at) : 'Абонемент неактивний';
+      if(files) {
+        const payment=view.payment_instruction;
+        $('payment-area').hidden=!payment || role!=='client' || ['approved','rejected'].includes(state);
+        const values={'recipient-name':payment?.recipient_name, 'recipient-code':payment?.recipient_code,
+          'recipient-iban':payment?.iban, 'recipient-bank':payment?.bank_name,
+          'payment-purpose':payment?.purpose, 'payment-notice':payment?.notice,
+          'payment-amount':payment ? payment.amount+' грн · тариф не затверджено' : ''};
+        for(const [id,value] of Object.entries(values)) $(id).textContent=value || '';
+      }
       $('note').textContent=order?.clarification || '';
       $('note').hidden=!order?.clarification;
       $('create').hidden=!!order && !['approved','rejected'].includes(state);
@@ -72,6 +81,7 @@
     async function act(action,data={},orderId=view?.order?.id || null) {
       if (busy) return;
       busy=true; render(); $('error').textContent='';
+      if(files) $('copy-status').textContent='';
       try {
         view=await api.action(role,{action,order_id:orderId,data});
         receiptOpen=false;
@@ -102,6 +112,17 @@
       catch(e) { $('error').textContent=e.message; }
       finally { busy=false;render(); }
     });
+    if(files) for(const [id,key,name] of [['copy-iban','iban','IBAN'],['copy-purpose','purpose','Призначення']]) {
+      $(id).addEventListener('click',async()=>{
+        if(busy || role!=='client' || !view?.payment_instruction)return;
+        busy=true;render();$('copy-status').textContent='';$('error').textContent='';
+        try {
+          if(typeof options.copy!=='function')throw Error('Копіювання недоступне. Скопіюй текст вручну.');
+          await options.copy(view.payment_instruction[key]);$('copy-status').textContent=name+' скопійовано';
+        }catch(e){$('error').textContent=e.message;}
+        finally{busy=false;render();}
+      });
+    }
     $('approve').addEventListener('click',()=>act('approve',{
       actual_amount:Number($('amount').value),bank_verified:$('verified').checked,
       payment_ref:files?$('payment-ref').value:'SYNTH-PAY-'+(++paymentSequence)+'-'+Date.now()}));

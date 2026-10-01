@@ -13,11 +13,13 @@ from harness import Harness, ROOT, CLIENT, ADMIN, ERRORS
 from ledger import Ledger
 from local_auth import LocalSessions
 from receipt_store import ReceiptStore, MAX_FILE_BYTES, MIME
+from bank_profile import load_profile
 
 
 class OwnerHarness(Harness):
-    def __init__(self, path, clock=None):
+    def __init__(self, path, clock=None, *, recipient_profile=None):
         self.path, self.clock = str(path), clock or (lambda: int(time.time()))
+        self.recipient = load_profile(recipient_profile) if recipient_profile is not None else None
         # Only an explicitly chosen LOCAL fixture path; never read env/config.
         if Path(path).is_symlink():
             raise ValueError('Local fixture database must not be a symlink')
@@ -37,6 +39,9 @@ class OwnerHarness(Harness):
     def state(self, token):
         result = super().state(token)
         result['role'] = self.sessions.role(token)
+        order = result['order']
+        result['payment_instruction'] = self.recipient.instruction(
+            order['id'], order['amount'], order['days']) if order and self.recipient else None
         ledger = Ledger(self.path, ADMIN)
         try:
             result['receipt_file'] = ReceiptStore(ledger).metadata(CLIENT, result['order']['id']) if result['order'] else None
@@ -239,13 +244,15 @@ def main():
     parser = argparse.ArgumentParser(description='Local owner payment review; no real transfers')
     parser.add_argument('--db', type=Path, help='Explicit LOCAL fixture DB, never production')
     parser.add_argument('--port', type=int, default=8766)
+    parser.add_argument('--recipient-profile', type=Path,
+                        help='Private 0600 recipient JSON OUTSIDE repository; test view only')
     parser.add_argument('--issue-only', action='store_true', help='Create fresh one-use login codes, no server')
     args = parser.parse_args()
     if args.issue_only and args.db is None:
         parser.error('--issue-only requires an existing --db fixture')
     with tempfile.TemporaryDirectory(prefix='autodeal-owner-') as tmp:
         path = args.db or Path(tmp) / 'owner.sqlite'
-        harness = OwnerHarness(path)
+        harness = OwnerHarness(path,recipient_profile=args.recipient_profile)
         invitations = {role: harness.sessions.issue_invitation(role) for role in ('client', 'admin')}
         # Private operator file, never an HTTP asset or a git artifact. Codes
         # are intentionally not printed. It survives issue-only until consumed.

@@ -8,6 +8,21 @@
     <div class="ad-plan"><span data-ui="tariff">249 грн · 30 днів · тест</span><h2 data-ui="status" aria-live="polite">Завантаження…</h2><small data-ui="order-id"></small></div>
     <section data-ui="client">
       <p data-ui="access" aria-live="polite"></p><p class="ad-note" data-ui="note" hidden></p>
+      <section class="ad-payment" data-ui="payment-area" hidden aria-label="Реквізити тестової заявки">
+        <h3>Реквізити отримувача</h3>
+        <p class="ad-note" data-ui="payment-notice"></p>
+        <dl>
+          <dt>Отримувач</dt><dd data-ui="recipient-name"></dd>
+          <dt>Код отримувача</dt><dd data-ui="recipient-code"></dd>
+          <dt>IBAN</dt><dd class="ad-iban" data-ui="recipient-iban"></dd>
+          <dt>Банк</dt><dd data-ui="recipient-bank"></dd>
+          <dt>Сума в тесті</dt><dd data-ui="payment-amount"></dd>
+          <dt>Призначення платежу</dt><dd data-ui="payment-purpose"></dd>
+        </dl>
+        <div class="ad-actions"><button type="button" data-ui="copy-iban">Копіювати IBAN</button>
+          <button type="button" data-ui="copy-purpose">Копіювати призначення</button></div>
+        <p data-ui="copy-status" aria-live="polite"></p>
+      </section>
       <button type="button" class="ad-main" data-ui="create">Створити тестову заявку</button>
       <button type="button" class="ad-main" data-ui="paid" hidden>Я оплатив</button>
       <div class="ad-receipt" data-ui="receipt-area" hidden><span data-ui="receipt-kind">Квитанція DEMO</span><small data-ui="receipt-help">249 грн · вигаданий переказ</small>

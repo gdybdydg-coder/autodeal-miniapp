@@ -26,18 +26,19 @@ function page(role,fetchLocal,html){
     return root;
   }
   current=fresh();
-  const downloads=[];
+  const downloads=[],clipboard=[];
   const document={
     getElementById:id=>id==='autodeal-payment-trial'?current:ids[id],
     createElement:tag=>{assert.equal(tag,'a');return {click(){downloads.push(this.download)},remove(){}}},
     body:{appendChild(){}},
   };
   const window={location:{pathname:'/'+role},fetch:fetchLocal,
+                navigator:{clipboard:{async writeText(value){clipboard.push(value)}}},
                 AutoDealOwnerTransport:Transport,AutoDealPaymentUI:UI};
   const context={window,document,Intl,URL:{createObjectURL:()=> 'blob:synthetic',revokeObjectURL(){}},
                  setTimeout:fn=>fn()};
   vm.runInNewContext(fs.readFileSync(__dirname+'/owner-login.js','utf8'),context);
-  return {ids,root:()=>current,downloads};
+  return {ids,root:()=>current,downloads,clipboard};
 }
 
 async function main(){
@@ -67,6 +68,14 @@ async function main(){
   assert.equal(c['client-tab'].hidden,true);assert.equal(c['admin-tab'].hidden,true);
   await c['admin-tab'].click();assert.equal(c.admin.hidden,true);
   await c.create.click();assert.equal(c.status.textContent,'Очікує квитанцію');
+  assert.equal(c['payment-area'].hidden,false);
+  assert.equal(c['recipient-iban'].textContent,config.expectedRecipient.iban);
+  assert.equal(c['recipient-name'].textContent,config.expectedRecipient.recipient_name);
+  assert.match(c['payment-amount'].textContent,/тариф не затверджено/);
+  assert.match(c['payment-notice'].textContent,/Не переказуй кошти/);
+  await c['copy-iban'].click();assert.equal(client.clipboard[0],config.expectedRecipient.iban);
+  assert.equal(c['copy-status'].textContent,'IBAN скопійовано');
+  await c['copy-purpose'].click();assert.match(client.clipboard[1],/AD-[A-F0-9]{16}/);
   await c.paid.click();assert.equal(c['file-area'].hidden,false);
   await c.receipt.click();assert.match(c.error.textContent,/обери тестовий файл/);
   assert.equal(c.status.textContent,'Очікує квитанцію');
@@ -117,6 +126,7 @@ async function main(){
   console.log('Separate login -> file upload -> admin download/clarify/approve -> SQLite checks passed');
   console.log('Rotation/logout, hidden role controls, private DOM reset and client denial checks passed');
   console.log('Lost approval response -> same payment reference retry -> one membership grant passed');
+  console.log('Protected recipient render, unapproved tariff and exact clipboard content checks passed');
 }
 
 main().catch(error=>{console.error(error);process.exitCode=1});

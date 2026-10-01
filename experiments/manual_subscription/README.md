@@ -1,7 +1,8 @@
 # Ручне підтвердження абонементів — ізольований тест
 
-Актуальний етап — **7**: окремі локальні входи клієнта/адміністратора,
-файли квитанцій, durable TTL/rotation/revocation. Див. stage-7-handoff.md.
+Актуальний етап — **8**: приватний профіль отримувача та authenticated
+екран реквізитів, IBAN/purpose copy, тариф ще не погоджений.
+Див. stage-8-handoff.md. Етап 7 — login/files/TTL/revocation.
 Старі етапи нижче — історія перевірок. Публічної тестової адреси немає;
 робочий бот і реальні платежі не підключені.
 
@@ -189,3 +190,52 @@ upload scanning, модель оплати/правила Telegram, затвер
 отримувач, review/refund правила. Далі offline — contract тестового
 entitlement gate й reconciliation delivery claims; реальні повідомлення
 та ввімкнення зупинених пошуків не дозволені.
+
+## Етап 8: приватні реквізити
+
+Власник надав реквізити о 18:01 Kyiv 01.10.2026. Самі значення зберігаються
+поза repository, не в цьому документі, tests, commits або SQLite ledger.
+`bank_profile.py` читає тільки явно вказаний файл з правами 0600 поза
+git checkout; symlink, завеликий файл, duplicate fields, invalid IBAN/
+recipient fields і спроби ввімкнути collection відхиляються.
+
+```sh
+python experiments/manual_subscription/owner_harness.py \
+  --db ./manual-owner-fixture.sqlite \
+  --recipient-profile ../autodeal-test-recipient.private.json
+```
+
+Шлях до скачаного приватного профілю потрібно вказати фактичний, поза
+checkout. Профіль не завантажується автоматично, без нього старий тест
+продовжує працювати без реквізитів. Файл не є HTTP asset; не копіювати
+його в GitHub. `*.private.json` додано до experimental .gitignore.
+
+Schema version 1: recipient_name, recipient_code, iban, bank_name,
+mode=test_only, tariff_confirmed=false. IBAN нормалізується до uppercase
+без пробілів, перевіряються Ukrainian 29-char structure і MOD97 checksum.
+Це перевірка формату, не existence/balance/beneficiary bank verification.
+Джерело структури: офіційна сторінка НБУ https://bank.gov.ua/ua/iban.
+Банківські реквізити власника нікуди для перевірки не надсилалися.
+
+Реквізити повертаються лише в authenticated `/api/state` після створення
+конкретного order. Purpose містить order ID та days snapshot; amount
+також із заявки. UI вставляє значення через textContent; копіювання
+IBAN/purpose — тільки на явний click. Якщо clipboard API недоступний,
+показує помилку та дозволяє скопіювати видимий текст вручну.
+
+Власник ще не затвердив ціну. **249 грн/30 днів лишається fixture**, не
+commercial tariff. Екран явно каже «тариф не затверджено» і «Не переказуй
+кошти». Profile/API не можуть увімкнути real collection. Ніяких QR,
+payment links, банк API, реальних переказів або повідомлень бота.
+
+101 Python tests passed із non-loopback TCP/DNS fence; actual owner UI
+-> HTTP -> SQLite passed, додано recipient render/copy-content checks.
+Legacy UI/workflow passed. Actual private owner profile smoke passed:
+expected authenticated instructions, collection disabled, no values in
+SQLite DB або source. Tests містять лише спеціально non-routing synthetic
+IBAN з нульовим кодом установи/рахунком, а не дані власника.
+
+Наступні дані від власника: ціна абонемента на 30 днів. Збір коштів,
+public/phone preview, payment-model/platform рішення та production
+changes не дозволені цим додаванням приватного профілю. Робочий paid bot
+і owner Stars pilot лишаються без змін.

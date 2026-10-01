@@ -25,4 +25,9 @@
 .autodeal-trial .ad-error:empty{display:none}
 .autodeal-trial footer{padding:12px 20px;background:var(--ad-panel)}
 .autodeal-trial.ad-login,#owner-session.autodeal-trial{padding:20px}
+.autodeal-trial .ad-payment{margin:16px 0;padding:14px;background:var(--ad-panel);border-radius:12px}
+.autodeal-trial .ad-payment h3{font-size:16px;font-weight:500;margin:0 0 12px}
+.autodeal-trial .ad-payment dt{font-size:12px;color:var(--ad-muted);margin-top:10px}
+.autodeal-trial .ad-payment dd{margin:3px 0 12px;overflow-wrap:anywhere}
+.autodeal-trial .ad-iban{font-family:ui-monospace,monospace;user-select:text}
 @media(max-width:360px){.autodeal-trial{margin:4px auto}.autodeal-trial header,.autodeal-trial main{padding-left:14px;padding-right:14px}.autodeal-trial nav{padding-left:14px;padding-right:14px}.autodeal-trial nav button{flex:1}}
