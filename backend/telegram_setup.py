@@ -16,11 +16,11 @@ PROBE_ID = "telegram-webhook-v1"
 APP_URL = "https://gdybdydg-coder.github.io/autodeal-miniapp/"
 
 
-def call(token, method, payload):
+def call(token, method, payload, *, timeout=15):
     logging.getLogger("httpx").setLevel(logging.WARNING)
     logging.getLogger("httpcore").setLevel(logging.WARNING)
     try:
-        with httpx.Client(timeout=15, follow_redirects=False) as client:
+        with httpx.Client(timeout=timeout, follow_redirects=False) as client:
             response = client.post(f"https://api.telegram.org/bot{token}/{method}", json=payload)
             result = response.json()
             return result if isinstance(result, dict) else {"uncertain": True}
@@ -43,7 +43,7 @@ def configure(engine, settings, request=call):
                 if current in ("", WEBHOOK_URL):
                     response = request(settings.bot_token, "setWebhook", {
                         "url": WEBHOOK_URL, "secret_token": settings.webhook_secret,
-                        "allowed_updates": ["message"], "drop_pending_updates": False,
+                        "allowed_updates": ["message", "pre_checkout_query"], "drop_pending_updates": False,
                         "max_connections": 5})
                     if response.get("ok") is True and response.get("result") is True:
                         status = "configured"

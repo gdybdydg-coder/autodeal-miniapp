@@ -149,6 +149,8 @@ def create_app(settings: Settings, engine=None):
         await asyncio.to_thread(telegram_setup.configure, engine, settings)
         await asyncio.to_thread(telegram_setup.configure_menu, engine, settings)
         await asyncio.to_thread(bot_commands.configure, engine, settings)
+        from . import stars_test
+        await asyncio.to_thread(stars_test.configure, engine, settings)
         await asyncio.to_thread(quota_management.configure, engine, settings)
         await asyncio.to_thread(notification_diagnostic.check_once, engine,
                                settings.auto_ria_api_key, settings.ria_diagnostic_listing_id)
@@ -539,6 +541,10 @@ def create_app(settings: Settings, engine=None):
                 raise ValueError()
         except (ValueError, KeyError, TypeError, AttributeError):
             raise HTTPException(422, "Invalid update") from None
+        from . import stars_test
+        payment_reply = await asyncio.to_thread(stars_test.handle, engine, settings, event)
+        if payment_reply is not None:
+            return payment_reply
         if chat.get("type") != "private" or chat.get("id") != uid or type(uid) is not int or not 0 < uid < 2**52 or sender.get("is_bot"):
             return {"ok": True}
         token = text.split()[0] if text.split() else ""

@@ -13,10 +13,15 @@ from backend.tests.test_backend import TOKEN, SECRET, command, headers, subscrib
 
 
 @pytest.fixture
-def setup(tmp_path):
+def setup(tmp_path, monkeypatch):
     engine = create_engine("sqlite:///" + str(tmp_path / "commands.db"),
                            connect_args={"check_same_thread": False})
     settings = Settings("unused", TOKEN, SECRET, True, True, miniapp_release="onboarding")
+    # These are command-flow tests with a fake token, not live menu setup.
+    # Preserve configure_menu's behavior but inject an explicit failed fixture.
+    configure_menu = telegram_setup.configure_menu
+    monkeypatch.setattr(telegram_setup, "configure_menu", lambda engine, settings:
+        configure_menu(engine, settings, request=lambda *_: {"ok": False, "error_code": 401}))
     with TestClient(create_app(settings, engine)) as api:
         yield engine, settings, api
     engine.dispose()

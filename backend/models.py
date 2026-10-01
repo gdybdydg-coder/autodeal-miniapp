@@ -115,6 +115,17 @@ class SourceProbe(Base):
     result: Mapped[dict] = mapped_column(JSON)
 
 
+class StarsTestOrder(Base):
+    __tablename__ = "stars_test_orders"
+    id: Mapped[str] = mapped_column(String(80), primary_key=True)
+    user_id: Mapped[int] = mapped_column(BigInteger)
+    command_update: Mapped[int] = mapped_column(BigInteger, unique=True)
+    created_at: Mapped[float] = mapped_column(Float)
+    state: Mapped[str] = mapped_column(String(30))
+    charge_id: Mapped[str | None] = mapped_column(String(256), unique=True, nullable=True)
+    paid_until: Mapped[float | None] = mapped_column(Float, nullable=True)
+
+
 class SourceBudget(Base):
     __tablename__ = "source_budgets"
     id: Mapped[str] = mapped_column(String(40), primary_key=True)
