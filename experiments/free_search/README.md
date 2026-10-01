@@ -90,3 +90,14 @@ and cookies; and bounds queue, in-flight work, body size, retries and backoff.
 the full uncertain reservation charge before any delayed retry. Test budget
 values are synthetic and do not authorize live collection. Checkpoint:
 ../../backend/docs/zero-paid-api-http-budget-2026-10-01.md
+
+`offline_pipeline.py` composes the isolated stages with sanitized fixtures:
+baseline/add-date proof, one transactionally queued detail reservation, public
+detail/category/region evidence, current saved filters, one shared research
+estimate and durable claims. Queue overflow rolls publication progress back;
+terms denial, 429 and budget pauses create no evaluation or claim. Restarts keep
+pending work, full uncertain HTTP charges, stopped users, epochs and dedupe.
+Fresh old-ID publication can be checked again but cannot repeat an existing
+user/listing claim. The estimate is caller-supplied offline research only and
+cannot send or replace paid AI. Checkpoint:
+../../backend/docs/zero-paid-api-offline-pipeline-2026-10-01.md
