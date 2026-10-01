@@ -51,3 +51,15 @@ strict serializable round trip for restart-safe offline tests.
 Candidates only authorize a later public-details/category/filter check. They do
 not contain valuation or delivery decisions. The parser does not establish
 whole-market coverage and does not fetch old pages.
+
+`filter_gate.py` is a pure offline safety gate for normalized public evidence.
+It preserves saved-filter semantics: required publication/category/active/
+positive-price facts must be proven, a selected region must match, known
+optional facts must match, but missing optional vehicle details do not hide a
+car. Known abroad/customs exclusions block; damage and repair-parts markers are
+notices only. A match authorizes valuation research and is never delivery-ready.
+
+The current service terms contain both an allowance for automated processing of
+non-phone public data and a broader anti-parsing clause. The experiment treats
+that ambiguity as a go-live blocker, regardless of robots. See checkpoint:
+../../backend/docs/zero-paid-api-source-audit-2026-10-01.md
