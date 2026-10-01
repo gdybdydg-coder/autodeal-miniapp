@@ -97,5 +97,57 @@ class Tests(unittest.TestCase):
         self.assertEqual(len(set(results)),1)
         self.assertEqual(self.ledger.db.execute("SELECT count(*) FROM audit WHERE action='approved'").fetchone()[0],1)
 
+    def test_clarification_survives_restart_and_resubmit(self):
+        oid = self.reviewed()
+        self.ledger.clarify(self.admin,oid,'Вкажіть час тестового переказу',1002)
+        self.ledger.close(); self.ledger = Ledger(self.path,self.admin)
+        status = self.ledger.order_status(111,oid)
+        self.assertEqual(status['state'],'clarification')
+        self.assertEqual(status['clarification'],'Вкажіть час тестового переказу')
+        self.assertFalse(self.ledger.active(111,1003))
+        self.assertEqual(self.ledger.create_order(111,249,1003),oid)
+        with self.assertRaises(ValueError): self.approve(oid,now=1003)
+        self.ledger.submit_receipt(111,oid,'corrected-fixture.pdf',1004)
+        self.assertEqual(self.ledger.order_status(111,oid)['state'],'review')
+        self.assertIsNone(self.ledger.order_status(111,oid)['clarification'])
+        self.assertEqual(self.approve(oid,now=1005),1005+30*DAY)
+
+    def test_clarification_and_status_authorization(self):
+        oid = self.reviewed()
+        with self.assertRaises(PermissionError): self.ledger.clarify(111,oid,'note',1002)
+        with self.assertRaises(PermissionError): self.ledger.order_status(222,oid)
+        with self.assertRaises(ValueError): self.ledger.clarify(self.admin,oid,' ',1002)
+        with self.assertRaises(ValueError): self.ledger.clarify(self.admin,oid,'x'*501,1002)
+
+    def test_duplicate_receipt_does_not_duplicate_audit(self):
+        oid = self.reviewed()
+        self.ledger.submit_receipt(111,oid,'synthetic-receipt',1002)
+        self.assertEqual(self.ledger.db.execute("SELECT count(*) FROM audit WHERE action='receipt_submitted'").fetchone()[0],1)
+
+    def test_invalid_reference_or_clock_leaves_order_unmodified(self):
+        oid = self.reviewed()
+        for bad in ['', ' trailing ', 'line\nbreak','x'*201,'null\0byte']:
+            with self.assertRaises(ValueError): self.ledger.submit_receipt(111,oid,bad,1002)
+        for bad in [0,-1,True,1.5,'1002',2**80]:
+            with self.assertRaises(ValueError): self.ledger.clarify(self.admin,oid,'note',bad)
+            with self.assertRaises(ValueError): self.ledger.active(111,bad)
+        for bad in [' spaced ','line\nbreak','x'*101]:
+            with self.assertRaises(ValueError): self.approve(oid,bad)
+        self.assertEqual(self.ledger.order_status(111,oid)['state'],'review')
+        self.assertFalse(self.ledger.active(111,1002))
+
+    def test_reject_clarification_order_and_preserve_history(self):
+        oid = self.reviewed();self.ledger.clarify(self.admin,oid,'note',1002)
+        self.ledger.reject(self.admin,oid,1003)
+        with self.assertRaises(ValueError): self.ledger.submit_receipt(111,oid,'new-fixture',1004)
+        self.assertEqual(self.ledger.db.execute('SELECT note FROM clarifications').fetchone()[0],'note')
+
+    def test_stage_one_database_additive_upgrade(self):
+        oid = self.reviewed();self.approve(oid)
+        self.ledger.db.execute('DROP TABLE clarifications'); self.ledger.db.commit()
+        self.ledger.close();self.ledger = Ledger(self.path,self.admin)
+        self.assertTrue(self.ledger.active(111,1003))
+        self.assertEqual(self.ledger.order_status(111,oid)['state'],'approved')
+
 
 if __name__ == '__main__': unittest.main()

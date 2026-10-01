@@ -19,3 +19,8 @@ const rejected = transition(review,{type:'reject'},1002);
 assert.throws(()=>transition(rejected,{type:'receipt',filename:'new-fixture.pdf'},1003));
 assert.equal(transition({...review,expires:2000},{type:'approve',bankVerified:true,reference:'demo-2',amount:249},1001).expires,2000+30*DAY);
 console.log('Workflow checks passed');
+for(const value of [' spaced ','line\nbreak','x'.repeat(101)]) {
+  assert.throws(()=>transition(review,{type:'approve',bankVerified:true,reference:value,amount:249},1001));
+}
+assert.throws(()=>transition(original,{type:'receipt',filename:'x'.repeat(201)},1000));
+assert.throws(()=>transition(review,{type:'clarify',note:'x'.repeat(501)},1002));
