@@ -45,15 +45,19 @@ def test_unconfirmed_new_and_old_ads_are_not_notified(p, monkeypatch, failure, a
         discover_new(p)
     drain(p)
     assert calls == ["124"] and p.sent == []
+    retryable = not active and failure in {"ai_connection_error", "ai_invalid_response", "quota_exceeded"}
     with Session(p.engine) as db:
-        assert db.get(MonitorJob, "124").state == "unvalued"
-        assert db.get(MonitorSeen, (1, "124")).state == "unvalued"
+        expected_state = "pending" if retryable else "unvalued"
+        assert db.get(MonitorJob, "124").state == expected_state
+        assert db.get(MonitorSeen, (1, "124")).state == expected_state
         assert db.scalar(select(MonitorMatch)) is None
         assert db.scalar(select(Delivery)) is None
-    # No uncontrolled quote retry, peer fallback, or re-entry of this seen ID.
+    # Fresh transient failures may retry within the bound; quota waits do not
+    # spend another call, and old supplemental work retains its existing policy.
     wake(p, 301)
     drain(p)
-    assert calls == ["124"] and p.sent == []
+    expected_calls = 2 if retryable and failure != "quota_exceeded" else 1
+    assert calls == ["124"] * expected_calls and p.sent == []
 
 
 @pytest.mark.parametrize("price,expected", [(6900, False), (4900, True)])

@@ -38,6 +38,9 @@ PAGE_SIZE = 50
 WINDOW_SECONDS = 3600
 INDEX_OVERLAP = 600
 EVIDENCE_SECONDS = 60
+VALUATION_MAX_FAILURES = 3
+VALUATION_RETRY_WINDOW = 600
+TRANSIENT_VALUATION_ERRORS = {"ai_connection_error", "ai_upstream_error", "ai_invalid_response"}
 OPTIONAL_DETAIL_FIELDS = ("body_id", "fuel_id", "gear_id", "mileage")
 NOTIFICATION_VERSION = "informational-v3"
 log = logging.getLogger(__name__)
@@ -556,6 +559,7 @@ class Monitor:
         if not reusable:
             candidate = source.car(source_id, force=True)
             evidence = {"candidate": candidate, "filters": {},
+                        **{key: evidence[key] for key in ("valuation_failures", "valuation_failure") if key in evidence},
                         **shared_distribution.proof(evidence),
                         "discovery_kind": evidence.get("discovery_kind", "new_publication")}
         if html_job and (candidate.get("category_id") != 1 or
@@ -593,6 +597,27 @@ class Monitor:
                 except RiaError as exc:
                     if html_job and str(exc) in {"reserved_for_new_publications", "quota_exceeded", "search_limit"}:
                         raise
+                    if (self.settings.ria_confirmed_deals_only and
+                            evidence.get("discovery_kind") in {"new_publication", recent_publications.KIND}):
+                        reason = str(exc)
+                        # A budget/lease pause is not a completed valuation.
+                        if reason in {"quota_exceeded", "search_limit", "busy"}:
+                            raise
+                        evidence["valuation_failure"] = reason
+                        if reason in TRANSIENT_VALUATION_ERRORS:
+                            evidence["valuation_failures"] = evidence.get("valuation_failures", 0) + 1
+                            with self._state_lock, Session(self.engine) as db:
+                                if not self.owned(db):
+                                    return
+                                current_job = db.get(MonitorJob, source_id)
+                                if (evidence["valuation_failures"] < VALUATION_MAX_FAILURES
+                                        and time.time() - current_job.first_seen < VALUATION_RETRY_WINDOW):
+                                    # Preserve pending interests and the retry count across restarts.
+                                    current_job.result = {**evidence, **shared_distribution.proof(current_job.result)}
+                                    current_job.reason = reason
+                                    current_job.next_run = time.time() + INTERVAL * 2 ** (evidence["valuation_failures"] - 1)
+                                    db.commit()
+                                    return
                     # Record unavailable valuation without inventing a market.
                     # The notification policy decides whether it may be sent.
                     log.warning("AUTO.RIA AI valuation unavailable source_id=%s reason=%s", source_id, str(exc))
