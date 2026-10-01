@@ -116,7 +116,8 @@ async function reject(){
   console.log('Rejection/new-order and RAM role checks passed');
 }
 
-(async()=>{
+module.exports={dom};
+if(require.main===module)(async()=>{
   await flow(Memory.create());await busy();await reject();await inline();
   if(process.argv[2])await connected(process.argv[2]);
 })().catch(e=>{console.error(e);process.exitCode=1});

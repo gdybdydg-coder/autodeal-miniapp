@@ -24,4 +24,5 @@
 .autodeal-trial .ad-error{color:var(--ad-red)}
 .autodeal-trial .ad-error:empty{display:none}
 .autodeal-trial footer{padding:12px 20px;background:var(--ad-panel)}
+.autodeal-trial.ad-login,#owner-session.autodeal-trial{padding:20px}
 @media(max-width:360px){.autodeal-trial{margin:4px auto}.autodeal-trial header,.autodeal-trial main{padding-left:14px;padding-right:14px}.autodeal-trial nav{padding-left:14px;padding-right:14px}.autodeal-trial nav button{flex:1}}

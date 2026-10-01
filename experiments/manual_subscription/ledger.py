@@ -275,37 +275,43 @@ class Ledger:
         return oid
 
     def submit_receipt(self, uid, order_id, fixture_reference, now, *, paid_at=None):
+        with self.db:
+            self.db.execute("BEGIN IMMEDIATE")
+            self._submit_receipt_locked(uid, order_id, fixture_reference, now, paid_at=paid_at)
+
+    def _submit_receipt_locked(self, uid, order_id, fixture_reference, now, *, paid_at=None):
+        """Shared transition for atomic offline file+order writes; caller owns transaction."""
+        if not self.db.in_transaction:
+            raise RuntimeError("Receipt transaction required")
         clock(now)
         fixture_reference = reference(fixture_reference, "receipt reference")
         paid_at = now if paid_at is None else paid_at
         clock(paid_at)
-        with self.db:
-            self.db.execute("BEGIN IMMEDIATE")
-            row = self.db.execute(
-                "SELECT uid,state,created,receipt,receipt_revision FROM orders WHERE id=?",
-                (order_id,),
-            ).fetchone()
-            if not row or type(uid) is not int or row[0] != uid:
-                raise PermissionError("Order owner only")
-            owner, state, created, current_receipt, revision = row
-            if state == 'review' and current_receipt == fixture_reference:
-                return  # Exact retry is idempotent; no audit or outbox duplicate.
-            if state not in ('awaiting', 'clarification'):
-                raise ValueError("Order already under review or closed")
-            if paid_at < created or paid_at < now - MAX_RECEIPT_AGE or paid_at > now + CLOCK_SKEW:
-                raise ValueError("Receipt time outside allowed window")
-            revision += 1
-            action = 'receipt_resubmitted' if state == 'clarification' else 'receipt_submitted'
-            self.db.execute(
-                """UPDATE orders SET state='review',receipt=?,receipt_at=?,receipt_revision=?,
-                   clarification_note=NULL,clarified_at=NULL WHERE id=?""",
-                (fixture_reference, paid_at, revision, order_id),
-            )
-            self.db.execute(
-                "INSERT INTO audit (order_id,actor,action,at) VALUES (?,?,?,?)",
-                (order_id, owner, action, now),
-            )
-            self._queue_order_notice(order_id, now)
+        row = self.db.execute(
+            "SELECT uid,state,created,receipt,receipt_revision FROM orders WHERE id=?",
+            (order_id,),
+        ).fetchone()
+        if not row or type(uid) is not int or row[0] != uid:
+            raise PermissionError("Order owner only")
+        owner, state, created, current_receipt, revision = row
+        if state == 'review' and current_receipt == fixture_reference:
+            return  # Exact retry is idempotent; no audit or outbox duplicate.
+        if state not in ('awaiting', 'clarification'):
+            raise ValueError("Order already under review or closed")
+        if paid_at < created or paid_at < now - MAX_RECEIPT_AGE or paid_at > now + CLOCK_SKEW:
+            raise ValueError("Receipt time outside allowed window")
+        revision += 1
+        action = 'receipt_resubmitted' if state == 'clarification' else 'receipt_submitted'
+        self.db.execute(
+            """UPDATE orders SET state='review',receipt=?,receipt_at=?,receipt_revision=?,
+               clarification_note=NULL,clarified_at=NULL WHERE id=?""",
+            (fixture_reference, paid_at, revision, order_id),
+        )
+        self.db.execute(
+            "INSERT INTO audit (order_id,actor,action,at) VALUES (?,?,?,?)",
+            (order_id, owner, action, now),
+        )
+        self._queue_order_notice(order_id, now)
 
     def clarify(self, actor, order_id, note, now):
         self._admin(actor)

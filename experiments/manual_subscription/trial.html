@@ -10,13 +10,17 @@
       <p data-ui="access" aria-live="polite"></p><p class="ad-note" data-ui="note" hidden></p>
       <button type="button" class="ad-main" data-ui="create">Створити тестову заявку</button>
       <button type="button" class="ad-main" data-ui="paid" hidden>Я оплатив</button>
-      <div class="ad-receipt" data-ui="receipt-area" hidden><span>Квитанція DEMO</span><small>249 грн · вигаданий переказ</small><button type="button" class="ad-main" data-ui="receipt">Надіслати тестову квитанцію</button></div>
+      <div class="ad-receipt" data-ui="receipt-area" hidden><span data-ui="receipt-kind">Квитанція DEMO</span><small data-ui="receipt-help">249 грн · вигаданий переказ</small>
+        <label data-ui="file-area" hidden>Тестовий файл<input data-ui="file" type="file" accept="image/png,image/jpeg,application/pdf"></label>
+        <button type="button" class="ad-main" data-ui="receipt">Надіслати тестову квитанцію</button></div>
       <p data-ui="review-message" hidden>Квитанція на перевірці. Перейди до ролі адміністратора.</p>
     </section>
     <section data-ui="admin" hidden>
       <p data-ui="admin-summary"></p><p data-ui="admin-done" hidden></p>
+      <button type="button" data-ui="download" hidden>Завантажити квитанцію для огляду</button>
       <div data-ui="admin-form" hidden>
         <label>Сума тестового надходження, грн<input data-ui="amount" type="number" min="1" value="249" inputmode="numeric"></label>
+        <label data-ui="payment-ref-area" hidden>Ідентифікатор тестового платежу<input data-ui="payment-ref" type="text" maxlength="100" autocomplete="off"></label>
         <label class="ad-check"><input data-ui="verified" type="checkbox">Тестове надходження перевірено</label>
         <button type="button" class="ad-main" data-ui="approve">Підтвердити 30 днів</button>
         <label>Уточнення<textarea data-ui="clarification" maxlength="500" rows="2">Уточни час тестового переказу</textarea></label>

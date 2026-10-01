@@ -5,7 +5,8 @@ from pathlib import Path
 
 
 ROOT = Path(__file__).parent
-PYTHON_MODEL = (ROOT / "ledger.py", ROOT / "adapter.py")
+PYTHON_MODEL = tuple(ROOT / name for name in
+                     ("ledger.py", "adapter.py", "local_auth.py", "receipt_store.py"))
 UI_MODEL = (ROOT / "workflow.js", ROOT / "demo.html")
 FORBIDDEN_IMPORTS = {
     "boto3", "botocore", "http", "httpx", "psycopg", "redis", "requests",

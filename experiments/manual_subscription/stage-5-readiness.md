@@ -1,8 +1,11 @@
 # Етап 5 — фінальний review/readiness, 01.10.2026
 
+Актуальні подальші зміни: stage-7-handoff.md (90 prototype tests,
+окремі локальні входи та файли квитанцій). Нижче — історія stage-5/6.
+
 Оновлення після review: stage-5-handoff.md описує перевірене виправлення
 stale pending notices, одноразовий worker preflight, active outbox capacity
-та durable deferred flags. Поточний набір: 55 Python tests + Node workflow
+та durable deferred flags. Набір цього етапу: 55 Python tests + Node workflow
 passed. Нижче 36-test результат залишено як історичний доказ be8613e4.
 Інтеграція/реальні платежі залишаються забороненими; наступні offline
 session/UI перевірки можна виконувати без реквізитів або рішень про тариф.
@@ -90,3 +93,13 @@ Browser DOM/visual QA не входить у доказ: у локальному
 Після цих відповідей потрібне окреме нове доручення на threat model та дизайн
 production інтеграції. До нього WIP-гілку не merge/deploy, production main,
 Render, Telegram, AUTO.RIA, Stars pilot, runtime jobs і реальні дані не чіпати.
+## Оновлення етапу 7 (01.10.2026)
+
+Попередні висновки нижче описують stage-5 стан. У stage-7-handoff.md
+зафіксовано окремий loopback owner harness: one-use invitations,
+durable 1-hour TTL/rotation/revocation, bounded file receipt quarantine
+і фактичні UI -> HTTP -> SQLite event checks. Це закриває частину
+offline auth/upload прототипування, але не production identity, public
+owner-only delivery, scanning/privacy/retention, reconciliation claims,
+source admission або погодження реальної моделі оплати. Заборона
+main/Render/deploy і реальних платежів лишається чинною.

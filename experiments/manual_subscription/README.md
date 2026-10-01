@@ -1,5 +1,10 @@
 # Ручне підтвердження абонементів — ізольований тест
 
+Актуальний етап — **7**: окремі локальні входи клієнта/адміністратора,
+файли квитанцій, durable TTL/rotation/revocation. Див. stage-7-handoff.md.
+Старі етапи нижче — історія перевірок. Публічної тестової адреси немає;
+робочий бот і реальні платежі не підключені.
+
 Дата: 01.10.2026. Доручення власника о 12:53 Kyiv: працювати поетапно у
 фоновому режимі; нічого не додавати до офіційної версії бота.
 
@@ -118,3 +123,69 @@ JS workflow model замість SQLite/HTTP. Без мережі або browser
 
 Перед кожним записом перевіряти актуальний head цієї гілки. Main, Render,
 runtime jobs, production підписки, Stars pilot та API ledger не змінювати.
+
+## Етап 7: окремий вхід та файли квитанцій
+
+Закритий **локальний** тест на тому самому комп'ютері:
+
+```sh
+python experiments/manual_subscription/owner_harness.py --db ./manual-owner-fixture.sqlite
+```
+
+Відкрити `/client` і `/admin` на показаній адресі `127.0.0.1:8766` у
+двох вкладках. Одноразові коди двох ролей — у показаному локальному
+`*.local-invitations.json`, доступ до файла 0600. Значення не друкуються,
+не видаються через HTTP, не зберігаються в GitHub. Вхідний код діє 15 хв,
+сесія — рівно 1 годину; rotation змінює ключ без продовження дедлайну.
+Logout/rotation/expiry/revocation переживають restart у test SQLite.
+Це локальні запрошення власника для synthetic uid 111 і admin 777292211,
+не реєстрація клієнтів або перевірка Telegram identity.
+
+Нові коди після refresh або для повторного входу:
+
+```sh
+python experiments/manual_subscription/owner_harness.py --db ./manual-owner-fixture.sqlite --issue-only
+```
+
+Команда лише видає нові локальні запрошення, не запускає сервер або
+deployment. Попередні невикористані коди діють до свого дедлайну; загальний
+ліміт 32 запрошення/32 активні сесії. Без `--db` тестова база тимчасова й
+видаляється при завершенні сервера. Лише новий test file, не production.
+
+Клієнт створює заявку, натискає «Я оплатив», обирає **вигадану тестову**
+квитанцію PNG/JPEG/PDF до 2 МБ і надсилає. Файл та перехід до review
+пишуться атомарно; повтор однакових bytes після втраченої відповіді не
+створює другу ревізію. Квитанція сама не активує абонемент.
+
+Адміністратор входить своїм кодом, завантажує файл як attachment,
+перевіряє тестову суму та платіжний reference, окремо ставить checkbox
+звірки й approve/clarify/reject. Нова ревізія квитанції скидає checkbox.
+Повтор approval із тим самим reference після втраченої HTTP відповіді
+повертає збережений строк без другого нарахування. Це ручне fixture
+рішення, не автоматична банківська звірка. Тариф 249 грн/30 днів — тест.
+
+Тип перевіряється за MIME+signature. Це quarantine, **не** malware scan,
+повний decoder або доказ справжнього платежу. Не використовувати тут
+справжні клієнтські/банківські документи. Оригінальний filename не
+передається/не зберігається; довільні URL/path не приймаються. Bytes у
+локальному SQLite; максимум 20 файлів/20 МБ, до 5 файлів на заявку.
+Переповнення відхиляє новий файл, не видаляє evidence або фінансові рішення.
+Encryption at rest, retention/delete policy та справжнє сканування відсутні.
+
+Stage-6 in-chat RAM preview лишається окремим старим snapshot, не має
+цього server login/file storage. Його не видавати за новий owner harness.
+
+Перевірки: 90 Python tests; legacy `check-ui.py` і `test_workflow.cjs`;
+`python experiments/manual_subscription/check-offline.py` запускає весь
+Python набір із забороненими non-loopback TCP/DNS з'єднаннями.
+`check-owner-ui.py`: actual owner-login/UI listeners -> raw HTTP upload ->
+server-issued sessions -> offline SQLite -> attachment download ->
+clarification/resubmit -> approval/lost response retry -> logout.
+DOM event fixture не є browser render/file-picker/accessibility QA.
+
+Merge/deploy та production зміни заборонені. До реальної інтеграції:
+owner-only тестова адреса/identity/auth transport, privacy/retention і
+upload scanning, модель оплати/правила Telegram, затверджений тариф та
+отримувач, review/refund правила. Далі offline — contract тестового
+entitlement gate й reconciliation delivery claims; реальні повідомлення
+та ввімкнення зупинених пошуків не дозволені.
