@@ -27,6 +27,10 @@ WHEN = datetime(2026, 10, 2, 9, tzinfo=ZoneInfo("Europe/Kyiv")).timestamp()
 VERSION = "20261002-v1"
 LEASE = 60
 LOG = logging.getLogger(__name__)
+LOG.setLevel(logging.INFO)
+LOG.propagate = False
+if not LOG.handlers:
+    LOG.addHandler(logging.StreamHandler())
 COPY_A = ("🚘 <b>Твоє наступне авто — у повідомленні AutoDeal</b>\n\n"
           "AutoDeal шукає відповідні авто за твоїми фільтрами, допомагає помічати вигідні пропозиції "
           "та надсилає сповіщення в Telegram.\n\n"
