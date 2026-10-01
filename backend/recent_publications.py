@@ -262,18 +262,24 @@ def collect(engine, settings, fetcher=html_shadow.fetch, now=None):
                     row.status = "storage_wait"
                 else:
                     for sid, item in sorted(rows.items(), key=lambda pair: (-pair[1]["added_at"], pair[0])):
-                        if (sid in data["seen"] or sid in data["pending"] or
+                        # A changed update/price never opens a new opportunity;
+                        # a genuinely newer addition date may, subject to the
+                        # existing job, recipient and official-detail guards.
+                        if (data["seen"].get(sid, 0) >= item["added_at"] or sid in data["pending"] or
                                 not max(data["baseline_at"], finished - MAX_AGE) < item["added_at"] <= finished):
                             continue
                         if len(data["seen"]) >= MAX_SEEN:
                             break
-                        data["seen"][sid] = item["added_at"]
                         if db.get(MonitorJob, sid) is not None:
+                            data["seen"][sid] = item["added_at"]
                             data["duplicates"] += 1
                             continue
                         if len(data["pending"]) >= MAX_QUEUE:
                             data["queue_overflow"] += 1
                             continue
+                        # Overflow is not acceptance: keep this event eligible
+                        # if a later allowed snapshot sees it before expiry.
+                        data["seen"][sid] = item["added_at"]
                         data["pending"][sid] = {**item, "attempts": 0, "next_at": 0}
                         data["queued"] += 1
                     row.status = "watching"
@@ -347,10 +353,8 @@ def take(monitor, source, *, after_primary=False):
                 if member.started_at > item["added_at"] or db.get(MonitorSeen, (search.id, sid)) is not None or claimed(db, search.user_id, sid):
                     continue
                 filters = Filters.model_validate(search.filters)
-                preview = item["preview_usd"]
-                if preview is not None and ((filters.price.from_ is not None and preview < filters.price.from_)
-                        or (filters.price.to is not None and preview > filters.price.to)):
-                    continue
+                # A public preview may lag the current official price. Apply
+                # price bounds only to the refreshed candidate in matches().
                 try:
                     _, resolved = RiaSearch.cached_parameters(db, source_filters(filters))
                 except RiaError:
