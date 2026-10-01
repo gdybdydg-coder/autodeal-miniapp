@@ -17,11 +17,13 @@
 <p class="status" id="client-status"></p>
 <p id="client-note"></p>
 <label for="receipt">Тестова квитанція (назва файлу)</label><input id="receipt" type="file" accept="image/jpeg,image/png,application/pdf">
+<label for="receipt-reference">Вигаданий номер квитанції</label><input id="receipt-reference" value="SYNTH-RECEIPT-001" maxlength="100">
+<label for="paid-at">Час тестового переказу</label><input id="paid-at" type="datetime-local">
 <button id="submit">Я оплатив — надіслати в демо</button>
 <small>Квитанція сама не активує абонемент. Потрібне підтвердження фактичного надходження.</small>
 </section>
 <section class="card"><h2>Екран адміністратора</h2>
-<dl><dt>Клієнт</dt><dd>Тестовий клієнт</dd><dt>Тестовий ID</dt><dd>111</dd><dt>Квитанція</dt><dd id="receipt-name">Ще немає</dd></dl>
+<dl><dt>Клієнт</dt><dd>Тестовий клієнт</dd><dt>Тестовий ID</dt><dd>111</dd><dt>Квитанція</dt><dd id="receipt-name">Ще немає</dd><dt>Номер квитанції</dt><dd id="receipt-reference-view">Ще немає</dd></dl>
 <label for="reference">Вигаданий номер банківського платежу</label><input id="reference" value="DEMO-BANK-001" maxlength="100">
 <label for="amount">Звірена тестова сума, грн</label><input id="amount" type="number" min="1" step="1" value="249">
 <label><input id="verified" type="checkbox"> Підтверджую тестову звірку надходження</label>
@@ -44,12 +46,13 @@ function render(){
  el('client-status').textContent=labels[order.state];
  el('client-note').textContent=order.state==='approved'?'Доступ у демо до '+new Date(order.expires*1000).toLocaleString('uk-UA',{timeZone:'Europe/Kyiv'}):order.note||'';
  el('receipt-name').textContent=order.receipt||'Ще немає';
+ el('receipt-reference-view').textContent=order.receiptReference||'Ще немає';
  el('submit').disabled=!['awaiting','clarification'].includes(order.state);
  el('approve').disabled=order.state!=='review';el('clarify').disabled=order.state!=='review';el('reject').disabled=!['review','clarification'].includes(order.state);
 }
 function act(action){try{order=ManualDemo.transition(order,action,now());if(action.type==='approve')usedReferences.push(order.reference);el('feedback').textContent='Демо-дію виконано. Реальні дані не змінювалися.';render()}catch(e){el('feedback').textContent=e.message}}
-function reset(){order={id:'AD-DEMO-1042',uid:111,amount:249,days:30,state:'awaiting'};usedReferences=[];el('receipt').value='';el('verified').checked=false;el('note').value='';el('feedback').textContent='';render()}
-el('submit').onclick=()=>act({type:'receipt',filename:el('receipt').files[0]?.name||''});
+function reset(){const local=new Date(Date.now()-new Date().getTimezoneOffset()*60000);const paidValue=local.toISOString().slice(0,16);el('paid-at').value=paidValue;const created=Math.floor(new Date(paidValue).getTime()/1000);order={id:'AD-DEMO-1042',uid:111,amount:249,days:30,state:'awaiting',created};usedReferences=[];el('receipt').value='';el('receipt-reference').value='SYNTH-RECEIPT-001';el('verified').checked=false;el('note').value='';el('feedback').textContent='';render()}
+el('submit').onclick=()=>act({type:'receipt',filename:el('receipt').files[0]?.name||'',receiptReference:el('receipt-reference').value,paidAt:Math.floor(new Date(el('paid-at').value).getTime()/1000)});
 el('approve').onclick=()=>act({type:'approve',reference:el('reference').value,amount:Number(el('amount').value),bankVerified:el('verified').checked,usedReferences});
 el('clarify').onclick=()=>act({type:'clarify',note:el('note').value});el('reject').onclick=()=>act({type:'reject'});el('reset').onclick=reset;reset();
 </script>

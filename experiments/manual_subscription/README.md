@@ -58,10 +58,10 @@ offline сценарії entitlement-перевірки без вмикання 
 
 ## Наступні етапи
 
-2. Вигляд клієнтської заявки й панелі адміністратора на синтетичних даних:
-   очікування, уточнення, підтвердження, відмова; без банківських реквізитів.
-3. Стійкість: валідація receipt reference/часу, уточнення та resubmit,
-   зупинки під час expiry/renewal, outbox повідомлень та dedup/restart.
+2. Виконано у `484797d`: локальний клієнтський/admin UI на synthetic даних.
+3. Виконано в поточній WIP-гілці: валідація reference/часу, durable
+   clarification/resubmit, offline outbox dedup/restart і guard-сценарії
+   `/stop`/epoch/claims без автоматичного ввімкнення пошуку.
 4. Інтеграційний offline сценарій create -> receipt -> approval -> renewal
    -> expiry, audit trail, concurrent requests, admin auth boundary.
 5. Підсумковий review і конкретний перелік даних від власника; без merge/deploy.
