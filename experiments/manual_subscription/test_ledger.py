@@ -144,6 +144,7 @@ class Tests(unittest.TestCase):
         self.approve(oid)
         claimed = self.ledger.claim_outbox('WORKER-001', 1003)
         event = next(row for row in claimed if row[3] == 'membership_approved')
+        self.assertTrue(self.ledger.prepare_outbox(event[0], 'WORKER-001', 1003))
         self.assertTrue(self.ledger.mark_outbox_delivered(event[0], 'WORKER-001', 1004))
         self.assertFalse(self.ledger.mark_outbox_delivered(event[0], 'WORKER-001', 1005))
         self.ledger.close()
@@ -157,6 +158,7 @@ class Tests(unittest.TestCase):
     def test_uncertain_outbox_is_not_retried_after_restart(self):
         self.reviewed()
         event = self.ledger.claim_outbox('WORKER-002', 1002, limit=1)[0]
+        self.assertTrue(self.ledger.prepare_outbox(event[0], 'WORKER-002', 1002))
         self.assertTrue(self.ledger.mark_outbox_uncertain(event[0], 'WORKER-002', 1003))
         self.ledger.close()
         self.ledger = Ledger(self.path, self.admin)

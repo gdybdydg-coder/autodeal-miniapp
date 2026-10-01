@@ -6,6 +6,9 @@ import sqlite3
 DAY = 86400
 MAX_RECEIPT_AGE = 7 * DAY
 CLOCK_SKEW = 300
+DEFAULT_OUTBOX_CAPACITY = 100
+MAX_OUTBOX_CAPACITY = 1000
+NOTICE_REFILL_BATCH = 100
 REFERENCE_RE = re.compile(r"[A-Za-z0-9][A-Za-z0-9._-]{2,99}\Z")
 
 
@@ -30,9 +33,12 @@ def clarification_note(value):
 
 
 class Ledger:
-    def __init__(self, path, admin_id):
+    def __init__(self, path, admin_id, *, outbox_capacity=None):
         if type(admin_id) is not int or admin_id <= 0:
             raise ValueError("Explicit admin required")
+        if (outbox_capacity is not None and
+                (type(outbox_capacity) is not int or not 1 <= outbox_capacity <= MAX_OUTBOX_CAPACITY)):
+            raise ValueError("Invalid outbox capacity")
         self.admin_id = admin_id
         self.db = sqlite3.connect(path, timeout=10)
         self.db.executescript('''
@@ -59,6 +65,8 @@ class Ledger:
             CREATE TABLE IF NOT EXISTS search_guard_fixtures (
                 uid INTEGER PRIMARY KEY, enabled INTEGER NOT NULL, epoch INTEGER NOT NULL,
                 sent_claims INTEGER NOT NULL, uncertain_claims INTEGER NOT NULL);
+            CREATE TABLE IF NOT EXISTS fixture_settings (
+                name TEXT PRIMARY KEY, value INTEGER NOT NULL);
         ''')
         # Additive migration for stage-1 and partially-created stage-3 databases.
         self._ensure_columns("orders", {
@@ -66,12 +74,40 @@ class Ledger:
             "receipt_revision": "INTEGER NOT NULL DEFAULT 0",
             "clarification_note": "TEXT",
             "clarified_at": "INTEGER",
+            "notice_pending": "INTEGER NOT NULL DEFAULT 0",
+            "notice_created": "INTEGER",
+        })
+        self._ensure_columns("memberships", {
+            "expiry_notice_at": "INTEGER",
+            "notice_pending": "INTEGER NOT NULL DEFAULT 0",
         })
         self._ensure_columns("outbox", {
             "claim_token": "TEXT",
             "claimed_at": "INTEGER",
             "delivered_at": "INTEGER",
+            "superseded_at": "INTEGER",
+            "reason": "TEXT",
+            "prepared_at": "INTEGER",
         })
+        with self.db:
+            self.db.execute("BEGIN IMMEDIATE")
+            self.db.execute(
+                "INSERT OR IGNORE INTO fixture_settings VALUES ('outbox_capacity',?)",
+                (outbox_capacity or DEFAULT_OUTBOX_CAPACITY,),
+            )
+            self.outbox_capacity = self.db.execute(
+                "SELECT value FROM fixture_settings WHERE name='outbox_capacity'"
+            ).fetchone()[0]
+        if outbox_capacity is not None and outbox_capacity != self.outbox_capacity:
+            self.db.close()
+            raise ValueError("Capacity is persisted; workers cannot override it")
+        self.db.executescript('''
+            CREATE INDEX IF NOT EXISTS outbox_state_id ON outbox(state,id);
+            CREATE INDEX IF NOT EXISTS deferred_order_notices
+                ON orders(notice_created,id) WHERE notice_pending=1;
+            CREATE INDEX IF NOT EXISTS deferred_expiry_notices
+                ON memberships(expiry_notice_at,uid) WHERE notice_pending=1;
+        ''')
 
     def _ensure_columns(self, table, migrations):
         columns = {row[1] for row in self.db.execute(f"PRAGMA table_info({table})")}
@@ -84,11 +120,136 @@ class Ledger:
         if type(actor) is not int or actor != self.admin_id:
             raise PermissionError("Admin only")
 
-    def _enqueue(self, dedupe_key, uid, kind, payload, now):
+    def _obsolete_reason(self, dedupe_key, uid, kind, payload, now):
+        """Compare a notice with current durable state, never with mere queue appearance."""
+        if kind == 'membership_expired':
+            member = self.db.execute(
+                "SELECT expires_at FROM memberships WHERE uid=?", (uid,)
+            ).fetchone()
+            if (not member or payload != str(member[0]) or
+                    dedupe_key != f"membership:{uid}:expired:{member[0]}"):
+                return 'membership_changed'
+            return None if now >= member[0] else 'membership_active'
+        suffixes = {
+            'review_requested': ':review:',
+            'clarification_requested': ':clarification:',
+            'membership_approved': ':approved',
+            'payment_rejected': ':rejected',
+        }
+        if kind not in suffixes:
+            return 'unknown_notice'
+        marker = suffixes[kind]
+        if marker not in dedupe_key:
+            return 'invalid_notice_key'
+        oid = dedupe_key.rsplit(marker, 1)[0]
+        row = self.db.execute(
+            "SELECT uid,state,receipt_revision,clarification_note,expires_at FROM orders WHERE id=?",
+            (oid,),
+        ).fetchone()
+        if not row:
+            return 'order_missing'
+        owner, state, revision, note, expires = row
+        if kind == 'review_requested':
+            valid = (state == 'review' and uid == self.admin_id and payload == oid
+                     and dedupe_key == f"{oid}:review:{revision}")
+        elif kind == 'clarification_requested':
+            valid = (state == 'clarification' and uid == owner and payload == note
+                     and dedupe_key == f"{oid}:clarification:{revision}")
+        elif kind == 'payment_rejected':
+            valid = (state == 'rejected' and uid == owner and payload == oid
+                     and dedupe_key == f"{oid}:rejected")
+        else:
+            valid = (state == 'approved' and uid == owner and payload == str(expires)
+                     and dedupe_key == f"{oid}:approved")
+            if valid:
+                member = self.db.execute(
+                    "SELECT expires_at FROM memberships WHERE uid=?", (uid,)
+                ).fetchone()
+                if not member or member[0] != expires:
+                    return 'membership_changed'
+                if now >= expires:
+                    return 'membership_expired'
+        return None if valid else 'order_changed'
+
+    def _cancel_obsolete_pending(self, now):
+        # A legacy oversized queue is inspected in bounded chunks; it admits no
+        # more events while above capacity. Terminal/uncertain claims are never replayed.
+        rows = self.db.execute(
+            "SELECT id,dedupe_key,uid,kind,payload FROM outbox WHERE state='pending' ORDER BY id LIMIT ?",
+            (MAX_OUTBOX_CAPACITY,),
+        ).fetchall()
+        for event_id, key, uid, kind, payload in rows:
+            reason = self._obsolete_reason(key, uid, kind, payload, now)
+            if reason:
+                self.db.execute(
+                    "UPDATE outbox SET state='cancelled',superseded_at=?,reason=? WHERE id=? AND state='pending'",
+                    (now, reason, event_id),
+                )
+
+    def _active_outbox_count(self):
+        return self.db.execute(
+            "SELECT count(*) FROM outbox WHERE state IN ('pending','claimed','uncertain')"
+        ).fetchone()[0]
+
+    def _enqueue(self, dedupe_key, uid, kind, payload, now, *, created=None):
+        self._cancel_obsolete_pending(now)
+        if self.db.execute("SELECT 1 FROM outbox WHERE dedupe_key=?", (dedupe_key,)).fetchone():
+            return True  # A durable dedupe record is never recreated, even after restart.
+        if self._obsolete_reason(dedupe_key, uid, kind, payload, now):
+            return True  # The current record no longer needs this notice.
+        if self._active_outbox_count() >= self.outbox_capacity:
+            return False
         self.db.execute(
-            "INSERT OR IGNORE INTO outbox (dedupe_key,uid,kind,payload,created) VALUES (?,?,?,?,?)",
-            (dedupe_key, uid, kind, payload, now),
+            "INSERT INTO outbox (dedupe_key,uid,kind,payload,created) VALUES (?,?,?,?,?)",
+            (dedupe_key, uid, kind, payload, now if created is None else created),
         )
+        return True
+
+    def _queue_order_notice(self, order_id, now, *, created=None):
+        row = self.db.execute(
+            "SELECT uid,state,receipt_revision,clarification_note,expires_at FROM orders WHERE id=?",
+            (order_id,),
+        ).fetchone()
+        uid, state, revision, note, expires = row
+        if state == 'review':
+            key, recipient, kind, payload = f'{order_id}:review:{revision}', self.admin_id, 'review_requested', order_id
+        elif state == 'clarification':
+            key, recipient, kind, payload = f'{order_id}:clarification:{revision}', uid, 'clarification_requested', note
+        elif state == 'approved':
+            key, recipient, kind, payload = f'{order_id}:approved', uid, 'membership_approved', str(expires)
+        elif state == 'rejected':
+            key, recipient, kind, payload = f'{order_id}:rejected', uid, 'payment_rejected', order_id
+        else:
+            return
+        queued = self._enqueue(key, recipient, kind, payload, now, created=created)
+        self.db.execute(
+            "UPDATE orders SET notice_pending=?,notice_created=? WHERE id=?",
+            (int(not queued), now if created is None else created, order_id),
+        )
+
+    def _queue_expiry_notice(self, uid, now, *, created=None):
+        expires = self.db.execute("SELECT expires_at FROM memberships WHERE uid=?", (uid,)).fetchone()[0]
+        queued = self._enqueue(
+            f'membership:{uid}:expired:{expires}', uid, 'membership_expired', str(expires), now, created=created
+        )
+        self.db.execute("UPDATE memberships SET notice_pending=? WHERE uid=?", (int(not queued), uid))
+
+    def _refill_outbox(self, now):
+        # One flag per source record, not an unbounded second collection of messages.
+        # Decisions survive a full spool; source history is separate from this capacity.
+        rows = self.db.execute('''
+            SELECT id,notice_created,'order' FROM orders WHERE notice_pending=1
+            UNION ALL
+            SELECT uid,expiry_notice_at,'expiry' FROM memberships WHERE notice_pending=1
+            ORDER BY 2,3,1 LIMIT ?
+        ''', (NOTICE_REFILL_BATCH,)).fetchall()
+        for identity, created, source in rows:
+            if self._active_outbox_count() >= self.outbox_capacity:
+                break
+            if source == 'order':
+                self._queue_order_notice(identity, now, created=created)
+            else:
+                self._queue_expiry_notice(identity, now, created=created)
 
     def create_order(self, uid, amount, now, days=30):
         clock(now)
@@ -144,9 +305,7 @@ class Ledger:
                 "INSERT INTO audit (order_id,actor,action,at) VALUES (?,?,?,?)",
                 (order_id, owner, action, now),
             )
-            self._enqueue(
-                f"{order_id}:review:{revision}", self.admin_id, "review_requested", order_id, now
-            )
+            self._queue_order_notice(order_id, now)
 
     def clarify(self, actor, order_id, note, now):
         self._admin(actor)
@@ -172,9 +331,7 @@ class Ledger:
                 "INSERT INTO audit (order_id,actor,action,at) VALUES (?,?,'clarification_requested',?)",
                 (order_id, actor, now),
             )
-            self._enqueue(
-                f"{order_id}:clarification:{revision}", uid, "clarification_requested", note, now
-            )
+            self._queue_order_notice(order_id, now)
 
     def request_clarification(self, actor, order_id, note, now):
         return self.clarify(actor, order_id, note, now)
@@ -209,7 +366,8 @@ class Ledger:
             ).fetchone()
             expires = max(now, current[0] if current else 0) + days * DAY
             self.db.execute(
-                "INSERT INTO memberships VALUES (?,?) ON CONFLICT(uid) DO UPDATE SET expires_at=excluded.expires_at",
+                """INSERT INTO memberships (uid,expires_at) VALUES (?,?) ON CONFLICT(uid)
+                   DO UPDATE SET expires_at=excluded.expires_at,expiry_notice_at=NULL,notice_pending=0""",
                 (uid, expires),
             )
             self.db.execute(
@@ -221,7 +379,13 @@ class Ledger:
                 "INSERT INTO audit (order_id,actor,action,at) VALUES (?,?,'approved',?)",
                 (order_id, actor, now),
             )
-            self._enqueue(f"{order_id}:approved", uid, "membership_approved", str(expires), now)
+            # Only the latest activation can describe current access. Keep old
+            # payment/order/audit history, without a deferred notice per renewal.
+            self.db.execute(
+                "UPDATE orders SET notice_pending=0 WHERE uid=? AND state='approved' AND id<>?",
+                (uid, order_id),
+            )
+            self._queue_order_notice(order_id, now)
         return expires
 
     def reject(self, actor, order_id, now):
@@ -238,7 +402,7 @@ class Ledger:
                 "INSERT INTO audit (order_id,actor,action,at) VALUES (?,?,'rejected',?)",
                 (order_id, actor, now),
             )
-            self._enqueue(f"{order_id}:rejected", uid, "payment_rejected", order_id, now)
+            self._queue_order_notice(order_id, now)
 
     def order_status(self, uid, order_id):
         row = self.db.execute(
@@ -268,14 +432,25 @@ class Ledger:
         clock(now)
         with self.db:
             self.db.execute("BEGIN IMMEDIATE")
-            row = self.db.execute("SELECT expires_at FROM memberships WHERE uid=?", (uid,)).fetchone()
-            if not row or now < row[0]:
+            row = self.db.execute(
+                "SELECT expires_at,expiry_notice_at FROM memberships WHERE uid=?", (uid,)
+            ).fetchone()
+            if not row or now < row[0] or row[1] is not None:
                 return False
-            before = self.db.total_changes
-            self._enqueue(
-                f"membership:{uid}:expired:{row[0]}", uid, "membership_expired", str(row[0]), now
-            )
-            return self.db.total_changes > before
+            existing = self.db.execute(
+                "SELECT created FROM outbox WHERE dedupe_key=?",
+                (f'membership:{uid}:expired:{row[0]}',),
+            ).fetchone()
+            if existing:
+                # Upgrade an old stage-3 notice without recording it again.
+                self.db.execute(
+                    "UPDATE memberships SET expiry_notice_at=?,notice_pending=0 WHERE uid=?",
+                    (existing[0], uid),
+                )
+                return False
+            self.db.execute("UPDATE memberships SET expiry_notice_at=?,notice_pending=1 WHERE uid=?", (now, uid))
+            self._queue_expiry_notice(uid, now)
+            return True
 
     def seed_search_guard_fixture(self, uid, *, enabled, epoch, sent_claims, uncertain_claims):
         """Test setup only: synthetic state used to prove entitlement cannot mutate searches."""
@@ -330,8 +505,21 @@ class Ledger:
 
     def pending_outbox(self):
         return self.db.execute(
-            "SELECT id,dedupe_key,uid,kind,payload FROM outbox WHERE state='pending' ORDER BY id"
+            "SELECT id,dedupe_key,uid,kind,payload FROM outbox WHERE state='pending' ORDER BY id LIMIT ?",
+            (self.outbox_capacity,),
         ).fetchall()
+
+    def outbox_status(self):
+        """Local backlog evidence, not a claim of Telegram delivery."""
+        return {
+            'capacity': self.outbox_capacity,
+            'active': self._active_outbox_count(),
+            'states': dict(self.db.execute("SELECT state,count(*) FROM outbox GROUP BY state")),
+            'deferred': self.db.execute(
+                "SELECT (SELECT count(*) FROM orders WHERE notice_pending=1) + "
+                "(SELECT count(*) FROM memberships WHERE notice_pending=1)"
+            ).fetchone()[0],
+        }
 
     def claim_outbox(self, worker_token, now, limit=10):
         """Claim-before-send: a restart never silently retries claimed/uncertain events."""
@@ -341,6 +529,8 @@ class Ledger:
             raise ValueError("Invalid outbox limit")
         with self.db:
             self.db.execute("BEGIN IMMEDIATE")
+            self._cancel_obsolete_pending(now)
+            self._refill_outbox(now)
             ids = [row[0] for row in self.db.execute(
                 "SELECT id FROM outbox WHERE state='pending' ORDER BY id LIMIT ?", (limit,)
             )]
@@ -356,6 +546,31 @@ class Ledger:
                 ids,
             ).fetchall()
 
+    def prepare_outbox(self, event_id, worker_token, now):
+        """Fake-worker preflight immediately before a hypothetical send; no network."""
+        clock(now)
+        worker_token = reference(worker_token, "worker token")
+        if type(event_id) is not int or event_id <= 0:
+            raise ValueError("Invalid event")
+        with self.db:
+            self.db.execute("BEGIN IMMEDIATE")
+            row = self.db.execute(
+                """SELECT dedupe_key,uid,kind,payload FROM outbox
+                   WHERE id=? AND state='claimed' AND claim_token=? AND prepared_at IS NULL""",
+                (event_id, worker_token),
+            ).fetchone()
+            if not row:
+                return False
+            reason = self._obsolete_reason(*row, now)
+            if reason:
+                self.db.execute(
+                    "UPDATE outbox SET state='cancelled',superseded_at=?,reason=? WHERE id=?",
+                    (now, reason, event_id),
+                )
+                return False
+            self.db.execute("UPDATE outbox SET prepared_at=? WHERE id=?", (now, event_id))
+            return True
+
     def _finish_outbox(self, event_id, worker_token, state, now):
         clock(now)
         worker_token = reference(worker_token, "worker token")
@@ -364,7 +579,7 @@ class Ledger:
         with self.db:
             cursor = self.db.execute(
                 """UPDATE outbox SET state=?,delivered_at=?
-                   WHERE id=? AND state='claimed' AND claim_token=?""",
+                   WHERE id=? AND state='claimed' AND claim_token=? AND prepared_at IS NOT NULL""",
                 (state, now, event_id, worker_token),
             )
         return cursor.rowcount == 1

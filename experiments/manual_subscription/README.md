@@ -66,9 +66,23 @@ offline сценарії entitlement-перевірки без вмикання 
    -> approval -> renewal -> expiry, audit/outbox, concurrent create/workers,
    fixture session auth boundary. Див. stage-4-handoff.md. 33 Python тести
    й Node workflow пройшли; це не production auth чи доставка.
-5. Виконано: фінальний review/readiness і мінімальний перелік рішень власника.
-   Прототип готовий лише до огляду, не до merge/deploy або реальних оплат.
-   Див. `stage-5-readiness.md`; 36 Python тестів і Node workflow пройшли.
+5. Виконано у паралельному `be8613e4`: review/readiness та перелік рішень
+   власника у stage-5-readiness.md, 3 додаткові isolation tests збережено.
+   Прототип готовий лише до огляду, не до реальних оплат або merge/deploy.
+5а. Виконано: obsolete notices відсіюються перед claim і одноразовим
+    fake-worker preflight; активний outbox обмежений 100 подіями, а
+    підтверджений доступ не втрачається при переповненні. Відкладений намір
+    збережений у вихідній заявці/membership і відновлюється bounded batch.
+    55 Python тестів та Node workflow пройшли. Див. stage-5-handoff.md.
+5б. Підсумковий review ще відкритий: auth session lifetime, role/UI wiring,
+    reconciliation claimed/uncertain, admission/retention усіх source records
+    і конкретний перелік даних від власника. Merge/deploy заборонені.
+
+Ліміт 100 застосовується до `pending + claimed + uncertain` у тестовому
+outbox; історія фінансових рішень і source-record flags окремо не обмежені
+цим лімітом. Імпортована legacy-черга понад ліміт не видаляється: нові
+події чекають до її зменшення. Fake delivered/uncertain не є реальною
+доставкою. Робочий бот, Stars pilot і його чинна черга не змінені.
 
 Перед кожним записом перевіряти актуальний head цієї гілки. Main, Render,
 runtime jobs, production підписки, Stars pilot та API ledger не змінювати.

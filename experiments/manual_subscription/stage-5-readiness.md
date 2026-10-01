@@ -1,5 +1,12 @@
 # Етап 5 — фінальний review/readiness, 01.10.2026
 
+Оновлення після review: stage-5-handoff.md описує перевірене виправлення
+stale pending notices, одноразовий worker preflight, active outbox capacity
+та durable deferred flags. Поточний набір: 55 Python tests + Node workflow
+passed. Нижче 36-test результат залишено як історичний доказ be8613e4.
+Інтеграція/реальні платежі залишаються забороненими; наступні offline
+session/UI перевірки можна виконувати без реквізитів або рішень про тариф.
+
 Перевірена база: production main
 `005897b0a93c7fe0166424341c0564a5fbaf94cb`, remote WIP перед review
 `6accc58f6e805749e41bba750b7401dbe985ae8a`. Перевірено README та handoff
@@ -50,9 +57,10 @@ Browser DOM/visual QA не входить у доказ: у локальному
 3. **Truth source перевірки.** `bank_verified=True` — рішення fixture-admin,
    не доказ надходження. Немає банківського API, виписки, dual control або
    процедури повернення/спору.
-4. **Outbox policy.** Pending старі review/clarification/expiry події можуть
-   стати неактуальними до умовної доставки; claimed/uncertain не мають
-   reconciliation/reclaim процедури. Таблиця не має retention/size policy.
+4. **Outbox policy.** Stale pending відсів і active-spool cap реалізовано
+   в stage-5a. Залишаються reconciliation для claimed/prepared/uncertain,
+   post-preflight send race, source-record admission і history retention;
+   ліміт spool не є лімітом усієї БД. Див. stage-5-handoff.md.
 5. **Дані та приватність.** Файл квитанції не завантажується. Не визначені
    дозволені формати, storage, строк видалення, доступ адміністраторів,
    audit/privacy policy, backup та migration rollout/rollback.

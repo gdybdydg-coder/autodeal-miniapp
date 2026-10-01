@@ -61,9 +61,14 @@ class Integration(unittest.TestCase):
         self.assertEqual(kinds,['review_requested','clarification_requested','review_requested',
             'membership_approved','review_requested','membership_approved','membership_expired'])
         events = self.ledger.claim_outbox('SYNTH-WORKER-001',expiry+2,limit=100)
-        self.assertEqual(len(events),7)
-        for event in events[:-1]:
-            self.assertTrue(self.ledger.mark_outbox_delivered(event[0],'SYNTH-WORKER-001',expiry+3))
+        # All seven history records remain, but only the current expiry notice
+        # is eligible. Stage 4's drain of seven notices exposed stale payloads.
+        self.assertEqual([row[3] for row in events],['membership_expired'])
+        reasons = [r[0] for r in self.ledger.db.execute('SELECT reason FROM outbox ORDER BY id')]
+        self.assertEqual(reasons,['order_changed','order_changed','order_changed',
+            'membership_changed','order_changed','membership_expired',None])
+        self.assertEqual(self.ledger.outbox_status()['states'],{'cancelled':6,'claimed':1})
+        self.assertTrue(self.ledger.prepare_outbox(events[-1][0],'SYNTH-WORKER-001',expiry+3))
         self.assertTrue(self.ledger.mark_outbox_uncertain(events[-1][0],'SYNTH-WORKER-001',expiry+3))
         self.ledger.close();self.ledger = Ledger(self.path,self.admin_uid)
         self.assertEqual(self.ledger.claim_outbox('SYNTH-WORKER-002',expiry+4),[])
@@ -112,6 +117,8 @@ class Integration(unittest.TestCase):
     def test_wrong_worker_cannot_acknowledge_claim(self):
         self.review();event=self.ledger.claim_outbox('SYNTH-WORKER-A',1002)[0]
         self.assertFalse(self.ledger.mark_outbox_delivered(event[0],'SYNTH-WORKER-B',1003))
+        self.assertFalse(self.ledger.mark_outbox_delivered(event[0],'SYNTH-WORKER-A',1003))
+        self.assertTrue(self.ledger.prepare_outbox(event[0],'SYNTH-WORKER-A',1003))
         self.assertTrue(self.ledger.mark_outbox_delivered(event[0],'SYNTH-WORKER-A',1003))
 
 
