@@ -15,6 +15,7 @@ from sqlalchemy import create_engine, func, select, update
 from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 from sqlalchemy.orm import Session
 
+from . import billing, billing_campaign
 from .auth import telegram_user
 from .auto_ria import probe_once, probe_status
 from .auto_ria import RiaError
@@ -134,6 +135,7 @@ def create_app(settings: Settings, engine=None):
     async def lifespan(app):
         # Initial schema only. Use versioned migrations before altering deployed tables.
         Base.metadata.create_all(engine)
+        billing_campaign.initialize(engine, settings)
         initialize_budget(engine)
         monitor.initialize(engine)
         launch.initialize(engine, settings.live and settings.monitor_enabled)
@@ -166,6 +168,7 @@ def create_app(settings: Settings, engine=None):
             await asyncio.to_thread(ria_ai_price.check_once, engine, settings.auto_ria_api_key,
                                    settings.auto_ria_user_id, settings.ria_ai_price_probe_id)
         stop = asyncio.Event()
+        billing_task = asyncio.create_task(billing_campaign.run(engine, settings, stop)) if billing.prepared() else None
         reply_task = asyncio.create_task(bot_commands.run(engine, settings, stop)) if (
             settings.configure_webhook or settings.ria_quota_management_enabled or settings.admin_telegram_id) else None
         alert_task = asyncio.create_task(owner_alerts.run(engine, settings, stop)) if settings.owner_alerts_enabled else None
@@ -183,6 +186,8 @@ def create_app(settings: Settings, engine=None):
         finally:
             stop.set()
             validation_stop.set()
+            if billing_task:
+                await billing_task
             if reply_task:
                 await reply_task
             if alert_task:
@@ -239,7 +244,12 @@ def create_app(settings: Settings, engine=None):
                     raise
         return user
 
+    def check_access(db, uid):
+        if not billing.allowed(db, uid):
+            raise HTTPException(402, "subscription_required")
+
     def check_enable(user, db, search_id=None):
+        check_access(db, user.id)
         if not settings.live:
             raise HTTPException(503, "Delivery/source not connected")
         if not user.ready:
@@ -296,7 +306,17 @@ def create_app(settings: Settings, engine=None):
                                  "delivery_available": False}, status_code=503)
         return {"ok": True, "database": "connected",
                 "database_type": engine.dialect.name,
-                "delivery_available": settings.live}
+                "delivery_available": settings.live, **({"release": os.environ["RENDER_GIT_COMMIT"]} if os.getenv("RENDER_GIT_COMMIT") else {})}
+
+    @app.get("/api/billing/status")
+    def billing_status(uid=Depends(identity), db=Depends(session)):
+        return billing.public_status(db, uid)
+
+    @app.get("/api/billing/admin")
+    def billing_admin_status(uid=Depends(identity), db=Depends(session)):
+        if not billing.verified_admin(settings) or uid != settings.admin_telegram_id:
+            raise HTTPException(403, "Forbidden")
+        return billing_campaign.snapshot(db, settings, time.time())
 
     @app.get("/api/subscriptions")
     def subscriptions(uid=Depends(identity), db=Depends(session)):
@@ -385,7 +405,8 @@ def create_app(settings: Settings, engine=None):
 
     @app.post("/api/cars/search")
     def search_cars(payload: Filters, cursor: str | None = Query(default=None, pattern=r"^[a-f0-9]{32}$"),
-                    uid=Depends(identity)):
+                    uid=Depends(identity), db=Depends(session)):
+        check_access(db, uid)
         if not settings.full_scan_enabled:
             raise HTTPException(409, "full_scan_disabled")
         try:
@@ -399,6 +420,7 @@ def create_app(settings: Settings, engine=None):
 
     @app.post("/api/cars/scans")
     def start_full_scan(payload: Filters, restart: bool = False, uid=Depends(identity), db=Depends(session)):
+        check_access(db, uid)
         if not settings.full_scan_enabled:
             raise HTTPException(409, "full_scan_disabled")
         if not settings.auto_ria_api_key:
@@ -412,6 +434,7 @@ def create_app(settings: Settings, engine=None):
     def full_scan_progress(scan_id: str, after: int = Query(default=0, ge=0, le=2**53-1), only_deals: bool = False,
                            cache_after: int = Query(default=0, ge=0, le=2**53-1),
                            uid=Depends(identity), db=Depends(session)):
+        check_access(db, uid)
         result = full_scan.view(db, uid, scan_id, after=after, only_deals=only_deals, cache_after=cache_after)
         if result is None:
             raise HTTPException(404, "Scan not found")
@@ -419,6 +442,8 @@ def create_app(settings: Settings, engine=None):
 
     @app.patch("/api/cars/scans/{scan_id}")
     def control_full_scan(scan_id: str, payload: EnabledRequest, uid=Depends(identity), db=Depends(session)):
+        if payload.enabled:
+            check_access(db, uid)
         if payload.enabled and not settings.full_scan_enabled:
             raise HTTPException(409, "full_scan_disabled")
         user_row(db, uid)
@@ -543,6 +568,9 @@ def create_app(settings: Settings, engine=None):
                 raise ValueError()
         except (ValueError, KeyError, TypeError, AttributeError):
             raise HTTPException(422, "Invalid update") from None
+        commercial_reply = await asyncio.to_thread(billing.handle, engine, settings, event)
+        if commercial_reply is not None:
+            return commercial_reply
         from . import stars_test
         payment_reply = await asyncio.to_thread(stars_test.handle, engine, settings, event)
         if payment_reply is not None:

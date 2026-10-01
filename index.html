@@ -4,9 +4,9 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
   <meta name="theme-color" content="#070709">
-  <meta name="autodeal-version" content="20260924-53">
+  <meta name="autodeal-version" content="20261002-54">
   <title>AUTODEAL</title>
-  <link rel="stylesheet" href="style.css?v=20260924-53">
+  <link rel="stylesheet" href="style.css?v=20261002-54">
 </head>
 <body>
 <main class="app">
@@ -139,6 +139,12 @@
     <button id="settingsSearches" class="save-search-button" type="button">Перейти до підписок →</button>
     <p class="filter-help notification-footnote">/stop у чаті — вимкнути всі сповіщення.</p>
   </section>
+  <section class="settings-card" aria-labelledby="billingTitle">
+    <h2 id="billingTitle">Абонемент</h2>
+    <p id="billingStatus" class="filter-help" role="status">У боті доступні актуальні умови, строк доступу та підтримка з оплати.</p>
+    <a class="manager-button telegram-link" href="https://t.me/auto_deal_finder1_bot?start=subscribe" target="_blank" rel="noopener">Переглянути абонемент ↗</a>
+    <p class="filter-help">Підтримка: /paysupport · Відмова від реклами: /marketing_off</p>
+  </section>
   <section class="settings-card" aria-labelledby="launchTitle">
     <h2 id="launchTitle">Робота підписок</h2>
     <p id="launchProgress" class="filter-help" role="status">Увійди через Telegram, щоб побачити стан перевірок.</p>
@@ -156,7 +162,7 @@
     <p class="filter-help">Якщо перевірка не пояснила пропуск, надішли підтримці посилання та ID оголошення, назву підписки й приблизний час публікації. Не передавай токени чи паролі.</p>
   </section>
   <details class="save-privacy"><summary>Про збереження</summary><p class="filter-help">Збереження в акаунті передає назву, фільтри та підтверджений Telegram ID на сервер AUTODeal у Render. Видалити пошук можна в його картці. Локальні пошуки залишаються в цьому браузері й автоматично не переносяться. Для пошуку сервер передає фільтри до AUTO.RIA без твого Telegram ID.</p></details>
-  <div class="app-release"><span>Версія 20260924-53</span><button id="reloadApp" class="manager-button" type="button">Оновити застосунок</button></div>
+  <div class="app-release"><span>Версія 20261002-54</span><button id="reloadApp" class="manager-button" type="button">Оновити застосунок</button></div>
 </section>
 </main>
 <dialog id="brandDialog" class="brand-dialog" aria-labelledby="brandDialogTitle">
@@ -180,14 +186,15 @@
 <div id="toast" class="toast" role="status"></div>
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
 <script src="data/cars.js?v=4"></script>
-<script src="saved-searches.js?v=20260924-53"></script>
-<script src="app.js?v=20260924-53"></script>
+<script src="saved-searches.js?v=20261002-54"></script>
+<script src="app.js?v=20261002-54"></script>
 <script src="brand-picker.js?v=20260917-25"></script>
-<script src="search-manager.js?v=20260924-53"></script>
-<script src="cloud-api.js?v=20260924-53"></script>
+<script src="search-manager.js?v=20261002-54"></script>
+<script src="cloud-api.js?v=20261002-54"></script>
+<script src="billing-ui.js?v=20261002-54"></script>
 <script src="catalog-loader.js?v=20260917-25"></script>
-<script src="live-search.js?v=20260924-53"></script>
-<script src="cloud-searches.js?v=20260924-53"></script>
+<script src="live-search.js?v=20261002-54"></script>
+<script src="cloud-searches.js?v=20261002-54"></script>
 <script src="app-version.js?v=20260917-22"></script>
 </body>
 </html>
