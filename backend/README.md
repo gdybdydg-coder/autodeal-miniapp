@@ -1,5 +1,23 @@
 # AUTODeal backend — subscriptions for new worthwhile cars
 
+## Inactive owner subscription preview (2026-10-01)
+
+`/subtest` (alias `/subscription_test`) opens a private, durable synthetic
+subscription trial for the existing owner only. The approved quote is **250 UAH
+for 30 days**. Payment collection and access restrictions are disabled; ordinary
+users retain free searches and see no new purchase controls. No real bank details,
+receipt uploads, invoices or transfers are accepted by this preview.
+
+Use its buttons to create a trial order, mark a synthetic receipt and approve the
+trial term. The isolated `subscription_previews` table preserves at most 20 orders
+across restarts; repeated approval cannot extend the term twice. Search epochs,
+`/stop`, claims, source accounting and the existing owner-only Stars pilot remain
+independent. Owner-scoped commands retain configured check/quota commands.
+Telegram callback updates are enabled without dropping pending updates.
+
+Deployment scope, tests and collection restrictions are documented in
+[subscription preview handoff](docs/subscription-preview-handoff-2026-10-01.md).
+
 ## Owner-managed package transitions and warnings (2026-09-27)
 
 `RIA_QUOTA_MANAGEMENT_ENABLED=true` enables private commands for the configured

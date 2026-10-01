@@ -39,7 +39,7 @@ def test_webhook_setup_checks_identity_and_existing_destination(db, current, use
         assert method == "setWebhook"
         assert payload["url"] == telegram_setup.WEBHOOK_URL
         assert payload["secret_token"] == SECRET
-        assert payload["drop_pending_updates"] is False and payload["allowed_updates"] == ["message", "pre_checkout_query"]
+        assert payload["drop_pending_updates"] is False and payload["allowed_updates"] == ["message", "pre_checkout_query", "callback_query"]
         return {"ok": True, "result": True}
     settings = Settings("unused", TOKEN, SECRET, configure_webhook=True)
     telegram_setup.configure(db, settings, request)

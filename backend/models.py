@@ -126,6 +126,15 @@ class StarsTestOrder(Base):
     paid_until: Mapped[float | None] = mapped_column(Float, nullable=True)
 
 
+class SubscriptionPreview(Base):
+    """Bounded owner-only synthetic ledger; never grants production access."""
+    __tablename__ = "subscription_previews"
+    user_id: Mapped[int] = mapped_column(BigInteger, primary_key=True)
+    version: Mapped[int] = mapped_column(Integer, default=0)
+    updated_at: Mapped[float] = mapped_column(Float)
+    state: Mapped[dict] = mapped_column(JSON)
+
+
 class SourceBudget(Base):
     __tablename__ = "source_budgets"
     id: Mapped[str] = mapped_column(String(40), primary_key=True)

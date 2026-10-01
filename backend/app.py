@@ -152,6 +152,8 @@ def create_app(settings: Settings, engine=None):
         from . import stars_test
         await asyncio.to_thread(stars_test.configure, engine, settings)
         await asyncio.to_thread(quota_management.configure, engine, settings)
+        from . import subscription_preview
+        await asyncio.to_thread(subscription_preview.configure, engine, settings)
         await asyncio.to_thread(notification_diagnostic.check_once, engine,
                                settings.auto_ria_api_key, settings.ria_diagnostic_listing_id)
         await asyncio.to_thread(notification_diagnostic.check_dates_once, engine,
@@ -545,6 +547,10 @@ def create_app(settings: Settings, engine=None):
         payment_reply = await asyncio.to_thread(stars_test.handle, engine, settings, event)
         if payment_reply is not None:
             return payment_reply
+        from . import subscription_preview
+        preview_reply = await asyncio.to_thread(subscription_preview.handle, engine, settings, event)
+        if preview_reply is not None:
+            return preview_reply
         if chat.get("type") != "private" or chat.get("id") != uid or type(uid) is not int or not 0 < uid < 2**52 or sender.get("is_bot"):
             return {"ok": True}
         token = text.split()[0] if text.split() else ""

@@ -43,7 +43,7 @@ def configure(engine, settings, request=call):
                 if current in ("", WEBHOOK_URL):
                     response = request(settings.bot_token, "setWebhook", {
                         "url": WEBHOOK_URL, "secret_token": settings.webhook_secret,
-                        "allowed_updates": ["message", "pre_checkout_query"], "drop_pending_updates": False,
+                        "allowed_updates": ["message", "pre_checkout_query", "callback_query"], "drop_pending_updates": False,
                         "max_connections": 5})
                     if response.get("ok") is True and response.get("result") is True:
                         status = "configured"
