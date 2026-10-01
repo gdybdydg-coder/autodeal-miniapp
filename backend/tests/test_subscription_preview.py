@@ -1,4 +1,5 @@
 import copy
+import json
 import time
 from concurrent.futures import ThreadPoolExecutor
 from dataclasses import replace
@@ -318,3 +319,102 @@ def test_dynamic_text_is_escaped_and_does_not_break_telegram_formatting():
         assert note in visible
         if admin:
             assert "AD-X<&>" in visible
+
+
+@pytest.fixture
+def recipient_profile(monkeypatch):
+    # Fictional offline account: an all-zero bank routing code, never a live IBAN.
+    bban = "0"*25
+    checksum = 98-int(bban+"301000") % 97
+    profile = {"mode":"test_only", "recipient_name":"ФОП Тест <&>",
+               "recipient_code":"0000000000", "iban":f"UA{checksum:02d}"+bban,
+               "bank_name":"Тестовий банк <&>"}
+    monkeypatch.setenv(preview.RECIPIENT_ENV,json.dumps(profile))
+    return profile
+
+
+def test_requisites_are_private_inert_escaped_and_do_not_consume_updates(setup,recipient_profile):
+    engine,_,api,calls = setup
+    command(api,"/start",uid=preview.OWNER,update=1)
+    sid = subscribe(api,uid=preview.OWNER).json()["id"]
+    oid = create(api,10)
+    with Session(engine) as db:
+        before = {table.name:list(db.execute(table.select()).mappings())
+                  for table in Base.metadata.sorted_tables}
+    calls.clear()
+    card = button(api,"subtest:requisites",1000).json()
+    visible = "".join(TelegramHTML(card["text"]).visible)
+    assert recipient_profile["recipient_name"] in visible and recipient_profile["bank_name"] in visible
+    assert recipient_profile["iban"] in visible.replace(" ", "")
+    assert "250 грн" in visible and "30 днів" in visible and "Не переказуй" in visible
+    assert "ID" not in visible and "AD-" not in visible and oid.upper() not in visible
+    keys = [b for row in card["reply_markup"]["inline_keyboard"] for b in row]
+    assert next(b["copy_text"]["text"] for b in keys if "copy_text" in b) == recipient_profile["iban"]
+    assert not any("pay" in b or "url" in b for b in keys)
+    assert card["protect_content"] is True
+    assert "<code>" in card["text"] and "&lt;&amp;&gt;" in card["text"]
+    receipt = button(api,"subtest:receipt_preview",1001).json()
+    assert "не надсилай справжню квитанцію" in receipt["text"]
+    assert next(b["callback_data"] for row in receipt["reply_markup"]["inline_keyboard"]
+                for b in row if b["text"] == "📎 Тестова квитанція") == "subtest:receipt:"+oid
+    with Session(engine) as db:
+        after = {table.name:list(db.execute(table.select()).mappings())
+                 for table in Base.metadata.sorted_tables}
+    assert before == after
+    assert all(method == "answerCallbackQuery" for method,_ in calls)
+    # The high-ID preview cannot suppress either an earlier receipt or /stop.
+    button(api,"subtest:receipt:"+oid,11)
+    assert preview.view(engine)["orders"][-1]["status"] == "review"
+    command(api,"/stop",uid=preview.OWNER,update=2)
+    with Session(engine) as db:
+        assert db.get(Search,sid).enabled is False
+    assert preview.PAYMENTS_ENABLED is False
+
+
+@pytest.mark.parametrize("data",["subtest:requisites","subtest:receipt_preview"])
+@pytest.mark.parametrize("extras",[
+    {"from":{"id":111}}, {"from":{"id":preview.OWNER,"is_bot":True}},
+    {"message":{"chat":{"id":-1,"type":"group"}}},
+    {"message":{"chat":{"id":111,"type":"private"}}},
+])
+def test_receiving_profile_is_not_read_for_forged_or_other_users(setup,monkeypatch,data,extras):
+    engine,_,api,calls = setup
+    def forbidden():raise AssertionError("Private profile read before authentication")
+    monkeypatch.setattr(preview,"receiving_profile",forbidden)
+    assert button(api,data,1000,**extras).json() == {"ok":True}
+    assert not calls and preview.view(engine) == preview.initial()
+
+
+@pytest.mark.parametrize("bad",[
+    "", "not-json", "[]", "null", "x"*4097,
+    {"mode":"production"}, {"mode":"test_only"},
+    {"recipient_code":"1"}, {"iban":"UA00"+"0"*25},
+    {"recipient_name":""}, {"bank_name":"x"*161}, {"bank_name":"test\nname"},
+    {"iban":None}, {"recipient_code":123},
+])
+def test_invalid_or_incomplete_profile_is_not_shown(recipient_profile,monkeypatch,bad):
+    if isinstance(bad,dict):
+        value=json.dumps({**recipient_profile,**bad})
+        if bad == {"mode":"test_only"}:value=json.dumps(bad)
+    else:value=bad
+    monkeypatch.setenv(preview.RECIPIENT_ENV,value)
+    assert preview.receiving_profile() is None
+    card=preview.render_requisites(preview.initial())
+    assert "ще не налаштовані" in card["text"] and recipient_profile["iban"] not in card["text"]
+    assert not any("copy_text" in b for row in card["reply_markup"]["inline_keyboard"] for b in row)
+
+
+def test_requisites_keep_saved_quote_and_ignore_real_receipt(setup,recipient_profile):
+    engine,_,api,calls=setup
+    state=preview.initial()
+    state["orders"]=[{"id":"a"*32,"amount":120,"days":7,"status":"awaiting"}]
+    card=preview.render_requisites(state)
+    assert "120 грн" in card["text"] and "7 днів" in card["text"] and "250 грн" not in card["text"]
+    oid=create(api,10)
+    before=preview.view(engine)
+    event={"update_id":1001,"message":{"from":{"id":preview.OWNER},
+           "chat":{"id":preview.OWNER,"type":"private"},"date":int(time.time()),
+           "document":{"file_id":"SYNTH-REAL-RECEIPT","file_name":"receipt.pdf","mime_type":"application/pdf"}}}
+    response=api.post("/telegram/webhook",headers={"X-Telegram-Bot-Api-Secret-Token":SECRET},json=event)
+    assert response.json()=={"ok":True}
+    assert preview.view(engine)==before and preview.view(engine)["orders"][-1]["id"]==oid

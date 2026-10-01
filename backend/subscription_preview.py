@@ -1,6 +1,8 @@
 """Owner-only durable Telegram trial. Collection and production billing stay OFF."""
 import copy
+import json
 import math
+import os
 import re
 import secrets
 import time
@@ -19,6 +21,7 @@ OWNER = 777292211
 AMOUNT_UAH, DAYS = 250, 30
 PAYMENTS_ENABLED = False
 MAX_ORDERS = 20
+RECIPIENT_ENV = "SUBSCRIPTION_PREVIEW_RECIPIENT_JSON"
 COMMANDS = {"/subtest", "/subscription_test", "/subtest_admin"}
 PREFIX = "subtest:"
 
@@ -147,7 +150,79 @@ def render(state, now, note="", *, admin=False, owner_controls=False):
     if admin:
         keyboard.append([{"text": "👤 Перегляд клієнта", "callback_data": PREFIX+"view"}])
     elif owner_controls:
+        keyboard.append([{"text": "🏦 Перегляд реквізитів", "callback_data": PREFIX+"requisites"}])
         keyboard.append([{"text": "🛠 Деталі власника", "callback_data": PREFIX+"admin"}])
+    return {"method": "sendMessage", "chat_id": OWNER, "text": "\n\n".join(sections), "parse_mode": "HTML",
+            "reply_markup": {"inline_keyboard": keyboard}, "protect_content": True}
+
+
+def receiving_profile():
+    """Private server configuration for an inert owner preview; never logged."""
+    raw = os.environ.get(RECIPIENT_ENV, "")
+    if not raw or len(raw) > 4096:
+        return None
+    try:
+        profile = json.loads(raw)
+    except (ValueError, TypeError):
+        return None
+    if not isinstance(profile, dict) or profile.get("mode") != "test_only":
+        return None
+    fields = ("recipient_name", "recipient_code", "iban", "bank_name")
+    if any(not isinstance(profile.get(k), str) for k in fields):
+        return None
+    result = {k: profile[k].strip() for k in fields}
+    if any(not result[k] or len(result[k]) > 160 or any(ord(c) < 32 for c in result[k])
+           for k in ("recipient_name", "bank_name")):
+        return None
+    result["iban"] = re.sub(r"\s", "", result["iban"]).upper()
+    if not re.fullmatch(r"[0-9]{10}", result["recipient_code"]):
+        return None
+    iban = result["iban"]
+    if not re.fullmatch(r"UA[0-9]{27}", iban):
+        return None
+    rearranged = iban[4:]+iban[:4]
+    digits = "".join(str(ord(c)-55) if "A" <= c <= "Z" else c for c in rearranged)
+    if int(digits) % 97 != 1:
+        return None
+    return result
+
+
+def render_requisites(state, *, receipt=False):
+    """Read-only customer-style mockup. No invoice, receipt upload or grant."""
+    order = state["orders"][-1] if state["orders"] else None
+    amount, days = (order["amount"], order["days"]) if order else (AMOUNT_UAH, DAYS)
+    sections = ["📎 <b>Квитанція · тест</b>" if receipt else "🚘 <b>Абонемент AUTODeal</b>",
+                f"💳 <b>{escape(str(amount))} грн</b>  ·  📅 <b>{escape(str(days))} днів</b>",
+                "🧪 <b>Тест без оплати</b>\nНе переказуй кошти й не надсилай справжню квитанцію."]
+    keyboard = []
+    if receipt:
+        sections.append("📎 Для перевірки використай лише демонстраційну квитанцію.")
+        if order and order["status"] == "awaiting":
+            keyboard.append([{"text": "📎 Тестова квитанція", "callback_data": PREFIX+"receipt:"+order["id"]}])
+        elif order and order["status"] == "review":
+            sections.append("⏳ <b>Тестова заявка вже на перевірці</b>")
+            keyboard.append([{"text": "🛠 Деталі власника", "callback_data": PREFIX+"admin"}])
+        else:
+            keyboard.append([{"text": "📝 Створити тестову заявку", "callback_data": PREFIX+"create"}])
+        keyboard.append([{"text": "🏦 До реквізитів", "callback_data": PREFIX+"requisites"}])
+    else:
+        profile = receiving_profile()
+        if profile is None:
+            sections.append("🏦 <b>Реквізити для перегляду ще не налаштовані</b>")
+        else:
+            iban = profile["iban"]
+            grouped = f"{iban[:4]} {iban[4:10]} {iban[10:15]} {iban[15:]}"
+            sections.extend([
+                "🏦 <b>Реквізити · лише перегляд</b>",
+                "👤 <b>Отримувач</b>\n"+escape(profile["recipient_name"]),
+                "💳 <b>Рахунок · IBAN</b>\n<code>"+grouped+"</code>",
+                "🔢 <b>Код отримувача</b>\n<code>"+profile["recipient_code"]+"</code>",
+                "🏦 <b>Банк</b>\n"+escape(profile["bank_name"]),
+                f"✍️ <b>Зразок призначення платежу</b>\nОплата абонемента AUTODeal на {escape(str(days))} днів",
+            ])
+            keyboard.append([{"text": "📋 Скопіювати IBAN", "copy_text": {"text": iban}}])
+            keyboard.append([{"text": "✅ Я оплатив · тест", "callback_data": PREFIX+"receipt_preview"}])
+    keyboard.append([{"text": "← До абонемента", "callback_data": PREFIX+"view"}])
     return {"method": "sendMessage", "chat_id": OWNER, "text": "\n\n".join(sections), "parse_mode": "HTML",
             "reply_markup": {"inline_keyboard": keyboard}, "protect_content": True}
 
@@ -186,12 +261,12 @@ def handle(engine, settings, event, request=None, now=None):
         return render(view(engine), now, admin=command == "/subtest_admin", owner_controls=True)
     update_id = event.get("update_id")
     callback_id = callback.get("id")
-    match = re.fullmatch(r"subtest:(view|admin|create|(?:receipt|approve|reject):[a-f0-9]{32})", data)
+    match = re.fullmatch(r"subtest:(view|admin|requisites|receipt_preview|create|(?:receipt|approve|reject):[a-f0-9]{32})", data)
     if (match is None or type(update_id) is not int or not 0 <= update_id < 2**63
             or not isinstance(callback_id, str) or not 1 <= len(callback_id) <= 256):
         return {"ok": True}
     action, _, order_id = data[len(PREFIX):].partition(":")
-    if action in ("view", "admin"):
+    if action in ("view", "admin", "requisites", "receipt_preview"):
         state, note = view(engine), ""
     else:
         state, note = apply(engine, action, order_id, update_id, now)
@@ -201,6 +276,8 @@ def handle(engine, settings, event, request=None, now=None):
         request(settings.bot_token, "answerCallbackQuery", {"callback_query_id": callback_id}, timeout=5)
     except Exception:
         pass  # Committed synthetic state remains retry-safe; never log credentials.
+    if action in ("requisites", "receipt_preview"):
+        return render_requisites(state, receipt=action == "receipt_preview")
     return render(state, now, note, admin=action in ("admin", "approve", "reject"), owner_controls=True)
 
 
