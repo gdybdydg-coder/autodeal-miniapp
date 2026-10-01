@@ -72,3 +72,12 @@ unknown availability fail closed at the appropriate stage. Old IDs are not
 rejected merely for being old when a genuine later add date passes baseline and
 deduplication. Update/reprice/appearance still cannot create publication proof.
 Checkpoint: ../../backend/docs/zero-paid-api-visible-adapter-2026-10-01.md
+
+`offline_queue.py` models bounded shared jobs, current activation epochs,
+per-search seen rows and durable per-user/listing delivery claims. It rechecks
+`/stop`, enabled state, epoch and activation time both after shared evaluation
+and before hypothetical send I/O. Restarts retry evaluation but convert an
+in-flight send to `uncertain`, never to a replayable pending claim. Any existing
+claim state remains the final dedupe authority. The module has no sender and
+cannot deliver. Checkpoint:
+../../backend/docs/zero-paid-api-offline-queue-2026-10-01.md
