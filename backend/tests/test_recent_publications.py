@@ -321,6 +321,65 @@ def test_candidate_queue_is_bounded_and_stale_candidates_spend_no_api_calls(p, m
     assert not probe(p)["pending"] and not probe(p)["api"]
 
 
+def test_overflow_candidate_can_enter_after_capacity_returns_and_restart(p, monkeypatch):
+    monkeypatch.setattr(rp, "MAX_QUEUE", 1)
+    monkeypatch.setattr(rp, "interval", lambda now=None: 60)
+    quotes = setup(p, monkeypatch)
+    offer(p, "77")
+    later_at = offer(p, "78")
+    assert len(probe(p)["pending"]) == 1 and probe(p)["queue_overflow"] == 1
+    drain(p)
+    dispatch(p)
+    assert [(uid, car.source_id) for uid, car in p.sent] == [(111, "77")]
+    assert quotes == ["77"] and not details(p, "78")
+    p.runner = Monitor(p.engine, p.settings, p.runner.search_factory, p.runner.sender)
+    p.clock[0] += 61
+    rp.collect(p.engine, p.settings, fetcher(card("78", later_at)))
+    drain(p)
+    dispatch(p)
+    assert [(uid, car.source_id) for uid, car in p.sent] == [(111, "77"), (111, "78")]
+    assert quotes == ["77", "78"] and len(details(p, "78")) == 1
+    assert len(probe(p)["pending"]) <= 1
+
+
+def test_newer_add_date_retries_rejected_id_but_same_date_reprice_does_not(p, monkeypatch):
+    monkeypatch.setattr(rp, "interval", lambda now=None: 60)
+    quotes = setup(p, monkeypatch)
+    old_at = offer(p, "77", mutate=lambda raw: raw["autoData"].update(categoryId=2))
+    drain(p)
+    assert not p.sent and not quotes and len(details(p, "77")) == 1
+    with Session(p.engine) as db:
+        assert db.get(MonitorJob, "77") is None
+    p.clock[0] += 61
+    rp.collect(p.engine, p.settings, fetcher(card("77", old_at, price=100, updated=p.clock[0])))
+    drain(p)
+    assert not p.sent and len(details(p, "77")) == 1
+    p.runner = Monitor(p.engine, p.settings, p.runner.search_factory, p.runner.sender)
+    offer(p, "77")
+    drain(p)
+    dispatch(p)
+    assert [(uid, car.source_id) for uid, car in p.sent] == [(111, "77")]
+    assert len(details(p, "77")) == 2 and quotes == ["77"]
+
+
+@pytest.mark.parametrize("current_price, eligible", [(6000, True), (8000, False), (500, False)])
+def test_preview_price_does_not_hide_fresh_matching_current_api_price(p, monkeypatch, current_price, eligible):
+    monkeypatch.setattr(rp, "interval", lambda now=None: 60)
+    with Session(p.engine) as db:
+        search = db.get(Search, 1)
+        filters = p.filters.model_copy(update={"price": Range.model_validate({"from": 1000, "to": 7000})})
+        search.filters, search.fingerprint = filters.canonical(), filters.fingerprint()
+        reset_watch(db, 1, True)
+        db.commit()
+    quotes = setup(p, monkeypatch)
+    offer(p, "77", changes={"USD": current_price})  # The public preview still says $10000.
+    drain(p)
+    dispatch(p)
+    expected = [(111, "77", current_price)] if eligible else []
+    assert [(uid, car.source_id, car.price) for uid, car in p.sent] == expected
+    assert len(details(p, "77")) == 1 and quotes == (["77"] if eligible else [])
+
+
 def test_additional_api_cap_defers_quote_without_losing_confirmed_job(p, monkeypatch):
     quotes = setup(p, monkeypatch)
     offer(p)

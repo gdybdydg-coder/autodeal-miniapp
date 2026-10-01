@@ -55,10 +55,23 @@ Primary API confirmation may promote the job to the normal publication source.
 - Maximum 128 waiting candidates; an explicit overflow counter records drops.
   Processed IDs are retained for two hours with a hard 10000-ID bound. No old
   page pagination or retrospective recovery.
+  In the October 1 WIP correction, a full queue no longer records a candidate
+  as accepted. A later allowed two-page snapshot may offer the same still-fresh
+  event after capacity returns, including after restart. This cannot recover an
+  event that has left the sampled pages or expired. Overflow counts rejected
+  observations and must not be interpreted as a unique-listing loss count.
+  Deduplication compares the accepted addition date for each ID: a newer dated
+  publication can retry an ID that was previously rejected before job creation.
+  Existing jobs, MonitorSeen and recipient claims still prevent replacement or
+  repeated delivery; same-date updates/price changes authorize no retry.
 - Each fallback API request reserves against both the unchanged global durable
   ledger and an extra rolling cap of **200/hour and 1000/day**. Keep at least
   20% of hourly/daily provider capacity for primary work. Cached responses do
   not consume either budget.
+  The October 1 WIP uses refreshed official details for saved price bounds;
+  a stale public preview cannot discard a fresh candidate before that check.
+  This can use more detail calls than preview filtering, within the same hard
+  caps and primary headroom. It is a coverage correction, not proven savings.
 - Primary due searches and valuation jobs take scheduling priority. Intake uses
   one otherwise idle monitor step. A September 30 live check also showed that
   continuously full four-operation batches could leave the queue untouched
