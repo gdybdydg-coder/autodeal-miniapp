@@ -1,6 +1,7 @@
 """Offline auth-boundary model. NOT production authentication or an HTTP API."""
 from dataclasses import dataclass
 import secrets
+from tariff import AMOUNT_UAH, DAYS
 
 
 @dataclass(frozen=True)
@@ -30,7 +31,7 @@ class FixtureSessions:
 
 
 class Adapter:
-    def __init__(self, ledger, sessions, *, tariff_amount=249, tariff_days=30):
+    def __init__(self, ledger, sessions, *, tariff_amount=AMOUNT_UAH, tariff_days=DAYS):
         self.ledger, self.sessions = ledger, sessions
         self.tariff_amount, self.tariff_days = tariff_amount, tariff_days
 

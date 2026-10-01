@@ -4,13 +4,14 @@
   else root.AutoDealTrialMemory=api;
 })(typeof globalThis!=='undefined'?globalThis:this,function(Workflow){
   'use strict';
+  const AMOUNT=250, DAYS=30;
   function create() {
     let order=null, membershipExpiry=null, sequence=0;
     const usedReferences=[];
     const now=()=>Math.floor(Date.now()/1000);
     function state(role) {
       if(!['client','admin'].includes(role)) throw Error('Невідома тестова роль');
-      return {amount:249,days:30,search_enabled:false,
+      return {amount:AMOUNT,days:DAYS,tariff_confirmed:true,payments_enabled:false,search_enabled:false,
         order:order ? {...order,expires_at:order.expires||null,clarification:order.state==='clarification'?order.note:null} : null,
         membership:{expires_at:membershipExpiry,active:!!membershipExpiry&&now()<membershipExpiry}};
     }
@@ -19,7 +20,7 @@
       if(body.action==='create') {
         if(role!=='client') throw Error('Створи заявку у вкладці клієнта');
         if(!order||['approved','rejected'].includes(order.state))
-          order={id:'AD-DEMO-'+(++sequence),state:'awaiting',amount:249,days:30,
+          order={id:'AD-DEMO-'+(++sequence),state:'awaiting',amount:AMOUNT,days:DAYS,
             created:now(),expires:membershipExpiry||0,note:'',receiptRevision:0};
       } else {
         if(!order||body.order_id!==order.id) throw Error('Заявку не знайдено');

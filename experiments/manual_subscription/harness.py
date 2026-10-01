@@ -8,6 +8,7 @@ from pathlib import Path
 
 from adapter import Adapter, FixtureSessions
 from ledger import Ledger
+from tariff import AMOUNT_UAH, DAYS, PAYMENTS_ENABLED
 
 ROOT = Path(__file__).parent
 CLIENT = 111
@@ -41,7 +42,8 @@ class Harness:
                 status = ledger.order_status(owner, oid)
                 order = {'id': oid, 'amount': amount, 'days': days, 'created': created, **status}
             member = ledger.db.execute('SELECT expires_at FROM memberships WHERE uid=?', (CLIENT,)).fetchone()
-            return {'order': order, 'amount': 249, 'days': 30,
+            return {'order': order, 'amount': AMOUNT_UAH, 'days': DAYS,
+                    'tariff_confirmed': True, 'payments_enabled': PAYMENTS_ENABLED,
                     'membership': {'active': ledger.active(CLIENT, self.clock()),
                                    'expires_at': member[0] if member else None},
                     'search_enabled': ledger.entitlement(CLIENT, self.clock())['search_enabled']}

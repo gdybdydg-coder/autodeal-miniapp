@@ -31,19 +31,18 @@
     function render() {
       if (!view) return;
       const order=view.order, state=order?.state;
-      if(files) {
-        const key=state==='review'?order.id+':'+order.receipt_revision:null;
-        if(key!==reviewKey) {
-          $('verified').checked=false;
-          $('payment-ref').value=key?'SYNTH-'+order.id:'';
-          if(key) $('amount').value=String(order.amount);
-          reviewKey=key;
-        }
+      const key=state==='review'?order.id+':'+order.receipt_revision:null;
+      if(key!==reviewKey) {
+        $('verified').checked=false;
+        if(files) $('payment-ref').value=key?'SYNTH-'+order.id:'';
+        if(key) $('amount').value=String(order.amount);
+        reviewKey=key;
       }
       $('client-tab').setAttribute('aria-pressed',String(role==='client'));
       $('admin-tab').setAttribute('aria-pressed',String(role==='admin'));
       $('client').hidden=role!=='client'; $('admin').hidden=role!=='admin';
-      $('tariff').textContent=view.amount+' грн · '+view.days+' днів · тест';
+      // Payment/review always show the saved quote, including pre-change orders.
+      $('tariff').textContent=(order?.amount ?? view.amount)+' грн · '+(order?.days ?? view.days)+' днів · тест';
       $('order-id').textContent=order ? 'Заявка '+order.id : 'Заявку ще не створено';
       $('status').textContent=order ? names[state] : 'Почни тестову заявку';
       $('access').textContent=view.membership.active ? 'Абонемент активний до '+date(view.membership.expires_at) : 'Абонемент неактивний';
@@ -53,13 +52,13 @@
         const values={'recipient-name':payment?.recipient_name, 'recipient-code':payment?.recipient_code,
           'recipient-iban':payment?.iban, 'recipient-bank':payment?.bank_name,
           'payment-purpose':payment?.purpose, 'payment-notice':payment?.notice,
-          'payment-amount':payment ? payment.amount+' грн · тариф не затверджено' : ''};
+          'payment-amount':payment ? payment.amount+' грн · '+(payment.tariff_confirmed ? 'тариф погоджено' : 'ціна заявки не затверджена') : ''};
         for(const [id,value] of Object.entries(values)) $(id).textContent=value || '';
       }
       $('note').textContent=order?.clarification || '';
       $('note').hidden=!order?.clarification;
       $('create').hidden=!!order && !['approved','rejected'].includes(state);
-      $('create').textContent=state==='approved' ? 'Спробувати продовження' : 'Створити тестову заявку';
+      $('create').textContent=(state==='approved' ? 'Спробувати продовження' : 'Створити тестову заявку')+' · '+view.amount+' грн';
       const canSend=['awaiting','clarification'].includes(state);
       $('paid').hidden=!canSend || receiptOpen;
       $('paid').textContent=state==='clarification' ? 'Виправити квитанцію' : 'Я оплатив';

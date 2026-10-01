@@ -108,7 +108,7 @@ class OwnerHttpTests(unittest.TestCase):
         self.assertEqual(view['order']['state'],'review')
         self.assertFalse(view['membership']['active'])
         rid = view['receipt_file']['id']
-        approved = {'payment_ref':'SYNTH-HTTP-PAID','actual_amount':249,'bank_verified':True}
+        approved = {'payment_ref':'SYNTH-HTTP-PAID','actual_amount':250,'bank_verified':True}
         code,view = self.action('approve',oid,approved,'admin')
         self.assertEqual(code,200)
         expires = view['membership']['expires_at']
@@ -127,11 +127,11 @@ class OwnerHttpTests(unittest.TestCase):
     def test_client_cannot_approve_download_or_upload_to_another_order(self):
         oid = self.create()
         rid = json.loads(self.upload(oid)[1])['receipt_file']['id']
-        self.assertEqual(self.action('approve',oid,{'payment_ref':'SYNTH-NO','actual_amount':249,'bank_verified':True})[0],403)
+        self.assertEqual(self.action('approve',oid,{'payment_ref':'SYNTH-NO','actual_amount':250,'bank_verified':True})[0],403)
         self.assertEqual(self.request('/api/receipts/'+rid,token=self.tokens['client'])[0],403)
         self.assertEqual(self.upload(oid,role='admin')[0],403)
         ledger = Ledger(self.path,ADMIN)
-        other = ledger.create_order(222,249,self.now)
+        other = ledger.create_order(222,250,self.now)
         ledger.close()
         self.assertEqual(self.upload(other)[0],403)
         self.assertEqual(self.file_count(),1)

@@ -30,7 +30,11 @@ async function flow(api,connected=false,existing=null){
   const root=existing?.root || dom(),n=root.nodes;
   const app=existing?.app || UI.mount(root,api);await app.ready;
   assert.equal(n.admin.hidden,true);assert.equal(n.client.hidden,false);
+  assert.equal(n.tariff.textContent,'250 грн · 30 днів · тест');
   await n.create.click();assert.equal(app.state().view.order.state,'awaiting');
+  assert.equal(app.state().view.order.amount,250);
+  assert.equal(app.state().view.order.days,30);
+  assert.equal(app.state().view.payments_enabled,false);
   await n.paid.click();assert.equal(n['receipt-area'].hidden,false);
   await n.receipt.click();assert.equal(app.state().view.order.state,'review');
   assert.equal(app.state().view.membership.active,false);
@@ -39,17 +43,19 @@ async function flow(api,connected=false,existing=null){
   await n.approve.click();assert.ok(n.error.textContent);assert.equal(app.state().view.order.state,'review');
   n.verified.checked=true;n.amount.value='1';
   await n.approve.click();assert.ok(n.error.textContent);assert.equal(app.state().view.membership.active,false);
-  n.amount.value='249';n.clarification.value='Уточни тестовий час';
+  n.amount.value='250';n.clarification.value='Уточни тестовий час';
   await n.clarify.click();assert.equal(app.state().view.order.state,'clarification');
   await n['client-tab'].click();assert.equal(n.note.textContent,'Уточни тестовий час');
   await n.paid.click();await n.receipt.click();assert.equal(app.state().view.order.state,'review');
-  await n['admin-tab'].click();await n.approve.click();
+  await n['admin-tab'].click();assert.equal(n.verified.checked,false);
+  n.verified.checked=true;await n.approve.click();
   assert.equal(app.state().view.order.state,'approved');assert.equal(n['admin-form'].hidden,true);
   const expiry=app.state().view.membership.expires_at;
   await n['client-tab'].click();assert.match(n.access.textContent,/Абонемент активний до/);
   assert.equal(app.state().view.search_enabled,false);
   await n.create.click();await n.paid.click();await n.receipt.click();
-  await n['admin-tab'].click();await n.approve.click();
+  await n['admin-tab'].click();assert.equal(n.verified.checked,false);
+  n.verified.checked=true;await n.approve.click();
   assert.equal(app.state().view.membership.expires_at,expiry+30*86400);
   const refreshed=UI.mount(dom(),api);await refreshed.ready;
   assert.equal(refreshed.state().view.membership.active,true);
@@ -116,8 +122,22 @@ async function reject(){
   console.log('Rejection/new-order and RAM role checks passed');
 }
 
+async function legacyQuote(){
+  const root=dom(),n=root.nodes;
+  const api={state:()=>({amount:250,days:30,payments_enabled:false,
+    order:{id:'AD-OLD-QUOTE',state:'review',amount:249,days:30,receipt_revision:1},
+    membership:{active:false,expires_at:null}})};
+  await UI.mount(root,api).ready;
+  assert.equal(n.tariff.textContent,'249 грн · 30 днів · тест');
+  await n['admin-tab'].click();assert.equal(n.amount.value,'249');
+  assert.equal(n['admin-summary'].textContent,'На перевірці · 249 грн');
+  assert.equal(n.verified.checked,false);
+  assert.match(n.create.textContent,/250 грн$/);
+  console.log('Prior quote stays 249 in payment/review; new quote stays 250 passed');
+}
+
 module.exports={dom};
 if(require.main===module)(async()=>{
-  await flow(Memory.create());await busy();await reject();await inline();
+  await flow(Memory.create());await busy();await reject();await inline();await legacyQuote();
   if(process.argv[2])await connected(process.argv[2]);
 })().catch(e=>{console.error(e);process.exitCode=1});

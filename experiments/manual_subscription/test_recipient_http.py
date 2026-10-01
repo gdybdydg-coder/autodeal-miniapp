@@ -49,7 +49,10 @@ class RecipientHttpTests(unittest.TestCase):
         payment = view['payment_instruction']
         self.assertEqual(payment['iban'],TEST_IBAN)
         self.assertIn(oid,payment['purpose'])
-        self.assertEqual(payment['amount'],249)
+        self.assertEqual(payment['amount'],250)
+        self.assertEqual(payment['days'],30)
+        self.assertTrue(payment['tariff_confirmed'])
+        self.assertIn('Тариф погоджено',payment['notice'])
         self.assertFalse(payment['payments_enabled'])
         self.assertFalse(view['membership']['active'])
 

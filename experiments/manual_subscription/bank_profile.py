@@ -5,6 +5,7 @@ import os
 from pathlib import Path
 import re
 import stat
+from tariff import CURRENCY, PAYMENTS_ENABLED, confirmed_snapshot
 
 ROOT = Path(__file__).resolve().parents[2]
 MAX_PROFILE_BYTES = 8192
@@ -55,7 +56,7 @@ class RecipientProfile:
             raise ValueError('Invalid private recipient schema')
         if (type(data['schema_version']) is not int or data['schema_version'] != 1
                 or data['mode'] != 'test_only' or data['tariff_confirmed'] is not False):
-            raise ValueError('Only unpriced local recipient review is supported')
+            raise ValueError('Recipient settings cannot approve a tariff or enable payments')
         code = data['recipient_code']
         if not isinstance(code, str) or not re.fullmatch(r'(?:[0-9]{8}|[0-9]{10})', code):
             raise ValueError('Invalid recipient code')
@@ -66,12 +67,15 @@ class RecipientProfile:
             raise ValueError('Invalid payment order reference')
         if any(type(value) is not int or value <= 0 for value in (amount, days)):
             raise ValueError('Invalid test payment snapshot')
+        confirmed = confirmed_snapshot(amount, days)
+        notice = (f'Тестовий режим. Тариф погоджено: {amount} грн за {days} днів. Не переказуй кошти.'
+                  if confirmed else 'Лише перегляд реквізитів. Ціна цієї тестової заявки не затверджена. Не переказуй кошти.')
         return {'recipient_name': self.recipient_name, 'recipient_code': self.recipient_code,
                 'iban': self.iban, 'bank_name': self.bank_name,
                 'purpose': f'Доступ до AUTODeal на {days} днів. Заявка {order_id}.',
-                'amount': amount, 'currency': 'UAH', 'days': days,
-                'tariff_confirmed': False, 'payments_enabled': False,
-                'notice': 'Лише перегляд реквізитів. Тариф ще не затверджено. Не переказуй кошти.'}
+                'amount': amount, 'currency': CURRENCY, 'days': days,
+                'tariff_confirmed': confirmed, 'payments_enabled': PAYMENTS_ENABLED,
+                'notice': notice}
 
 
 def load_profile(path):

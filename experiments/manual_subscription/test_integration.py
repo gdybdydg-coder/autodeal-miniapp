@@ -29,7 +29,7 @@ class Integration(unittest.TestCase):
         return oid
 
     def approval(self, reference='SYNTH-BANK-001'):
-        return {'payment_ref':reference,'actual_amount':249,'bank_verified':True}
+        return {'payment_ref':reference,'actual_amount':250,'bank_verified':True}
 
     def test_full_lifecycle_restart_audit_outbox_and_stop(self):
         self.ledger.seed_search_guard_fixture(111,enabled=True,epoch=4,sent_claims=13,uncertain_claims=2)

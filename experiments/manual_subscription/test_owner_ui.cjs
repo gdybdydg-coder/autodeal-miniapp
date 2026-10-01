@@ -71,7 +71,8 @@ async function main(){
   assert.equal(c['payment-area'].hidden,false);
   assert.equal(c['recipient-iban'].textContent,config.expectedRecipient.iban);
   assert.equal(c['recipient-name'].textContent,config.expectedRecipient.recipient_name);
-  assert.match(c['payment-amount'].textContent,/тариф не затверджено/);
+  assert.equal(c.tariff.textContent,'250 грн · 30 днів · тест');
+  assert.equal(c['payment-amount'].textContent,'250 грн · тариф погоджено');
   assert.match(c['payment-notice'].textContent,/Не переказуй кошти/);
   await c['copy-iban'].click();assert.equal(client.clipboard[0],config.expectedRecipient.iban);
   assert.equal(c['copy-status'].textContent,'IBAN скопійовано');
@@ -86,11 +87,12 @@ async function main(){
   admin.ids['owner-code'].value=config.invitations.admin;
   await admin.ids['owner-enter'].click();let a=admin.root().nodes;
   assert.equal(a.client.hidden,true);assert.equal(a.admin.hidden,false);
+  assert.equal(a.amount.value,'250');
   assert.equal(a.download.hidden,false);await a.download.click();
   assert.deepEqual(admin.downloads,['receipt.png']);
   await a.approve.click();assert.ok(a.error.textContent);assert.equal(a.status.textContent,'На перевірці');
   a.verified.checked=true;a.amount.value='1';await a.approve.click();assert.ok(a.error.textContent);
-  a.amount.value='249';await a.clarify.click();assert.equal(a.status.textContent,'Потрібне уточнення');
+  a.amount.value='250';await a.clarify.click();assert.equal(a.status.textContent,'Потрібне уточнення');
   await client.ids['owner-rotate'].click();
   assert.equal(client.root().hidden,false);assert.equal(client.ids['owner-error'].textContent,'');
   // A fresh authorized mount sees durable clarification without sharing the admin session.
@@ -115,7 +117,7 @@ async function main(){
   assert.equal(status.membership.expires_at,firstExpiry,'lost response retry cannot extend access twice');
   assert.equal(status.search_enabled,false);assert.equal(status.role,'client');
   await assert.rejects(clientApi.action('admin',{action:'approve',order_id:status.order.id,
-    data:{payment_ref:'SYNTH-BYPASS',actual_amount:249,bank_verified:true}}));
+    data:{payment_ref:'SYNTH-BYPASS',actual_amount:250,bank_verified:true}}));
   assert.equal((await clientApi.state()).role,'client','role denial must not clear a valid client session');
   await assert.rejects(clientApi.download(status.receipt_file.id));
   await clientApi.logout();await assert.rejects(clientApi.state());
@@ -126,7 +128,7 @@ async function main(){
   console.log('Separate login -> file upload -> admin download/clarify/approve -> SQLite checks passed');
   console.log('Rotation/logout, hidden role controls, private DOM reset and client denial checks passed');
   console.log('Lost approval response -> same payment reference retry -> one membership grant passed');
-  console.log('Protected recipient render, unapproved tariff and exact clipboard content checks passed');
+  console.log('Protected recipient render, approved 250 UAH tariff and exact clipboard content checks passed');
 }
 
 main().catch(error=>{console.error(error);process.exitCode=1});

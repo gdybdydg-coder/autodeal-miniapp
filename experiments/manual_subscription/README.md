@@ -1,8 +1,9 @@
 # Ручне підтвердження абонементів — ізольований тест
 
-Актуальний етап — **8**: приватний профіль отримувача та authenticated
-екран реквізитів, IBAN/purpose copy, тариф ще не погоджений.
-Див. stage-8-handoff.md. Етап 7 — login/files/TTL/revocation.
+Актуальний етап — **9**: власник погодив **250 грн за 30 днів** о 19:36
+Kyiv 01.10.2026. Нові test orders, authenticated реквізити й admin review
+використовують цю ціну. **Реальні перекази вимкнені**. Див. stage-9-handoff.md.
+Етап 8 — приватний отримувач; етап 7 — login/files/TTL/revocation.
 Старі етапи нижче — історія перевірок. Публічної тестової адреси немає;
 робочий бот і реальні платежі не підключені.
 
@@ -173,8 +174,9 @@ deployment. Попередні невикористані коди діють д
 Переповнення відхиляє новий файл, не видаляє evidence або фінансові рішення.
 Encryption at rest, retention/delete policy та справжнє сканування відсутні.
 
-Stage-6 in-chat RAM preview лишається окремим старим snapshot, не має
-цього server login/file storage. Його не видавати за новий owner harness.
+In-chat RAM preview окремий від owner harness, без server login/file
+storage або приватного отримувача. Stage 9 оновив його до 250 грн.
+Його не видавати за authenticated owner harness або реальний платіж.
 
 Перевірки: 90 Python tests; legacy `check-ui.py` і `test_workflow.cjs`;
 `python experiments/manual_subscription/check-offline.py` запускає весь
@@ -223,9 +225,10 @@ mode=test_only, tariff_confirmed=false. IBAN нормалізується до u
 IBAN/purpose — тільки на явний click. Якщо clipboard API недоступний,
 показує помилку та дозволяє скопіювати видимий текст вручну.
 
-Власник ще не затвердив ціну. **249 грн/30 днів лишається fixture**, не
-commercial tariff. Екран явно каже «тариф не затверджено» і «Не переказуй
-кошти». Profile/API не можуть увімкнути real collection. Ніяких QR,
+На момент stage 8 власник ще не затвердив ціну: **249 грн/30 днів** була
+fixture. **Stage 9 замінив поточну ціну на погоджені 250 грн/30 днів**;
+старі orders залишаються за своїм snapshot. Profile/API не можуть
+увімкнути real collection, екран зберігає «Не переказуй кошти». Ніяких QR,
 payment links, банк API, реальних переказів або повідомлень бота.
 
 101 Python tests passed із non-loopback TCP/DNS fence; actual owner UI
@@ -235,7 +238,42 @@ expected authenticated instructions, collection disabled, no values in
 SQLite DB або source. Tests містять лише спеціально non-routing synthetic
 IBAN з нульовим кодом установи/рахунком, а не дані власника.
 
-Наступні дані від власника: ціна абонемента на 30 днів. Збір коштів,
+Ціну абонемента власник надав у stage 9: 250 грн за 30 днів. Збір коштів,
 public/phone preview, payment-model/platform рішення та production
 changes не дозволені цим додаванням приватного профілю. Робочий paid bot
 і owner Stars pilot лишаються без змін.
+
+
+## Етап 9: погоджений тариф 250 грн / 30 днів
+
+Доручення власника 01.10.2026 19:36 Kyiv: «Давай 250 грн» у відповідь
+на питання про ціну 30-денного абонемента. Це погодження ціни, без
+дозволу на production, deployment або фактичний збір грошей.
+
+`tariff.py` задає поточний trusted quote: 250 UAH / 30 днів. Adapter і
+Harness користуються ним; client body не може замінити amount/days.
+Заявка зберігає price/duration snapshot. Старі open/review заявки по
+249 не переоцінюються, підтверджуються лише за збереженою сумою в
+локальному fixture; наступне продовження створює новий quote 250.
+UI показує snapshot поточної заявки, а кнопка нової — новий тариф.
+Після нової квитанції або заявки checkbox звірки скидається.
+
+Приватний recipient JSON schema v1 сумісний без змін: його legacy
+`tariff_confirmed=false` не є джерелом погодження ціни та забороняє
+профілю змінювати тариф. `payment_instruction.tariff_confirmed` визначає
+сервер за snapshot 250/30. `payments_enabled=false` у всіх варіантах.
+Реквізити лишаються поза GitHub і ledger.
+
+103 Python tests passed із non-loopback TCP/DNS fence; owner UI ->
+HTTP -> SQLite, legacy UI, regenerated inline RAM та workflow passed.
+Old awaiting/review -> restart -> wrong amount rejection -> approve
+old quote -> renewal 250 -> exact expiry, /stop/epoch/claims пройшли.
+Реквізити власника smoke-tested локально без логування значень або
+банк API; у test DB і джерельних файлах їх немає. Це мінімальна DOM
+event fixture, не browser visual/accessibility QA.
+
+Далі можна готувати offline entitlement admission/preflight та
+reconciliation uncertain/claimed notices. Публічної тестової адреси,
+реальних переказів і зв'язку із робочим ботом ще немає. Ціна більше
+не є blocker; auth transport, privacy/retention, review/refund правила
+та payment-model/platform рішення залишаються до реальної інтеграції.

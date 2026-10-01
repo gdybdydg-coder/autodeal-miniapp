@@ -54,7 +54,7 @@ class HarnessTests(unittest.TestCase):
         return oid, state
 
     def approval(self):
-        return {'payment_ref':'SYNTH-PAY-001','actual_amount':249,'bank_verified':True}
+        return {'payment_ref':'SYNTH-PAY-001','actual_amount':250,'bank_verified':True}
 
     def test_connected_http_flow_persists_through_harness_restart(self):
         oid, state = self.review()
