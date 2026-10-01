@@ -63,3 +63,12 @@ The current service terms contain both an allowance for automated processing of
 non-phone public data and a broader anti-parsing clause. The experiment treats
 that ambiguity as a go-live blocker, regardless of robots. See checkpoint:
 ../../backend/docs/zero-paid-api-source-audit-2026-10-01.md
+
+`visible_adapter.py` is fixture-only. It extracts exact pre-title category and
+oblast labels plus the visible creation date and listing ID, then joins them to
+the existing add-date candidate and JSON-LD detail result. Footer links,
+conflicting evidence, identity/date mismatches, non-USD price and inactive or
+unknown availability fail closed at the appropriate stage. Old IDs are not
+rejected merely for being old when a genuine later add date passes baseline and
+deduplication. Update/reprice/appearance still cannot create publication proof.
+Checkpoint: ../../backend/docs/zero-paid-api-visible-adapter-2026-10-01.md
