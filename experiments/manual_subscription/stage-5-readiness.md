@@ -7,6 +7,12 @@ passed. Нижче 36-test результат залишено як істори
 Інтеграція/реальні платежі залишаються забороненими; наступні offline
 session/UI перевірки можна виконувати без реквізитів або рішень про тариф.
 
+Наступне оновлення: stage-6-handoff.md — спільний UI, loopback Harness ->
+Adapter -> SQLite, 62 Python tests і connected UI event checks. Для
+власника доступне окреме RAM демо у чаті. UI wiring та збереження SQLite
+після restart перевірені, browser layout/visual engine ще не перевірено.
+Це не server-side production auth або реальні банківські платежі.
+
 Перевірена база: production main
 `005897b0a93c7fe0166424341c0564a5fbaf94cb`, remote WIP перед review
 `6accc58f6e805749e41bba750b7401dbe985ae8a`. Перевірено README та handoff
@@ -64,9 +70,10 @@ Browser DOM/visual QA не входить у доказ: у локальному
 5. **Дані та приватність.** Файл квитанції не завантажується. Не визначені
    дозволені формати, storage, строк видалення, доступ адміністраторів,
    audit/privacy policy, backup та migration rollout/rollback.
-6. **UI/операції.** Клієнт/admin показані разом у демо. Немає role-separated
-   routes, accessibility/browser regression, review SLA, підтримки та
-   спостережуваності.
+6. **UI/операції.** Клієнт/admin показані власнику у тесті. Stage 6
+   перевіряє UI events через SQLite transport; public role-separated
+   routes, browser/layout/accessibility regression, review SLA, підтримка
+   й production observability залишаються окремими завданнями.
 
 ## Мінімальні рішення від власника
 

@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="uk"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AUTODeal — тест оплати</title><link rel="stylesheet" href="/payment-ui.css"></head><body>
+<div id="autodeal-payment-trial" class="autodeal-trial">
+  <header><strong>AUTO<span>Deal</span></strong><small>Тест · без переказу коштів</small></header>
+  <nav aria-label="Роль у тесті"><button type="button" data-ui="client-tab" aria-pressed="true">Клієнт</button><button type="button" data-ui="admin-tab" aria-pressed="false">Адміністратор</button></nav>
+  <main>
+    <div class="ad-plan"><span data-ui="tariff">249 грн · 30 днів · тест</span><h2 data-ui="status" aria-live="polite">Завантаження…</h2><small data-ui="order-id"></small></div>
+    <section data-ui="client">
+      <p data-ui="access" aria-live="polite"></p><p class="ad-note" data-ui="note" hidden></p>
+      <button type="button" class="ad-main" data-ui="create">Створити тестову заявку</button>
+      <button type="button" class="ad-main" data-ui="paid" hidden>Я оплатив</button>
+      <div class="ad-receipt" data-ui="receipt-area" hidden><span>Квитанція DEMO</span><small>249 грн · вигаданий переказ</small><button type="button" class="ad-main" data-ui="receipt">Надіслати тестову квитанцію</button></div>
+      <p data-ui="review-message" hidden>Квитанція на перевірці. Перейди до ролі адміністратора.</p>
+    </section>
+    <section data-ui="admin" hidden>
+      <p data-ui="admin-summary"></p><p data-ui="admin-done" hidden></p>
+      <div data-ui="admin-form" hidden>
+        <label>Сума тестового надходження, грн<input data-ui="amount" type="number" min="1" value="249" inputmode="numeric"></label>
+        <label class="ad-check"><input data-ui="verified" type="checkbox">Тестове надходження перевірено</label>
+        <button type="button" class="ad-main" data-ui="approve">Підтвердити 30 днів</button>
+        <label>Уточнення<textarea data-ui="clarification" maxlength="500" rows="2">Уточни час тестового переказу</textarea></label>
+        <div class="ad-actions"><button type="button" data-ui="clarify">Попросити уточнення</button><button type="button" data-ui="reject">Відхилити</button></div>
+      </div>
+    </section>
+    <p class="ad-error" data-ui="error" role="alert"></p>
+  </main><footer>Тестовий доступ · Пошук авто не вмикається</footer>
+</div>
+<script src="/fixture-config.js"></script><script src="/payment-ui.js"></script><script src="/connected.js"></script>
+</body></html>

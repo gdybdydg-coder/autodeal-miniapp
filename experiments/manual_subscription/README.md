@@ -84,5 +84,37 @@ outbox; історія фінансових рішень і source-record flags 
 події чекають до її зменшення. Fake delivered/uncertain не є реальною
 доставкою. Робочий бот, Stars pilot і його чинна черга не змінені.
 
+## Етап 6: підключений тестовий екран
+
+`trial.html` + `payment-ui.js` через `connected.js` звертаються до
+`harness.py` -> Adapter -> справжнього offline SQLite Ledger цього прототипу.
+Тільки 127.0.0.1, synthetic sessions/receipts, без outgoing API, реквізитів
+або реальних переказів. Обидві ролі доступні власнику для огляду; це не
+публічна auth/admin панель. Докладно: stage-6-handoff.md.
+
+Запуск окремого тесту на комп'ютері:
+
+```sh
+python experiments/manual_subscription/harness.py --db ./manual-fixture.sqlite
+```
+
+Відкрити показану адресу 127.0.0.1 у браузері на тому самому комп'ютері.
+`--db` — виключно нова локальна test database, не production. Без `--db`
+сервер використовує тимчасову базу й видаляє її після завершення.
+Збережені заявки/строк витримують restart із тим самим `--db`, а старі
+RAM fixture sessions недійсні й видаються заново при відкритті екрана.
+CLI не створює Render service, публічного URL або Telegram-повідомлень.
+
+Перевірки: 62 Python tests; `python experiments/manual_subscription/check-ui.py`
+перевіряє actual UI handlers + actual connected transport через loopback
+server/Adapter/SQLite. Це DOM event fixture, не browser rendering engine.
+Попередній Node workflow також passed.
+
+`build-inline.py` створює `payment-trial-inline.html` для огляду в чаті:
+той самий екран і його event handlers, але RAM `demo-adapter.js` із
+JS workflow model замість SQLite/HTTP. Без мережі або browser storage.
+Цей варіант скидається при повторному відкритті й не є доказом реального
+платежу, durable database чи доступу до робочого бота. 249 грн — тест.
+
 Перед кожним записом перевіряти актуальний head цієї гілки. Main, Render,
 runtime jobs, production підписки, Stars pilot та API ledger не змінювати.
