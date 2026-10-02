@@ -1,5 +1,11 @@
 # Manual payment integration — preparation, NOT a public launch
 
+Historical preparation record. The owner's later explicit bank-launch instruction
+and its implemented checkout are documented in
+[manual-card-launch-20261002.md](manual-card-launch-20261002.md).
+The platform blocker described below is historical; private backup and storage
+continuity remain required before production activation.
+
 ## Verification update — 2026-10-02 07:09 UTC / 10:09 Kyiv
 
 Branch: `wip/manual-payment-verification-20261002`.
