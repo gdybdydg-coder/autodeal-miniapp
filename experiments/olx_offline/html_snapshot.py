@@ -25,11 +25,12 @@ class Node:
 
 class SearchParser(HTMLParser):
     def __init__(self):
-        super().__init__(convert_charrefs=True);self.stack=[];self.cards=[];self.ld=[];self.pages=set();self.html_closed=False
+        super().__init__(convert_charrefs=True);self.stack=[];self.cards=[];self.ld=[];self.pages=set();self.html_closed=False;self.roots=[]
     def handle_starttag(self,tag,attrs):
         node=Node(tag,attrs)
         if tag=='a' and 'page=' in node.attrs.get('href',''):self.pages.add(node.attrs['href'])
         if self.stack:self.stack[-1].children.append(node)
+        else:self.roots.append(node)
         if tag not in VOID:self.stack.append(node)
     def handle_data(self,data):
         if self.stack:self.stack[-1].children.append(data)

@@ -114,3 +114,6 @@ Acceptance now: independently reviewable offline prototype, not live OLX support
 Реальний доступ і HTML parser: [LIVE-SOURCE-20261002.md](LIVE-SOURCE-20261002.md).
 Поточний набір: 66 тестів. Один прямий HTTP200 дав52 картки в обмежених2MiB;
 це неповна відповідь, не підтвердження повноти/стабільності або дозвіл на запуск.
+
+Прямі деталі: [DETAIL-AND-TERMS-20261002.md](DETAIL-AND-TERMS-20261002.md).
+Поточний набір74 тести; detail parser перевірено на1 реальній неповній відповіді.
