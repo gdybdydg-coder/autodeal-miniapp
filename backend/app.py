@@ -16,6 +16,7 @@ from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 from sqlalchemy.orm import Session
 
 from . import billing, billing_campaign
+from . import manual_payments, manual_payment_routes
 from .auth import telegram_user
 from .auto_ria import probe_once, probe_status
 from .auto_ria import RiaError
@@ -66,6 +67,8 @@ class Settings:
     owner_alerts_enabled: bool = False
     ria_html_shadow_run_id: str = ""
     ria_recent_publications_enabled: bool = False
+    manual_payment_review_enabled: bool = False
+    manual_payment_notices_enabled: bool = False
 
     @classmethod
     def env(cls):
@@ -101,6 +104,8 @@ class Settings:
             owner_alerts_enabled=os.getenv("OWNER_ALERTS_ENABLED") == "true",
             ria_html_shadow_run_id=os.getenv("RIA_HTML_SHADOW_RUN_ID", "").strip(),
             ria_recent_publications_enabled=os.getenv("RIA_RECENT_PUBLICATIONS_ENABLED") == "true",
+            manual_payment_review_enabled=os.getenv("MANUAL_PAYMENT_REVIEW_ENABLED") == "true",
+            manual_payment_notices_enabled=os.getenv("MANUAL_PAYMENT_NOTICES_ENABLED") == "true",
             ria_quota_management_enabled=os.getenv("RIA_QUOTA_MANAGEMENT_ENABLED") == "true",
             ria_failed_delivery_recovery_id=os.getenv("RIA_FAILED_DELIVERY_RECOVERY_ID", "").strip(),
         )
@@ -136,6 +141,7 @@ def create_app(settings: Settings, engine=None):
         # Initial schema only. Use versioned migrations before altering deployed tables.
         Base.metadata.create_all(engine)
         billing_campaign.initialize(engine, settings)
+        manual_payments.initialize(engine, settings)
         initialize_budget(engine)
         monitor.initialize(engine)
         launch.initialize(engine, settings.live and settings.monitor_enabled)
@@ -168,6 +174,8 @@ def create_app(settings: Settings, engine=None):
             await asyncio.to_thread(ria_ai_price.check_once, engine, settings.auto_ria_api_key,
                                    settings.auto_ria_user_id, settings.ria_ai_price_probe_id)
         stop = asyncio.Event()
+        manual_notice_task = asyncio.create_task(manual_payments.run_notices(engine, settings, stop)) if (
+            settings.manual_payment_review_enabled and settings.manual_payment_notices_enabled) else None
         billing_task = asyncio.create_task(billing_campaign.run(engine, settings, stop)) if billing.prepared() else None
         reply_task = asyncio.create_task(bot_commands.run(engine, settings, stop)) if (
             settings.configure_webhook or settings.ria_quota_management_enabled or settings.admin_telegram_id) else None
@@ -185,6 +193,8 @@ def create_app(settings: Settings, engine=None):
             yield
         finally:
             stop.set()
+            if manual_notice_task:
+                await manual_notice_task
             validation_stop.set()
             if billing_task:
                 await billing_task
@@ -243,6 +253,8 @@ def create_app(settings: Settings, engine=None):
                 if user is None:
                     raise
         return user
+
+    manual_payment_routes.install(app, engine, settings, identity)
 
     def check_access(db, uid):
         if not billing.allowed(db, uid):
@@ -568,6 +580,9 @@ def create_app(settings: Settings, engine=None):
                 raise ValueError()
         except (ValueError, KeyError, TypeError, AttributeError):
             raise HTTPException(422, "Invalid update") from None
+        review_reply = await asyncio.to_thread(manual_payment_routes.handle, engine, settings, event)
+        if review_reply is not None:
+            return review_reply
         commercial_reply = await asyncio.to_thread(billing.handle, engine, settings, event)
         if commercial_reply is not None:
             return commercial_reply

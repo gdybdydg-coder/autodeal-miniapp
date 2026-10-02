@@ -1,0 +1,13 @@
+:root{font-family:system-ui,sans-serif;color:#e8eef5;background:#111923;color-scheme:dark}
+*{box-sizing:border-box}body{margin:0}main{max-width:760px;padding:24px 18px;margin:auto}
+.brand{font-size:18px;font-weight:800;letter-spacing:2px}.brand span{color:#70d6b5}
+h1{font-size:27px}h2{font-size:22px}p{line-height:1.6;overflow-wrap:anywhere}
+header,footer{color:#adbbcc}header h1{color:#fff}footer{font-size:13px;margin:28px 0}
+button,input,select,textarea{font:inherit;border:1px solid #435268;border-radius:10px;padding:12px;max-width:100%}
+button{cursor:pointer;background:#25364a;color:#fff;margin:5px 5px 5px 0;min-height:44px}
+button.primary{background:#70d6b5;color:#10221c;font-weight:700}button:disabled{opacity:.45;cursor:wait}
+button.card{display:block;text-align:left;width:100%;margin:10px 0;background:#1b293a}
+label{display:block;margin:18px 0 6px}input:not([type=checkbox]),textarea{display:block;width:100%;margin-top:7px;background:#172332}
+input[type=checkbox]{margin:0 8px 0 0;width:20px;height:20px;vertical-align:middle}
+textarea{min-height:100px}.muted{color:#adbbcc}.panel{padding:20px;background:#1b293a;border-radius:14px;margin:18px 0}
+#error{color:#ffb8a7;white-space:pre-line}button:focus-visible,input:focus-visible,textarea:focus-visible{outline:3px solid #70d6b5;outline-offset:2px}
