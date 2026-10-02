@@ -27,6 +27,9 @@ class PaymentRequest(ManualBase):
     receipt_kind: Mapped[str | None] = mapped_column(String(10), nullable=True)
     owner_note: Mapped[str] = mapped_column(String(500), default="")
     expires_at: Mapped[float | None] = mapped_column(Float, nullable=True)
+    terms_version: Mapped[str | None] = mapped_column(String(40), nullable=True)
+    terms_text: Mapped[str | None] = mapped_column(String(2500), nullable=True)
+    terms_accepted_at: Mapped[float | None] = mapped_column(Float, nullable=True)
 
 
 class PaymentConfirmation(ManualBase):

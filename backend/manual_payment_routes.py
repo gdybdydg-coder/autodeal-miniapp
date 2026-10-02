@@ -1,4 +1,4 @@
-"""Authenticated review API and owner command; public bank sales remain blocked."""
+"""Authenticated customer checkout and owner-only payment review API."""
 from html import escape
 import time
 from urllib.parse import parse_qsl
@@ -8,7 +8,7 @@ from fastapi import APIRouter, Depends, Header, HTTPException
 from pydantic import BaseModel, ConfigDict, Field, StrictBool, StrictInt
 from sqlalchemy.exc import SQLAlchemyError
 
-from . import billing, manual_payments as m, telegram_setup
+from . import billing, manual_payments as m, manual_checkout, telegram_setup
 
 
 class Body(BaseModel):
@@ -18,6 +18,10 @@ class Body(BaseModel):
 class Paid(Body):
     reported_amount_minor: StrictInt | None = None
     transfer_note: str | None = Field(default=None, max_length=500)
+
+
+class Create(Body):
+    terms_version: str = Field(min_length=1, max_length=40)
 
 
 class Action(Body):
@@ -66,14 +70,23 @@ def install(app, engine, settings, identity):
         return uid
 
     @router.post("", status_code=201)
-    def create(body: Body, uid=Depends(available), x_telegram_init_data: str = Header(default="")):
+    def create(body: Create, uid=Depends(available), x_telegram_init_data: str = Header(default="")):
         if not m.public_creation_allowed():
-            raise HTTPException(409, "public_bank_sales_blocked_by_platform_policy")
+            raise HTTPException(409, "manual_sales_closed")
         # identity already verified HMAC, age, duplicate fields and sender type.
         signed_user = json.loads(dict(parse_qsl(x_telegram_init_data))["user"])
         name = str(signed_user.get("first_name") or "Клієнт")[:100]
         username = signed_user.get("username")
-        return call(m.create_request, engine, settings, uid, time.time(), name=name, username=username)
+        return call(manual_checkout.create, engine, settings, uid, time.time(), body.terms_version,
+                    name=name, username=username)
+
+    @router.get("/offer")
+    def offer(uid=Depends(available)):
+        return call(manual_checkout.status, engine, settings, uid)
+
+    @router.get("/{code}/requisites")
+    def requisites(code: str, uid=Depends(available)):
+        return call(manual_checkout.requisites, engine, settings, uid, code)
 
     @router.get("/admin")
     def queue(state: str = "review", search: str = "", page: int = 1, size: int = 20, uid=Depends(admin)):

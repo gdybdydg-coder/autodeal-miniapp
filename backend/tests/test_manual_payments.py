@@ -15,7 +15,7 @@ from sqlalchemy.exc import OperationalError
 from sqlalchemy.orm import Session
 from sqlalchemy.schema import CreateTable
 
-from backend import billing, manual_payments as m
+from backend import billing, manual_payments as m, manual_checkout
 from backend.app import Settings, create_app
 from backend.billing_models import BillingControl, Entitlement, AccessEvent
 from backend.manual_payment_models import (ManualBase, PaymentRequest, BankCredit,
@@ -31,6 +31,8 @@ NOW = 1790922000
 def review(tmp_path, monkeypatch, request):
     monkeypatch.setenv("SUBSCRIPTION_EXPECTED_ADMIN_ID", str(ADMIN))
     monkeypatch.delenv("SUBSCRIPTION_LAUNCH_PREPARED", raising=False)
+    monkeypatch.delenv("MANUAL_PAYMENT_PUBLIC_ENABLED", raising=False)
+    monkeypatch.delenv("MANUAL_PAYMENT_LAUNCH_STAGE", raising=False)
     admin_engine = schema = None
     if request.param == "postgresql":
         url = make_url(os.environ["AUTODEAL_TEST_POSTGRES_URL"])
@@ -86,24 +88,28 @@ def count(engine, model):
         return db.scalar(select(func.count()).select_from(model))
 
 
-def test_public_sales_blocked_even_when_review_enabled(review):
+def test_public_sales_closed_even_when_review_enabled(review):
     engine, settings, client = review
-    r = client.post("/api/manual-payments", headers=headers(), json={})
-    assert r.status_code == 409 and "platform_policy" in r.text
+    r = client.post("/api/manual-payments", headers=headers(), json={"terms_version":manual_checkout.TERMS_VERSION})
+    assert r.status_code == 409 and "manual_sales_closed" in r.text
     assert count(engine, PaymentRequest) == 0
     with Session(engine) as db:
         ctrl = billing.control(db)
         assert not ctrl.sales and not ctrl.enforce
 
 
-def test_full_signed_api_workflow_with_synthetic_policy_override(review, monkeypatch):
+def test_full_signed_api_workflow_with_synthetic_bank_offer(review, monkeypatch):
     engine, settings, client = review
-    # This override is test-local; shipped code has no setting that opens sales.
-    monkeypatch.setattr(m, "public_creation_allowed", lambda: True)
-    row = client.post("/api/manual-payments", headers=headers(), json={}).json()
+    monkeypatch.setenv("MANUAL_PAYMENT_PUBLIC_ENABLED", "true")
+    monkeypatch.setenv("MANUAL_PAYMENT_REVIEW_ENABLED", "true")
+    monkeypatch.setattr(manual_checkout.subscription_preview, "receiving_profile", lambda: {"iban":"SYNTHETIC"})
+    with Session(engine) as db, db.begin():
+        ctrl=billing.control(db); ctrl.offer=dict(manual_checkout.OFFER); ctrl.sales=True
+    body={"terms_version":manual_checkout.TERMS_VERSION}
+    row = client.post("/api/manual-payments", headers=headers(), json=body).json()
     code = row["code"]
     assert row["amount_minor"] == 25000 and row["days"] == 30
-    assert client.post("/api/manual-payments", headers=headers(), json={}).json()["code"] == code
+    assert client.post("/api/manual-payments", headers=headers(), json=body).json()["code"] == code
     path = "/api/manual-payments/" + code
     paid = client.post(path + "/paid", headers=headers(), json={}).json()
     assert paid["state"] == "review" and "user_id" not in paid

@@ -10,6 +10,7 @@ import hashlib
 import json
 import math
 import logging
+import os
 import secrets
 import time
 import unicodedata
@@ -35,9 +36,10 @@ class ReviewError(Exception):
 
 
 def public_creation_allowed():
-    # Deliberate hard stop. No environment variable silently approves platform rules.
-    # Tests may monkeypatch this function ONLY with synthetic databases/transports.
-    return False
+    # The owner explicitly selected bank payments on 2026-10-02. Commercial
+    # availability still requires a persisted approved offer and enabled sales.
+    return (os.getenv("MANUAL_PAYMENT_PUBLIC_ENABLED") == "true"
+            and os.getenv("MANUAL_PAYMENT_REVIEW_ENABLED") == "true")
 
 
 def initialize(engine, settings):
@@ -121,7 +123,7 @@ def notice(db, row, uid, kind, body):
                         kind=kind, user_id=uid, text=body))
 
 
-def create_request(engine, settings, uid, now, *, name="Клієнт", username=None):
+def create_request(engine, settings, uid, now, *, name="Клієнт", username=None, accepted_terms=None):
     """Internal ledger operation; public entry point additionally checks policy.
 
     Identity and display fields must come from verified Telegram data, not form JSON.
@@ -131,6 +133,11 @@ def create_request(engine, settings, uid, now, *, name="Клієнт", username=
     if username is not None:
         username = text(username, 64)
     with mutation(engine, settings) as db:
+        if accepted_terms is not None:
+            from . import manual_checkout
+            manual_checkout.require_sales(db)
+            if accepted_terms != manual_checkout.TERMS_VERSION:
+                raise ReviewError("terms_changed", 409)
         if type(uid) is not int or uid <= 0 or db.get(User, uid) is None:
             raise ReviewError("known_user_required", 409)
         current = db.scalar(select(PaymentRequest).where(PaymentRequest.active_user_id == uid))
@@ -146,6 +153,9 @@ def create_request(engine, settings, uid, now, *, name="Клієнт", username=
                              username=username, amount_minor=25000, currency="UAH", days=30,
                              state="created", created_at=now, updated_at=now, revision=0,
                              transfer_note="", owner_note="")
+        if accepted_terms is not None:
+            row.terms_version, row.terms_text = accepted_terms, manual_checkout.TERMS
+            row.terms_accepted_at = now
         db.add(row)
         audit(db, row, uid, "created", now)
         db.flush()
@@ -383,13 +393,14 @@ def deliver_notice(engine, settings, request, now=None):
 
 
 async def run_notices(engine, settings, stop):
-    from . import telegram_setup
+    from . import telegram_setup, manual_launch
     while not stop.is_set():
         try:
             await asyncio.to_thread(deliver_notice, engine, settings, telegram_setup.call)
+            await asyncio.to_thread(manual_launch.tick, engine, settings, telegram_setup.call)
         except Exception:
             logging.getLogger(__name__).error("Manual notice delivery unavailable; durable state retained")
         try:
-            await asyncio.wait_for(stop.wait(), timeout=5)
+            await asyncio.wait_for(stop.wait(), timeout=1)
         except asyncio.TimeoutError:
             pass

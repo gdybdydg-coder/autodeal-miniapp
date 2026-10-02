@@ -2,12 +2,14 @@ name: Isolated manual-payment verification
 
 on:
   push:
-    branches: [wip/manual-payment-verification-20261002]
+    branches: [wip/manual-payment-verification-20261002, wip/manual-card-launch-20261002]
     paths:
       - 'backend/**'
       - '!backend/docs/**'
       - '*-test.cjs'
       - 'payment-review*'
+      - 'billing-ui.js'
+      - 'index.html'
       - 'tools/manual-payment-ui-smoke.cjs'
       - '.github/workflows/manual-payment-verification.yml'
 
@@ -52,7 +54,7 @@ jobs:
       - name: SQLite and isolated PostgreSQL transactions and authentication
         env:
           AUTODEAL_TEST_POSTGRES_URL: postgresql+psycopg://autodeal_fixture:fixture-only@127.0.0.1:${{ job.services.postgres.ports['5432'] }}/autodeal_manual_fixture
-        run: python -m pytest backend/tests/test_manual_payments.py backend/tests/test_subscription_preview.py -q
+        run: python -m pytest backend/tests/test_manual_payments.py backend/tests/test_manual_checkout.py backend/tests/test_subscription_preview.py backend/tests/test_billing_launch.py -q
       - name: Frontend behavior
         run: node --test ./*-test.cjs
       - name: Mobile browser with fully mocked network

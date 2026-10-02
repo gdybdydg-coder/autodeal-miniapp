@@ -143,12 +143,18 @@ def configure(engine, settings, request=None):
     if not settings.configure_webhook or telegram_setup.webhook_status(engine)["status"] != "configured":
         return
     request = request or telegram_setup.call
-    probe_id = "telegram-commands-v1"
+    bank_menu = settings.manual_payment_review_enabled
+    probe_id = "telegram-commands-bank-v1" if bank_menu else "telegram-commands-v1"
+    commands = COMMANDS + ([
+        {"command": "subscription", "description": "Абонемент і статус оплати"},
+        {"command": "terms", "description": "Умови абонемента"},
+        {"command": "paysupport", "description": "Допомога з оплатою"},
+    ] if bank_menu else [])
     with Session(engine) as db:
         row = db.get(SourceProbe, probe_id)
         if row and row.status == "configured":
             return
-        result = request(settings.bot_token, "setMyCommands", {"commands": COMMANDS})
+        result = request(settings.bot_token, "setMyCommands", {"commands": commands})
         ok = result.get("ok") is True and result.get("result") is True
         db.merge(SourceProbe(id=probe_id, status="configured" if ok else "unavailable",
                             checked_at=time.time(), requests=0, result={}))

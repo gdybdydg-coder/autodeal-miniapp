@@ -166,6 +166,22 @@ def test_command_menu_requires_verified_bot_and_is_idempotent(setup):
     assert calls == ["setMyCommands"]
 
 
+def test_bank_menu_upgrades_existing_commands_once(setup):
+    engine, settings, _ = setup
+    settings = replace(settings, configure_webhook=True, manual_payment_review_enabled=True)
+    with Session(engine) as db, db.begin():
+        db.merge(SourceProbe(id=telegram_setup.PROBE_ID, status="configured", checked_at=time.time(), requests=0, result={}))
+        db.add(SourceProbe(id="telegram-commands-v1", status="configured", checked_at=time.time(), requests=0, result={}))
+    calls = []
+    def send(token, method, payload):
+        calls.append(payload)
+        return {"ok": True, "result": True}
+    bot_commands.configure(engine, settings, send)
+    bot_commands.configure(engine, settings, send)
+    assert len(calls) == 1
+    assert {c["command"] for c in calls[0]["commands"]} >= {"subscription", "terms", "paysupport", "stop"}
+
+
 def test_exhausted_local_cap_does_not_claim_provider_package_is_empty(setup, monkeypatch):
     engine, _, _ = setup
     for name,value in [('HOURLY','4500'),('DAILY','90000'),('TOTAL','90000')]:

@@ -16,7 +16,7 @@ from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 from sqlalchemy.orm import Session
 
 from . import billing, billing_campaign
-from . import manual_payments, manual_payment_routes
+from . import manual_payments, manual_payment_routes, manual_checkout, manual_launch
 from .auth import telegram_user
 from .auto_ria import probe_once, probe_status
 from .auto_ria import RiaError
@@ -142,6 +142,7 @@ def create_app(settings: Settings, engine=None):
         Base.metadata.create_all(engine)
         billing_campaign.initialize(engine, settings)
         manual_payments.initialize(engine, settings)
+        manual_launch.initialize(engine, settings)
         initialize_budget(engine)
         monitor.initialize(engine)
         launch.initialize(engine, settings.live and settings.monitor_enabled)
@@ -580,6 +581,9 @@ def create_app(settings: Settings, engine=None):
                 raise ValueError()
         except (ValueError, KeyError, TypeError, AttributeError):
             raise HTTPException(422, "Invalid update") from None
+        checkout_reply = await asyncio.to_thread(manual_checkout.handle, engine, settings, event)
+        if checkout_reply is not None:
+            return checkout_reply
         review_reply = await asyncio.to_thread(manual_payment_routes.handle, engine, settings, event)
         if review_reply is not None:
             return review_reply

@@ -13,7 +13,7 @@
         (state.access_available?"Доступ активний.":"Для пошуку потрібен абонемент. Фільтри збережені."):
         "Пошук зараз безкоштовний.")+
         (until?" Строк доступу: "+until+" (Київ).":"")+
-        (state.sales_enabled?" "+state.amount_stars+" ⭐ за 30 днів. Без автоматичних списань.":" Продаж ще не відкрито.");
+        (state.sales_enabled?" "+(state.payment_method==='bank_manual'?state.amount_uah+" грн":state.amount_stars+" ⭐")+" за 30 днів. Без автоматичних списань.":" Продаж ще не відкрито.");
     } catch(_) {
       target.textContent="Не вдалося оновити статус. Актуальні умови та доступ: /subscription у боті.";
     } finally {busy=false;}

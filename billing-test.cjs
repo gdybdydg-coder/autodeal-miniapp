@@ -15,4 +15,7 @@ test('billing card refreshes after returning from bot and does not label free ac
  handlers.visibilitychange();await new Promise(r=>setImmediate(r));
  assert.match(target.textContent,/137 ⭐/);assert.match(target.textContent,/Фільтри збережені/);
  assert.doesNotMatch(target.textContent,/250 грн/);
+ response={sales_enabled:true,paid_access_required:true,access_available:false,payment_method:'bank_manual',amount_uah:250};
+ handlers.visibilitychange();await new Promise(r=>setImmediate(r));
+ assert.match(target.textContent,/250 грн за 30 днів/);assert.doesNotMatch(target.textContent,/⭐/);
 });
