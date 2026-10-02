@@ -400,14 +400,18 @@ def deliver_notice(engine, settings, request, now=None):
 
 
 async def run_notices(engine, settings, stop):
-    from . import telegram_setup, manual_launch
+    from . import telegram_setup, manual_launch, manual_repeat_notice, manual_repeat_preflight
     next_progress = 0
     while not stop.is_set():
         try:
             await asyncio.to_thread(deliver_notice, engine, settings, telegram_setup.call)
+            await asyncio.to_thread(manual_repeat_preflight.run_once, engine, settings, telegram_setup.call)
+            await asyncio.to_thread(manual_repeat_notice.initialize, engine, settings)
             outcome = await asyncio.to_thread(manual_launch.tick, engine, settings, telegram_setup.call)
+            repeat_outcome = await asyncio.to_thread(manual_repeat_notice.tick, engine, settings, telegram_setup.call)
             if time.monotonic() >= next_progress:
                 await asyncio.to_thread(manual_launch.log_progress, engine, outcome)
+                await asyncio.to_thread(manual_repeat_notice.log_progress, engine, repeat_outcome)
                 next_progress = time.monotonic() + 30
         except Exception:
             logging.getLogger(__name__).error("Manual notice delivery unavailable; durable state retained")

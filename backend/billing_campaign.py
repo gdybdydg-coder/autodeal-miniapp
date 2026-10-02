@@ -166,11 +166,15 @@ def high_priority(db, now):
                 or db.scalar(select(BillingOrder.id).where(BillingOrder.state == "pending", BillingOrder.created_at > now-15).limit(1)))
 
 
-def recover_uncertain(db, now):
-    db.execute(update(CampaignRecipient).where(CampaignRecipient.state == "sending", CampaignRecipient.attempted_at < now-LEASE)
-               .values(state="uncertain", error="restart_after_send_claim"))
-    db.execute(update(BillingNotice).where(BillingNotice.state == "sending", BillingNotice.attempted_at < now-LEASE)
-               .values(state="uncertain"))
+def recover_uncertain(db, now, campaign_id=None):
+    pending = update(CampaignRecipient).where(CampaignRecipient.state == "sending",
+                                              CampaignRecipient.attempted_at < now-LEASE)
+    if campaign_id is not None:
+        pending = pending.where(CampaignRecipient.campaign_id == campaign_id)
+    db.execute(pending.values(state="uncertain", error="restart_after_send_claim"))
+    if campaign_id is None:
+        db.execute(update(BillingNotice).where(BillingNotice.state == "sending", BillingNotice.attempted_at < now-LEASE)
+                   .values(state="uncertain"))
 
 
 def tick(engine, settings, request=None, now=None):
