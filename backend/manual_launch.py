@@ -137,7 +137,31 @@ def initialize(engine, settings, now=None):
                             "before_access": inventory(db, now)}
             for uid in ids:
                 db.add(CampaignRecipient(campaign_id=CAMPAIGN, user_id=uid, state="pending"))
-        # A pause, completed campaign or restart never creates a second launch.
+        elif (stage == "live" and row.status == "paused"
+              and os.getenv("MANUAL_PAYMENT_RESUME_PENDING") == CAMPAIGN
+              and not row.audience.get("pending_resume_at")):
+            # Explicit, one-use recovery of an entirely unattempted queue only.
+            # Never recreate recipients, reset send states, or extend the deadline.
+            errors = launch_errors(db, settings, now)
+            try:
+                manual_checkout.require_sales(db)
+            except m.ReviewError as exc:
+                errors.append(exc.code)
+            if not ctrl.enforce:
+                errors.append("access_enforcement_paused")
+            if now > row.deadline:
+                errors.append("broadcast_window_missed")
+            if db.scalar(select(CampaignRecipient.user_id).where(
+                    CampaignRecipient.campaign_id == CAMPAIGN,
+                    (CampaignRecipient.state != "pending") | (CampaignRecipient.attempted_at != 0)).limit(1)):
+                errors.append("queue_already_attempted")
+            if errors:
+                row.blockers = errors
+                LOG.info("Manual resume blocked %s", json.dumps(errors))
+            else:
+                row.status, row.blockers = "running", []
+                row.audience = {**row.audience, "pending_resume_at": now}
+        # Restarts never create a second launch or repeat a consumed recovery.
     with Session(engine) as db:
         LOG.info("Manual launch %s", json.dumps(snapshot(db, now), sort_keys=True))
 
@@ -169,10 +193,14 @@ def tick(engine, settings, request, now=None):
         try:
             manual_checkout.require_sales(db)
             checkout_ready = True
-        except m.ReviewError:
+        except m.ReviewError as exc:
             checkout_ready = False
+            row.blockers = [exc.code]
         if not ctrl.enforce or not checkout_ready:
             row.status = "paused"
+            if not ctrl.enforce:
+                row.blockers = ["access_enforcement_paused"]
+            LOG.info("Manual launch paused %s", json.dumps(row.blockers))
             return "paused"
         billing_campaign.recover_uncertain(db, now)
         if now > row.deadline:

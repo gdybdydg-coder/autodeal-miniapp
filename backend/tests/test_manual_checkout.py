@@ -208,3 +208,41 @@ def test_campaign_pauses_when_payment_details_disappear(bank,monkeypatch):
     launch.initialize(engine,settings,NOW+1)
     monkeypatch.delenv(c.subscription_preview.RECIPIENT_ENV)
     assert launch.tick(engine,settings,lambda *a,**kw:pytest.fail("checkout unavailable"),NOW+2)=="paused"
+
+
+@pytest.mark.parametrize("blocker", [None, "owner_pause", "attempted", "expired"])
+def test_explicit_resume_only_once_for_an_unattempted_ready_queue(bank, monkeypatch, blocker):
+    engine,settings,_=bank
+    settings=replace(settings,manual_payment_notices_enabled=True,monitor_enabled=True)
+    with Session(engine) as db,db.begin():
+        billing.control(db).sales=False
+        db.get(User,UID).ready=True
+    monkeypatch.setenv("MANUAL_PAYMENT_LAUNCH_STAGE","prepare")
+    launch.initialize(engine,settings,NOW)
+    ready_health(engine,monkeypatch)
+    monkeypatch.setenv("MANUAL_PAYMENT_LAUNCH_STAGE","live")
+    launch.initialize(engine,settings,NOW+1)
+    with Session(engine) as db,db.begin():
+        row=db.get(BillingCampaign,launch.CAMPAIGN)
+        row.status="paused"
+        original_deadline=row.deadline
+        if blocker=="owner_pause": billing.control(db).sales=False
+        if blocker=="expired": row.deadline=NOW
+        if blocker=="attempted":
+            item=db.get(CampaignRecipient,(launch.CAMPAIGN,UID))
+            item.state,item.attempted_at="uncertain",NOW+2
+    launch.initialize(engine,settings,NOW+3)
+    with Session(engine) as db:
+        assert db.get(BillingCampaign,launch.CAMPAIGN).status=="paused"
+    monkeypatch.setenv("MANUAL_PAYMENT_RESUME_PENDING",launch.CAMPAIGN)
+    launch.initialize(engine,settings,NOW+4)
+    with Session(engine) as db,db.begin():
+        row=db.get(BillingCampaign,launch.CAMPAIGN)
+        assert row.status==("running" if blocker is None else "paused")
+        if blocker is None:
+            assert row.deadline==original_deadline and row.audience["pending_resume_at"]==NOW+4
+            row.status="paused"
+    launch.initialize(engine,settings,NOW+5)
+    with Session(engine) as db:
+        assert db.get(BillingCampaign,launch.CAMPAIGN).status=="paused"
+    assert count(engine,CampaignRecipient)==1
