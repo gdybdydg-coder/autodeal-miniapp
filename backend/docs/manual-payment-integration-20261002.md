@@ -1,11 +1,53 @@
 # Manual payment integration — preparation, NOT a public launch
 
+## Verification update — 2026-10-02 07:09 UTC / 10:09 Kyiv
+
+Branch: `wip/manual-payment-verification-20261002`.
+Verified code commit: `316a3cae0ef9cf2fcc1c2ab72cfe66a2a84b7458`.
+Code tree: `12a86c4b5352b0a800d6e5bd1545b6da1cb2ffd5`.
+CI: https://github.com/gdybdydg-coder/autodeal-miniapp/actions/runs/36976966110
+
+The earlier local PostgreSQL/browser limitations below are now resolved by an
+isolated GitHub runner: PostgreSQL 16, a fresh schema for each test, synthetic
+identities/credits and Chromium with every browser request intercepted.
+No production credentials are used. The job has read-only repository permissions,
+a 15-minute deadline and no deploy/send step; its database is destroyed afterward.
+
+Final results: **118 backend tests passed**, **80 frontend tests passed**, and the
+390px browser flow passed: queue → owner review → final confirmation → stored
+result. No horizontal overflow was detected in the confirmation view. The one
+existing Starlette/httpx deprecation warning remains. These checks do not prove
+actual phone clipboard behavior, bank credit or production database migration.
+
+Added a real PostgreSQL/SQLite race check between manual confirmation and the
+existing owner access grant. A changed expiry invalidates a stale confirmation;
+neither path shortens access. Existing tests cover concurrent duplicate requests
+and confirmations, transaction rollback, bank-credit reuse, restart, renewal,
+authentication and notification uncertainty.
+
+Fixed stale queued notifications: when a request advances, older pending/retry
+notices become `superseded` instead of arriving after approval. They remain in
+the history, with a clear owner UI label. Already attempted or uncertain notices
+are retained for reconciliation, not hidden or blindly retried. In-flight sends
+cannot be recalled if a request changes after the send was claimed.
+
+Carried forward main's receiving-card copy change (`4c3df6d`) in this branch.
+This follow-up did not change production, grant access, activate sales, modify
+schedules or send customer messages. The owner-approved campaign text remains
+250 UAH / 30 days; it has not been sent.
+
+Still required before a real launch: resolve the platform/payment-method conflict,
+connect a permitted customer purchase flow, verify support/terms and transition
+rules, inventory promised existing access, and verify a private production backup
+and restore. No new Stars integration was added. Public bank request creation
+remains blocked; passing CI is not a paid-launch authorization or completion claim.
+
 Owner authorization received directly in chat on 2026-10-02. Agreed terms remain
 250 UAH / 30 days, bank transfer, owner personally verifies actual credit and
 explicitly grants access. No Stars integration, real payment, customer message,
 campaign, production database/configuration change or deployment in this work.
 
-## Production evidence
+## Earlier production evidence — before the card-copy release
 
 Production base: `43084b2b7e8551e4cabff3ee3eb2fb90142dc402`;
 Render live deploy: `dep-davcskad0e5s73fgb8n0`.
@@ -71,11 +113,11 @@ When deployed and explicitly enabled in a separately reviewed environment:
 
 Public request creation deliberately returns `public_bank_sales_blocked_by_platform_policy`.
 There is no production environment switch to bypass it. Isolated API tests override
-the policy function in memory, against synthetic SQLite only. No live customer can
+the policy function in memory, against synthetic SQLite and isolated PostgreSQL. No live customer can
 create a bank-payment request through this branch as delivered. Public client
 checkout/requisites are therefore NOT connected to the live Mini App.
 
-## Fresh verification
+## Earlier verification — superseded by the update above
 
 - Existing prototype: 121 tests passed under outbound TCP/DNS fence.
 - Full backend: 1086 passed (1062 existing + initial 24 new); after final regression
@@ -109,9 +151,9 @@ notices intentionally have no retry button. No secret or real receipt fixture us
    requires Stars for digital sales inside bots/Mini Apps. Manual review does not
    remove it. Do not masquerade as a donation/physical product or claim a website
    automatically provides an exception.
-2. Test on isolated PostgreSQL with synthetic data, including concurrent owner and
-   legacy grants, transaction rollback, unique constraints and restart. Execute
-   the prepared browser smoke and check Telegram on a phone.
+2. Isolated PostgreSQL and mocked browser checks are now complete, including
+   concurrent owner grants, rollback, unique constraints and restart. Actual
+   owner checks in Telegram on a phone remain outstanding.
 3. Verify real recipient/IBAN, support and terms from protected owner data. No
    recipient profile was verified or invented in this run.
 4. Produce owner-authorized aggregate inventory of existing paid/gift/trial/expired
