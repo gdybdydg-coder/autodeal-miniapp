@@ -1,0 +1,90 @@
+{
+  "kind": "synthetic_only",
+  "quality": {
+    "label_basis": "synthetic latent asking-market scenarios",
+    "strict": {
+      "tp": 40,
+      "fp": 0,
+      "tn": 50,
+      "fn": 0,
+      "unknown": 10
+    },
+    "brand_year_baseline": {
+      "tp": 50,
+      "fp": 50,
+      "tn": 0,
+      "fn": 0
+    },
+    "unknown_positive": 10,
+    "real_accuracy_measured": false,
+    "independent_real_control_size": 0
+  },
+  "runs": [
+    {
+      "users": 100,
+      "input_cards": 240,
+      "collect": {
+        "status": "complete",
+        "pages": 12,
+        "rows": 240,
+        "reason": null
+      },
+      "queue": {
+        "queued": 18000,
+        "filtered": 6000,
+        "uncertain": 0,
+        "denied": 0,
+        "overflow": 0
+      },
+      "fake_delivery": {
+        "accepted": 18000,
+        "denied": 0,
+        "uncertain": 0
+      },
+      "restart_requeued": 0,
+      "seconds": {
+        "normalize_store": 0.030204260001482908,
+        "valuation_filter_queue": 0.6794598259948543,
+        "fake_delivery": 3.2042411389993504,
+        "total": 3.9139052249956876
+      },
+      "peak_python_bytes": 3656489,
+      "sqlite_bytes": 1130496,
+      "live_requests": 0,
+      "paid_requests": 0
+    },
+    {
+      "users": 200,
+      "input_cards": 240,
+      "collect": {
+        "status": "complete",
+        "pages": 12,
+        "rows": 240,
+        "reason": null
+      },
+      "queue": {
+        "queued": 36000,
+        "filtered": 12000,
+        "uncertain": 0,
+        "denied": 0,
+        "overflow": 0
+      },
+      "fake_delivery": {
+        "accepted": 36000,
+        "denied": 0,
+        "uncertain": 0
+      },
+      "restart_requeued": 0,
+      "seconds": {
+        "normalize_store": 0.02640594099648297,
+        "valuation_filter_queue": 1.2201544710042072,
+        "fake_delivery": 6.045097594993422,
+        "total": 7.291658006994112
+      },
+      "peak_python_bytes": 7148737,
+      "sqlite_bytes": 2052096,
+      "live_requests": 0,
+      "paid_requests": 0
+    }
+  ]
+}

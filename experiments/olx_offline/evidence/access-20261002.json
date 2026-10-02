@@ -1,0 +1,13 @@
+{
+  "checked_date": "2026-10-02", "timezone": "Europe/Kyiv",
+  "official_api": {"status": "own_ads_only", "url": "https://developer.olx.ua/ua/articles/faq", "question": 6},
+  "documentation_shell": "https://developer.olx.ua/api/doc",
+  "public_search": {"url": "https://www.olx.ua/uk/transport/legkovye-avtomobili/", "web_retrieval": "timeout", "direct_http_attempts": 1, "direct_http_result": "environment Operation not permitted before response", "timeout_seconds": 20, "byte_cap": 2097152},
+  "indexed_sample": {"url": "https://www.olx.ua/uk/transport/legkovye-avtomobili/lvov/q-%D0%B1%D1%83-%D0%B0%D0%B2%D1%82%D0%BE/", "age_label": "3 weeks", "cards": 3, "sort": "recommended", "detail_attempts": 1, "detail_result": "410 Gone", "is_live_feed_validation": false},
+  "general_terms": {"url": "https://help.olx.ua/olxuahelp/s/article/%D0%BF%D1%80%D0%B0%D0%B2%D0%B8%D0%BB%D0%B0-%D1%81%D0%B5%D1%80%D0%B2%D1%96%D1%81%D1%83-olxua-V1", "result": "CSS Error shell; current automation/republication permission unresolved"},
+  "api_terms": "https://developer.olx.ua/doc/regulations.uk.pdf?v49=",
+  "verified_live_listings": 0, "independent_live_control_sample": 0,
+  "paid_api_requests": 0, "telegram_requests": 0,
+  "commercial_feed_cost": null, "end_to_end_free_data_path_verified": false,
+  "decision": "no live collector enabled; request OLX-approved data contract"
+}

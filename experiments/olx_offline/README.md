@@ -93,3 +93,10 @@ cannot be inferred without a permitted source and measured rate limits.
 Journal: access research completed -> needed official API search unavailable ->
 offline normalization/store/filter/recovery prototype completed -> 11 tests passed.
 Acceptance now: independently reviewable offline prototype, not live OLX support.
+
+## Продовження 2026-10-02
+
+Новий ізольований pipeline та результати: [RESEARCH-20261002.md](RESEARCH-20261002.md).
+Старі файли вище — історичний прототип. Живого OLX-адаптера немає.
+Запуск усіх тестів: `python -m unittest discover -s experiments/olx_offline -v`.
+Повний offline benchmark: `python -m experiments.olx_offline.scenario`.
