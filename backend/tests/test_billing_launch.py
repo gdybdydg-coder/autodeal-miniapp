@@ -431,3 +431,35 @@ def test_post_launch_service_failure_disables_new_restrictions_preserves_paid(se
     with Session(engine) as db:
         assert not b.control(db).enforce and not b.control(db).sales
         assert b.expiry(db,222)==c.WHEN+300
+
+
+@pytest.mark.parametrize("field,maximum_age,blocker", [
+    ("heartbeat", 180, "monitor_stale"),
+    ("accepted_at", 86400, "car_delivery_unverified"),
+    ("last_success_at", 7200, "discovery_stale"),
+])
+@pytest.mark.parametrize("offset,expected_blocked", [
+    (0.001, False), (5, False), (5.001, True),
+    ("maximum_age", False), ("stale", True),
+])
+def test_manual_readiness_allows_only_bounded_concurrent_timestamp_skew(
+        setup, field, maximum_age, blocker, offset, expected_blocked):
+    from backend import manual_launch
+    engine, settings = ready_campaign(setup, now=NOW)
+    settings = replace(settings, ria_recent_publications_enabled=True)
+    stamp = (NOW-maximum_age if offset == "maximum_age" else
+             NOW-maximum_age-1 if offset == "stale" else NOW+offset)
+    with Session(engine) as db, db.begin():
+        probe = SourceProbe(id="recent-publications-v1", status="running", checked_at=NOW,
+                            requests=0, result={"last_success_at": NOW})
+        db.add(probe)
+        if field == "heartbeat":
+            db.get(MonitorControl, "pilot").heartbeat = stamp
+        elif field == "accepted_at":
+            db.scalar(select(DeliveryTiming)).accepted_at = stamp
+        else:
+            probe.result = {"last_success_at": stamp}
+    with Session(engine) as db:
+        errors = manual_launch.launch_errors(db, settings, NOW)
+        assert (blocker in errors) is expected_blocked
+        assert not (set(errors) & {"monitor_stale", "car_delivery_unverified", "discovery_stale"} - {blocker})

@@ -12,6 +12,9 @@ from .billing_models import BillingCampaign, CampaignRecipient, MarketingConsent
 from .models import User, StarsTestOrder, MonitorControl, SourceProbe, Delivery, DeliveryTiming
 
 CAMPAIGN = "manual-card-launch-20261002-v1"
+# A monitor/delivery transaction can commit just after the caller captured now,
+# including while it waited for the billing lock. Do not treat that as stale.
+READINESS_FUTURE_SKEW = 5
 COPY = ("🚘 <b>Твоє наступне авто — у повідомленні AutoDeal</b>\n\n"
         "AutoDeal шукає відповідні авто за твоїми фільтрами, допомагає помічати вигідні пропозиції "
         "та надсилає сповіщення в Telegram.\n\n"
@@ -76,7 +79,7 @@ def launch_errors(db, settings, now):
     if not settings.live or not settings.monitor_enabled:
         errors.append("delivery_disabled")
     heartbeat = db.get(MonitorControl, "pilot")
-    if not heartbeat or not 0 <= now-heartbeat.heartbeat <= 180:
+    if not heartbeat or not -READINESS_FUTURE_SKEW <= now-heartbeat.heartbeat <= 180:
         errors.append("monitor_stale")
     # Use the authoritative existing probe ID, not a guessed deployment name.
     from . import telegram_setup
@@ -85,12 +88,12 @@ def launch_errors(db, settings, now):
         errors.append("webhook_unavailable")
     last = db.scalar(select(func.max(DeliveryTiming.accepted_at)).join(
         Delivery, Delivery.id == DeliveryTiming.delivery_id).where(Delivery.state == "sent"))
-    if not last or not 0 <= now-last <= 86400:
+    if not last or not -READINESS_FUTURE_SKEW <= now-last <= 86400:
         errors.append("car_delivery_unverified")
     if settings.ria_recent_publications_enabled:
         probe = db.get(SourceProbe, "recent-publications-v1")
         success = (probe.result.get("last_success_at") or 0) if probe else 0
-        if not 0 <= now-success <= 7200:
+        if not -READINESS_FUTURE_SKEW <= now-success <= 7200:
             errors.append("discovery_stale")
     if db.scalar(select(BillingOrder.id).where(BillingOrder.state == "pending").limit(1)):
         errors.append("existing_invoice_pending")

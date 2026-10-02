@@ -19,7 +19,7 @@ from .models import User
 CAMPAIGN = "manual-card-reminder-20261002-v1"
 ARM_ENV = "MANUAL_PAYMENT_REPEAT_NOTICE"
 RESUME_ENV = "MANUAL_PAYMENT_REPEAT_RESUME_PENDING"
-RESUME_TOKEN = CAMPAIGN+":pending-resume-v1"
+RESUME_TOKEN = CAMPAIGN+":pending-resume-v2"
 COPY = ("🔒 <b>AutoDeal: оголошення лише за підпискою</b>\n\n"
         "Без активної оплаченої підписки нові оголошення не надходитимуть.\n\n"
         "💳 <b>250 грн / 30 днів</b>\n"
@@ -97,7 +97,8 @@ def initialize(engine, settings, now=None):
             # Presence is the durable one-shot token, including a failed or
             # paused launch. A restart never rebuilds its audience or re-arms it.
             if (row.status == "paused" and os.getenv(RESUME_ENV) == RESUME_TOKEN
-                    and row.audience.get("resume_pending_token") != RESUME_TOKEN):
+                    and row.audience.get("resume_pending_token") != RESUME_TOKEN
+                    and RESUME_TOKEN not in row.audience.get("resume_pending_tokens", [])):
                 _resume_pending(db, row, settings, now)
             return row.status
         errors = readiness(db, settings, now)
@@ -145,7 +146,13 @@ def _resume_pending(db, row, settings, now):
         return
     # No recipient rows are written, even those with known failures or unknown
     # outcomes. The original audience selection and deadline stay unchanged.
-    row.audience = {**row.audience, "resume_pending_token": RESUME_TOKEN}
+    consumed = list(row.audience.get("resume_pending_tokens", []))
+    previous = row.audience.get("resume_pending_token")
+    if previous and previous not in consumed:
+        consumed.append(previous)
+    consumed.append(RESUME_TOKEN)
+    row.audience = {**row.audience, "resume_pending_token": RESUME_TOKEN,
+                    "resume_pending_tokens": consumed}
     row.status, row.blockers = "running", []
     _log(db, row, "resumed_unattempted_pending")
 

@@ -249,7 +249,8 @@ def test_explicit_resume_once_preserves_all_terminal_recipients_and_deadline(arm
     with Session(engine) as db, db.begin():
         row = db.get(BillingCampaign, reminder.CAMPAIGN)
         assert row.deadline == deadline
-        assert row.audience == {**audience, "resume_pending_token": reminder.RESUME_TOKEN}
+        assert row.audience == {**audience, "resume_pending_token": reminder.RESUME_TOKEN,
+                               "resume_pending_tokens": [reminder.RESUME_TOKEN]}
         assert db.get(CampaignRecipient, (reminder.CAMPAIGN, UID)).message_id == 123
         for uid, state in ((333, "failed"), (444, "uncertain")):
             item = db.get(CampaignRecipient, (reminder.CAMPAIGN, uid))
@@ -284,3 +285,27 @@ def test_resume_requires_all_gates_and_no_previous_attempts_in_pending(armed, mo
         assert "resume_pending_token" not in db.get(BillingCampaign, reminder.CAMPAIGN).audience
         item = db.get(CampaignRecipient, (reminder.CAMPAIGN, UID))
         assert (item.state, item.attempted_at) == before
+
+
+def test_second_explicit_resume_requires_new_token_and_preserves_consumed_history(armed, monkeypatch):
+    engine, settings, _ = armed
+    reminder.initialize(engine, settings, NOW)
+    previous = reminder.CAMPAIGN+":pending-resume-v1"
+    with Session(engine) as db, db.begin():
+        row = db.get(BillingCampaign, reminder.CAMPAIGN)
+        row.status, row.blockers = "paused", ["monitor_stale"]
+        row.audience = {**row.audience, "resume_pending_token": previous}
+        deadline = row.deadline
+    monkeypatch.setenv(reminder.RESUME_ENV, previous)
+    assert reminder.initialize(engine, settings, NOW+1) == "paused"
+    monkeypatch.setenv(reminder.RESUME_ENV, reminder.RESUME_TOKEN)
+    assert reminder.initialize(engine, settings, NOW+2) == "running"
+    with Session(engine) as db, db.begin():
+        row = db.get(BillingCampaign, reminder.CAMPAIGN)
+        assert row.audience["resume_pending_tokens"] == [previous, reminder.RESUME_TOKEN]
+        assert row.audience["resume_pending_token"] == reminder.RESUME_TOKEN
+        assert row.deadline == deadline
+        item = db.get(CampaignRecipient, (reminder.CAMPAIGN, UID))
+        assert (item.state, item.attempted_at) == ("pending", 0)
+        row.status = "paused"
+    assert reminder.initialize(engine, settings, NOW+3) == "paused"
