@@ -135,6 +135,23 @@ def initialize(engine, settings, now=None):
         LOG.info("Manual launch %s", json.dumps(snapshot(db, now), sort_keys=True))
 
 
+def log_progress(engine, outcome):
+    """Aggregate-only diagnostics: no recipient identities or message bodies."""
+    with Session(engine) as db:
+        row = db.get(BillingCampaign, CAMPAIGN)
+        if row is None or row.status != "running":
+            return
+        counts = dict(db.execute(select(CampaignRecipient.state, func.count()).where(
+            CampaignRecipient.campaign_id == CAMPAIGN).group_by(CampaignRecipient.state)).all())
+        from .models import BotReply
+        priority = {}
+        for label, model in (("car_deliveries", Delivery), ("bot_replies", BotReply)):
+            priority[label] = db.scalar(select(func.count()).select_from(model).where(
+                model.state.in_(("pending", "sending")))) or 0
+        LOG.info("Manual launch progress %s", json.dumps({"status": row.status,
+            "last_tick": outcome, "recipient_states": counts, "priority_work": priority}, sort_keys=True))
+
+
 def tick(engine, settings, request, now=None):
     now = time.time() if now is None else now
     with m.mutation(engine, settings) as db:

@@ -1,4 +1,4 @@
-"""Owner-reviewed payments. Public creation stays blocked by platform policy.
+"""Owner-reviewed payments. Public creation requires explicit sales configuration.
 
 All mutations serialize on the SAME BillingControl row as existing access grants.
 Request, bank-credit uniqueness, entitlement, audit and notices commit together.
@@ -394,10 +394,14 @@ def deliver_notice(engine, settings, request, now=None):
 
 async def run_notices(engine, settings, stop):
     from . import telegram_setup, manual_launch
+    next_progress = 0
     while not stop.is_set():
         try:
             await asyncio.to_thread(deliver_notice, engine, settings, telegram_setup.call)
-            await asyncio.to_thread(manual_launch.tick, engine, settings, telegram_setup.call)
+            outcome = await asyncio.to_thread(manual_launch.tick, engine, settings, telegram_setup.call)
+            if time.monotonic() >= next_progress:
+                await asyncio.to_thread(manual_launch.log_progress, engine, outcome)
+                next_progress = time.monotonic() + 30
         except Exception:
             logging.getLogger(__name__).error("Manual notice delivery unavailable; durable state retained")
         try:
