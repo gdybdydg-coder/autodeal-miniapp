@@ -55,7 +55,9 @@ def test_bot_checkout_persists_terms_copy_controls_and_waits_for_owner(bank):
     assert "250 грн / 30 днів" in intro["text"]
     assert count(engine,PaymentRequest)==0
     terms=callback(bank,c.PREFIX+"terms").json()
-    assert "Натискання «Я оплатив»" in terms["text"]
+    assert "Повні умови" not in terms["text"]
+    full=callback(bank,c.PREFIX+"full_terms",update=104).json()
+    assert "Натискання «Я оплатив»" in full["text"]
     details=callback(bank,c.PREFIX+"accept:"+c.TERMS_VERSION).json()
     assert "ФОП Тест &lt;&amp;&gt;" in details["text"]
     assert details["text"].index("Рахунок · IBAN")<details["text"].index("Номер картки")

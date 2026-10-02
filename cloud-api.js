@@ -14,7 +14,7 @@
           ...(body?{body:JSON.stringify(body)}:{})
         });
         if(!response.ok) {
-          if(response.status===402) throw Error("Для пошуку потрібен абонемент. Відкрий розділ «Абонемент» у налаштуваннях або /subscription у боті. Фільтри збережені.");
+          if(response.status===402) throw Error("Підключи доступ у налаштуваннях або через /subscription у боті. Фільтри збережені.");
           if((path.startsWith("/api/cars/")||path.startsWith("/api/catalog")) && response.status!==401) {
             const reasons={unsupported_filter:"AUTO.RIA не підтвердила один із фільтрів. Зміни вибір: фільтр не буде проігноровано.",
               full_scan_disabled:"AUTODeal переходить на сповіщення про нові вигідні авто. Онови застосунок і збережи фільтри як підписку.",

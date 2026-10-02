@@ -91,69 +91,89 @@ def response(uid, sections, buttons):
 
 def overview(engine, settings, uid, now):
     data = status(engine, settings, uid)
-    lines = ["🚘 <b>AutoDeal · Абонемент</b>", "💳 <b>250 грн / 30 днів</b>"]
     until = data["expires_at"]
+    lines = ["🚘 <b>AutoDeal</b>"]
     if until > now:
         lines.append("✅ Доступ до <b>"+billing.date_text(until)+"</b> (Київ).")
     elif data["paid_access_required"]:
-        lines.append("Для пошуку та сповіщень потрібен абонемент. Твої фільтри збережені.")
+        lines.append("🔒 <b>Доступ завершено</b>" if until else "🔒 <b>Підключи доступ</b>")
+        lines.append("Щоб отримувати авто за своїми фільтрами, підключи підписку.")
     else:
-        lines.append("Зараз пошук доступний безкоштовно.")
+        lines.append("Пошук зараз безкоштовний.")
+    lines.append("💳 <b>250 грн / 30 днів</b>")
     buttons = []
     row = data["request"]
-    if row:
-        lines.append("📋 Заявка <b>"+row["code"]+"</b> · "+LABELS[row["state"]])
-        if row["owner_note"]:
-            lines.append(escape(row["owner_note"]))
-        buttons.append([{"text": "📋 Статус заявки", "callback_data": PREFIX+"status:"+row["code"]}])
-    if data["sales_enabled"] and (not row or row["state"] in ("approved", "rejected")):
-        buttons.append([{"text": "Продовжити на 30 днів" if until > now else "Оформити підписку",
-                         "callback_data": PREFIX+"terms"}])
-    elif data["sales_enabled"] and row and row["state"] in ("created", "clarification"):
-        buttons.append([{"text": "🏦 Реквізити заявки", "callback_data": PREFIX+"details:"+row["code"]}])
+    if row and row["state"] not in ("approved", "rejected"):
+        if row["state"] == "review":
+            lines.append("🕓 Оплата на перевірці. Повторно не сплачуй.")
+            buttons.append([{"text": "🔄 Перевірити оплату", "callback_data": PREFIX+"status:"+row["code"]}])
+        elif data["sales_enabled"]:
+            buttons.append([{"text": "💳 Перейти до оплати", "callback_data": PREFIX+"details:"+row["code"]}])
+        else:
+            buttons.append([{"text": "Статус оплати", "callback_data": PREFIX+"status:"+row["code"]}])
+    elif data["sales_enabled"]:
+        lines.append("Доступ після перевірки оплати. Без автосписань.\nНатискаючи кнопку, ти приймаєш умови підписки.")
+        buttons.append([{"text": "💳 Продовжити за 250 грн" if until > now or until > 0 else "💳 Підключити за 250 грн",
+                         "callback_data": PREFIX+"accept:"+TERMS_VERSION}])
     if not data["sales_enabled"]:
-        lines.append("Оформлення нових оплат тимчасово закрите. Статус і підтримка доступні.")
-    lines.append("Переказ перевіряє власник. Автоматичних списань немає.\nДопомога: /paysupport та опис питання.")
+        lines.append("Нові оплати тимчасово недоступні.")
+    buttons.append([{"text": "Умови", "callback_data": PREFIX+"terms"}])
     return response(uid, lines, buttons)
 
 
-def terms(engine, settings, uid):
+def terms(engine, settings, uid, full=False):
     data = status(engine, settings, uid)
-    lines = ["📄 <b>Умови · 250 грн / 30 днів</b>", escape(TERMS)]
+    lines = ["🚘 <b>Підписка AutoDeal</b>", "💳 <b>250 грн / 30 днів</b>"]
+    if full:
+        lines = ["📄 <b>Повні умови</b>", escape(TERMS)]
+    else:
+        lines.append("Авто за твоїми фільтрами та сповіщення в Telegram.")
+        lines.append("Доступ на 30 днів після перевірки оплати власником.\nПри продовженні залишок днів зберігається. Без автосписань.")
+        lines.append("Оплата й повернення: /paysupport")
     buttons = []
     if data["sales_enabled"]:
-        buttons.append([{"text": "Погоджуюсь · отримати реквізити", "callback_data": PREFIX+"accept:"+TERMS_VERSION}])
+        lines.append("Натискаючи кнопку, ти приймаєш умови підписки.")
+        buttons.append([{"text": "💳 Перейти до оплати · 250 грн", "callback_data": PREFIX+"accept:"+TERMS_VERSION}])
     else:
-        lines.append("Оформлення нових оплат зараз закрите.")
-    buttons.append([{"text": "← До абонемента", "callback_data": PREFIX+"view"}])
+        lines.append("Нові оплати тимчасово недоступні.")
+    if not full:
+        buttons.append([{"text": "Повні умови", "callback_data": PREFIX+"full_terms"}])
+    buttons.append([{"text": "← Назад", "callback_data": PREFIX+"view"}])
     return response(uid, lines, buttons)
 
 
 def request_card(engine, settings, uid, code):
     row = m.get_status(engine, settings, uid, code)
-    lines = ["📋 <b>Заявка "+row["code"]+"</b>", "💳 <b>250 грн / 30 днів</b>",
-             "<b>"+LABELS[row["state"]]+"</b>"]
+    lines = ["🚘 <b>AutoDeal · Оплата</b>"]
     buttons = []
-    if row["owner_note"]:
-        lines.append(escape(row["owner_note"]))
     if row["state"] == "approved":
         lines.append("✅ Доступ до <b>"+billing.date_text(row["expires_at"])+"</b> (Київ).")
+    elif row["state"] == "review":
+        lines.append("🕓 <b>Очікує перевірки власником</b>")
+        lines.append("Після підтвердження відкриємо доступ на 30 днів. Повторно не сплачуй.")
     elif row["state"] == "rejected":
-        lines.append("Відхилення не означає повернення коштів. Уточнення: /paysupport.")
+        lines.append("Оплату не підтверджено. Допомога: /paysupport")
     else:
-        if row["state"] == "review":
-            lines.append("🕓 Власник перевірить зарахування та особисто відкриє доступ. Повторно не сплачуй.")
-        else:
-            buttons.append([{"text": "🏦 Реквізити", "callback_data": PREFIX+"details:"+code}])
-            buttons.append([{"text": "✅ Я оплатив", "callback_data": PREFIX+"paid:"+code}])
-        lines.append("📎 Квитанцію можна додати пізніше: надішли фото або PDF з підписом\n"
-                     "<code>/payment_receipt "+code+"</code>\nПаролі, CVV і коди банку не надсилай.")
-    buttons.append([{"text": "🔄 Оновити статус", "callback_data": PREFIX+"status:"+code}])
-    buttons.append([{"text": "← До абонемента", "callback_data": PREFIX+"view"}])
+        lines.append("<b>"+LABELS[row["state"]]+"</b>")
+        buttons.append([{"text": "💳 Перейти до оплати", "callback_data": PREFIX+"details:"+code}])
+        buttons.append([{"text": "✅ Я оплатив", "callback_data": PREFIX+"paid:"+code}])
+    if row["owner_note"]:
+        lines.append(escape(row["owner_note"]))
+    if row["state"] in ("created", "review", "clarification"):
+        buttons.append([{"text": "📎 Додати квитанцію", "callback_data": PREFIX+"receipt:"+code}])
+        buttons.append([{"text": "🔄 Перевірити оплату", "callback_data": PREFIX+"status:"+code}])
+    buttons.append([{"text": "← Назад", "callback_data": PREFIX+"view"}])
     return response(uid, lines, buttons)
 
 
-def details(engine, settings, uid, code):
+def receipt_help(engine, settings, uid, code):
+    m.get_status(engine, settings, uid, code)
+    return response(uid, ["📎 <b>Квитанція</b>",
+        "Надішли фото або PDF з підписом:\n<code>/payment_receipt "+escape(code)+"</code>"],
+        [[{"text": "← Назад", "callback_data": PREFIX+"status:"+code}]])
+
+
+def details(engine, settings, uid, code, more=False):
     row = m.get_status(engine, settings, uid, code)
     if row["state"] not in ("created", "clarification"):
         return request_card(engine, settings, uid, code)
@@ -161,22 +181,24 @@ def details(engine, settings, uid, code):
     profile = data["recipient"]
     iban, card = profile["iban"], profile.get("card_number")
     grouped = " ".join(iban[i:i+4] for i in range(0, len(iban), 4))
-    lines = ["🏦 <b>Оплата AutoDeal</b>", "💳 <b>250 грн / 30 днів</b>",
-             "📋 Заявка <b>"+code+"</b>", "👤 <b>Отримувач</b>\n"+escape(profile["recipient_name"]),
-             "💳 <b>Рахунок · IBAN</b>\n<code>"+grouped+"</code>"]
-    buttons = [[{"text": "📋 Скопіювати IBAN", "copy_text": {"text": iban}}]]
+    lines = ["🚘 <b>AutoDeal · Оплата доступу</b>",
+             "💎 Тариф: 30 днів\n💳 <b>До сплати: 250 грн</b>",
+             "👤 Отримувач: "+escape(profile["recipient_name"]),
+             "<b>Рахунок · IBAN</b>\n<code>"+grouped+"</code>"]
+    buttons = [[{"text": "Скопіювати IBAN", "copy_text": {"text": iban}}]]
     if card:
         lines.append("💳 <b>Номер картки</b>\n<code>"+" ".join(card[i:i+4] for i in range(0,16,4))+"</code>")
-        buttons.append([{"text": "📋 Скопіювати номер картки", "copy_text": {"text": card}}])
-    purpose = "Оплата абонемента AutoDeal, заявка "+code
-    lines.extend(["🔢 <b>Код отримувача</b>\n<code>"+profile["recipient_code"]+"</code>",
-                  "🏦 <b>Банк</b>\n"+escape(profile["bank_name"]),
-                  "✍️ <b>Призначення платежу</b>\n<code>"+purpose+"</code>",
-                  "Переказуй лише один раз. Після переказу натисни «Я оплатив». "
-                  "Доступ відкриє власник після особистої перевірки зарахування."])
-    buttons.extend([[{"text": "📋 Скопіювати призначення", "copy_text": {"text": purpose}}],
-                    [{"text": "✅ Я оплатив", "callback_data": PREFIX+"paid:"+code}],
-                    [{"text": "📋 Статус заявки", "callback_data": PREFIX+"status:"+code}]])
+        buttons.append([{"text": "Скопіювати картку", "copy_text": {"text": card}}])
+    if more:
+        purpose = "Оплата абонемента AutoDeal, заявка "+code
+        lines.extend(["Код отримувача: <code>"+profile["recipient_code"]+"</code>",
+                      "Банк: "+escape(profile["bank_name"]),
+                      "Призначення: <code>"+purpose+"</code>"])
+        buttons.append([{"text": "Скопіювати призначення", "copy_text": {"text": purpose}}])
+    lines.append("Після переказу натисни «✅ Я оплатив».\nВласник перевірить оплату й відкриє доступ на 30 днів.")
+    buttons.append([{"text": "✅ Я оплатив", "callback_data": PREFIX+"paid:"+code}])
+    buttons.append([{"text": "← Назад" if more else "Додаткові реквізити",
+                     "callback_data": PREFIX+("details:" if more else "bank:")+code}])
     return response(uid, lines, buttons)
 
 
@@ -231,6 +253,12 @@ def handle(engine, settings, event, request=None, now=None):
         verb, _, value = part.partition(":")
         if command == "/terms" or verb == "terms" or old_terms:
             return terms(engine, settings, uid)
+        if verb == "full_terms":
+            return terms(engine, settings, uid, full=True)
+        if verb == "receipt":
+            return receipt_help(engine, settings, uid, value)
+        if verb == "bank":
+            return details(engine, settings, uid, value, more=True)
         if verb == "accept":
             row = create(engine, settings, uid, now, value,
                 name=str(sender.get("first_name") or "Клієнт")[:100], username=sender.get("username"))
