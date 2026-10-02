@@ -207,3 +207,80 @@ def test_explicit_rate_limit_waits_and_then_retries(armed):
     calls = []
     assert reminder.tick(engine, settings, accepted(calls), NOW+12) == "sent"
     assert len(calls) == 1
+
+
+def test_paused_diagnostics_report_fixed_reasons_without_changing_state(armed, monkeypatch):
+    engine, settings, _ = armed
+    reminder.initialize(engine, settings, NOW)
+    with Session(engine) as db, db.begin():
+        row = db.get(BillingCampaign, reminder.CAMPAIGN)
+        row.status = "paused"
+        row.blockers = ["monitor_stale", "PRIVATE-FIXTURE-MUST-NOT-BE-LOGGED"]
+    captured = []
+    monkeypatch.setattr(reminder.LOG, "info", lambda fmt, *args: captured.append(fmt % args))
+    reminder.log_progress(engine, "PRIVATE-OUTCOME", settings, NOW+1)
+    assert len(captured) == 1
+    assert '"blockers": ["monitor_stale", "unrecognized_blocker"]' in captured[0]
+    assert '"current_blockers": []' in captured[0]
+    assert "PRIVATE" not in captured[0]
+    assert record(engine)[0] == "paused"
+    assert record(engine)[3] == {"pending": 1}
+
+
+def test_explicit_resume_once_preserves_all_terminal_recipients_and_deadline(armed, monkeypatch):
+    engine, settings, _ = armed
+    with Session(engine) as db, db.begin():
+        db.get(User, OTHER).ready = True
+    reminder.initialize(engine, settings, NOW)
+    with Session(engine) as db, db.begin():
+        row = db.get(BillingCampaign, reminder.CAMPAIGN)
+        row.status, row.blockers = "paused", ["monitor_stale"]
+        deadline, audience = row.deadline, dict(row.audience)
+        item = db.get(CampaignRecipient, (reminder.CAMPAIGN, UID))
+        item.state, item.attempted_at, item.message_id = "sent", NOW+1, 123
+        for uid, state in ((333, "failed"), (444, "uncertain")):
+            db.add(CampaignRecipient(campaign_id=reminder.CAMPAIGN, user_id=uid,
+                state=state, attempted_at=NOW+1, error="FIXTURE"))
+    assert reminder.initialize(engine, settings, NOW+2) == "paused"
+    monkeypatch.setenv(reminder.RESUME_ENV, "true")
+    assert reminder.initialize(engine, settings, NOW+2) == "paused"
+    monkeypatch.setenv(reminder.RESUME_ENV, reminder.RESUME_TOKEN)
+    assert reminder.initialize(engine, settings, NOW+2) == "running"
+    with Session(engine) as db, db.begin():
+        row = db.get(BillingCampaign, reminder.CAMPAIGN)
+        assert row.deadline == deadline
+        assert row.audience == {**audience, "resume_pending_token": reminder.RESUME_TOKEN}
+        assert db.get(CampaignRecipient, (reminder.CAMPAIGN, UID)).message_id == 123
+        for uid, state in ((333, "failed"), (444, "uncertain")):
+            item = db.get(CampaignRecipient, (reminder.CAMPAIGN, uid))
+            assert (item.state, item.attempted_at, item.error) == (state, NOW+1, "FIXTURE")
+        assert db.get(CampaignRecipient, (reminder.CAMPAIGN, OTHER)).attempted_at == 0
+        row.status = "paused"
+    assert reminder.initialize(engine, settings, NOW+3) == "paused"
+
+
+@pytest.mark.parametrize("blocker", ["expired", "before_window", "sales", "owner_proof",
+    "retry", "sending", "pending_attempted", "only_uncertain"])
+def test_resume_requires_all_gates_and_no_previous_attempts_in_pending(armed, monkeypatch, blocker):
+    engine, settings, _ = armed
+    reminder.initialize(engine, settings, NOW)
+    monkeypatch.setenv(reminder.RESUME_ENV, reminder.RESUME_TOKEN)
+    with Session(engine) as db, db.begin():
+        row = db.get(BillingCampaign, reminder.CAMPAIGN)
+        row.status = "paused"
+        item = db.get(CampaignRecipient, (reminder.CAMPAIGN, UID))
+        if blocker == "expired": row.deadline = NOW
+        elif blocker == "before_window": row.not_before = NOW+10
+        elif blocker == "sales": billing.control(db).sales = False
+        elif blocker in ("retry", "sending"): item.state = blocker
+        elif blocker == "pending_attempted": item.attempted_at = NOW
+        elif blocker == "only_uncertain": item.state, item.attempted_at = "uncertain", NOW
+        before = (item.state, item.attempted_at)
+    if blocker == "owner_proof":
+        monkeypatch.setattr(reminder.manual_repeat_preflight, "ready", lambda db: False)
+    assert reminder.initialize(engine, settings, NOW+1) == "paused"
+    assert reminder.tick(engine, settings, lambda *a, **k: pytest.fail("blocked resume"), NOW+1) == "inactive"
+    with Session(engine) as db:
+        assert "resume_pending_token" not in db.get(BillingCampaign, reminder.CAMPAIGN).audience
+        item = db.get(CampaignRecipient, (reminder.CAMPAIGN, UID))
+        assert (item.state, item.attempted_at) == before
