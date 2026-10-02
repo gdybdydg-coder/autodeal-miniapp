@@ -73,7 +73,16 @@ def test_bot_checkout_persists_terms_copy_controls_and_waits_for_owner(bank):
     assert "Повторно не сплачуй" in result["text"]
     callback(bank,c.PREFIX+"paid:"+code,update=103)
     assert count(engine,PaymentNotice)==1 and count(engine,BankCredit)==0
-    assert "4242" not in callback(bank,c.PREFIX+"details:"+code).json()["text"]
+    review_details=callback(bank,c.PREFIX+"details:"+code).json()
+    assert "4242" in review_details["text"] and "повторно не сплачуй" in review_details["text"]
+    assert c.PREFIX+"details:"+code in json.dumps(result)
+    assert client.get("/api/manual-payments/"+code+"/requisites",headers=headers()).status_code==200
+    assert client.get("/api/manual-payments/"+code+"/requisites",headers=headers(OTHER)).status_code==404
+    with Session(engine) as db, db.begin():
+        billing.control(db).enforce=True
+        assert not billing.allowed(db,UID)
+        assert db.get(PaymentRequest,code).state=="review"
+    assert count(engine,PaymentRequest)==1 and count(engine,BankCredit)==0
     row=m.get_status(engine,settings,UID,code)
     proof=preview(bank,row,now=time.time())
     m.confirm(engine,settings,ADMIN,proof["confirmation"],time.time())

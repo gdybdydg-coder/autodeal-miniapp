@@ -78,7 +78,7 @@ def requisites(engine, settings, uid, code):
     m.enabled(settings)
     with Session(engine) as db:
         row = m.request_row(db, code, uid)
-        if row.state not in ("created", "clarification"):
+        if row.state not in ("created", "clarification", "review"):
             raise m.ReviewError("request_already_reported", 409)
         require_sales(db)
         return {"request": m.public(row), "recipient": subscription_preview.receiving_profile()}
@@ -107,6 +107,7 @@ def overview(engine, settings, uid, now):
     if row and row["state"] not in ("approved", "rejected"):
         if row["state"] == "review":
             lines.append("🕓 Оплата на перевірці. Повторно не сплачуй.")
+            buttons.append([{"text": "🏦 Реквізити", "callback_data": PREFIX+"details:"+row["code"]}])
             buttons.append([{"text": "🔄 Перевірити оплату", "callback_data": PREFIX+"status:"+row["code"]}])
         elif data["sales_enabled"]:
             buttons.append([{"text": "💳 Перейти до оплати", "callback_data": PREFIX+"details:"+row["code"]}])
@@ -152,6 +153,7 @@ def request_card(engine, settings, uid, code):
     elif row["state"] == "review":
         lines.append("🕓 <b>Очікує перевірки власником</b>")
         lines.append("Після підтвердження відкриємо доступ на 30 днів. Повторно не сплачуй.")
+        buttons.append([{"text": "🏦 Реквізити", "callback_data": PREFIX+"details:"+code}])
     elif row["state"] == "rejected":
         lines.append("Оплату не підтверджено. Допомога: /paysupport")
     else:
@@ -176,7 +178,7 @@ def receipt_help(engine, settings, uid, code):
 
 def details(engine, settings, uid, code, more=False):
     row = m.get_status(engine, settings, uid, code)
-    if row["state"] not in ("created", "clarification"):
+    if row["state"] not in ("created", "clarification", "review"):
         return request_card(engine, settings, uid, code)
     data = requisites(engine, settings, uid, code)
     profile = data["recipient"]
@@ -196,8 +198,12 @@ def details(engine, settings, uid, code, more=False):
                       "Банк: "+escape(profile["bank_name"]),
                       "Призначення: <code>"+purpose+"</code>"])
         buttons.append([{"text": "Скопіювати призначення", "copy_text": {"text": purpose}}])
-    lines.append("Після переказу натисни «✅ Я оплатив».\nВласник перевірить оплату й відкриє доступ на 30 днів.")
-    buttons.append([{"text": "✅ Я оплатив", "callback_data": PREFIX+"paid:"+code}])
+    if row["state"] == "review":
+        lines.append("🕓 Ти вже повідомив про оплату.\nЯкщо переказ зроблено — повторно не сплачуй. Доступ відкриє власник після перевірки.")
+        buttons.append([{"text": "🔄 Перевірити оплату", "callback_data": PREFIX+"status:"+code}])
+    else:
+        lines.append("Після переказу натисни «✅ Я оплатив».\nВласник перевірить оплату й відкриє доступ на 30 днів.")
+        buttons.append([{"text": "✅ Я оплатив", "callback_data": PREFIX+"paid:"+code}])
     buttons.append([{"text": "← Назад" if more else "Додаткові реквізити",
                      "callback_data": PREFIX+("details:" if more else "bank:")+code}])
     return response(uid, lines, buttons)
