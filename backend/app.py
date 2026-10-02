@@ -143,6 +143,8 @@ def create_app(settings: Settings, engine=None):
         billing_campaign.initialize(engine, settings)
         manual_payments.initialize(engine, settings)
         manual_launch.initialize(engine, settings)
+        from .manual_access_audit import log_once as audit_manual_access
+        await asyncio.to_thread(audit_manual_access, engine, settings)
         initialize_budget(engine)
         monitor.initialize(engine)
         launch.initialize(engine, settings.live and settings.monitor_enabled)
