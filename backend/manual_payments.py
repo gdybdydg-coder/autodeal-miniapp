@@ -424,7 +424,7 @@ def deliver_notice(engine, settings, request, now=None):
             payload.pop("text")
             payload.update({key_name: media.file_id, "caption": row.text[:1024], "protect_content": True,
                 "reply_markup": {"inline_keyboard": [[{"text": "📋 Відкрити заявку",
-                    "web_app": {"url": settings.origin+"/autodeal-miniapp/payment-review.html?code="+row.request_id}}]]}})
+                    "web_app": {"url": settings.origin+"/autodeal-miniapp/payment-review.html?v=20261002-receipt-1&code="+row.request_id}}]]}})
     try:
         response = request(settings.bot_token, method, payload, timeout=5)
     except Exception:

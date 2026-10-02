@@ -203,9 +203,9 @@ def handle(engine, settings, event):
                              [f"Сторінка {q['page']}/{q['pages']}"])
             url = settings.origin + "/autodeal-miniapp/payment-review.html"
             buttons = [[{"text": "Перевірити оплату · " + r["name"][:50],
-                         "web_app": {"url": url+"?"+urlencode({"code": r["code"], "v": "20261002-2"})}}]
+                         "web_app": {"url": url+"?"+urlencode({"code": r["code"], "v": "20261002-receipt-1"})}}]
                        for r in q["items"]]
-            buttons.append([{"text": "📋 Усі заявки", "web_app": {"url": url+"?v=20261002-2"}}])
+            buttons.append([{"text": "📋 Усі заявки", "web_app": {"url": url+"?v=20261002-receipt-1"}}])
             return billing.message(uid, "\n\n".join(lines), buttons)
         m.enabled(settings)
         if len(parts) != 2:

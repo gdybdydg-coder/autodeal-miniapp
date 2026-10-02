@@ -439,7 +439,7 @@ def test_owner_payments_links_open_exact_request_with_ukrainian_status(review):
     url = urlsplit(request_button["web_app"]["url"])
     assert url.scheme+"://"+url.netloc == settings.origin
     assert url.path == "/autodeal-miniapp/payment-review.html"
-    assert parse_qs(url.query) == {"code": [row["code"]], "v": ["20261002-2"]}
+    assert parse_qs(url.query) == {"code": [row["code"]], "v": ["20261002-receipt-1"]}
     assert buttons[-1]["text"] == "📋 Усі заявки"
     assert "web_app" not in command(client, "/payments", uid=UID).text
     assert count(engine, Entitlement) == count(engine, BankCredit) == 0
