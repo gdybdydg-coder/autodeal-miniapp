@@ -323,6 +323,7 @@ def test_dynamic_text_is_escaped_and_does_not_break_telegram_formatting():
 
 @pytest.fixture
 def recipient_profile(monkeypatch):
+    monkeypatch.delenv(preview.CARD_ENV, raising=False)
     # Fictional offline account: an all-zero bank routing code, never a live IBAN.
     bban = "0"*25
     checksum = 98-int(bban+"301000") % 97
@@ -331,6 +332,29 @@ def recipient_profile(monkeypatch):
                "bank_name":"Тестовий банк <&>"}
     monkeypatch.setenv(preview.RECIPIENT_ENV,json.dumps(profile))
     return profile
+
+
+def test_optional_card_appears_below_iban_and_copies_digits(recipient_profile, monkeypatch):
+    # Synthetic receiving number; never use an owner's real card in tests.
+    monkeypatch.setenv(preview.CARD_ENV, "4242 4242 4242 4242")
+    reply = preview.render_requisites(preview.initial())
+    text = reply["text"]
+    assert text.index("Рахунок · IBAN") < text.index("Номер картки") < text.index("Код отримувача")
+    assert "<code>4242 4242 4242 4242</code>" in text
+    copies = [b["copy_text"]["text"] for row in reply["reply_markup"]["inline_keyboard"]
+              for b in row if "copy_text" in b]
+    assert copies == [recipient_profile["iban"], "4242424242424242"]
+    assert "Номер картки" not in preview.render_requisites(preview.initial(), receipt=True)["text"]
+
+
+@pytest.mark.parametrize("value", ["", "1234", "x"*16, "<b>4242424242424242</b>", "４"*16])
+def test_missing_or_invalid_card_preserves_iban(recipient_profile, monkeypatch, value):
+    monkeypatch.setenv(preview.CARD_ENV, value)
+    reply = preview.render_requisites(preview.initial())
+    assert "Номер картки" not in reply["text"]
+    copies = [b["copy_text"]["text"] for row in reply["reply_markup"]["inline_keyboard"]
+              for b in row if "copy_text" in b]
+    assert copies == [recipient_profile["iban"]]
 
 
 def test_requisites_are_private_inert_escaped_and_do_not_consume_updates(setup,recipient_profile):
