@@ -1,0 +1,61 @@
+{
+  "http_probe": {
+    "url": "https://www.olx.ua/uk/transport/legkovye-avtomobili/",
+    "started_utc": "2026-10-02T18:56:17.201073+00:00",
+    "attempts": 1,
+    "timeout_seconds": 20,
+    "byte_cap": 2097152,
+    "redirects_followed": 0,
+    "retries": 0,
+    "status": 200,
+    "bytes_read": 2097152,
+    "at_byte_cap": true,
+    "content_type": "text/html",
+    "seconds": 1.948,
+    "finished_utc": "2026-10-02T18:56:19.149482+00:00"
+  },
+  "analysis": {
+    "fetched_at": 1790967379,
+    "bytes_parsed": 2097152,
+    "download_truncated": true,
+    "closed_cards": 52,
+    "unique_cards": 52,
+    "duplicate_cards": 0,
+    "rejected_cards": 0,
+    "jsonld_offer_count": 20,
+    "jsonld_urls_in_cards": 20,
+    "cards_absent_from_jsonld": 32,
+    "cards_with_photo_urls": 23,
+    "observed_pagination_links": [
+      "/transport/legkovye-avtomobili/?page=2",
+      "/transport/legkovye-avtomobili/?page=25",
+      "/transport/legkovye-avtomobili/?page=3",
+      "/transport/legkovye-avtomobili/?page=4",
+      "/transport/legkovye-avtomobili/?page=5"
+    ],
+    "publication_verified": 0,
+    "whole_car_category_verified": 0,
+    "full_price_verified": 0,
+    "collection_complete": false,
+    "ready_for_delivery": false,
+    "sha256_prefix_body": "f071497d424749f02bf16ccf16f954e940db056e9fc0a7d52fc35e37c4d78d90",
+    "field_availability": {
+      "year": 52,
+      "mileage_km": 52,
+      "engine_cc": 45,
+      "fuel": 52,
+      "transmission": 52,
+      "price": 52,
+      "currency": 52,
+      "photos": 23
+    },
+    "valuation_reasons": {
+      "full_price_unconfirmed": 52
+    },
+    "verified_profitable": 0,
+    "profitability_unconfirmed": 52,
+    "independent_control_sample": 0,
+    "full_body_persisted_in_repository": false,
+    "api_or_telegram_requests": 0
+  }
+}

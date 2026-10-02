@@ -48,7 +48,8 @@ def estimate(target, comparables, now, *, minimum=8, max_age=30*86400):
     unknown = lambda reason, n=0: {'status': 'profitability_unconfirmed', 'reason': reason, 'sample': n}
     keys = ('brand', 'model', 'generation', 'body', 'fuel', 'transmission', 'engine_cc')
     if target.get('price_review',{}).get('status') == 'needs_review':
-        return unknown('price_evidence_conflict')
+        reasons=target['price_review'].get('reasons',[])
+        return unknown('full_price_unconfirmed' if reasons==['full_price_unconfirmed'] else 'price_evidence_conflict')
     if target['price_kind'] != 'full' or target['price'] is None or target['currency'] is None:
         return unknown('full_price_unconfirmed')
     if target['category'] != 'whole_passenger_car':

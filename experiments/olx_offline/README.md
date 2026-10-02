@@ -110,3 +110,7 @@ Acceptance now: independently reviewable offline prototype, not live OLX support
 
 Перевірка контрольної вибірки: [evaluation guide](EVALUATION-20261002.md).
 Поточний набір: 58 тестів. Інструмент вимірює вибірку; повноту живого OLX не доведено.
+
+Реальний доступ і HTML parser: [LIVE-SOURCE-20261002.md](LIVE-SOURCE-20261002.md).
+Поточний набір: 66 тестів. Один прямий HTTP200 дав52 картки в обмежених2MiB;
+це неповна відповідь, не підтвердження повноти/стабільності або дозвіл на запуск.
