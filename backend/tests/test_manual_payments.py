@@ -378,7 +378,12 @@ def test_superseding_does_not_hide_an_uncertain_send(review):
             PaymentNotice.state == "uncertain")) == 1
 
 
-def test_queue_pages_filters_literal_search_and_missing_username(review):
+def test_queue_pages_filters_literal_search_and_missing_username(review, monkeypatch):
+    # Numeric search also covers request codes. Keep random hex IDs from
+    # accidentally containing another fixture user's numeric ID.
+    from itertools import count as sequence
+    tokens = sequence(1)
+    monkeypatch.setattr(m.secrets, "token_hex", lambda size: f"{next(tokens):0{size*2}x}")
     engine, settings, _ = review
     with Session(engine) as db, db.begin():
         db.add_all([User(id=i, ready=False) for i in range(1000, 1053)])
