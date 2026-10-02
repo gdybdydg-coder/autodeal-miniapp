@@ -7,7 +7,7 @@ import pytest
 from sqlalchemy import select, func
 from sqlalchemy.orm import Session
 
-from backend import billing, manual_checkout as c, manual_launch as launch, manual_payments as m, telegram_setup
+from backend import billing, manual_checkout as c, manual_launch as launch, manual_payments as m, manual_receipts, telegram_setup
 from backend.billing_models import BillingCampaign, CampaignRecipient, MarketingConsent, Entitlement
 from backend.manual_payment_models import PaymentRequest, PaymentNotice, BankCredit
 from backend.models import User, Search, MonitorControl, SourceProbe, Delivery, DeliveryTiming
@@ -70,19 +70,27 @@ def test_bot_checkout_persists_terms_copy_controls_and_waits_for_owner(bank):
     callback(bank,c.PREFIX+"accept:"+c.TERMS_VERSION,update=101)
     assert count(engine,PaymentRequest)==1
     result=callback(bank,c.PREFIX+"paid:"+code,update=102).json()
-    assert "Повторно не сплачуй" in result["text"]
+    assert result["text"] == manual_receipts.PROMPT
     callback(bank,c.PREFIX+"paid:"+code,update=103)
-    assert count(engine,PaymentNotice)==1 and count(engine,BankCredit)==0
+    assert count(engine,PaymentNotice)==0 and count(engine,BankCredit)==0
     review_details=callback(bank,c.PREFIX+"details:"+code).json()
     assert "4242" in review_details["text"] and "повторно не сплачуй" in review_details["text"]
-    assert c.PREFIX+"details:"+code in json.dumps(result)
+    assert manual_receipts.PROMPT in callback(bank,c.PREFIX+"status:"+code).json()["text"]
+    assert manual_receipts.PROMPT in command(client,"/subscription").json()["text"]
     assert client.get("/api/manual-payments/"+code+"/requisites",headers=headers()).status_code==200
     assert client.get("/api/manual-payments/"+code+"/requisites",headers=headers(OTHER)).status_code==404
     with Session(engine) as db, db.begin():
         billing.control(db).enforce=True
         assert not billing.allowed(db,UID)
-        assert db.get(PaymentRequest,code).state=="review"
+        assert db.get(PaymentRequest,code).state=="created"
     assert count(engine,PaymentRequest)==1 and count(engine,BankCredit)==0
+    photo={"update_id":105,"message":{"message_id":800,"date":int(time.time()),
+        "from":{"id":UID,"first_name":"Тест"},"chat":{"id":UID,"type":"private"},
+        "photo":[{"file_id":"fixture-full-photo","width":1200,"height":1600}]}}
+    saved=client.post("/telegram/webhook",headers={"X-Telegram-Bot-Api-Secret-Token":SECRET},json=photo).json()
+    assert saved["text"] == manual_receipts.ACK
+    with Session(engine) as db:
+        assert db.get(PaymentRequest,code).state=="review" and not billing.expiry(db,UID)
     row=m.get_status(engine,settings,UID,code)
     proof=preview(bank,row,now=time.time())
     m.confirm(engine,settings,ADMIN,proof["confirmation"],time.time())
@@ -104,6 +112,18 @@ def test_api_requires_terms_and_hides_requisites_from_foreign_users(bank):
     assert "user_id" not in client.get("/api/manual-payments/offer",headers=headers()).json()["request"]
 
 
+def test_extra_requisites_removed_and_old_button_keeps_main_payment_details(bank):
+    engine,settings,client=bank
+    row=c.create(engine,settings,UID,NOW,c.TERMS_VERSION)
+    main=callback(bank,c.PREFIX+"details:"+row["code"]).json()
+    legacy=callback(bank,c.PREFIX+"bank:"+row["code"],update=111).json()
+    assert main==legacy
+    text=json.dumps(main,ensure_ascii=False)
+    assert "Додаткові реквізити" not in text and "Скопіювати призначення" not in text
+    assert "Скопіювати IBAN" in text and "Скопіювати картку" in text
+    assert "До сплати: 250 грн" in text and "Отримувач" in text
+
+
 @pytest.mark.parametrize("changes",[
     {"from":{"id":UID,"is_bot":True}},
     {"message":{"chat":{"id":-1,"type":"group"}}},
@@ -120,7 +140,7 @@ def test_paused_sales_keep_paid_report_status_and_support(bank,monkeypatch):
     row=c.create(engine,settings,UID,NOW,c.TERMS_VERSION)
     monkeypatch.setenv("MANUAL_PAYMENT_PUBLIC_ENABLED","false")
     assert "закрит" in callback(bank,c.PREFIX+"details:"+row["code"]).json()["text"]
-    assert "Очікує перевірки" in callback(bank,c.PREFIX+"paid:"+row["code"]).json()["text"]
+    assert manual_receipts.PROMPT == callback(bank,c.PREFIX+"paid:"+row["code"]).json()["text"]
     assert client.get("/api/manual-payments/"+row["code"],headers=headers()).status_code==200
     assert "Напиши /paysupport" in command(client,"/paysupport").json()["text"]
     assert command(client,"/stop").status_code==200
@@ -160,6 +180,7 @@ def test_one_time_rollout_preserves_access_optouts_and_does_not_rearm(bank,monke
         for uid in (UID,OTHER):db.get(User,uid).ready=True
         db.add(MarketingConsent(user_id=OTHER,allowed=False,blocked=False,source="explicit_opt_out",at=NOW))
         db.add(Entitlement(user_id=UID,expires_at=NOW+9000,updated_at=NOW))
+        db.add(User(id=333, ready=True))
     monkeypatch.setenv("MANUAL_PAYMENT_LAUNCH_STAGE","prepare")
     launch.initialize(engine,settings,NOW)
     ready_health(engine,monkeypatch)
@@ -174,7 +195,7 @@ def test_one_time_rollout_preserves_access_optouts_and_does_not_rearm(bank,monke
     assert launch.tick(engine,settings,accepted,NOW+6)=="empty"
     launch.initialize(engine,settings,NOW+7)
     assert launch.tick(engine,settings,accepted,NOW+8)=="inactive"
-    assert len(calls)==1 and calls[0]["chat_id"]==UID and calls[0]["allow_paid_broadcast"] is False
+    assert len(calls)==1 and calls[0]["chat_id"]==333 and calls[0]["allow_paid_broadcast"] is False
     assert calls[0]["text"]==launch.COPY
     with Session(engine) as db,db.begin():
         assert billing.expiry(db,UID)==NOW+9000

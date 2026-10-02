@@ -13,6 +13,7 @@ from sqlalchemy.orm import Session
 
 from . import billing, billing_campaign, manual_checkout, manual_launch, manual_payments as m
 from . import manual_repeat_preflight
+from . import subscription_promotion
 from .billing_models import BillingCampaign, CampaignRecipient, MarketingConsent
 from .models import User
 
@@ -43,16 +44,8 @@ if not LOG.handlers:
     LOG.addHandler(logging.StreamHandler())
 
 
-def eligible(db, uid):
-    user = db.get(User, uid)
-    consent = db.get(MarketingConsent, uid)
-    if not user or not user.ready or (consent and (not consent.allowed or consent.blocked)):
-        return False
-    # A previous explicit 403 is authoritative even when there is no separate
-    # consent row. Do not create consent or mutate any previous campaign.
-    return db.scalar(select(CampaignRecipient.campaign_id).where(
-        CampaignRecipient.user_id == uid, CampaignRecipient.state == "failed",
-        CampaignRecipient.error == "403").limit(1)) is None
+def eligible(db, uid, now=None):
+    return subscription_promotion.eligible(db, uid, now)
 
 
 def readiness(db, settings, now):
@@ -107,7 +100,7 @@ def initialize(engine, settings, now=None):
         ids = []
         total = db.scalar(select(func.count()).select_from(User)) or 0
         if not errors:
-            ids = [uid for uid in db.scalars(select(User.id)) if eligible(db, uid)]
+            ids = [uid for uid in db.scalars(select(User.id)) if eligible(db, uid, now)]
         row = BillingCampaign(id=CAMPAIGN, not_before=now, deadline=now+86400,
             timezone="Europe/Kyiv", content={"text": COPY, "button": BUTTON,
                 "callback_data": manual_checkout.PREFIX+"view"},
@@ -209,28 +202,15 @@ def tick(engine, settings, request, now=None):
                 row.status = "complete"
                 _log(db, row, "complete")
             return "empty"
-        if not eligible(db, item.user_id):
+        if not eligible(db, item.user_id, now):
             item.state, item.error = "excluded", "recipient_no_longer_eligible"
             return "excluded"
         uid = item.user_id
+        prior_state, prior_attempted_at = item.state, item.attempted_at
         item.state, item.attempted_at = "sending", now
         row.next_send = now+2
         payload = {"chat_id": uid, "text": row.content["text"], "parse_mode": "HTML",
             "allow_paid_broadcast": False, "reply_markup": {"inline_keyboard": [[{
                 "text": row.content["button"], "callback_data": row.content["callback_data"]}]]}}
-    try:
-        result = request(settings.bot_token, "sendMessage", payload, timeout=5)
-    except Exception:
-        result = {}
-    if not isinstance(result, dict):
-        result = {}
-    with m.mutation(engine, settings) as db:
-        item = db.get(CampaignRecipient, (CAMPAIGN, uid))
-        if item.state != "sending":
-            return "uncertain"
-        billing_campaign.apply_send_result(item, result, now)
-        if result.get("error_code") == 403:
-            consent = db.get(MarketingConsent, uid)
-            if consent:
-                consent.blocked = True
-        return item.state
+    return subscription_promotion.dispatch_claim(engine, settings, CAMPAIGN, uid, request, payload, now,
+        prior_state=prior_state, prior_attempted_at=prior_attempted_at)

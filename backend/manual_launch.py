@@ -7,7 +7,7 @@ import json
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
-from . import billing, billing_campaign, manual_checkout, manual_payments as m
+from . import billing, billing_campaign, manual_checkout, manual_payments as m, subscription_promotion
 from .billing_models import BillingCampaign, CampaignRecipient, MarketingConsent, BillingOrder, Entitlement
 from .models import User, StarsTestOrder, MonitorControl, SourceProbe, Delivery, DeliveryTiming
 
@@ -39,12 +39,8 @@ def inventory(db, now):
     return counts
 
 
-def eligible(db, uid):
-    user = db.get(User, uid)
-    consent = db.get(MarketingConsent, uid)
-    # Owner authorized the one-time paid-transition announcement to existing
-    # users. Preserve every explicit opt-out and stopped/blocked recipient.
-    return bool(user and user.ready and (consent is None or (consent.allowed and not consent.blocked)))
+def eligible(db, uid, now=None):
+    return subscription_promotion.eligible(db, uid, now)
 
 
 def snapshot(db, now):
@@ -135,7 +131,7 @@ def initialize(engine, settings, now=None):
             ctrl.offer = dict(manual_checkout.OFFER)
             ctrl.sales = ctrl.enforce = True
             row.status, row.blockers, row.not_before, row.deadline = "running", [], now, now+86400
-            ids = [uid for uid in db.scalars(select(User.id)) if eligible(db, uid)]
+            ids = [uid for uid in db.scalars(select(User.id)) if eligible(db, uid, now)]
             row.audience = {**row.audience, "selected_at": now, "selected": len(ids),
                             "before_access": inventory(db, now)}
             for uid in ids:
@@ -221,27 +217,14 @@ def tick(engine, settings, request, now=None):
                 row.status = "complete"
                 LOG.info("Manual launch %s", json.dumps(snapshot(db, now), sort_keys=True))
             return "empty"
-        if not eligible(db, item.user_id):
+        if not eligible(db, item.user_id, now):
             item.state, item.error = "excluded", "recipient_opted_out_or_stopped"
             return "excluded"
         uid = item.user_id
+        prior_state, prior_attempted_at = item.state, item.attempted_at
         item.state, item.attempted_at = "sending", now
         row.next_send = now+2
         payload = {"chat_id": uid, "text": COPY, "parse_mode": "HTML", "allow_paid_broadcast": False,
                    "reply_markup": {"inline_keyboard": [[{"text": "Оформити підписку", "callback_data": manual_checkout.PREFIX+"terms"}]]}}
-    try:
-        result = request(settings.bot_token, "sendMessage", payload, timeout=5)
-    except Exception:
-        result = {}
-    if not isinstance(result, dict):
-        result = {}
-    with m.mutation(engine, settings) as db:
-        item = db.get(CampaignRecipient, (CAMPAIGN, uid))
-        if item.state != "sending":
-            return "uncertain"
-        billing_campaign.apply_send_result(item, result, now)
-        if result.get("error_code") == 403:
-            consent = db.get(MarketingConsent, uid)
-            if consent:
-                consent.blocked = True
-        return item.state
+    return subscription_promotion.dispatch_claim(engine, settings, CAMPAIGN, uid, request, payload, now,
+        prior_state=prior_state, prior_attempted_at=prior_attempted_at)

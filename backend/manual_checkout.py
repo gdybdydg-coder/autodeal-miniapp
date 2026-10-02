@@ -7,7 +7,7 @@ from sqlalchemy import select
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import Session
 
-from . import billing, manual_payments as m, subscription_preview, telegram_setup
+from . import billing, manual_payments as m, manual_receipts, subscription_preview, telegram_setup
 from .manual_payment_models import PaymentRequest
 from .models import User
 
@@ -105,7 +105,10 @@ def overview(engine, settings, uid, now):
     buttons = []
     row = data["request"]
     if row and row["state"] not in ("approved", "rejected"):
-        if row["state"] == "review":
+        if row.get("awaiting_receipt"):
+            lines.append(manual_receipts.PROMPT)
+            buttons.append([{"text": "📸 Надіслати скриншот", "callback_data": PREFIX+"receipt:"+row["code"]}])
+        elif row["state"] == "review":
             lines.append("🕓 Оплата на перевірці. Повторно не сплачуй.")
             buttons.append([{"text": "🏦 Реквізити", "callback_data": PREFIX+"details:"+row["code"]}])
             buttons.append([{"text": "🔄 Перевірити оплату", "callback_data": PREFIX+"status:"+row["code"]}])
@@ -150,6 +153,8 @@ def request_card(engine, settings, uid, code):
     buttons = []
     if row["state"] == "approved":
         lines.append("✅ Доступ до <b>"+billing.date_text(row["expires_at"])+"</b> (Київ).")
+    elif row.get("awaiting_receipt"):
+        lines.append(manual_receipts.PROMPT)
     elif row["state"] == "review":
         lines.append("🕓 <b>Очікує перевірки власником</b>")
         lines.append("Після підтвердження відкриємо доступ на 30 днів. Повторно не сплачуй.")
@@ -163,17 +168,14 @@ def request_card(engine, settings, uid, code):
     if row["owner_note"]:
         lines.append(escape(row["owner_note"]))
     if row["state"] in ("created", "review", "clarification"):
-        buttons.append([{"text": "📎 Додати квитанцію", "callback_data": PREFIX+"receipt:"+code}])
+        buttons.append([{"text": "📸 Надіслати скриншот", "callback_data": PREFIX+"receipt:"+code}])
         buttons.append([{"text": "🔄 Перевірити оплату", "callback_data": PREFIX+"status:"+code}])
     buttons.append([{"text": "← Назад", "callback_data": PREFIX+"view"}])
     return response(uid, lines, buttons)
 
 
-def receipt_help(engine, settings, uid, code):
-    m.get_status(engine, settings, uid, code)
-    return response(uid, ["📎 <b>Квитанція</b>",
-        "Надішли фото або PDF з підписом:\n<code>/payment_receipt "+escape(code)+"</code>"],
-        [[{"text": "← Назад", "callback_data": PREFIX+"status:"+code}]])
+def receipt_help(engine, settings, uid, code, now=None):
+    return manual_receipts.await_receipt(engine, settings, uid, code, now)
 
 
 def details(engine, settings, uid, code, more=False):
@@ -181,10 +183,11 @@ def details(engine, settings, uid, code, more=False):
     if row["state"] not in ("created", "clarification", "review"):
         return request_card(engine, settings, uid, code)
     data = requisites(engine, settings, uid, code)
-    return render_requisites(uid, data["recipient"], code, row["state"], more)
+    return render_requisites(uid, data["recipient"], code, row["state"], more,
+                             awaiting_receipt=row.get("awaiting_receipt", False))
 
 
-def render_requisites(uid, profile, code=None, state="preview", more=False):
+def render_requisites(uid, profile, code=None, state="preview", more=False, *, awaiting_receipt=False):
     """Same bank-card template; owner delivery check needs no payment ledger row."""
     iban, card = profile["iban"], profile.get("card_number")
     grouped = " ".join(iban[i:i+4] for i in range(0, len(iban), 4))
@@ -200,20 +203,17 @@ def render_requisites(uid, profile, code=None, state="preview", more=False):
         lines.append("Перевірка для власника. Переказ робити не потрібно.")
         buttons.append([{"text": "Відкрити підписку", "callback_data": PREFIX+"view"}])
         return response(uid, lines, buttons)
-    if more:
-        purpose = "Оплата абонемента AutoDeal, заявка "+code
-        lines.extend(["Код отримувача: <code>"+profile["recipient_code"]+"</code>",
-                      "Банк: "+escape(profile["bank_name"]),
-                      "Призначення: <code>"+purpose+"</code>"])
-        buttons.append([{"text": "Скопіювати призначення", "copy_text": {"text": purpose}}])
-    if state == "review":
+    if awaiting_receipt:
+        lines.append("Переказ уже зроблено — повторно не сплачуй.")
+        lines.append(manual_receipts.PROMPT)
+        buttons.append([{"text": "📸 Надіслати скриншот", "callback_data": PREFIX+"receipt:"+code}])
+    elif state == "review":
         lines.append("🕓 Ти вже повідомив про оплату.\nЯкщо переказ зроблено — повторно не сплачуй. Доступ відкриє власник після перевірки.")
         buttons.append([{"text": "🔄 Перевірити оплату", "callback_data": PREFIX+"status:"+code}])
     else:
         lines.append("Після переказу натисни «✅ Я оплатив».\nВласник перевірить оплату й відкриє доступ на 30 днів.")
         buttons.append([{"text": "✅ Я оплатив", "callback_data": PREFIX+"paid:"+code}])
-    buttons.append([{"text": "← Назад" if more else "Додаткові реквізити",
-                     "callback_data": PREFIX+("details:" if more else "bank:")+code}])
+    buttons.append([{"text": "← Назад", "callback_data": PREFIX+"view"}])
     return response(uid, lines, buttons)
 
 
@@ -271,9 +271,10 @@ def handle(engine, settings, event, request=None, now=None):
         if verb == "full_terms":
             return terms(engine, settings, uid, full=True)
         if verb == "receipt":
-            return receipt_help(engine, settings, uid, value)
+            return receipt_help(engine, settings, uid, value, now)
         if verb == "bank":
-            return details(engine, settings, uid, value, more=True)
+            # Compatibility for already-delivered buttons; the extra form is gone.
+            return details(engine, settings, uid, value)
         if verb == "accept":
             row = create(engine, settings, uid, now, value,
                 name=str(sender.get("first_name") or "Клієнт")[:100], username=sender.get("username"))
@@ -281,8 +282,7 @@ def handle(engine, settings, event, request=None, now=None):
         if verb == "details":
             return details(engine, settings, uid, value)
         if verb == "paid":
-            m.report_paid(engine, settings, uid, value, now)
-            return request_card(engine, settings, uid, value)
+            return receipt_help(engine, settings, uid, value, now)
         if verb == "status":
             return request_card(engine, settings, uid, value)
         return overview(engine, settings, uid, now)

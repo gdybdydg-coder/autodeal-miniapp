@@ -14,6 +14,7 @@ from backend.app import Settings, create_app
 from backend.models import Base, User, SourceProbe, MonitorControl, Delivery, DeliveryTiming, StarsTestOrder, Search
 from backend.billing_models import (BillingControl, BillingOrder, Entitlement, AccessEvent,
     MarketingConsent, BillingCampaign, CampaignRecipient, BillingNotice)
+from backend.manual_payment_models import ManualBase
 from backend.tests.test_backend import TOKEN, SECRET, headers, command, subscribe, car
 
 NOW = c.WHEN-600
@@ -31,6 +32,7 @@ def setup(tmp_path, monkeypatch):
     monkeypatch.delenv("SUBSCRIPTION_APPROVED_OFFER_JSON", raising=False)
     engine = create_engine("sqlite:///"+str(tmp_path/"billing.db"), connect_args={"check_same_thread": False})
     Base.metadata.create_all(engine)
+    ManualBase.metadata.create_all(engine)
     settings = Settings("unused", TOKEN, SECRET, True, True, admin_telegram_id=ADMIN)
     c.initialize(engine, settings, now=NOW)
     with Session(engine) as db:

@@ -112,8 +112,14 @@ def test_full_signed_api_workflow_with_synthetic_bank_offer(review, monkeypatch)
     assert client.post("/api/manual-payments", headers=headers(), json=body).json()["code"] == code
     path = "/api/manual-payments/" + code
     paid = client.post(path + "/paid", headers=headers(), json={}).json()
-    assert paid["state"] == "review" and "user_id" not in paid
+    assert paid["state"] == "created" and paid["awaiting_receipt"] and "user_id" not in paid
     assert client.post(path + "/paid", headers=headers(), json={}).json() == paid
+    from backend import manual_receipts
+    receipt = {"update_id": 456, "message": {"message_id": 456, "from": {"id": UID},
+        "chat": {"id": UID, "type": "private"}, "photo": [{"file_id": "SYNTHETIC-RECEIPT", "width": 100, "height": 100}]}}
+    assert manual_receipts.handle(engine, settings, receipt)["text"] == manual_receipts.ACK
+    paid = client.get(path, headers=headers()).json()
+    assert paid["state"] == "review" and not paid["awaiting_receipt"]
     assert count(engine, PaymentNotice) == 1
     card = client.get("/api/manual-payments/admin/"+code, headers=headers(ADMIN)).json()
     assert card["name"] == "Test" and card["username"] is None
@@ -402,13 +408,13 @@ def test_registered_webhook_owner_command_and_late_receipt(review):
     row = pending(review); code = row["code"]
     assert "Заявки" in command(client, "/payments all 1", uid=ADMIN).json()["text"]
     assert "Заявки" not in command(client, "/payments all 1").json()["text"]
-    update = {"update_id": 900, "message": {"from": {"id": UID}, "chat": {"id": UID, "type": "private"},
+    update = {"update_id": 900, "message": {"message_id": 900, "from": {"id": UID}, "chat": {"id": UID, "type": "private"},
         "caption": "/payment_receipt " + code, "date": NOW,
         "document": {"mime_type": "application/pdf", "file_size": 500, "file_id": "SYNTHETIC-RECEIPT"}}}
     h = {"X-Telegram-Bot-Api-Secret-Token": SECRET}
     assert client.post("/telegram/webhook", json=update).status_code == 403
-    assert "Квитанцію додано" in client.post("/telegram/webhook", headers=h, json=update).json()["text"]
-    assert "Квитанцію додано" in client.post("/telegram/webhook", headers=h, json=update).json()["text"]
+    assert "Скриншот отримано" in client.post("/telegram/webhook", headers=h, json=update).json()["text"]
+    assert "Скриншот отримано" in client.post("/telegram/webhook", headers=h, json=update).json()["text"]
     assert m.card(engine, settings, ADMIN, code)["receipt_file_id"] == "SYNTHETIC-RECEIPT"
     assert count(engine, PaymentNotice) == 2  # Initial paid report and one late receipt.
     view = command(client, "/start paymentreceipt_"+code, uid=ADMIN).json()
@@ -417,7 +423,7 @@ def test_registered_webhook_owner_command_and_late_receipt(review):
     assert "document" not in command(client, "/start paymentreceipt_"+code, uid=OTHER).json()
     update["message"]["from"]["id"] = OTHER
     update["message"]["chat"]["id"] = OTHER
-    assert "Квитанцію додано" not in client.post("/telegram/webhook", headers=h, json=update).json()["text"]
+    assert "Скриншот отримано" not in client.post("/telegram/webhook", headers=h, json=update).json()["text"]
 
 
 def test_owner_payments_links_open_exact_request_with_ukrainian_status(review):
@@ -524,7 +530,7 @@ def test_closed_request_does_not_claim_new_receipt_was_added(review):
     row = pending(review); p = preview(review, row)
     m.confirm(engine, settings, ADMIN, p["confirmation"], NOW+3)
     result = client.post("/telegram/webhook", headers={"X-Telegram-Bot-Api-Secret-Token": SECRET}, json={
-        "update_id": 999, "message": {"from": {"id": UID}, "chat": {"id": UID, "type": "private"},
+        "update_id": 999, "message": {"message_id": 999, "from": {"id": UID}, "chat": {"id": UID, "type": "private"},
         "date": NOW+4, "caption": "/payment_receipt "+row["code"],
         "document": {"file_size": 100, "mime_type": "application/pdf", "file_id": "LATE-CLOSED-FIXTURE"}}})
     assert "Нову квитанцію не додано" in result.json()["text"]

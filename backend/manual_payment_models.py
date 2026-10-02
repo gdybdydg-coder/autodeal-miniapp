@@ -1,5 +1,5 @@
 """Additive manual-review storage; no sales flags or synthetic data migration."""
-from sqlalchemy import BigInteger, Float, Integer, String, UniqueConstraint
+from sqlalchemy import BigInteger, Boolean, Float, Integer, String, UniqueConstraint
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
 
 
@@ -94,3 +94,46 @@ class PaymentNotice(ManualBase):
     retry_at: Mapped[float] = mapped_column(Float, default=0)
     claim: Mapped[str] = mapped_column(String(32), default="")
     message_id: Mapped[int | None] = mapped_column(BigInteger, nullable=True)
+
+
+class ReceiptExpectation(ManualBase):
+    __tablename__ = "manual_receipt_expectations"
+    user_id: Mapped[int] = mapped_column(BigInteger, primary_key=True)
+    request_id: Mapped[str | None] = mapped_column(String(20), nullable=True)
+    active: Mapped[bool] = mapped_column(Boolean, default=True)
+    awaiting_image: Mapped[bool] = mapped_column(Boolean, default=True)
+    started_at: Mapped[float] = mapped_column(Float)
+    updated_at: Mapped[float] = mapped_column(Float)
+
+
+class ReceiptSubmission(ManualBase):
+    __tablename__ = "manual_receipt_submissions"
+    __table_args__ = (UniqueConstraint("user_id", "message_id"),)
+    update_id: Mapped[int] = mapped_column(BigInteger, primary_key=True)
+    user_id: Mapped[int] = mapped_column(BigInteger, index=True)
+    message_id: Mapped[int] = mapped_column(BigInteger)
+    request_id: Mapped[str | None] = mapped_column(String(20), nullable=True)
+    file_id: Mapped[str] = mapped_column(String(512))
+    kind: Mapped[str] = mapped_column(String(10))
+    created_at: Mapped[float] = mapped_column(Float)
+    state: Mapped[str] = mapped_column(String(20), default="pending")
+
+
+class ReceiptNotice(ManualBase):
+    __tablename__ = "manual_receipt_notices"
+    notice_id: Mapped[str] = mapped_column(String(32), primary_key=True)
+    file_id: Mapped[str] = mapped_column(String(512))
+    kind: Mapped[str] = mapped_column(String(10))
+
+
+class PaymentOwnerConfirmation(ManualBase):
+    """Explicit owner decision without manufacturing a bank transaction ID."""
+    __tablename__ = "manual_owner_confirmations"
+    token_hash: Mapped[str] = mapped_column(String(64), primary_key=True)
+    request_id: Mapped[str] = mapped_column(String(20), index=True)
+    actor: Mapped[int] = mapped_column(BigInteger)
+    revision: Mapped[int] = mapped_column(Integer)
+    before_expiry: Mapped[float] = mapped_column(Float)
+    amount_minor: Mapped[int] = mapped_column(Integer)
+    deadline: Mapped[float] = mapped_column(Float)
+    result: Mapped[float | None] = mapped_column(Float, nullable=True)

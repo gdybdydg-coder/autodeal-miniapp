@@ -1,5 +1,7 @@
 import asyncio
 import hmac
+import json
+import logging
 import os
 import re
 import threading
@@ -140,9 +142,15 @@ def create_app(settings: Settings, engine=None):
     async def lifespan(app):
         # Initial schema only. Use versioned migrations before altering deployed tables.
         Base.metadata.create_all(engine)
-        billing_campaign.initialize(engine, settings)
         manual_payments.initialize(engine, settings)
+        billing_campaign.initialize(engine, settings)
         manual_launch.initialize(engine, settings)
+        from .subscription_promotion import audit_queue as audit_promotion_queue
+        await asyncio.to_thread(audit_promotion_queue, engine, settings)
+        if settings.manual_payment_review_enabled:
+            from .manual_receipts import capabilities as receipt_capabilities
+            receipt_ready = await asyncio.to_thread(receipt_capabilities, engine, app)
+            logging.getLogger("uvicorn.error").info("Manual receipt capabilities %s", json.dumps(receipt_ready))
         from .manual_access_audit import log_once as audit_manual_access
         await asyncio.to_thread(audit_manual_access, engine, settings)
         initialize_budget(engine)

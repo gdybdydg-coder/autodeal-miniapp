@@ -16,12 +16,13 @@ import time
 import unicodedata
 
 from sqlalchemy import func, or_, select, update
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, object_session
 
 from . import billing
 from .billing_models import AccessEvent, Entitlement
 from .manual_payment_models import (ManualBase, PaymentRequest, PaymentConfirmation, PaymentEvidence,
-                                   BankCredit, PaymentAudit, PaymentNotice)
+                                   BankCredit, PaymentAudit, PaymentNotice, PaymentOwnerConfirmation,
+                                   ReceiptExpectation, ReceiptNotice)
 from .models import User
 
 STATES = ("created", "review", "clarification", "approved", "rejected")
@@ -106,10 +107,14 @@ def request_row(db, code, uid=None):
 
 
 def public(row):
+    db = object_session(row)
+    expectation = db.get(ReceiptExpectation, row.user_id) if db is not None else None
     return {"code": row.id, "amount_minor": row.amount_minor, "currency": row.currency,
             "days": row.days, "state": row.state, "created_at": row.created_at,
             "revision": row.revision, "owner_note": row.owner_note,
-            "receipt_attached": bool(row.receipt_file_id), "expires_at": row.expires_at}
+            "receipt_attached": bool(row.receipt_file_id), "expires_at": row.expires_at,
+            "awaiting_receipt": bool(expectation and expectation.active and expectation.awaiting_image
+                                     and expectation.request_id in (None, row.id) and row.state in OPEN)}
 
 
 def audit(db, row, actor, action, now, before=None, after=None):
@@ -119,8 +124,10 @@ def audit(db, row, actor, action, now, before=None, after=None):
 
 
 def notice(db, row, uid, kind, body):
-    db.add(PaymentNotice(id=secrets.token_hex(16), request_id=row.id, revision=row.revision,
-                        kind=kind, user_id=uid, text=body))
+    result = PaymentNotice(id=secrets.token_hex(16), request_id=row.id, revision=row.revision,
+                           kind=kind, user_id=uid, text=body)
+    db.add(result)
+    return result
 
 
 def create_request(engine, settings, uid, now, *, name="Клієнт", username=None, accepted_terms=None):
@@ -247,10 +254,13 @@ def card(engine, settings, actor, code):
         row = request_row(db, code)
         history = db.scalars(select(PaymentAudit).where(PaymentAudit.request_id == code)
                              .order_by(PaymentAudit.at, PaymentAudit.id))
+        received_at = db.scalar(select(func.max(PaymentEvidence.at)).where(PaymentEvidence.request_id == code))
         return dict(public(row), user_id=row.user_id, name=row.name, username=row.username,
                     reported_amount_minor=row.reported_amount_minor, transfer_note=row.transfer_note,
                     receipt_file_id=row.receipt_file_id, current_expiry=billing.expiry(db, row.user_id),
                     receipt_kind=row.receipt_kind,
+                    received_at=received_at or row.created_at,
+                    receipt_url="/api/manual-payments/admin/"+row.id+"/receipt" if row.receipt_file_id else None,
                     history=[{"actor": h.actor, "action": h.action, "at": h.at,
                               "before": h.before_expiry, "after": h.after_expiry} for h in history])
 
@@ -280,6 +290,16 @@ def change_state(engine, settings, actor, code, state, note, revision, now):
         row.revision += 1
         if state == "rejected":
             row.active_user_id = None
+        expectation = db.get(ReceiptExpectation, row.user_id)
+        if state == "clarification":
+            if expectation is None:
+                expectation = ReceiptExpectation(user_id=row.user_id, started_at=now)
+                db.add(expectation)
+            expectation.request_id, expectation.active, expectation.awaiting_image = row.id, True, True
+            expectation.updated_at = now
+        elif expectation and expectation.request_id in (None, row.id):
+            expectation.active = expectation.awaiting_image = False
+            expectation.updated_at = now
         audit(db, row, actor, state, now)
         label = "Потрібне уточнення" if state == "clarification" else "Заявку відхилено"
         suffix = " Відхилення не означає повернення коштів." if state == "rejected" else ""
@@ -287,27 +307,31 @@ def change_state(engine, settings, actor, code, state, note, revision, now):
         return public(row)
 
 
-def preview(engine, settings, actor, code, revision, now, *, account, operation,
-            actual_amount_minor, bank_verified):
+def preview(engine, settings, actor, code, revision, now, *, account=None, operation=None,
+            actual_amount_minor=None, bank_verified=False):
     owner(settings, actor)
     timestamp(now)
-    amount(actual_amount_minor)
     if bank_verified is not True or type(revision) is not int:
         raise ReviewError("explicit_owner_verification_required", 422)
-    key = bank_key(account, operation)
+    legacy = any(value is not None for value in (account, operation, actual_amount_minor))
+    key = None
+    if legacy:
+        amount(actual_amount_minor)
+        key = bank_key(account, operation)
     with mutation(engine, settings) as db:
         row = request_row(db, code)
         if row.state != "review" or row.revision != revision:
             raise ReviewError("request_changed")
-        if row.amount_minor != actual_amount_minor:
+        if legacy and row.amount_minor != actual_amount_minor:
             raise ReviewError("amount_requires_clarification")
-        if db.get(BankCredit, key):
+        if key and db.get(BankCredit, key):
             raise ReviewError("bank_credit_already_used")
         before = billing.expiry(db, row.user_id)
         token = secrets.token_urlsafe(24)
-        db.add(PaymentConfirmation(token_hash=hashlib.sha256(token.encode()).hexdigest(),
+        confirmation = dict(token_hash=hashlib.sha256(token.encode()).hexdigest(),
                 request_id=code, actor=actor, revision=revision, before_expiry=before,
-                bank_key=key, amount_minor=actual_amount_minor, deadline=now+300))
+                amount_minor=row.amount_minor, deadline=now+300)
+        db.add(PaymentConfirmation(**confirmation, bank_key=key) if legacy else PaymentOwnerConfirmation(**confirmation))
         return {"confirmation": token, "code": code, "user_id": row.user_id, "name": row.name,
                 "days": row.days, "before": before, "estimated_expiry": max(now, before)+row.days*DAY,
                 "valid_until": now+300}
@@ -319,6 +343,8 @@ def confirm(engine, settings, actor, token, now):
     token_hash = hashlib.sha256(text(token, 100).encode()).hexdigest()
     with mutation(engine, settings) as db:
         review = db.get(PaymentConfirmation, token_hash)
+        if review is None:
+            review = db.get(PaymentOwnerConfirmation, token_hash)
         if review is None or review.actor != actor:
             raise ReviewError("invalid_confirmation", 403)
         if review.result is not None:
@@ -328,17 +354,23 @@ def confirm(engine, settings, actor, token, now):
         if (now >= review.deadline or row.state != "review" or row.revision != review.revision
                 or before != review.before_expiry or review.amount_minor != row.amount_minor):
             raise ReviewError("request_or_access_changed")
-        if db.get(BankCredit, review.bank_key):
+        legacy_key = getattr(review, "bank_key", None)
+        if legacy_key and db.get(BankCredit, legacy_key):
             raise ReviewError("bank_credit_already_used")
         until = max(now, before) + row.days*DAY
-        db.add(BankCredit(bank_key=review.bank_key, request_id=row.id, user_id=row.user_id,
-                         amount_minor=row.amount_minor, actor=actor, at=now,
-                         before_expiry=before, after_expiry=until))
+        if legacy_key:
+            db.add(BankCredit(bank_key=legacy_key, request_id=row.id, user_id=row.user_id,
+                             amount_minor=row.amount_minor, actor=actor, at=now,
+                             before_expiry=before, after_expiry=until))
         db.merge(Entitlement(user_id=row.user_id, expires_at=until, updated_at=now))
         db.add(AccessEvent(id="manual:"+row.id, user_id=row.user_id, actor=actor, kind="manual_paid",
                            at=now, expires_at=until, reason="Owner explicitly confirmed bank credit"))
         row.state, row.active_user_id, row.expires_at, row.updated_at = "approved", None, until, now
         row.revision += 1
+        expectation = db.get(ReceiptExpectation, row.user_id)
+        if expectation and expectation.request_id in (None, row.id):
+            expectation.active = expectation.awaiting_image = False
+            expectation.updated_at = now
         review.result = until
         audit(db, row, actor, "approved", now, before, until)
         notice(db, row, row.user_id, "client",
@@ -384,8 +416,17 @@ def deliver_notice(engine, settings, request, now=None):
         key = row.id
         uid = settings.admin_telegram_id if row.kind == "owner" else row.user_id
         payload = {"chat_id": uid, "text": row.text, "allow_paid_broadcast": False}
+        method = "sendMessage"
+        media = db.get(ReceiptNotice, row.id) if row.kind == "owner" else None
+        if media:
+            method = "sendPhoto" if media.kind == "photo" else "sendDocument"
+            key_name = "photo" if media.kind == "photo" else "document"
+            payload.pop("text")
+            payload.update({key_name: media.file_id, "caption": row.text[:1024], "protect_content": True,
+                "reply_markup": {"inline_keyboard": [[{"text": "📋 Відкрити заявку",
+                    "web_app": {"url": settings.origin+"/autodeal-miniapp/payment-review.html?code="+row.request_id}}]]}})
     try:
-        response = request(settings.bot_token, "sendMessage", payload, timeout=5)
+        response = request(settings.bot_token, method, payload, timeout=5)
     except Exception:
         response = {}
     if not isinstance(response, dict):

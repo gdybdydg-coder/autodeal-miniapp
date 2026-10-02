@@ -78,6 +78,7 @@ def test_prerequisite_failure_never_sends_or_rearms(armed, monkeypatch, blocker)
 def test_one_shot_preserves_previous_campaign_and_paid_access(armed):
     engine, settings, _ = armed
     with Session(engine) as db, db.begin():
+        db.get(User, OTHER).ready = True
         db.add(BillingCampaign(id=manual_launch.CAMPAIGN, not_before=NOW-100,
             deadline=NOW+1000, timezone="Europe/Kyiv", content={"private": "unchanged"},
             audience={"selected": 1}, status="complete", blockers=[]))
@@ -86,14 +87,15 @@ def test_one_shot_preserves_previous_campaign_and_paid_access(armed):
         db.add(Entitlement(user_id=UID, expires_at=NOW+9000, updated_at=NOW))
     assert reminder.initialize(engine, settings, NOW) == "running"
     assert reminder.initialize(engine, settings, NOW+1) == "running"
-    # Paid users are included in this conditional service notice, without
-    # suggesting that someone who already paid should make another payment.
+    # First-purchase advertising excludes existing paid access even though
+    # the historical notice's wording also addresses already-paid customers.
     assert record(engine)[3] == {"pending": 1}
     calls = []
     sender = accepted(calls)
     def durable_sender(*args, **kwargs):
         with Session(engine) as db:
-            assert db.get(CampaignRecipient, (reminder.CAMPAIGN, UID)).state == "sending"
+            assert db.get(CampaignRecipient, (reminder.CAMPAIGN, UID)) is None
+            assert db.get(CampaignRecipient, (reminder.CAMPAIGN, OTHER)).state == "sending"
         return sender(*args, **kwargs)
     assert reminder.tick(engine, settings, durable_sender, NOW+2) == "sent"
     assert reminder.tick(engine, settings, durable_sender, NOW+3) == "yielding"

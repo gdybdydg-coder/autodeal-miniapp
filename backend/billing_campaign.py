@@ -17,7 +17,7 @@ from sqlalchemy import func, select, update
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
-from . import billing, telegram_setup
+from . import billing, telegram_setup, subscription_promotion
 from .models import BotReply, Delivery, DeliveryTiming, MonitorControl, SourceProbe, User
 from .billing_models import (BillingControl, BillingCampaign, CampaignRecipient,
                              MarketingConsent, BillingNotice, BillingOrder, Entitlement)
@@ -56,7 +56,7 @@ def count_audience(db, now):
     total = db.scalar(select(func.count()).select_from(User)) or 0
     eligible = [uid for uid in db.scalars(select(User.id).join(MarketingConsent, MarketingConsent.user_id == User.id)
                  .where(User.ready.is_(True), MarketingConsent.allowed.is_(True), MarketingConsent.blocked.is_(False)))
-                if billing.expiry(db, uid) <= now]
+                if subscription_promotion.eligible(db, uid, now, require_consent=True)]
     return total, eligible
 
 
@@ -252,29 +252,22 @@ def tick(engine, settings, request=None, now=None):
                     queue_report(db, settings, now)
                     db.commit()
                 return row.status
-            user = db.get(User, recipient.user_id)
-            consent = db.get(MarketingConsent, recipient.user_id)
-            if (not user or not user.ready or not consent or not consent.allowed or consent.blocked
-                    or billing.expiry(db, recipient.user_id) > now):
+            # Serialize with owner grants/confirmations and read live persisted
+            # history again for queued messages and each retry, not just launch.
+            billing.control(db, lock=True)
+            if not subscription_promotion.eligible(db, recipient.user_id, now, require_consent=True):
                 recipient.state, recipient.error = "excluded", "recipient_no_longer_eligible"
                 db.commit()
                 return "excluded"
+            prior_state, prior_attempted_at = recipient.state, recipient.attempted_at
             recipient.state, recipient.attempted_at = "sending", now
             uid = recipient.user_id
             payload = {"chat_id": uid, "text": row.content["text"], "parse_mode": "HTML", "allow_paid_broadcast": False,
                        "reply_markup": {"inline_keyboard": [[{"text": row.content["button"], "callback_data": row.content["callback_data"]}]]}}
             row.next_send = now+5
             db.commit()  # Durable send claim before the network, never retry an unknown result.
-        result = request(settings.bot_token, "sendMessage", payload, timeout=5)
-        with Session(engine) as db:
-            recipient = db.get(CampaignRecipient, (CAMPAIGN, uid))
-            apply_send_result(recipient, result, now)
-            if result.get("error_code") == 403:
-                consent = db.get(MarketingConsent, uid)
-                if consent:
-                    consent.blocked = True
-            db.commit()
-            return recipient.state
+        return subscription_promotion.dispatch_claim(engine, settings, CAMPAIGN, uid, request, payload, now,
+            prior_state=prior_state, prior_attempted_at=prior_attempted_at, require_consent=True)
     finally:
         with Session(engine) as db:
             db.execute(update(BillingCampaign).where(BillingCampaign.id == CAMPAIGN,

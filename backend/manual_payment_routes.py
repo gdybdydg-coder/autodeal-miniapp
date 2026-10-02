@@ -5,6 +5,7 @@ from urllib.parse import parse_qsl, urlencode
 import json
 
 from fastapi import APIRouter, Depends, Header, HTTPException
+from fastapi.responses import Response
 from pydantic import BaseModel, ConfigDict, Field, StrictBool, StrictInt
 from sqlalchemy.exc import SQLAlchemyError
 
@@ -34,9 +35,9 @@ class Action(Body):
 class Preview(Body):
     code: str = Field(max_length=20)
     revision: StrictInt
-    account: str = Field(min_length=3, max_length=120)
-    operation: str = Field(min_length=3, max_length=120)
-    actual_amount_minor: StrictInt
+    account: str | None = Field(default=None, min_length=3, max_length=120)
+    operation: str | None = Field(default=None, min_length=3, max_length=120)
+    actual_amount_minor: StrictInt | None = None
     bank_verified: StrictBool
 
 
@@ -108,6 +109,15 @@ def install(app, engine, settings, identity):
     def notices(code: str, uid=Depends(admin)):
         return call(m.notices, engine, settings, uid, code)
 
+    @router.get("/admin/{code}/receipt")
+    def receipt(code: str, uid=Depends(admin)):
+        from . import manual_receipt_proxy
+        data = call(m.card, engine, settings, uid, code)
+        body, media_type = call(manual_receipt_proxy.fetch_receipt, settings,
+                               data.get("receipt_file_id"), data.get("receipt_kind"))
+        return Response(body, media_type=media_type, headers={"Cache-Control": "private, no-store",
+                        "X-Content-Type-Options": "nosniff", "Content-Disposition": "inline"})
+
     @router.post("/admin/retry-notice")
     def retry(body: Retry, uid=Depends(admin)):
         call(m.retry_notice, engine, settings, uid, body.notice_id)
@@ -134,7 +144,9 @@ def install(app, engine, settings, identity):
 
     @router.post("/{code}/paid")
     def paid(code: str, body: Paid, uid=Depends(available)):
-        return call(m.report_paid, engine, settings, uid, code, time.time(), **body.model_dump())
+        from . import manual_receipts
+        call(manual_receipts.await_receipt, engine, settings, uid, code, time.time())
+        return call(m.get_status, engine, settings, uid, code)
 
     app.include_router(router)
 
@@ -142,6 +154,10 @@ def install(app, engine, settings, identity):
 def handle(engine, settings, event):
     if not settings.manual_payment_review_enabled:
         return None
+    from . import manual_receipts
+    receipt_reply = manual_receipts.handle(engine, settings, event)
+    if receipt_reply is not None:
+        return receipt_reply
     message = event.get("message") or {}
     sender, chat = message.get("from") or {}, message.get("chat") or {}
     content = message.get("text") or message.get("caption") or ""
@@ -194,23 +210,7 @@ def handle(engine, settings, event):
         m.enabled(settings)
         if len(parts) != 2:
             raise m.ReviewError("receipt_command_requires_request_code", 422)
-        photo = message.get("photo") or []
-        document = message.get("document") or {}
-        if photo and isinstance(photo, list) and isinstance(photo[-1], dict):
-            file = photo[-1]
-            receipt_kind = "photo"
-        elif document.get("mime_type") in ("application/pdf", "image/png", "image/jpeg"):
-            file = document
-            receipt_kind = "document"
-        else:
-            raise m.ReviewError("receipt_image_or_pdf_required", 422)
-        if type(file.get("file_size")) is not int or not 0 < file["file_size"] <= 5*1024*1024:
-            raise m.ReviewError("receipt_size_invalid", 422)
-        file_id = m.text(file.get("file_id"), 512)
-        result = m.report_paid(engine, settings, uid, parts[1], time.time(), receipt_file_id=file_id, receipt_kind=receipt_kind)
-        if result["state"] not in m.OPEN:
-            return billing.message(uid, "Заявку вже завершено. Нову квитанцію не додано. /paysupport")
-        return billing.message(uid, "📎 Квитанцію додано до заявки. Надходження перевірить власник.")
+        return manual_receipts.legacy_submission(engine, settings, uid, parts[1], event)
     except (m.ReviewError, ValueError):
         return billing.message(uid, "Дія недоступна або дані змінилися. Перевір номер заявки та права доступу. /paysupport")
     except SQLAlchemyError:
