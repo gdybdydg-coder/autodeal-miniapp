@@ -17,7 +17,7 @@ import uuid
 from urllib.parse import urlsplit
 from zoneinfo import ZoneInfo
 
-from sqlalchemy import create_engine, select
+from sqlalchemy import create_engine, func, select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
@@ -35,6 +35,9 @@ MAX_AGE, MAX_QUEUE, MAX_SEEN = 3600, 128, 10000
 HTTP_HOURLY, HTTP_DAILY, HTTP_BYTES = 125, 1600, 3 * 1024**3
 API_HOURLY, API_DAILY = 200, 1000
 DENIED = {"access_denied", "robots_denied"}
+DETAIL_PAUSES = {"quota_exceeded", "reserved_for_new_publications", "busy", "search_limit"}
+DETAIL_TRANSIENT = {"connection_error", "upstream_error", "invalid_response"}
+DETAIL_MAX_FAILURES = 3
 
 
 def enabled(settings):
@@ -132,7 +135,7 @@ def parse(body):
         # An absent non-USD preview is not a price claim; the API remains authoritative.
         price = prices[0] if len(prices) == 1 else None
         if price is not None and price <= 0:
-            continue
+            price = None
         result.append({"id": sid, "added_at": row["added"][0], "preview_usd": price})
     return result
 
@@ -147,6 +150,30 @@ def discard(data, reason, count=1):
     data["discarded"] += count
     reasons = data.setdefault("discard_reasons", {})
     reasons[reason] = reasons.get(reason, 0) + count
+
+
+def retain_unresolved(db, sid, item, reason, failure=None):
+    """Retain an unverified detail outcome; this cannot authorize a delivery.
+
+    Use the existing durable job store instead of an unbounded JSON archive.
+    A later genuine primary discovery may reopen it under the normal rules.
+    Existing primary jobs and their evidence always win.
+    """
+    if db.get(MonitorJob, sid) is not None:
+        return
+    try:
+        with db.begin_nested():
+            db.add(MonitorJob(source_id=sid, state="unresolved", reason=reason,
+                first_seen=item.get("queued_at", item["added_at"]),
+                last_attempt=time.time(), attempts=item.get("attempts", 0),
+                result={"discovery_kind": KIND, "html_added_at": item["added_at"],
+                        "html_verified": False, "detail_attempts": item.get("attempts", 0),
+                        "detail_failure": failure or reason}))
+            db.flush()
+    except IntegrityError:
+        # Primary discovery may have inserted the same ID since the read.
+        # Preserve its job and the caller's surrounding intake transaction.
+        pass
 
 
 def disable(db):
@@ -254,6 +281,9 @@ def collect(engine, settings, fetcher=html_shadow.fetch, now=None):
             else:
                 data["seen"] = {sid: at for sid, at in data["seen"].items() if at > finished - 2 * MAX_AGE}
                 before_expiry = len(data["pending"])
+                for sid, item in data["pending"].items():
+                    if item["added_at"] <= finished - MAX_AGE:
+                        retain_unresolved(db, sid, item, "details_expired")
                 data["pending"] = {sid: item for sid, item in data["pending"].items()
                                    if item["added_at"] > finished - MAX_AGE}
                 if before_expiry > len(data["pending"]):
@@ -262,19 +292,25 @@ def collect(engine, settings, fetcher=html_shadow.fetch, now=None):
                     row.status = "storage_wait"
                 else:
                     for sid, item in sorted(rows.items(), key=lambda pair: (-pair[1]["added_at"], pair[0])):
-                        if (sid in data["seen"] or sid in data["pending"] or
+                        # A changed update/price never opens a new opportunity;
+                        # a genuinely newer addition date may, subject to the
+                        # existing job, recipient and official-detail guards.
+                        if (data["seen"].get(sid, 0) >= item["added_at"] or sid in data["pending"] or
                                 not max(data["baseline_at"], finished - MAX_AGE) < item["added_at"] <= finished):
                             continue
                         if len(data["seen"]) >= MAX_SEEN:
                             break
-                        data["seen"][sid] = item["added_at"]
                         if db.get(MonitorJob, sid) is not None:
+                            data["seen"][sid] = item["added_at"]
                             data["duplicates"] += 1
                             continue
                         if len(data["pending"]) >= MAX_QUEUE:
                             data["queue_overflow"] += 1
                             continue
-                        data["pending"][sid] = {**item, "attempts": 0, "next_at": 0}
+                        # Overflow is not acceptance: keep this event eligible
+                        # if a later allowed snapshot sees it before expiry.
+                        data["seen"][sid] = item["added_at"]
+                        data["pending"][sid] = {**item, "attempts": 0, "next_at": 0, "queued_at": finished}
                         data["queued"] += 1
                     row.status = "watching"
             data["cycles"] += 1
@@ -342,22 +378,33 @@ def take(monitor, source, *, after_primary=False):
             data["after_primary_next_at"] = now + 15
         baseline = data["baseline_at"]
         targets = []
+        filters_pending = False
         if item["added_at"] > now - MAX_AGE and db.get(MonitorJob, sid) is None:
             for search, watch, member in active_members(db):
                 if member.started_at > item["added_at"] or db.get(MonitorSeen, (search.id, sid)) is not None or claimed(db, search.user_id, sid):
                     continue
                 filters = Filters.model_validate(search.filters)
-                preview = item["preview_usd"]
-                if preview is not None and ((filters.price.from_ is not None and preview < filters.price.from_)
-                        or (filters.price.to is not None and preview > filters.price.to)):
-                    continue
+                # A public preview may lag the current official price. Apply
+                # price bounds only to the refreshed candidate in matches().
                 try:
                     _, resolved = RiaSearch.cached_parameters(db, source_filters(filters))
-                except RiaError:
+                except RiaError as exc:
+                    filters_pending |= str(exc) == "catalog_not_cached"
                     continue
                 targets.append((search.id, search.user_id, watch.epoch, resolved))
+        if filters_pending:
+            # Normal primary discovery populates the dictionary cache.
+            # Wait before fixing the shared recipient set: resolving some
+            # searches must not silently exclude other unresolved searches.
+            item["next_at"], item["last_error"] = now + 60, "catalog_not_cached"
+            data["pending"][sid] = item
+            row.result = data
+            db.commit()
+            return True
         if not targets:
             data["pending"].pop(sid)
+            if item["added_at"] <= now - MAX_AGE:
+                retain_unresolved(db, sid, item, "details_expired")
             discard(data, "expired" if item["added_at"] <= now - MAX_AGE else "no_eligible_subscription")
             row.result = data
             db.commit()
@@ -368,12 +415,11 @@ def take(monitor, source, *, after_primary=False):
         row.result = data
         db.commit()
     source.request_policy = reserve_api
+    failure = None
     try:
         candidate = source.car(sid, force=True)
     except RiaError as exc:
-        if str(exc) in {"quota_exceeded", "reserved_for_new_publications", "busy", "search_limit",
-                        "connection_error", "upstream_error"} and item["attempts"] < 3:
-            return True
+        failure = str(exc)
         candidate = None
     with monitor._state_lock, Session(monitor.engine) as db:
         if not monitor.owned(db):
@@ -382,7 +428,25 @@ def take(monitor, source, *, after_primary=False):
         data = copy.deepcopy(row.result)
         if data["pending"].get(sid, {}).get("added_at") != item["added_at"]:
             return True
+        if failure in DETAIL_PAUSES or (failure in DETAIL_TRANSIENT and item["attempts"] < DETAIL_MAX_FAILURES):
+            # Budget/lease pauses happen before detail I/O. They are not failed
+            # observations and must never consume the finite retry allowance.
+            if failure in DETAIL_PAUSES:
+                item["attempts"] -= 1
+            item["last_error"] = failure
+            item["next_at"] = time.time() + 60 * 2 ** max(0, item["attempts"] - 1)
+            data["pending"][sid] = item
+            row.result = data
+            db.commit()
+            return True
         data["pending"].pop(sid)
+        if failure and failure != "listing_unavailable":
+            retain_unresolved(db, sid, item,
+                "details_retry_exhausted" if failure in DETAIL_TRANSIENT else "details_unavailable", failure)
+            # Unknown data is retained separately from a proved filter rejection.
+            row.result = data
+            db.commit()
+            return True
         proof = {"discovery_kind": KIND, "publication_after": item["added_at"],
                  "html_added_at": item["added_at"], "html_baseline_at": baseline,
                  "html_expires_at": item["added_at"] + MAX_AGE, "html_verified": True}
@@ -428,6 +492,10 @@ def status(engine, settings):
         return {"enabled": enabled(settings), "status": row.status, "scope": "two_dated_public_pages",
                 "source_timezone": "Europe/Kyiv", "baseline_at": data.get("baseline_at"),
                 "interval_seconds": interval(now), "pending_candidates": len(data.get("pending", {})),
+                "unresolved_detail_jobs": db.scalar(select(func.count()).select_from(MonitorJob).where(
+                    MonitorJob.state == "unresolved", MonitorJob.result["discovery_kind"].as_string() == KIND)),
+                "oldest_pending_at": min((item.get("queued_at", item["added_at"])
+                    for item in data.get("pending", {}).values()), default=None),
                 "reserved_http_requests": row.requests, "http_calls_last_hour": sum(
                     e[1] for e in data.get("http", []) if e[0] > now - 3600),
                 "paid_calls_last_hour": sum(at > now - 3600 for at in data.get("api", [])),

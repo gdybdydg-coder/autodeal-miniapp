@@ -330,9 +330,11 @@ def test_preview_exactly_one_and_timeout_no_retry(setup):
 
 def test_api_and_worker_enforce_both_queue_and_send_keep_filters(setup, monkeypatch):
     engine, settings = setup
+    from backend import bot_commands
     async def idle(*args):
         return
     monkeypatch.setattr(c,"run",idle)
+    monkeypatch.setattr(bot_commands,"run",idle)
     with TestClient(create_app(settings,engine)) as api:
         command(api,"/start",update=99)
         sid=subscribe(api).json()["id"]

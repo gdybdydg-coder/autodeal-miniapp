@@ -326,26 +326,52 @@ class TelegramSender:
 
 
 def deliver_one(engine, settings: Settings, sender, now=None, *, enforce_chat_interval=True):
+    skipped_users = set()
+    while True:
+        state, busy_user = _deliver_next(engine, settings, sender, now,
+            enforce_chat_interval=enforce_chat_interval, skipped_users=skipped_users)
+        if busy_user is None:
+            return state
+        # All pending rows for a busy chat can lead the queue. Skip that chat
+        # for this work slot, so short deferrals cannot starve later recipients.
+        skipped_users.add(busy_user)
+
+
+def _deliver_next(engine, settings, sender, now, *, enforce_chat_interval, skipped_users):
     if not settings.live:
-        return "disabled"
+        return "disabled", None
+    live_clock = now is None
     now = time.time() if now is None else now
     with Session(engine) as db:
         row = db.scalar(select(Delivery).where(
-            Delivery.state == "pending", Delivery.retry_at <= now).order_by(Delivery.id)
+            Delivery.state == "pending", Delivery.retry_at <= now,
+            Delivery.user_id.not_in(skipped_users)).order_by(Delivery.id)
             .with_for_update(skip_locked=True).limit(1))
         if row is None:
-            return "empty"
+            return ("pending" if skipped_users else "empty"), None
         delivery_id = row.id
         claimed = db.execute(update(Delivery).where(
             Delivery.id == delivery_id, Delivery.state == "pending",
             Delivery.retry_at <= now).values(state="sending", retry_at=now))
         db.commit()
         if claimed.rowcount != 1:
-            return "busy"
+            return "busy", None
     with Session(engine) as db:
         row = db.get(Delivery, delivery_id)
-        # Same lock as /stop and subscription edits; recheck immediately before send.
-        user = db.scalar(select(User).where(User.id == row.user_id).with_for_update())
+        # Same lock as /stop and subscription edits. A busy chat must not occupy
+        # another sender slot while an unrelated recipient can make progress.
+        user = db.scalar(select(User).where(User.id == row.user_id)
+                         .with_for_update(skip_locked=True))
+        # Claiming/locking may have taken time. Never test expiry, stale prices
+        # or per-chat pacing against the timestamp from before that wait.
+        if live_clock:
+            now = time.time()
+        if user is None and db.scalar(select(User.id).where(User.id == row.user_id)) is not None:
+            # SKIP LOCKED returns no row for an existing, busy user. Defer the
+            # pair; do not interpret contention as /stop or expired access.
+            row.state, row.retry_at = "pending", now + .25
+            db.commit()
+            return row.state, row.user_id
         listing = db.get(Listing, row.listing_id)
         last_send = db.scalar(select(func.max(DeliveryTiming.send_started_at))
             .join(Delivery, Delivery.id == DeliveryTiming.delivery_id)
@@ -430,8 +456,13 @@ def deliver_one(engine, settings: Settings, sender, now=None, *, enforce_chat_in
                                       car.source_id, rating.get("valuation_reasons", []), rating.get("comparables", 0),
                                       sorted(peer["price_usd"] for peer in proof.get("peers", [])))
             elif result.get("error_code") == 429:
-                retry = result.get("parameters", {}).get("retry_after", 60)
-                row.retry_at = now + max(1, min(int(retry), 86400))
+                parameters = result.get("parameters")
+                retry = parameters.get("retry_after") if isinstance(parameters, dict) else None
+                # An explicit rejection can be retried, but malformed optional
+                # metadata must not strand the durable claim in "sending".
+                retry = max(1, min(retry, 86400)) if type(retry) is int else 60
+                rejected_at = time.time() if live_clock else now
+                row.retry_at = rejected_at + retry
                 row.state = "pending"
             elif result.get("error_code") == 403:
                 row.state = "failed"
@@ -444,7 +475,7 @@ def deliver_one(engine, settings: Settings, sender, now=None, *, enforce_chat_in
                 row.state = "uncertain"
             delivery_diagnostic.record(db, row, car, result, delivery_log)
         db.commit()
-        return row.state
+        return row.state, None
 
 
 def main():
