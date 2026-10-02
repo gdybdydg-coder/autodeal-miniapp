@@ -3,6 +3,13 @@ name: Isolated manual-payment verification
 on:
   push:
     branches: [wip/manual-payment-verification-20261002]
+    paths:
+      - 'backend/**'
+      - '!backend/docs/**'
+      - '*-test.cjs'
+      - 'payment-review*'
+      - 'tools/manual-payment-ui-smoke.cjs'
+      - '.github/workflows/manual-payment-verification.yml'
 
 permissions:
   contents: read

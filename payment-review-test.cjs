@@ -62,3 +62,10 @@ test('all states, search and pagination use the server queue',async()=>{
   await ui.find('Знайти').click();assert.ok(ui.calls.at(-1).url.includes('search=AD-FIXTURE'));
   await ui.find('Наступна').click();assert.ok(ui.calls.at(-1).url.includes('page=2'));
 });
+test('superseded status messages stay visible in history without a retry action',async()=>{
+  const ui=await fixture(url=>url.includes('/admin?')?listing:url.endsWith('/notices')?
+    [{id:'n',kind:'client',state:'superseded'}]:row);
+  await ui.find(row.code).click();
+  assert.ok(nodes(ui.screen).some(n=>n.textContent.includes('Замінено новішим статусом заявки')));
+  assert.equal(ui.find('Повторити відхилене'),undefined);
+});

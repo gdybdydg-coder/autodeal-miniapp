@@ -350,6 +350,15 @@ def deliver_notice(engine, settings, request, now=None):
     with mutation(engine, settings) as db:
         db.execute(update(PaymentNotice).where(PaymentNotice.state == "sending",
                     PaymentNotice.attempted_at < now-60).values(state="uncertain"))
+        newer_request = select(PaymentRequest.id).where(
+            PaymentRequest.id == PaymentNotice.request_id,
+            PaymentRequest.revision > PaymentNotice.revision).exists()
+        # Keep historical notices, but do not deliver obsolete queued states
+        # (e.g. "clarification needed" after the owner already approved access).
+        # Already attempted/uncertain sends remain available for reconciliation.
+        db.execute(update(PaymentNotice).where(
+            PaymentNotice.state.in_(("pending", "retry")), newer_request
+        ).values(state="superseded"))
         row = db.scalar(select(PaymentNotice).where(PaymentNotice.state.in_(("pending", "retry")),
                         PaymentNotice.retry_at <= now).order_by(PaymentNotice.id).limit(1))
         if row is None:

@@ -338,6 +338,40 @@ def test_outbox_429_honors_delay(review):
         "result": {"message_id": 1}}, NOW+13) == "sent"
 
 
+def test_queued_old_statuses_never_arrive_after_approval(review):
+    engine, settings, _ = review
+    row = pending(review)
+    m.change_state(engine, settings, ADMIN, row["code"], "clarification",
+                   "Уточніть переказ", row["revision"], NOW+2)
+    row = m.report_paid(engine, settings, UID, row["code"], NOW+3, transfer_note="Уточнення")
+    p = preview(review, row, NOW+4)
+    m.confirm(engine, settings, ADMIN, p["confirmation"], NOW+5)
+    sent = []
+    def accepted(token, method, payload, **kw):
+        sent.append(payload)
+        return {"ok": True, "result": {"message_id": 1}}
+    assert m.deliver_notice(engine, settings, accepted, NOW+6) == "sent"
+    assert m.deliver_notice(engine, settings, accepted, NOW+7) == "empty"
+    assert len(sent) == 1 and sent[0]["chat_id"] == UID
+    assert "підтверджено власником" in sent[0]["text"]
+    with Session(engine) as db:
+        statuses = list(db.scalars(select(PaymentNotice.state)))
+        assert statuses.count("superseded") == 3 and statuses.count("sent") == 1
+
+
+def test_superseding_does_not_hide_an_uncertain_send(review):
+    engine, settings, _ = review
+    row = pending(review)
+    assert m.deliver_notice(engine, settings, lambda *a, **k: {}, NOW+2) == "uncertain"
+    p = preview(review, row, NOW+3)
+    m.confirm(engine, settings, ADMIN, p["confirmation"], NOW+4)
+    assert m.deliver_notice(engine, settings, lambda *a, **k: {
+        "ok": True, "result": {"message_id": 2}}, NOW+5) == "sent"
+    with Session(engine) as db:
+        assert db.scalar(select(func.count()).select_from(PaymentNotice).where(
+            PaymentNotice.state == "uncertain")) == 1
+
+
 def test_queue_pages_filters_literal_search_and_missing_username(review):
     engine, settings, _ = review
     with Session(engine) as db, db.begin():

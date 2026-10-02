@@ -63,7 +63,7 @@
     const notices=await request('/admin/'+encodeURIComponent(code)+'/notices');
     if(notices.length){
       el('h3','Повідомлення');
-      const noticeLabel={pending:'У черзі',sending:'Відправляється',sent:'Прийнято Telegram',retry:'Очікує повтору',failed:'Відправлення відхилено',uncertain:'Результат невідомий — потрібна ручна перевірка'};
+      const noticeLabel={pending:'У черзі',sending:'Відправляється',sent:'Прийнято Telegram',retry:'Очікує повтору',failed:'Відправлення відхилено',superseded:'Замінено новішим статусом заявки',uncertain:'Результат невідомий — потрібна ручна перевірка'};
       notices.forEach(n=>{el('p',(n.kind==='owner'?'Власнику: ':'Клієнту: ')+(noticeLabel[n.state]||n.state));
         if(n.state==='failed')button('Повторити відхилене повідомлення',async()=>{await request('/admin/retry-notice',{notice_id:n.id});await card(code);});});
     }
