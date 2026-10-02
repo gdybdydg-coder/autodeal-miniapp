@@ -49,7 +49,14 @@ def snapshot(db, now):
     ctrl = billing.control(db)
     counts = dict(db.execute(select(CampaignRecipient.state, func.count()).where(
         CampaignRecipient.campaign_id == CAMPAIGN).group_by(CampaignRecipient.state)).all())
-    return {"campaign": CAMPAIGN, "status": row.status if row else "not_prepared",
+    checkout_error = None
+    try:
+        manual_checkout.require_sales(db)
+    except m.ReviewError as exc:
+        checkout_error = exc.code
+    return {"checkout_error": checkout_error, "offer_valid": bool(ctrl and manual_checkout.offer_valid(ctrl.offer)),
+            "public_enabled": m.public_creation_allowed(),
+            "campaign": CAMPAIGN, "status": row.status if row else "not_prepared",
             "sales": bool(ctrl and ctrl.sales), "enforce": bool(ctrl and ctrl.enforce),
             "payment_method": (ctrl.offer or {}).get("method") if ctrl else None,
             "recipient_states": counts, "access": inventory(db, now),
