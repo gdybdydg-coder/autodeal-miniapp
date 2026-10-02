@@ -10,6 +10,7 @@ import sqlite3
 from statistics import median, quantiles
 from urllib.parse import urlparse
 from .prototype import normalize, matches, Car
+from .price_review import review
 
 
 def canonical(raw, now, first_seen=None):
@@ -18,6 +19,13 @@ def canonical(raw, now, first_seen=None):
         c[key] = raw.get(key)
     c['photos'] = [p for p in c['photos'] if urlparse(p).scheme == 'https']
     c['evidence'] = raw.get('evidence', 'unverified')
+    c['price_review'] = review(raw)
+    for key in ('generation','body','locality','vehicle_key'):
+        value=c[key]
+        c[key]=value.strip() if isinstance(value,str) and value.strip() else None
+    for key in ('engine_cc','created_at','checked_at'):
+        value=c[key]
+        c[key]=value if type(value) is int and value>0 else None
     return c
 
 
@@ -39,6 +47,8 @@ def estimate(target, comparables, now, *, minimum=8, max_age=30*86400):
     """
     unknown = lambda reason, n=0: {'status': 'profitability_unconfirmed', 'reason': reason, 'sample': n}
     keys = ('brand', 'model', 'generation', 'body', 'fuel', 'transmission', 'engine_cc')
+    if target.get('price_review',{}).get('status') == 'needs_review':
+        return unknown('price_evidence_conflict')
     if target['price_kind'] != 'full' or target['price'] is None or target['currency'] is None:
         return unknown('full_price_unconfirmed')
     if target['category'] != 'whole_passenger_car':
@@ -57,6 +67,8 @@ def estimate(target, comparables, now, *, minimum=8, max_age=30*86400):
             continue
         age = now - checked
         if not 0 <= age <= max_age or c['currency'] != target['currency'] or c['price_kind'] != 'full':
+            continue
+        if c.get('price_review',{}).get('status') == 'needs_review':
             continue
         if c['category'] != 'whole_passenger_car' or c['price'] is None:
             continue
@@ -117,6 +129,7 @@ class Pipeline:
         CREATE TABLE IF NOT EXISTS runs(at INTEGER,status TEXT,pages INTEGER,rows INTEGER,reason TEXT);
         CREATE TABLE IF NOT EXISTS delivery_proof(uid TEXT,source TEXT,id TEXT,fingerprint TEXT,expires INTEGER,PRIMARY KEY(uid,source,id));
         CREATE TABLE IF NOT EXISTS page_cursors(cursor TEXT PRIMARY KEY);
+        CREATE TABLE IF NOT EXISTS assessments(source TEXT,id TEXT,at INTEGER,fingerprint TEXT,result TEXT,PRIMARY KEY(source,id));
         CREATE INDEX IF NOT EXISTS delivery_status ON deliveries(status);
         CREATE INDEX IF NOT EXISTS listing_eligibility ON listings(eligibility);
         ''')
@@ -184,11 +197,29 @@ class Pipeline:
     def cars(self, only_new=False):
         return [json.loads(r[0]) for r in self.db.execute('SELECT payload FROM listings' + (" WHERE eligibility='new'" if only_new else ''))]
 
+    def assessment_summary(self):
+        """Saved decisions, explicitly distinguish changed cards from current evidence."""
+        totals = dict(listings=0, unassessed=0, changed_since_assessment=0, experimental=0, unknown=0, reasons={})
+        for payload, saved, result in self.db.execute('SELECT l.payload,a.fingerprint,a.result FROM listings l LEFT JOIN assessments a ON l.source=a.source AND l.id=a.id'):
+            totals['listings'] += 1
+            if saved is None:
+                totals['unassessed'] += 1; continue
+            if fingerprint(json.loads(payload)) != saved:
+                totals['changed_since_assessment'] += 1; continue
+            decision=json.loads(result)
+            if decision['status']=='experimental_estimate':
+                totals['experimental'] += 1
+            else:
+                totals['unknown'] += 1
+                reason=decision['reason'];totals['reasons'][reason]=totals['reasons'].get(reason,0)+1
+        return totals
+
     def enqueue(self, users, comparisons, now, *, capacity, olx_enabled=False):
         counts = dict(queued=0, filtered=0, uncertain=0, denied=0, overflow=0)
         pending = self.db.execute("SELECT count(*) FROM deliveries WHERE status='pending'").fetchone()[0]
         for c in self.cars(True):
             assessment = estimate(c, comparisons, now)
+            self.db.execute('INSERT OR REPLACE INTO assessments VALUES(?,?,?,?,?)',(c['source'],c['id'],now,fingerprint(c),json.dumps(assessment)))
             for u in users:
                 if c['source'] not in source_selection(u.get('source')) or (c['source']=='olx' and not olx_enabled):
                     continue
