@@ -99,20 +99,41 @@ def test_definite_rejection_never_retried(prepared):
     assert preflight.run_once(*bank[:2], lambda *a, **k: pytest.fail("must not retry"), NOW+60) == "failed"
 
 
-def test_missing_owner_request_blocks_without_creating_one(bank, monkeypatch):
+@pytest.mark.parametrize("owner_state", [None, "approved", "rejected"])
+def test_no_open_owner_request_sends_pure_preview_without_creating_one(bank, monkeypatch, owner_state):
     engine, settings, _ = bank
     monkeypatch.setenv(preflight.ENV, preflight.CAMPAIGN)
     checkout.create(engine, settings, UID, NOW, checkout.TERMS_VERSION)
+    if owner_state:
+        row = checkout.create(engine, settings, ADMIN, NOW, checkout.TERMS_VERSION)
+        with Session(engine) as db, db.begin():
+            db.get(PaymentRequest, row["code"]).state = owner_state
     with Session(engine) as db, db.begin():
         billing.control(db).enforce = True
-    assert preflight.run_once(engine, settings, lambda *a, **k: pytest.fail("must not send"), NOW) == "blocked"
-    assert count(engine, PaymentRequest) == 1
+    count_before = count(engine, PaymentRequest)
+    calls = []
+    def accepted(token, method, payload, **kwargs):
+        calls.append((method, payload))
+        return {"ok": True, "result": {"message_id": 42}}
+    assert preflight.run_once(engine, settings, accepted, NOW) == "accepted"
+    assert preflight.run_once(engine, settings, accepted, NOW+1) == "accepted"
+    assert len(calls) == 1
+    method, payload = calls[0]
+    assert method == "sendMessage" and payload["chat_id"] == ADMIN
+    expected = checkout.render_requisites(ADMIN, checkout.subscription_preview.receiving_profile())
+    assert payload["reply_markup"] == expected["reply_markup"]
+    assert payload["text"].endswith(expected["text"])
+    buttons = [b for r in payload["reply_markup"]["inline_keyboard"] for b in r]
+    assert [b["callback_data"] for b in buttons if "callback_data" in b] == [checkout.PREFIX+"view"]
+    assert "4242424242424242" in [b["copy_text"]["text"] for b in buttons if "copy_text" in b]
+    assert count(engine, PaymentRequest) == count_before
+    assert count(engine, Entitlement) == count(engine, BankCredit) == count(engine, PaymentNotice) == 0
     with Session(engine) as db:
-        assert db.get(SourceProbe, preflight.PROBE_ID).result["code"] == "owner_request_missing"
-        assert not preflight.ready(db)
+        assert preflight.ready(db)
+        assert not billing.expiry(db, ADMIN)
 
 
-@pytest.mark.parametrize("guard", ["sales", "enforce", "closed_request", "profile"])
+@pytest.mark.parametrize("guard", ["sales", "enforce", "profile"])
 def test_unready_checkout_blocks(prepared, monkeypatch, guard):
     bank, row = prepared
     engine, settings, _ = bank
@@ -120,10 +141,7 @@ def test_unready_checkout_blocks(prepared, monkeypatch, guard):
         monkeypatch.delenv(checkout.subscription_preview.RECIPIENT_ENV)
     else:
         with Session(engine) as db, db.begin():
-            if guard == "closed_request":
-                db.get(PaymentRequest, row["code"]).state = "rejected"
-            else:
-                setattr(billing.control(db), guard, False)
+            setattr(billing.control(db), guard, False)
     assert preflight.run_once(engine, settings, lambda *a, **k: pytest.fail("must not send"), NOW) == "blocked"
 
 
@@ -154,3 +172,35 @@ def test_ready_requires_exact_campaign_and_marker(prepared):
         assert not preflight.ready(db)
         row.result = preflight.proof("accepted")
         assert preflight.ready(db)
+
+
+@pytest.mark.parametrize("reason", ["owner_request_missing", "owner_request_not_open"])
+def test_only_unattempted_owner_order_block_can_resume(bank, monkeypatch, reason):
+    engine, settings, _ = bank
+    monkeypatch.setenv(preflight.ENV, preflight.CAMPAIGN)
+    with Session(engine) as db, db.begin():
+        billing.control(db).enforce = True
+        db.add(SourceProbe(id=preflight.PROBE_ID, status="blocked", checked_at=NOW,
+                           requests=0, result=preflight.proof(reason)))
+    calls = []
+    def accepted(*args, **kwargs):
+        calls.append(1)
+        return {"ok": True, "result": {"message_id": 42}}
+    assert preflight.run_once(engine, settings, accepted, NOW+1) == "accepted"
+    assert preflight.run_once(engine, settings, accepted, NOW+2) == "accepted"
+    assert len(calls) == 1 and count(engine, PaymentRequest) == 0
+
+
+@pytest.mark.parametrize("status,requests,reason", [
+    ("blocked", 1, "owner_request_missing"),
+    ("blocked", 0, "recipient_configuration_unavailable"),
+    ("accepted", 1, "accepted"),
+    ("failed", 1, "owner_request_missing"),
+    ("uncertain", 1, "owner_request_missing"),
+])
+def test_unrelated_or_attempted_probe_is_never_rearmed(prepared, status, requests, reason):
+    bank, _ = prepared
+    with Session(bank[0]) as db, db.begin():
+        db.add(SourceProbe(id=preflight.PROBE_ID, status=status, checked_at=NOW,
+                           requests=requests, result=preflight.proof(reason)))
+    assert preflight.run_once(*bank[:2], lambda *a, **k: pytest.fail("must not send"), NOW+1) == status

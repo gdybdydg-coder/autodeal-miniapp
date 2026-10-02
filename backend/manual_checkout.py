@@ -181,7 +181,11 @@ def details(engine, settings, uid, code, more=False):
     if row["state"] not in ("created", "clarification", "review"):
         return request_card(engine, settings, uid, code)
     data = requisites(engine, settings, uid, code)
-    profile = data["recipient"]
+    return render_requisites(uid, data["recipient"], code, row["state"], more)
+
+
+def render_requisites(uid, profile, code=None, state="preview", more=False):
+    """Same bank-card template; owner delivery check needs no payment ledger row."""
     iban, card = profile["iban"], profile.get("card_number")
     grouped = " ".join(iban[i:i+4] for i in range(0, len(iban), 4))
     lines = ["🚘 <b>AutoDeal · Оплата доступу</b>",
@@ -192,13 +196,17 @@ def details(engine, settings, uid, code, more=False):
     if card:
         lines.append("💳 <b>Номер картки</b>\n<code>"+" ".join(card[i:i+4] for i in range(0,16,4))+"</code>")
         buttons.append([{"text": "Скопіювати картку", "copy_text": {"text": card}}])
+    if code is None:
+        lines.append("Перевірка для власника. Переказ робити не потрібно.")
+        buttons.append([{"text": "Відкрити підписку", "callback_data": PREFIX+"view"}])
+        return response(uid, lines, buttons)
     if more:
         purpose = "Оплата абонемента AutoDeal, заявка "+code
         lines.extend(["Код отримувача: <code>"+profile["recipient_code"]+"</code>",
                       "Банк: "+escape(profile["bank_name"]),
                       "Призначення: <code>"+purpose+"</code>"])
         buttons.append([{"text": "Скопіювати призначення", "copy_text": {"text": purpose}}])
-    if row["state"] == "review":
+    if state == "review":
         lines.append("🕓 Ти вже повідомив про оплату.\nЯкщо переказ зроблено — повторно не сплачуй. Доступ відкриє власник після перевірки.")
         buttons.append([{"text": "🔄 Перевірити оплату", "callback_data": PREFIX+"status:"+code}])
     else:
