@@ -22,6 +22,7 @@ AMOUNT_UAH, DAYS = 250, 30
 PAYMENTS_ENABLED = False
 MAX_ORDERS = 20
 RECIPIENT_ENV = "SUBSCRIPTION_PREVIEW_RECIPIENT_JSON"
+CARD_ENV = "SUBSCRIPTION_PREVIEW_CARD_NUMBER"
 COMMANDS = {"/subtest", "/subscription_test", "/subtest_admin"}
 PREFIX = "subtest:"
 
@@ -184,6 +185,9 @@ def receiving_profile():
     digits = "".join(str(ord(c)-55) if "A" <= c <= "Z" else c for c in rearranged)
     if int(digits) % 97 != 1:
         return None
+    card = re.sub(r"\s", "", os.environ.get(CARD_ENV, ""))
+    if re.fullmatch(r"[0-9]{16}", card):
+        result["card_number"] = card
     return result
 
 
@@ -216,11 +220,19 @@ def render_requisites(state, *, receipt=False):
                 "🏦 <b>Реквізити · лише перегляд</b>",
                 "👤 <b>Отримувач</b>\n"+escape(profile["recipient_name"]),
                 "💳 <b>Рахунок · IBAN</b>\n<code>"+grouped+"</code>",
+            ])
+            card = profile.get("card_number")
+            if card:
+                grouped_card = " ".join(card[i:i+4] for i in range(0, len(card), 4))
+                sections.append("💳 <b>Номер картки</b>\n<code>"+grouped_card+"</code>")
+            sections.extend([
                 "🔢 <b>Код отримувача</b>\n<code>"+profile["recipient_code"]+"</code>",
                 "🏦 <b>Банк</b>\n"+escape(profile["bank_name"]),
                 f"✍️ <b>Зразок призначення платежу</b>\nОплата абонемента AUTODeal на {escape(str(days))} днів",
             ])
             keyboard.append([{"text": "📋 Скопіювати IBAN", "copy_text": {"text": iban}}])
+            if card:
+                keyboard.append([{"text": "📋 Скопіювати номер картки", "copy_text": {"text": card}}])
             keyboard.append([{"text": "✅ Я оплатив · тест", "callback_data": PREFIX+"receipt_preview"}])
     keyboard.append([{"text": "← До абонемента", "callback_data": PREFIX+"view"}])
     return {"method": "sendMessage", "chat_id": OWNER, "text": "\n\n".join(sections), "parse_mode": "HTML",

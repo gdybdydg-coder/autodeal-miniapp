@@ -1,5 +1,19 @@
 # Private receiving-details preview — 2026-10-01
 
+## Receiving-card display update — 2026-10-02
+
+The owner requested a receiving card immediately below the IBAN, with its own
+native copy button. `SUBSCRIPTION_PREVIEW_CARD_NUMBER` supplies the number via
+private service configuration; no real card number is committed. The preview
+groups the 16 ASCII digits in fours and copies the digits without spaces.
+Missing or invalid card configuration leaves the existing IBAN usable.
+The owner-only authorization, inert payment warning and manual-access workflow
+are unchanged. This does not enable sales or deploy the manual-review WIP.
+
+Validation: 61 focused subscription-preview tests passed, including both copy
+buttons, display order, optional/invalid configuration and existing auth checks.
+Actual clipboard behavior in the owner's Telegram client remains a user check.
+
 ## Authorization and baseline
 
 The owner approved adding the illustrated receiving-details card to the existing

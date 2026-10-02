@@ -1,11 +1,15 @@
 """Synthetic money, isolated databases and signed fixture Telegram identities only."""
 from concurrent.futures import ThreadPoolExecutor
 from dataclasses import replace
+from datetime import datetime, timezone
+import os
 import time
+import uuid
 
 import pytest
 from fastapi.testclient import TestClient
-from sqlalchemy import create_engine, event, inspect, select, func
+from sqlalchemy import create_engine, event, inspect, select, func, text
+from sqlalchemy.engine import make_url
 from sqlalchemy.dialects import postgresql
 from sqlalchemy.exc import OperationalError
 from sqlalchemy.orm import Session
@@ -23,12 +27,28 @@ ADMIN, UID, OTHER = 987654321, 111, 222
 NOW = 1790922000
 
 
-@pytest.fixture
-def review(tmp_path, monkeypatch):
+@pytest.fixture(params=["sqlite"] + (["postgresql"] if os.getenv("AUTODEAL_TEST_POSTGRES_URL") else []))
+def review(tmp_path, monkeypatch, request):
     monkeypatch.setenv("SUBSCRIPTION_EXPECTED_ADMIN_ID", str(ADMIN))
     monkeypatch.delenv("SUBSCRIPTION_LAUNCH_PREPARED", raising=False)
-    url = "sqlite:///" + str(tmp_path / "review.sqlite")
-    engine = create_engine(url, connect_args={"check_same_thread": False, "timeout": 30})
+    admin_engine = schema = None
+    if request.param == "postgresql":
+        url = make_url(os.environ["AUTODEAL_TEST_POSTGRES_URL"])
+        # Never accept DATABASE_URL or a production host/account. Each test owns
+        # a fresh schema inside an explicitly named, disposable localhost DB.
+        if (url.drivername != "postgresql+psycopg" or url.host != "127.0.0.1"
+                or url.database != "autodeal_manual_fixture" or url.username != "autodeal_fixture"
+                or url.password != "fixture-only" or url.query or not url.port):
+            pytest.fail("Expected the isolated localhost manual-payment fixture database")
+        admin_engine = create_engine(url, connect_args={"connect_timeout": 5})
+        schema = "manual_fixture_" + uuid.uuid4().hex
+        with admin_engine.begin() as conn:
+            conn.execute(text('CREATE SCHEMA "'+schema+'"'))
+        url = url.update_query_dict({"options": "-csearch_path="+schema+" -cstatement_timeout=15000"})
+        engine = create_engine(url, connect_args={"connect_timeout": 5})
+    else:
+        url = "sqlite:///" + str(tmp_path / "review.sqlite")
+        engine = create_engine(url, connect_args={"check_same_thread": False, "timeout": 30})
     Base.metadata.create_all(engine)
     settings = Settings(url, TOKEN, SECRET, True, True, admin_telegram_id=ADMIN,
                         manual_payment_review_enabled=True)
@@ -42,6 +62,10 @@ def review(tmp_path, monkeypatch):
     yield engine, settings, client
     client.close()
     engine.dispose()
+    if admin_engine is not None:
+        with admin_engine.begin() as conn:
+            conn.execute(text('DROP SCHEMA "'+schema+'" CASCADE'))
+        admin_engine.dispose()
 
 
 def pending(review, uid=UID, now=NOW):
@@ -166,6 +190,38 @@ def test_concurrent_create_and_concurrent_confirmation(review):
         results = list(pool.map(lambda _: m.confirm(engine, settings, ADMIN, p["confirmation"], NOW+3), range(4)))
     assert sum(not r["replayed"] for r in results) == 1
     assert count(engine, BankCredit) == count(engine, Entitlement) == count(engine, AccessEvent) == 1
+
+
+def test_concurrent_manual_and_existing_owner_grant_preserve_access(review):
+    engine, settings, _ = review
+    row = pending(review)
+    p = preview(review, row)
+    gift_until = NOW+40*m.DAY
+    iso = datetime.fromtimestamp(gift_until, timezone.utc).isoformat()
+    def gift():
+        with Session(engine) as db, db.begin():
+            billing.admin_command(db, settings, ADMIN,
+                f"/billing_admin grant {UID} {iso} synthetic-fixture", 9876, NOW+3)
+    def manual():
+        try:
+            return m.confirm(engine, settings, ADMIN, p["confirmation"], NOW+3)
+        except m.ReviewError as exc:
+            # A grant winning the shared lock invalidates the old preview;
+            # the owner must review the new expiry before confirming again.
+            assert exc.code == "request_or_access_changed"
+            return None
+    with ThreadPoolExecutor(max_workers=2) as pool:
+        a, b = pool.submit(gift), pool.submit(manual)
+        a.result(); result = b.result()
+    if result is None:
+        p = preview(review, row, NOW+4)
+        result = m.confirm(engine, settings, ADMIN, p["confirmation"], NOW+5)
+        assert result["expires_at"] == gift_until+30*m.DAY
+    with Session(engine) as db:
+        assert billing.expiry(db, UID) >= gift_until
+        assert not db.scalar(select(Search)).enabled
+    assert count(engine, BankCredit) == 1
+    assert count(engine, AccessEvent) == 2
 
 
 def test_different_tokens_and_same_credit_different_users(review):
