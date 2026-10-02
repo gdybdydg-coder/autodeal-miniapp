@@ -107,3 +107,6 @@ Acceptance now: independently reviewable offline prototype, not live OLX support
 
 Наступний етап: [перевірка ціни та збереження причин](PRICE-REVIEW-20261002.md).
 Поточний набір: 46 тестів; старі benchmark залишено як історичні вимірювання.
+
+Перевірка контрольної вибірки: [evaluation guide](EVALUATION-20261002.md).
+Поточний набір: 58 тестів. Інструмент вимірює вибірку; повноту живого OLX не доведено.
