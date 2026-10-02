@@ -420,6 +420,52 @@ def test_registered_webhook_owner_command_and_late_receipt(review):
     assert "Квитанцію додано" not in client.post("/telegram/webhook", headers=h, json=update).json()["text"]
 
 
+def test_owner_payments_links_open_exact_request_with_ukrainian_status(review):
+    from urllib.parse import parse_qs, urlsplit
+    engine, settings, client = review
+    row = pending(review)
+    response = command(client, "/payments", uid=ADMIN).json()
+    assert "На перевірці" in response["text"]
+    assert "review" not in response["text"]
+    assert "Перевір надходження в банку" in response["text"]
+    buttons = [b for group in response["reply_markup"]["inline_keyboard"] for b in group]
+    request_button = next(b for b in buttons if b["text"].startswith("Перевірити оплату · "))
+    url = urlsplit(request_button["web_app"]["url"])
+    assert url.scheme+"://"+url.netloc == settings.origin
+    assert url.path == "/autodeal-miniapp/payment-review.html"
+    assert parse_qs(url.query) == {"code": [row["code"]], "v": ["20261002-2"]}
+    assert buttons[-1]["text"] == "📋 Усі заявки"
+    assert "web_app" not in command(client, "/payments", uid=UID).text
+    assert count(engine, Entitlement) == count(engine, BankCredit) == 0
+
+
+def test_owner_card_account_hint_is_private_and_does_not_require_profile(review, monkeypatch):
+    engine, settings, client = review
+    row = pending(review)
+    calls = []
+    def profile():
+        calls.append(1)
+        return {"iban": "UA-SYNTHETIC-OWNER-ACCOUNT"}
+    monkeypatch.setattr(manual_checkout.subscription_preview, "receiving_profile", profile)
+    path = "/api/manual-payments/admin/"+row["code"]
+    assert client.get(path).status_code == 401
+    assert client.get(path, headers=headers(UID)).status_code == 403
+    assert calls == []
+    result = client.get(path, headers=headers(ADMIN))
+    assert result.status_code == 200
+    assert result.json()["receiving_account"] == "UA-SYNTHETIC-OWNER-ACCOUNT"
+    assert "receiving_account" not in client.get("/api/manual-payments/"+row["code"], headers=headers(UID)).json()
+    assert len(calls) == 1
+    monkeypatch.setattr(manual_checkout.subscription_preview, "receiving_profile", lambda: None)
+    assert client.get(path, headers=headers(ADMIN)).json()["receiving_account"] is None
+    def unavailable():
+        raise ValueError("synthetic profile parsing failure")
+    monkeypatch.setattr(manual_checkout.subscription_preview, "receiving_profile", unavailable)
+    response = client.get(path, headers=headers(ADMIN))
+    assert response.status_code == 200 and response.json()["receiving_account"] is None
+    assert count(engine, Entitlement) == count(engine, BankCredit) == 0
+
+
 def test_only_owner_can_retry_known_failure_over_http(review):
     engine, settings, client = review
     code = pending(review)["code"]

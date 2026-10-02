@@ -7,7 +7,7 @@ const root=path.resolve(__dirname,'..');
   const browser=await chromium.launch({headless:true});
   try {
     const page=await browser.newPage({viewport:{width:390,height:844}});
-    const row={code:'AD-TEST123456',name:'Тестовий клієнт',amount_minor:25000,days:30,state:'review',revision:1,user_id:111,username:null,created_at:1790922000,current_expiry:0,receipt_attached:false,history:[]};
+    const row={code:'AD-123456789ABC',name:'Тестовий клієнт',amount_minor:25000,days:30,state:'review',revision:1,user_id:111,username:null,created_at:1790922000,current_expiry:0,receipt_attached:false,receiving_account:'FIXTURE-ACCOUNT',history:[]};
     await page.addInitScript(()=>{window.Telegram={WebApp:{initData:'SIGNED-FIXTURE',ready(){}}};});
     await page.route('**/*',async route=>{
       const u=new URL(route.request().url());
@@ -28,9 +28,11 @@ const root=path.resolve(__dirname,'..');
       }
       throw Error('Unapproved browser request '+u.hostname);
     });
-    await page.goto('https://fixture.invalid/payment-review.html');
-    await page.getByRole('button',{name:/AD-TEST/}).click();
-    await page.getByLabel('Ідентифікатор рахунку',{exact:true}).fill('FIXTURE-ACCOUNT');
+    await page.goto('https://fixture.invalid/payment-review.html?code='+row.code);
+    const account=page.getByLabel('Рахунок зарахування (IBAN)',{exact:true});
+    if(await account.inputValue()!=='FIXTURE-ACCOUNT'||!await account.evaluate(el=>el.readOnly))throw Error('Receiving account not prefilled');
+    await page.getByRole('button',{name:'✅ Підтвердити надходження і відкрити доступ',exact:true}).click();
+    await page.getByRole('alert').filter({hasText:'Номер банківської операції'}).waitFor();
     await page.getByLabel('Номер банківської операції',{exact:true}).fill('FIXTURE-CREDIT');
     await page.getByLabel('Фактично зараховано, грн',{exact:true}).fill('250,00');
     await page.getByLabel('Я особисто перевірив зарахування',{exact:true}).check();
@@ -40,6 +42,6 @@ const root=path.resolve(__dirname,'..');
     if(process.argv[2])await page.screenshot({path:process.argv[2],fullPage:true});
     await page.getByRole('button',{name:'Так, надходження перевірено — відкрити доступ',exact:true}).click();
     await page.getByRole('heading',{name:'✅ Рішення збережено'}).waitFor();
-    console.log('Browser fixture: queue → owner review → confirmation → result; mobile 390px no horizontal overflow; all network mocked.');
+    console.log('Browser fixture: direct request → prefilled account → missing-field error → owner review → confirmation → result; mobile 390px no horizontal overflow; all network mocked.');
   } finally {await browser.close();}
 })().catch(e=>{console.error(e.message);process.exitCode=1;});

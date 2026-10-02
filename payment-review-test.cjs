@@ -7,9 +7,9 @@ class Element {
   async click(){return this.handlers.click?.();}
 }
 function nodes(el){return [el,...el.children.flatMap(nodes)];}
-async function fixture(handler,authenticated=true){
+async function fixture(handler,authenticated=true,search=''){
   const screen=new Element(),error=new Element(),calls=[],links=[];
-  const window={Telegram:{WebApp:{initData:authenticated?'SIGNED-SYNTHETIC':'',ready(){},openTelegramLink(u){links.push(u);}}}};
+  const window={location:{search},Telegram:{WebApp:{initData:authenticated?'SIGNED-SYNTHETIC':'',ready(){},openTelegramLink(u){links.push(u);}}}};
   const document={getElementById:id=>id==='screen'?screen:error,createElement:tag=>new Element(tag)};
   const fetch=async(url,opts)=>{calls.push({url,opts});const value=await handler(url,opts);return {ok:value.status===undefined||value.status===200,status:value.status||200,json:async()=>value.data??value};};
   vm.runInNewContext(fs.readFileSync('payment-review.js','utf8'),{window,document,fetch,Date,URLSearchParams});
@@ -41,7 +41,7 @@ test('full owner path shows bank review, confirmation and stored expiry; no iden
   assert.ok(nodes(ui.screen).some(n=>n.textContent.includes('<script>bad()'))); // rendered as text
   assert.equal(ui.find('Повторити відхилене'),undefined); // uncertain is NOT retryable
   await ui.find('Відкрити квитанцію').click();assert.match(ui.links[0],/paymentreceipt_AD-/);
-  ui.field('Ідентифікатор рахунку').value='FIXTURE-ACCOUNT';ui.field('Номер банківської операції').value='FIXTURE-OP';
+  ui.field('Рахунок зарахування (IBAN)').value='FIXTURE-ACCOUNT';ui.field('Номер банківської операції').value='FIXTURE-OP';
   ui.field('Фактично зараховано, грн').value='250,00';ui.field('Я особисто перевірив зарахування').checked=true;
   await ui.find('Підтвердити надходження').click();assert.equal(ui.error.textContent,'');
   assert.ok(ui.find('Повернутися без підтвердження'));
@@ -68,4 +68,33 @@ test('superseded status messages stay visible in history without a retry action'
   await ui.find(row.code).click();
   assert.ok(nodes(ui.screen).some(n=>n.textContent.includes('Замінено новішим статусом заявки')));
   assert.equal(ui.find('Повторити відхилене'),undefined);
+});
+test('request link opens the owner card directly and uses the configured receiving account',async()=>{
+  const ui=await fixture(url=>url.endsWith('/notices')?[]:{...row,receiving_account:'FIXTURE-ACCOUNT'},true,'?code='+row.code);
+  assert.ok(ui.calls[0].url.endsWith('/admin/'+row.code));
+  assert.equal(ui.field('Рахунок зарахування (IBAN)').value,'FIXTURE-ACCOUNT');
+  assert.equal(ui.field('Рахунок зарахування (IBAN)').readOnly,true);
+  const all=nodes(ui.screen);
+  assert.ok(all.indexOf(ui.find('Підтвердити надходження'))<all.findIndex(n=>n.textContent==='Історія'));
+  assert.equal(ui.calls.filter(c=>c.opts.method==='POST').length,0);
+});
+test('missing bank operation and unchecked verification are explained before any mutation',async()=>{
+  const ui=await fixture(url=>url.endsWith('/notices')?[]:{...row,receiving_account:'FIXTURE-ACCOUNT'},true,'?code='+row.code);
+  ui.field('Фактично зараховано, грн').value='250';
+  await ui.find('Підтвердити надходження').click();
+  assert.match(ui.error.textContent,/Номер банківської операції/);
+  ui.field('Номер банківської операції').value='FIXTURE-CREDIT';
+  await ui.find('Підтвердити надходження').click();
+  assert.match(ui.error.textContent,/особисто перевірив/);
+  assert.equal(ui.calls.filter(c=>c.opts.method==='POST').length,0);
+});
+test('server validation errors explain required fields without a false success',async()=>{
+  const ui=await fixture(url=>url.endsWith('/preview')?{status:422,data:{detail:'Invalid request'}}:
+    url.endsWith('/notices')?[]:{...row,receiving_account:'FIXTURE-ACCOUNT'},true,'?code='+row.code);
+  ui.field('Номер банківської операції').value='FIXTURE-CREDIT';
+  ui.field('Фактично зараховано, грн').value='250';
+  ui.field('Я особисто перевірив зарахування').checked=true;
+  await ui.find('Підтвердити надходження').click();
+  assert.match(ui.error.textContent,/номер банківської операції/);
+  assert.equal(ui.find('Так, надходження'),undefined);
 });

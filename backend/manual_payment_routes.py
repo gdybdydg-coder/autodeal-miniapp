@@ -1,7 +1,7 @@
 """Authenticated customer checkout and owner-only payment review API."""
 from html import escape
 import time
-from urllib.parse import parse_qsl
+from urllib.parse import parse_qsl, urlencode
 import json
 
 from fastapi import APIRouter, Depends, Header, HTTPException
@@ -94,7 +94,15 @@ def install(app, engine, settings, identity):
 
     @router.get("/admin/{code}")
     def card(code: str, uid=Depends(admin)):
-        return call(m.card, engine, settings, uid, code)
+        data = call(m.card, engine, settings, uid, code)
+        # This account hint is returned only after both owner authorization and
+        # request lookup. Missing configuration must not hide an existing order.
+        try:
+            profile = manual_checkout.subscription_preview.receiving_profile()
+            data["receiving_account"] = profile.get("iban") if isinstance(profile, dict) else None
+        except Exception:
+            data["receiving_account"] = None
+        return data
 
     @router.get("/admin/{code}/notices")
     def notices(code: str, uid=Depends(admin)):
@@ -166,13 +174,23 @@ def handle(engine, settings, event):
             page = int(parts[2]) if len(parts) > 2 else 1
             search = " ".join(parts[3:])
             q = m.queue(engine, settings, uid, state=state, page=page, size=10, search=search)
+            labels = {"created": "Очікує переказу", "review": "На перевірці", "clarification": "Потрібне уточнення",
+                      "approved": "Підтверджено", "rejected": "Відхилено"}
             lines = [f"📋 <b>Заявки · очікують {q['waiting']}</b>",
-                     f"Сторінка {q['page']}/{q['pages']} · у вибірці {q['total']}"]
-            lines.extend(f"{r['code']} · {escape(r['name'])} · {r['state']}" for r in q["items"])
-            lines.extend(["", "Усі: /payments all 1", "Статуси: review, clarification, approved, rejected, all",
-                          "Пошук: /payments all 1 номер_заявки", "Наступна сторінка: /payments " + state + " " + str(page+1)])
-            return billing.message(uid, "\n".join(lines), [[{"text": "📋 Відкрити чергу та картки",
-                "web_app": {"url": settings.origin + "/autodeal-miniapp/payment-review.html"}}]])
+                     "Вибери заявку нижче. Перевір надходження в банку, потім підтвердь оплату."]
+            lines.extend(f"• {escape(r['name'])} · {labels[r['state']]}" for r in q["items"])
+            if not q["items"]:
+                lines.append("У цій вибірці заявок немає.")
+            if q["pages"] > 1:
+                lines.extend([f"Сторінка {q['page']}/{q['pages']}",
+                              "Наступна: /payments " + state + " " + str(page+1)] if page < q["pages"] else
+                             [f"Сторінка {q['page']}/{q['pages']}"])
+            url = settings.origin + "/autodeal-miniapp/payment-review.html"
+            buttons = [[{"text": "Перевірити оплату · " + r["name"][:50],
+                         "web_app": {"url": url+"?"+urlencode({"code": r["code"], "v": "20261002-2"})}}]
+                       for r in q["items"]]
+            buttons.append([{"text": "📋 Усі заявки", "web_app": {"url": url+"?v=20261002-2"}}])
+            return billing.message(uid, "\n\n".join(lines), buttons)
         m.enabled(settings)
         if len(parts) != 2:
             raise m.ReviewError("receipt_command_requires_request_code", 422)
