@@ -129,9 +129,16 @@ def create_request(engine, settings, uid, now, *, name="Клієнт", username=
     Identity and display fields must come from verified Telegram data, not form JSON.
     """
     timestamp(now)
-    name = text(name, 100)
-    if username is not None:
-        username = text(username, 64)
+    # Telegram profile labels are display-only, never payment/identity evidence.
+    # Names can contain emoji joiners, invisible marks, or only whitespace;
+    # absent usernames can arrive as empty strings. Do not reject checkout.
+    def label(value, maximum):
+        if not isinstance(value, str):
+            return ""
+        return " ".join("".join(c if not unicodedata.category(c).startswith("C")
+                               else " " for c in value).split())[:maximum].strip()
+    name = label(name, 100) or "Клієнт"
+    username = label(username, 64) or None
     with mutation(engine, settings) as db:
         if accepted_terms is not None:
             from . import manual_checkout

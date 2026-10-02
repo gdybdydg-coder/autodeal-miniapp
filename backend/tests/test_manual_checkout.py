@@ -246,3 +246,24 @@ def test_explicit_resume_only_once_for_an_unattempted_ready_queue(bank, monkeypa
     with Session(engine) as db:
         assert db.get(BillingCampaign,launch.CAMPAIGN).status=="paused"
     assert count(engine,CampaignRecipient)==1
+
+
+@pytest.mark.parametrize('name,username', [
+    ('Іван\u200b', ''), ('👨\u200d💻 Іван', None), ('\u200b\u2060', None),
+    ('   ', ''), ('Іван\nМ', 'fixture_user'),
+])
+def test_telegram_display_name_never_blocks_checkout_or_repeat(bank, name, username):
+    engine,settings,client=bank
+    sender={'id':UID,'first_name':name}
+    if username is not None: sender['username']=username
+    first=callback(bank,c.PREFIX+'accept:'+c.TERMS_VERSION,**{'from':sender}).json()
+    assert 'До сплати: 250 грн' in first['text']
+    second=callback(bank,c.PREFIX+'accept:'+c.TERMS_VERSION,update=101,**{'from':sender}).json()
+    assert first['text']==second['text'] and count(engine,PaymentRequest)==1
+    with Session(engine) as db:
+        row=db.scalar(select(PaymentRequest))
+        assert row.name.strip() and len(row.name)<=100
+        assert row.state=='created' and not billing.expiry(db,UID)
+    from backend.tests.test_backend import signed
+    auth={'X-Telegram-Init-Data':signed(UID,user=json.dumps(sender))}
+    assert client.post('/api/manual-payments',headers=auth,json={'terms_version':c.TERMS_VERSION}).status_code==201

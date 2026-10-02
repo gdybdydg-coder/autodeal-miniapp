@@ -1,5 +1,6 @@
 """Bank checkout selected explicitly by the owner; no automatic payment verification."""
 from html import escape
+import logging
 import time
 
 from sqlalchemy import select
@@ -272,8 +273,10 @@ def handle(engine, settings, event, request=None, now=None):
             return request_card(engine, settings, uid, value)
         return overview(engine, settings, uid, now)
     except m.ReviewError as exc:
+        logging.getLogger(__name__).warning("Manual checkout unavailable reason=%s", exc.code)
         messages = {"manual_sales_closed": "Нові оплати зараз закриті. Якщо вже сплатив, відкрий статус заявки або /paysupport.",
                     "recipient_configuration_unavailable": "Реквізити тимчасово недоступні. Не переказуй кошти; звернись через /paysupport.",
+                    "invalid_text": "Не вдалося відкрити оплату. Спробуй ще раз через /subscription.",
                     "terms_changed": "Умови змінилися. Відкрий /terms і переглянь їх ще раз."}
         return billing.message(uid, messages.get(exc.code, "Заявку не знайдено або дія недоступна. /subscription · /paysupport"))
     except SQLAlchemyError:
