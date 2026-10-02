@@ -71,6 +71,7 @@ class Settings:
     ria_recent_publications_enabled: bool = False
     manual_payment_review_enabled: bool = False
     manual_payment_notices_enabled: bool = False
+    stats_excluded_user_ids: str = ""
 
     @classmethod
     def env(cls):
@@ -108,6 +109,7 @@ class Settings:
             ria_recent_publications_enabled=os.getenv("RIA_RECENT_PUBLICATIONS_ENABLED") == "true",
             manual_payment_review_enabled=os.getenv("MANUAL_PAYMENT_REVIEW_ENABLED") == "true",
             manual_payment_notices_enabled=os.getenv("MANUAL_PAYMENT_NOTICES_ENABLED") == "true",
+            stats_excluded_user_ids=os.getenv("STATS_EXCLUDED_USER_IDS", "").strip(),
             ria_quota_management_enabled=os.getenv("RIA_QUOTA_MANAGEMENT_ENABLED") == "true",
             ria_failed_delivery_recovery_id=os.getenv("RIA_FAILED_DELIVERY_RECOVERY_ID", "").strip(),
         )
@@ -143,6 +145,8 @@ def create_app(settings: Settings, engine=None):
         # Initial schema only. Use versioned migrations before altering deployed tables.
         Base.metadata.create_all(engine)
         manual_payments.initialize(engine, settings)
+        from .purchase_stats import log_snapshot as log_purchase_stats
+        await asyncio.to_thread(log_purchase_stats, engine, settings)
         billing_campaign.initialize(engine, settings)
         manual_launch.initialize(engine, settings)
         from .subscription_promotion import audit_queue as audit_promotion_queue
@@ -591,6 +595,35 @@ def create_app(settings: Settings, engine=None):
                 raise ValueError()
         except (ValueError, KeyError, TypeError, AttributeError):
             raise HTTPException(422, "Invalid update") from None
+        stats_token = text.split()[0] if text.split() else ""
+        stats_command, _, stats_mention = stats_token.partition("@")
+        if stats_command == "/stats":
+            if (chat.get("type") != "private" or chat.get("id") != uid
+                    or type(uid) is not int or not 0 < uid < 2**52 or sender.get("is_bot")
+                    or (stats_mention and stats_mention.lower() != telegram_setup.BOT_USERNAME.lower())):
+                return {"ok": True}
+            if type(command_at) is not int or command_at <= 0:
+                raise HTTPException(422, "Invalid message date")
+            # Authorize every call before any DB access, including DB outages.
+            if not settings.admin_telegram_id or uid != settings.admin_telegram_id:
+                return billing.message(uid, bot_commands.stats_text(
+                    None, uid, settings.admin_telegram_id, settings=settings))
+            try:
+                with Session(engine) as db:
+                    user = user_row(db, uid)
+                    if (command_at, update_id) <= (user.last_command_at, user.last_update):
+                        return {"ok": True}
+                    text = bot_commands.stats_text(db, uid, settings.admin_telegram_id, settings=settings)
+                    if text == bot_commands.STATS_UNAVAILABLE:
+                        db.rollback()
+                        return billing.message(uid, text)
+                    user.last_update, user.last_command_at = update_id, command_at
+                    db.commit()
+            except SQLAlchemyError:
+                logging.getLogger(__name__).error("Admin statistics database unavailable")
+                return billing.message(uid, bot_commands.STATS_UNAVAILABLE)
+            telegram_setup.call(settings.bot_token, "sendMessage", {"chat_id": uid, "text": text})
+            return {"ok": True}
         checkout_reply = await asyncio.to_thread(manual_checkout.handle, engine, settings, event)
         if checkout_reply is not None:
             return checkout_reply
@@ -649,11 +682,6 @@ def create_app(settings: Settings, engine=None):
                     monitor.reset_watch(db, sid, False)
                 db.execute(update(Search).where(Search.user_id == uid).values(enabled=False))
                 db.execute(update(Delivery).where(Delivery.user_id == uid, Delivery.state == "pending").values(state="cancelled"))
-            if command == "/stats":
-                text = bot_commands.stats_text(db, uid, settings.admin_telegram_id, settings=settings)
-                db.commit()
-                telegram_setup.call(settings.bot_token, "sendMessage", {"chat_id": uid, "text": text})
-                return {"ok": True}
             db.add(BotReply(user_id=uid, command_at=command_at, update_id=update_id, command=command))
             db.commit()
         # Durable reply processing is independent of source polling. /start never enables searches.

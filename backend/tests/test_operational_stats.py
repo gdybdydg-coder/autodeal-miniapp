@@ -16,6 +16,14 @@ from backend.tests.test_owner_alerts import h, delivery
 from backend.tests.test_backend import setup, headers, command
 
 
+@pytest.fixture(autouse=True)
+def purchase_ledger_schema(request):
+    from backend.manual_payment_models import ManualBase
+    for name in ("h", "setup"):
+        if name in request.fixturenames:
+            ManualBase.metadata.create_all(request.getfixturevalue(name)[0])
+
+
 def add_timing(db, ident, now, delay, *, uid=222, state="sent", accepted=None, discovered=None):
     end = now-10 if accepted is None else accepted
     db.add(Delivery(id=ident, user_id=uid, listing_id=ident, state=state))

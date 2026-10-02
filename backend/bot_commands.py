@@ -5,6 +5,7 @@ import time
 from urllib.parse import urlencode
 
 from sqlalchemy import func, select
+from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import Session
 
 from . import telegram_setup
@@ -53,17 +54,34 @@ def connection_confirmed(db, uid):
         BotReply.user_id == uid, BotReply.command == "/start", BotReply.state == "sent").limit(1)))
 
 
+STATS_UNAVAILABLE = "⚠️ Не вдалося отримати статистику. Спробуйте пізніше."
+
+
 def stats_text(db, uid, admin_uid, *, settings=None):
     if not admin_uid:
         logging.getLogger(__name__).warning("AUTODeal admin bootstrap requested by Telegram user %s", uid)
         return f"🔐 Адмін ще не налаштований. Ваш Telegram ID: {uid}"
     if uid != admin_uid:
         return "⛔ Команда доступна лише адміністратору."
+    try:
+        return _stats_text(db, admin_uid, settings=settings)
+    except (SQLAlchemyError, ValueError):
+        logging.getLogger(__name__).error("Admin statistics unavailable")
+        return STATS_UNAVAILABLE
+
+
+def _stats_text(db, admin_uid, *, settings=None):
     from . import operational_stats
-    total = db.scalar(select(func.count()).select_from(User)) or 0
-    active = db.scalar(select(func.count()).select_from(User).where(User.ready.is_(True))) or 0
-    searches = db.scalar(select(func.count()).select_from(Search).where(Search.enabled.is_(True))) or 0
-    owners = db.scalar(select(func.count(func.distinct(Search.user_id))).where(Search.enabled.is_(True))) or 0
+    from . import purchase_stats
+    purchases = purchase_stats.counts(db, settings, admin_uid=admin_uid)
+    clients = select(User.id).where(User.id.not_in(
+        purchase_stats.excluded_user_ids(settings, admin_uid=admin_uid)))
+    active = db.scalar(select(func.count()).select_from(User).where(
+        User.ready.is_(True), User.id.in_(clients))) or 0
+    searches = db.scalar(select(func.count()).select_from(Search).where(
+        Search.enabled.is_(True), Search.user_id.in_(clients))) or 0
+    owners = db.scalar(select(func.count(func.distinct(Search.user_id))).where(
+        Search.enabled.is_(True), Search.user_id.in_(clients))) or 0
     budget = db.get(SourceBudget, "auto_ria")
     if budget:
         limits = BudgetLimits.env()
@@ -85,10 +103,11 @@ def stats_text(db, uid, admin_uid, *, settings=None):
         quota = "\n\n📡 Облік квоти AUTO.RIA ще недоступний."
     return (
         "📊 AUTODeal — статистика\n\n"
-        f"👥 Усього користувачів: {total}\n"
+        f"👥 Усього клієнтів: {purchases['total']}\n"
         f"🟢 Підключені до бота: {active}\n"
         f"🔎 Активних пошуків: {searches}\n"
         f"🚘 Користувачів з активним пошуком: {owners}"
+        + "\n\n" + purchase_stats.text(purchases)
         + "\n\n" + operational_stats.text(db, settings) + quota
     )
 

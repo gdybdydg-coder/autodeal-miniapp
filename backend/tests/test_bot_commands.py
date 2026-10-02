@@ -17,6 +17,8 @@ def setup(tmp_path, monkeypatch):
     engine = create_engine("sqlite:///" + str(tmp_path / "commands.db"),
                            connect_args={"check_same_thread": False})
     settings = Settings("unused", TOKEN, SECRET, True, True, miniapp_release="onboarding")
+    from backend.manual_payment_models import ManualBase
+    ManualBase.metadata.create_all(engine)
     # These are command-flow tests with a fake token, not live menu setup.
     # Preserve configure_menu's behavior but inject an explicit failed fixture.
     configure_menu = telegram_setup.configure_menu
