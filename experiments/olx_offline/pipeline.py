@@ -5,6 +5,7 @@ from dataclasses import asdict
 from decimal import Decimal
 from html import escape
 import json
+import hashlib
 import sqlite3
 from statistics import median, quantiles
 from urllib.parse import urlparse
@@ -13,7 +14,7 @@ from .prototype import normalize, matches, Car
 
 def canonical(raw, now, first_seen=None):
     c = asdict(normalize(raw, now, first_seen=first_seen, source=raw.get('source', 'olx')))
-    for key in ('generation', 'body', 'locality', 'engine_cc', 'created_at', 'price_kind', 'vehicle_key'):
+    for key in ('generation', 'body', 'locality', 'engine_cc', 'created_at', 'price_kind', 'vehicle_key', 'checked_at'):
         c[key] = raw.get(key)
     c['photos'] = [p for p in c['photos'] if urlparse(p).scheme == 'https']
     c['evidence'] = raw.get('evidence', 'unverified')
@@ -51,7 +52,10 @@ def estimate(target, comparables, now, *, minimum=8, max_age=30*86400):
             continue
         if target.get('vehicle_key') and identity == target['vehicle_key']:
             continue
-        age = now - c['first_seen_at']
+        checked = c.get('checked_at')
+        if type(checked) is not int:
+            continue
+        age = now - checked
         if not 0 <= age <= max_age or c['currency'] != target['currency'] or c['price_kind'] != 'full':
             continue
         if c['category'] != 'whole_passenger_car' or c['price'] is None:
@@ -77,6 +81,12 @@ def estimate(target, comparables, now, *, minimum=8, max_age=30*86400):
             'conservative_reference': floor, 'discount_percent': 100*(1-float(target['price'])/floor),
             'currency': target['currency'], 'method': 'matched_asking_q25_margin_5pct',
             'real_world_accuracy_verified': False}
+
+
+def fingerprint(c):
+    # Observation time may advance without changing the car or its price.
+    semantic = {k:v for k,v in c.items() if k not in ('checked_at','first_seen_at','updated_at','bumped_at')}
+    return hashlib.sha256(json.dumps(semantic,sort_keys=True,ensure_ascii=False).encode()).hexdigest()
 
 
 def source_selection(value=None):
@@ -105,6 +115,10 @@ class Pipeline:
         CREATE TABLE IF NOT EXISTS listings(source TEXT,id TEXT,payload TEXT,eligibility TEXT,PRIMARY KEY(source,id));
         CREATE TABLE IF NOT EXISTS deliveries(uid TEXT,source TEXT,id TEXT,status TEXT,PRIMARY KEY(uid,source,id));
         CREATE TABLE IF NOT EXISTS runs(at INTEGER,status TEXT,pages INTEGER,rows INTEGER,reason TEXT);
+        CREATE TABLE IF NOT EXISTS delivery_proof(uid TEXT,source TEXT,id TEXT,fingerprint TEXT,expires INTEGER,PRIMARY KEY(uid,source,id));
+        CREATE TABLE IF NOT EXISTS page_cursors(cursor TEXT PRIMARY KEY);
+        CREATE INDEX IF NOT EXISTS delivery_status ON deliveries(status);
+        CREATE INDEX IF NOT EXISTS listing_eligibility ON listings(eligibility);
         ''')
         # A crash after invoking a sender is ambiguous. Never silently replay it.
         self.db.execute("UPDATE deliveries SET status='uncertain' WHERE status='sending'")
@@ -123,9 +137,10 @@ class Pipeline:
             self.db.execute('UPDATE checkpoint SET boundary=?', (boundary,)); self.db.commit()
         if complete:
             cursor = None
+            self.db.execute('DELETE FROM page_cursors'); self.db.commit()
         pages, rows, visited, status, reason = 0, 0, set(), 'incomplete', 'page_budget'
         while pages < page_budget:
-            if cursor in visited:
+            if cursor in visited or self.db.execute('SELECT 1 FROM page_cursors WHERE cursor=?',(json.dumps(cursor),)).fetchone():
                 reason = 'cursor_cycle'; break
             visited.add(cursor)
             try:
@@ -137,6 +152,8 @@ class Pipeline:
                     reason = 'row_budget'; break
                 records = []
                 for raw in cards:
+                    if not isinstance(raw,dict):
+                        raise ValueError('invalid listing contract')
                     source = raw.get('source','olx')
                     old = self.db.execute('SELECT payload,eligibility FROM listings WHERE source=? AND id=?', (source,raw.get('id'))).fetchone()
                     c = canonical(raw, now, json.loads(old[0])['first_seen_at'] if old else None)
@@ -145,8 +162,10 @@ class Pipeline:
                         eligible = old[1]
                     records.append((source,c['id'],json.dumps(c),eligible))
                 with self.db:
+                    self.db.execute('INSERT INTO page_cursors VALUES(?)',(json.dumps(cursor),))
                     self.db.executemany('INSERT INTO listings VALUES(?,?,?,?) ON CONFLICT(source,id) DO UPDATE SET payload=excluded.payload,eligibility=excluded.eligibility', records)
                     self.db.execute('UPDATE checkpoint SET cursor=?,complete=?,last_success=?,retry_at=0,attempts=0', (next_cursor,int(next_cursor is None),now if next_cursor is None else last))
+                attempts = 0
                 rows += len(cards); pages += 1; cursor = next_cursor
                 if cursor is None:
                     status, reason = 'complete', None; break
@@ -183,26 +202,32 @@ class Pipeline:
                 if assessment['discount_percent'] < u.get('min_discount',15):
                     counts['filtered'] += 1; continue
                 key = (str(u['id']),c['source'],c['id'])
-                if self.db.execute('SELECT 1 FROM deliveries WHERE uid=? AND source=? AND id=?',key).fetchone():
+                existing = self.db.execute('SELECT status FROM deliveries WHERE uid=? AND source=? AND id=?',key).fetchone()
+                if existing and existing[0] != 'needs_revalidation':
                     continue
                 if pending >= capacity:
                     counts['overflow'] += 1; continue
-                self.db.execute("INSERT INTO deliveries VALUES(?,?,?,'pending')",key)
+                self.db.execute("INSERT INTO deliveries VALUES(?,?,?,'pending') ON CONFLICT(uid,source,id) DO UPDATE SET status='pending'",key)
+                self.db.execute('INSERT OR REPLACE INTO delivery_proof VALUES(?,?,?,?,?)',(*key,fingerprint(c),now+300))
                 counts['queued'] += 1; pending += 1
         self.db.commit()
         return counts
 
-    def deliver_fake(self, sender, access, *, olx_enabled=False):
+    def deliver_fake(self, sender, access, *, now, olx_enabled=False):
         """Caller must supply a fake sender. This module ships no live sender adapter."""
-        counts = dict(accepted=0, denied=0, uncertain=0)
+        counts = dict(accepted=0, denied=0, uncertain=0, held=0)
         for uid,source,id in self.db.execute("SELECT uid,source,id FROM deliveries WHERE status='pending'").fetchall():
             if source=='olx' and not olx_enabled:
                 continue
             if not access(uid):
                 counts['denied'] += 1; continue
             key=(uid,source,id)
-            self.db.execute("UPDATE deliveries SET status='sending' WHERE uid=? AND source=? AND id=?",key); self.db.commit()
             c=json.loads(self.db.execute('SELECT payload FROM listings WHERE source=? AND id=?',(source,id)).fetchone()[0])
+            proof=self.db.execute('SELECT fingerprint,expires FROM delivery_proof WHERE uid=? AND source=? AND id=?',key).fetchone()
+            if proof is None or proof[0] != fingerprint(c) or now > proof[1]:
+                self.db.execute("UPDATE deliveries SET status='needs_revalidation' WHERE uid=? AND source=? AND id=?",key); self.db.commit()
+                counts['held'] += 1; continue
+            self.db.execute("UPDATE deliveries SET status='sending' WHERE uid=? AND source=? AND id=?",key); self.db.commit()
             try:
                 result=sender(uid,message(c))
                 state='accepted' if result is True else 'rejected'

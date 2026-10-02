@@ -1,0 +1,92 @@
+{
+  "kind": "synthetic_only",
+  "quality": {
+    "label_basis": "synthetic latent asking-market scenarios",
+    "strict": {
+      "tp": 40,
+      "fp": 0,
+      "tn": 50,
+      "fn": 0,
+      "unknown": 10
+    },
+    "brand_year_baseline": {
+      "tp": 50,
+      "fp": 50,
+      "tn": 0,
+      "fn": 0
+    },
+    "unknown_positive": 10,
+    "real_accuracy_measured": false,
+    "independent_real_control_size": 0
+  },
+  "runs": [
+    {
+      "users": 100,
+      "input_cards": 240,
+      "collect": {
+        "status": "complete",
+        "pages": 12,
+        "rows": 240,
+        "reason": null
+      },
+      "queue": {
+        "queued": 18000,
+        "filtered": 6000,
+        "uncertain": 0,
+        "denied": 0,
+        "overflow": 0
+      },
+      "fake_delivery": {
+        "accepted": 18000,
+        "denied": 0,
+        "uncertain": 0,
+        "held": 0
+      },
+      "restart_requeued": 0,
+      "seconds": {
+        "normalize_store": 0.029666160997294355,
+        "valuation_filter_queue": 2.0416914140005247,
+        "fake_delivery": 5.459753767005168,
+        "total": 7.531111342002987
+      },
+      "peak_python_bytes": 3657640,
+      "sqlite_bytes": 3407872,
+      "live_requests": 0,
+      "paid_requests": 0
+    },
+    {
+      "users": 200,
+      "input_cards": 240,
+      "collect": {
+        "status": "complete",
+        "pages": 12,
+        "rows": 240,
+        "reason": null
+      },
+      "queue": {
+        "queued": 36000,
+        "filtered": 12000,
+        "uncertain": 0,
+        "denied": 0,
+        "overflow": 0
+      },
+      "fake_delivery": {
+        "accepted": 36000,
+        "denied": 0,
+        "uncertain": 0,
+        "held": 0
+      },
+      "restart_requeued": 0,
+      "seconds": {
+        "normalize_store": 0.029905892995884642,
+        "valuation_filter_queue": 4.019026863003091,
+        "fake_delivery": 10.55892283799767,
+        "total": 14.607855593996646
+      },
+      "peak_python_bytes": 7149818,
+      "sqlite_bytes": 6668288,
+      "live_requests": 0,
+      "paid_requests": 0
+    }
+  ]
+}

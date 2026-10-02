@@ -100,3 +100,7 @@ Acceptance now: independently reviewable offline prototype, not live OLX support
 Старі файли вище — історичний прототип. Живого OLX-адаптера немає.
 Запуск усіх тестів: `python -m unittest discover -s experiments/olx_offline -v`.
 Повний offline benchmark: `python -m experiments.olx_offline.scenario`.
+
+Наступне продовження: [актуальність оцінки та захист черги](HARDENING-20261002.md).
+Поточний набір: 37 тестів. `deliver_fake` тепер вимагає явний `now`;
+порівняння потребують підтвердженого `checked_at`.

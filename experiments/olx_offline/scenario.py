@@ -17,7 +17,7 @@ def benchmark(n):
         tracemalloc.start();start=time.perf_counter()
         collected=p.collect(pages.__getitem__,NOW,page_budget=12,row_budget=240);t1=time.perf_counter()
         queue=p.enqueue(users(n),comps(),NOW,capacity=50000,olx_enabled=True);t2=time.perf_counter()
-        delivered=p.deliver_fake(lambda *_:True,lambda _:True,olx_enabled=True);t3=time.perf_counter()
+        delivered=p.deliver_fake(lambda *_:True,lambda _:True,now=NOW,olx_enabled=True);t3=time.perf_counter()
         peak=tracemalloc.get_traced_memory()[1];tracemalloc.stop();p.db.close()
         p=Pipeline(path);replayed=p.enqueue(users(n),comps(),NOW,capacity=50000,olx_enabled=True)['queued'];p.db.close()
         return dict(users=n,input_cards=240,collect=collected,queue=queue,fake_delivery=delivered,restart_requeued=replayed,

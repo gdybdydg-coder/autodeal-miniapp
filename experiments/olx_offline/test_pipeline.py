@@ -10,7 +10,7 @@ def raw(i, **changes):
     r=dict(id=str(i),source='olx',url='https://example.invalid/car/'+str(i),title='Volkswagen Golf — синтетичний приклад',
            price=7000,currency='USD',price_kind='full',category='whole_passenger_car',brand='Volkswagen',model='Golf',
            generation='VII',body='hatchback',engine_cc=1400,year=2016,mileage_km=120000,region='Київська',
-           locality='Київ',fuel='petrol',transmission='manual',published_at=NOW,publication_verified=True,evidence='synthetic')
+           locality='Київ',fuel='petrol',transmission='manual',published_at=NOW,publication_verified=True,checked_at=NOW-100,evidence='synthetic')
     r.update(changes);return r
 
 def comps():
@@ -41,18 +41,18 @@ class PipelineTests(unittest.TestCase):
     def test_queue_overflow_resume_no_duplicate(self):
         self.collect([raw(1),raw(2)])
         self.assertEqual(self.p.enqueue(users(2),comps(),NOW,capacity=1,olx_enabled=True)['overflow'],3)
-        self.assertEqual(self.p.deliver_fake(lambda *_:True,lambda _:True,olx_enabled=True)['accepted'],1)
+        self.assertEqual(self.p.deliver_fake(lambda *_:True,lambda _:True,now=NOW,olx_enabled=True)['accepted'],1)
         self.assertEqual(self.p.enqueue(users(2),comps(),NOW,capacity=10,olx_enabled=True)['queued'],3)
-        self.assertEqual(self.p.deliver_fake(lambda *_:True,lambda _:True,olx_enabled=True)['accepted'],3)
+        self.assertEqual(self.p.deliver_fake(lambda *_:True,lambda _:True,now=NOW,olx_enabled=True)['accepted'],3)
         self.p.db.close();self.p=Pipeline(self.path)
         self.assertEqual(self.p.enqueue(users(2),comps(),NOW,capacity=10,olx_enabled=True)['queued'],0)
     def test_access_rechecked_and_timeout(self):
         self.collect([raw(1)])
         self.p.enqueue(users(),comps(),NOW,capacity=5,olx_enabled=True)
-        self.assertEqual(self.p.deliver_fake(lambda *_:self.fail(),lambda _:False,olx_enabled=True)['denied'],1)
+        self.assertEqual(self.p.deliver_fake(lambda *_:self.fail(),lambda _:False,now=NOW,olx_enabled=True)['denied'],1)
         def timeout(*_):raise TimeoutError()
-        self.assertEqual(self.p.deliver_fake(timeout,lambda _:True,olx_enabled=True)['uncertain'],1)
-        self.assertEqual(self.p.deliver_fake(lambda *_:self.fail(),lambda _:True,olx_enabled=True)['accepted'],0)
+        self.assertEqual(self.p.deliver_fake(timeout,lambda _:True,now=NOW,olx_enabled=True)['uncertain'],1)
+        self.assertEqual(self.p.deliver_fake(lambda *_:self.fail(),lambda _:True,now=NOW,olx_enabled=True)['accepted'],0)
     def test_paid_stop_kill_default_sources(self):
         self.collect([raw(1)])
         u=users(3);u[0]['paid']=False;u[1]['stopped']=True;u[2].pop('source')
