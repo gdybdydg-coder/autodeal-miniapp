@@ -8,13 +8,13 @@ from html.parser import HTMLParser
 import json
 from pathlib import Path
 import re
-from urllib.parse import urljoin,urlsplit,urlunsplit
+from urllib.parse import parse_qs,urljoin,urlsplit,urlunsplit
 from .pipeline import canonical
 
 VOID={'area','base','br','col','embed','hr','img','input','link','meta','param','source','track','wbr'}
 
 class Node:
-    def __init__(self,tag,attrs):self.tag=tag;self.attrs=dict(attrs);self.children=[]
+    def __init__(self,tag,attrs):self.tag=tag;self.attrs=dict(attrs);self.children=[];self.closed=tag in VOID
     def nodes(self):
         yield self
         for c in self.children:
@@ -38,7 +38,7 @@ class SearchParser(HTMLParser):
         if tag=='html':self.html_closed=True
         found=next((i for i in range(len(self.stack)-1,-1,-1) if self.stack[i].tag==tag),None)
         if found is None:return
-        node=self.stack[found];self.stack=self.stack[:found]
+        node=self.stack[found];node.closed=True;self.stack=self.stack[:found]
         if node.attrs.get('data-testid')=='l-card':self.cards.append(node)
         if tag=='script' and node.attrs.get('type')=='application/ld+json':
             try:self.ld.append(json.loads(''.join(x for x in node.children if isinstance(x,str))))
@@ -92,6 +92,9 @@ def parse_search_snapshot(data, *, fetched_at, truncated):
                 raw['transmission']={'Механічна':'manual','Автоматична':'automatic','Варіатор':'cvt','Типтронік':'tiptronic','Роботизована':'robotized'}[text]
         c=canonical(raw,fetched_at)
         c['observed_location_date']=place.text() if place else None
+        reason=parse_qs(urlsplit(link.attrs.get('href','')).query).get('search_reason',[])
+        # Placement is not publication evidence; promoted cards may be old.
+        c['observed_search_reason']={'search|promoted':'promoted','search|organic':'organic'}.get(reason[0]) if len(reason)==1 else None
         c['research_only']=True
         if id in listings:duplicates+=1
         else:listings[id]=c
@@ -109,13 +112,37 @@ def parse_search_snapshot(data, *, fetched_at, truncated):
             by_url[url]['photos']=list(dict.fromkeys(by_url[url]['photos']+safe))
     subset_urls={clean_url(x['url']) for x in offers if isinstance(x.get('url'),str)}-{None}
     card_urls={c['url'] for c in listings.values()}
+    sort=[]
+    for root in parser.roots:
+        for node in root.nodes():
+            if node.attrs.get('data-testid')=='sorting-dropdown':
+                sort.extend({'value':n.attrs.get('value'),'label':n.text()} for n in node.nodes()
+                            if n.tag=='option' and n.closed and 'selected' in n.attrs)
+    observed_sort=sort[0] if len(sort)==1 else None
     return dict(listings=list(listings.values()),summary=dict(
         fetched_at=fetched_at,bytes_parsed=len(data),download_truncated=truncated or not parser.html_closed,
         closed_cards=len(parser.cards),unique_cards=len(listings),duplicate_cards=duplicates,rejected_cards=rejected,
         jsonld_offer_count=len(offers),jsonld_urls_in_cards=len(subset_urls&card_urls),
         cards_absent_from_jsonld=len(card_urls-subset_urls),cards_with_photo_urls=sum(bool(c['photos']) for c in listings.values()),observed_pagination_links=sorted(parser.pages),
+        observed_sort=observed_sort,
+        placement_counts={kind:sum((c['observed_search_reason'] or 'unknown')==kind for c in listings.values()) for kind in ('promoted','organic','unknown')},
         publication_verified=0,whole_car_category_verified=0,full_price_verified=0,
         collection_complete=False,ready_for_delivery=False))
+
+
+def parse_search_page(data, *, fetched_at, truncated, next_cursor=None):
+    """Offline bridge to collect; an observed next link does not seal a partial page.
+
+    The caller supplies a separately observed next cursor. This never follows a
+    link, discovers an endpoint, or establishes permission/completeness.
+    """
+    if next_cursor is not None and not isinstance(next_cursor,str):
+        raise ValueError('Explicit string next cursor required')
+    result=parse_search_snapshot(data,fetched_at=fetched_at,truncated=truncated)
+    summary=result['summary']
+    return {'items':result['listings'],'next':next_cursor,
+            'page_complete':not summary['download_truncated'],
+            'collection_complete':summary['collection_complete'],'summary':summary}
 
 
 def main():

@@ -1,0 +1,372 @@
+{
+  "kind": "synthetic_only",
+  "fictional_rate": true,
+  "fx_example": {
+    "status": "ready",
+    "reason": "converted_uah",
+    "original_amount": "210000",
+    "original_currency": "UAH",
+    "usd_amount": "5000",
+    "fx": {
+      "uah_per_usd": "42",
+      "source": "https://bank.gov.ua/NBU_Exchange/exchange_site?start=20261002&end=20261002&valcode=usd&sort=exchangedate&order=desc&json",
+      "effective_date": "2026-10-02",
+      "fetched_at": "2026-10-02T12:00:00+00:00",
+      "calculated_on": null,
+      "direction": "UAH per 1 USD"
+    },
+    "conversion_precision": 50
+  },
+  "methods": {
+    "methods": {
+      "robust_median": {
+        "status": "experimental_estimate",
+        "reason": null,
+        "reasons": [
+          "asking_prices_not_confirmed_sales",
+          "method_not_real_world_validated",
+          "empirical_iqr_is_not_a_confidence_interval",
+          "unobserved_condition_and_options_may_change_value",
+          "crossposts_without_verified_vehicle_identity_may_remain",
+          "trim_not_fully_matched"
+        ],
+        "sample": 12,
+        "sample_unit": "distinct_ads_after_known_vehicle_dedup",
+        "reference_usd": "10075.0",
+        "range_usd": {
+          "low": "9937.50",
+          "high": "10212.50"
+        },
+        "range_kind": "empirical_interquartile_asking_price_range_not_prediction_interval",
+        "asking_median": "10075.0",
+        "conservative_reference": "10075.0",
+        "discount_percent": "50.372208436724565756823821339950372208436724565757",
+        "currency": "USD",
+        "method": "robust_median",
+        "method_description": "Median of matched asking prices after an inclusive-IQR outlier screen.",
+        "method_selection": "experimental_choice_pending_independent_validation",
+        "reliability": "experimental_low",
+        "real_world_accuracy_verified": false,
+        "data_checked_at": {
+          "oldest": 1790942300,
+          "newest": 1790942300
+        },
+        "evaluated_at": 1790942400,
+        "exclusions": {},
+        "used_comparables": [
+          {
+            "source": "olx",
+            "id": "comp0",
+            "usd_amount": "9800",
+            "checked_at": 1790942300
+          },
+          {
+            "source": "olx",
+            "id": "comp1",
+            "usd_amount": "9850",
+            "checked_at": 1790942300
+          },
+          {
+            "source": "olx",
+            "id": "comp10",
+            "usd_amount": "10300",
+            "checked_at": 1790942300
+          },
+          {
+            "source": "olx",
+            "id": "comp11",
+            "usd_amount": "10350",
+            "checked_at": 1790942300
+          },
+          {
+            "source": "olx",
+            "id": "comp2",
+            "usd_amount": "9900",
+            "checked_at": 1790942300
+          },
+          {
+            "source": "olx",
+            "id": "comp3",
+            "usd_amount": "9950",
+            "checked_at": 1790942300
+          },
+          {
+            "source": "olx",
+            "id": "comp4",
+            "usd_amount": "10000",
+            "checked_at": 1790942300
+          },
+          {
+            "source": "olx",
+            "id": "comp5",
+            "usd_amount": "10050",
+            "checked_at": 1790942300
+          },
+          {
+            "source": "olx",
+            "id": "comp6",
+            "usd_amount": "10100",
+            "checked_at": 1790942300
+          },
+          {
+            "source": "olx",
+            "id": "comp7",
+            "usd_amount": "10150",
+            "checked_at": 1790942300
+          },
+          {
+            "source": "olx",
+            "id": "comp8",
+            "usd_amount": "10200",
+            "checked_at": 1790942300
+          },
+          {
+            "source": "olx",
+            "id": "comp9",
+            "usd_amount": "10250",
+            "checked_at": 1790942300
+          }
+        ],
+        "extra_margin_percent": "0",
+        "recommended": null,
+        "next_action": "Validate precision, missed profitable cars and unknown coverage on an independent real sample."
+      },
+      "lower_quartile": {
+        "status": "experimental_estimate",
+        "reason": null,
+        "reasons": [
+          "asking_prices_not_confirmed_sales",
+          "method_not_real_world_validated",
+          "empirical_iqr_is_not_a_confidence_interval",
+          "unobserved_condition_and_options_may_change_value",
+          "crossposts_without_verified_vehicle_identity_may_remain",
+          "trim_not_fully_matched"
+        ],
+        "sample": 12,
+        "sample_unit": "distinct_ads_after_known_vehicle_dedup",
+        "reference_usd": "9937.50",
+        "range_usd": {
+          "low": "9937.50",
+          "high": "10212.50"
+        },
+        "range_kind": "empirical_interquartile_asking_price_range_not_prediction_interval",
+        "asking_median": "10075.0",
+        "conservative_reference": "9937.50",
+        "discount_percent": "49.685534591194968553459119496855345911949685534591",
+        "currency": "USD",
+        "method": "lower_quartile",
+        "method_description": "Inclusive 25th percentile of matched asking prices; no extra percentage margin.",
+        "method_selection": "experimental_choice_pending_independent_validation",
+        "reliability": "experimental_low",
+        "real_world_accuracy_verified": false,
+        "data_checked_at": {
+          "oldest": 1790942300,
+          "newest": 1790942300
+        },
+        "evaluated_at": 1790942400,
+        "exclusions": {},
+        "used_comparables": [
+          {
+            "source": "olx",
+            "id": "comp0",
+            "usd_amount": "9800",
+            "checked_at": 1790942300
+          },
+          {
+            "source": "olx",
+            "id": "comp1",
+            "usd_amount": "9850",
+            "checked_at": 1790942300
+          },
+          {
+            "source": "olx",
+            "id": "comp10",
+            "usd_amount": "10300",
+            "checked_at": 1790942300
+          },
+          {
+            "source": "olx",
+            "id": "comp11",
+            "usd_amount": "10350",
+            "checked_at": 1790942300
+          },
+          {
+            "source": "olx",
+            "id": "comp2",
+            "usd_amount": "9900",
+            "checked_at": 1790942300
+          },
+          {
+            "source": "olx",
+            "id": "comp3",
+            "usd_amount": "9950",
+            "checked_at": 1790942300
+          },
+          {
+            "source": "olx",
+            "id": "comp4",
+            "usd_amount": "10000",
+            "checked_at": 1790942300
+          },
+          {
+            "source": "olx",
+            "id": "comp5",
+            "usd_amount": "10050",
+            "checked_at": 1790942300
+          },
+          {
+            "source": "olx",
+            "id": "comp6",
+            "usd_amount": "10100",
+            "checked_at": 1790942300
+          },
+          {
+            "source": "olx",
+            "id": "comp7",
+            "usd_amount": "10150",
+            "checked_at": 1790942300
+          },
+          {
+            "source": "olx",
+            "id": "comp8",
+            "usd_amount": "10200",
+            "checked_at": 1790942300
+          },
+          {
+            "source": "olx",
+            "id": "comp9",
+            "usd_amount": "10250",
+            "checked_at": 1790942300
+          }
+        ],
+        "extra_margin_percent": "0",
+        "recommended": null,
+        "next_action": "Validate precision, missed profitable cars and unknown coverage on an independent real sample."
+      },
+      "weighted_similar": {
+        "status": "experimental_estimate",
+        "reason": null,
+        "reasons": [
+          "asking_prices_not_confirmed_sales",
+          "method_not_real_world_validated",
+          "empirical_iqr_is_not_a_confidence_interval",
+          "unobserved_condition_and_options_may_change_value",
+          "crossposts_without_verified_vehicle_identity_may_remain",
+          "trim_not_fully_matched"
+        ],
+        "sample": 12,
+        "sample_unit": "distinct_ads_after_known_vehicle_dedup",
+        "reference_usd": "10100",
+        "range_usd": {
+          "low": "9937.50",
+          "high": "10212.50"
+        },
+        "range_kind": "empirical_interquartile_asking_price_range_not_prediction_interval",
+        "asking_median": "10075.0",
+        "conservative_reference": "10100",
+        "discount_percent": "50.495049504950495049504950495049504950495049504950",
+        "currency": "USD",
+        "method": "weighted_similar",
+        "method_description": "Weighted median: closer year/mileage, fresher observations and same region receive more weight.",
+        "method_selection": "experimental_choice_pending_independent_validation",
+        "reliability": "experimental_low",
+        "real_world_accuracy_verified": false,
+        "data_checked_at": {
+          "oldest": 1790942300,
+          "newest": 1790942300
+        },
+        "evaluated_at": 1790942400,
+        "exclusions": {},
+        "used_comparables": [
+          {
+            "source": "olx",
+            "id": "comp0",
+            "usd_amount": "9800",
+            "checked_at": 1790942300
+          },
+          {
+            "source": "olx",
+            "id": "comp1",
+            "usd_amount": "9850",
+            "checked_at": 1790942300
+          },
+          {
+            "source": "olx",
+            "id": "comp10",
+            "usd_amount": "10300",
+            "checked_at": 1790942300
+          },
+          {
+            "source": "olx",
+            "id": "comp11",
+            "usd_amount": "10350",
+            "checked_at": 1790942300
+          },
+          {
+            "source": "olx",
+            "id": "comp2",
+            "usd_amount": "9900",
+            "checked_at": 1790942300
+          },
+          {
+            "source": "olx",
+            "id": "comp3",
+            "usd_amount": "9950",
+            "checked_at": 1790942300
+          },
+          {
+            "source": "olx",
+            "id": "comp4",
+            "usd_amount": "10000",
+            "checked_at": 1790942300
+          },
+          {
+            "source": "olx",
+            "id": "comp5",
+            "usd_amount": "10050",
+            "checked_at": 1790942300
+          },
+          {
+            "source": "olx",
+            "id": "comp6",
+            "usd_amount": "10100",
+            "checked_at": 1790942300
+          },
+          {
+            "source": "olx",
+            "id": "comp7",
+            "usd_amount": "10150",
+            "checked_at": 1790942300
+          },
+          {
+            "source": "olx",
+            "id": "comp8",
+            "usd_amount": "10200",
+            "checked_at": 1790942300
+          },
+          {
+            "source": "olx",
+            "id": "comp9",
+            "usd_amount": "10250",
+            "checked_at": 1790942300
+          }
+        ],
+        "extra_margin_percent": "0",
+        "recommended": null,
+        "next_action": "Validate precision, missed profitable cars and unknown coverage on an independent real sample."
+      }
+    },
+    "selected_method": "lower_quartile",
+    "selection_is_provisional": true,
+    "real_world_accuracy_verified": false,
+    "selection_reason": "Explicit conservative research baseline; no independent accuracy evidence yet."
+  },
+  "message_example": {
+    "text": "🚘 Volkswagen Golf — синтетичний приклад\n≈ 5 000 $\n210000 грн · довідковий перерахунок НБУ\n2016\nКиїв\n120000\npetrol\nmanual\nДжерело: OLX\nТестовий приклад. Оцінка експериментальна.",
+    "photo": null,
+    "button": {
+      "text": "Відкрити оголошення",
+      "url": "https://example.invalid/car/synthetic-usd-target"
+    }
+  }
+}

@@ -1,7 +1,7 @@
 import json
 from pathlib import Path
 import unittest
-from experiments.olx_offline.html_snapshot import parse_search_snapshot,money
+from experiments.olx_offline.html_snapshot import parse_search_snapshot,parse_search_page,money
 from experiments.olx_offline.pipeline import canonical,estimate
 from experiments.olx_offline.test_pipeline import NOW
 
@@ -42,3 +42,28 @@ class HtmlSnapshotTests(unittest.TestCase):
     def test_unsafe_link_excluded(self):
         r=self.parse(CARD.replace('/d/uk/obyavlenie/example-IDfixture.html?tracking=test','https://evil.invalid/x'))
         self.assertEqual(r['summary']['rejected_cards'],1)
+    def test_newest_selection_and_promoted_placement_do_not_prove_publication(self):
+        sort='<div data-testid="sorting-dropdown"><select><option value="relevance:desc">Рекомендоване вам</option><option value="created_at:desc" selected>Найновіші</option></select></div>'
+        promoted=CARD.replace('tracking=test','search_reason=search%7Cpromoted')
+        result=self.parse('<html>'+sort+promoted+'</html>')
+        self.assertEqual(result['summary']['observed_sort'],{'value':'created_at:desc','label':'Найновіші'})
+        self.assertEqual(result['summary']['placement_counts']['promoted'],1)
+        self.assertEqual(result['listings'][0]['observed_search_reason'],'promoted')
+        self.assertFalse(result['listings'][0]['publication_verified'])
+        self.assertIsNone(result['listings'][0]['published_at'])
+        self.assertFalse(result['summary']['collection_complete'])
+    def test_placement_unknown_when_absent_ambiguous_or_unrecognized(self):
+        for query in ('tracking=test','search_reason=unknown','search_reason=search%7Corganic&search_reason=search%7Cpromoted'):
+            result=self.parse('<html>'+CARD.replace('tracking=test',query)+'</html>')
+            self.assertIsNone(result['listings'][0]['observed_search_reason'])
+        organic=self.parse('<html>'+CARD.replace('tracking=test','search_reason=search%7Corganic')+'</html>')
+        self.assertEqual(organic['summary']['placement_counts']['organic'],1)
+    def test_page_bridge_propagates_truncation_even_with_visible_next(self):
+        page=parse_search_page(('<html>'+CARD).encode(),fetched_at=NOW,truncated=True,next_cursor='observed-page2')
+        self.assertEqual(len(page['items']),1)
+        self.assertEqual(page['next'],'observed-page2')
+        self.assertFalse(page['page_complete'])
+        self.assertFalse(page['collection_complete'])
+        complete_html=parse_search_page(('<html>'+CARD+'</html>').encode(),fetched_at=NOW,truncated=False)
+        self.assertTrue(complete_html['page_complete'])
+        self.assertFalse(complete_html['collection_complete'])

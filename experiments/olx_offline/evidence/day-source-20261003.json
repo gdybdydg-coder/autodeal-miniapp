@@ -1,0 +1,91 @@
+{
+  "kind": "direct_live_bounded_search_page_not_completeness_measurement",
+  "requests": [
+    {
+      "url": "https://www.olx.ua/transport/legkovye-avtomobili/?page=2",
+      "started_utc": "2026-10-03T06:25:33.514018+00:00",
+      "attempts": 1,
+      "body_cap": 2097152,
+      "redirects_followed": 0,
+      "retries": 0,
+      "status": 302,
+      "bytes_read": 0,
+      "http_error": true,
+      "observed_redirect": "https://www.olx.ua/uk/transport/legkovye-avtomobili/?page=2",
+      "seconds": 0.609,
+      "finished_utc": "2026-10-03T06:25:34.123154+00:00"
+    },
+    {
+      "url": "https://www.olx.ua/uk/transport/legkovye-avtomobili/?page=2",
+      "started_utc": "2026-10-03T06:25:54.934127+00:00",
+      "attempts": 1,
+      "body_cap": 2097152,
+      "redirects_followed": 0,
+      "retries": 0,
+      "status": 200,
+      "bytes_read": 2097152,
+      "at_byte_cap": true,
+      "content_type": "text/html",
+      "sha256": "6521f4de32ef033faab00be07ceedd8b6f948b4b56a5ee42c78a02e032199ce0",
+      "seconds": 2.476,
+      "finished_utc": "2026-10-03T06:25:57.409961+00:00"
+    }
+  ],
+  "parsed": {
+    "fetched_at": 1791008757,
+    "bytes_parsed": 2097152,
+    "download_truncated": true,
+    "closed_cards": 52,
+    "unique_cards": 52,
+    "duplicate_cards": 0,
+    "rejected_cards": 0,
+    "jsonld_offer_count": 0,
+    "jsonld_urls_in_cards": 0,
+    "cards_absent_from_jsonld": 52,
+    "cards_with_photo_urls": 5,
+    "observed_pagination_links": [
+      "/transport/legkovye-avtomobili/?page=2",
+      "/transport/legkovye-avtomobili/?page=25",
+      "/transport/legkovye-avtomobili/?page=3",
+      "/transport/legkovye-avtomobili/?page=4",
+      "/transport/legkovye-avtomobili/?page=5"
+    ],
+    "publication_verified": 0,
+    "whole_car_category_verified": 0,
+    "full_price_verified": 0,
+    "collection_complete": false,
+    "ready_for_delivery": false
+  },
+  "currencies": {
+    "UAH": 52
+  },
+  "offer_review": {
+    "needs_review": 52
+  },
+  "sort_options_observed": [
+    {
+      "value": "relevance:desc",
+      "text": "Рекомендоване вам",
+      "selected": true
+    },
+    {
+      "value": "created_at:desc",
+      "text": "Найновіші",
+      "selected": false
+    },
+    {
+      "value": "filter_float_price:asc",
+      "text": "Найдешевші",
+      "selected": false
+    },
+    {
+      "value": "filter_float_price:desc",
+      "text": "Найдорожчі",
+      "selected": false
+    }
+  ],
+  "current_source_newest_order_confirmed": false,
+  "independent_control_size": 0,
+  "verified_profitable": 0,
+  "real_new_publication_latency_seconds": null
+}

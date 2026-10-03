@@ -1,0 +1,88 @@
+{
+  "schema": 1,
+  "stop": true,
+  "lease": null,
+  "automation_id": null,
+  "window_kyiv": {
+    "started": "2026-10-03T00:36:14+03:00",
+    "hard_stop": "2026-10-03T08:00:00+03:00"
+  },
+  "branch": "wip/olx-pipeline-20261002",
+  "base_remote_commit": "dc8d4a6ea7694f52ab490b7a5327a480eeca9679",
+  "production_enabled": false,
+  "regular_olx_collection_permission_confirmed": false,
+  "last_result": "166 tests passed; public page2 HTTP200, two complete real details reviewed and durably ingested; market accuracy unconfirmed.",
+  "completed": [
+    "baseline_audit_74_tests",
+    "eligibility_full_description_rules",
+    "usd_decimal_shared_cache",
+    "three_market_methods_no_margin",
+    "fake_delivery_rechecks",
+    "full_synthetic_load_100_200",
+    "bounded_probe_and_local_guard",
+    "cross_run_lease_protocol"
+  ],
+  "blocked": {
+    "nbu_live_quote": {
+      "status": "HTTP403",
+      "repeat_without_new_evidence": false,
+      "evidence": "evidence/nbu-probe-20261003.json"
+    },
+    "regular_olx_permission": {
+      "status": "help_center_loading_css_error",
+      "repeat_same_request": false
+    },
+    "newest_pagination": {
+      "status": "public_page2_HTTP200_confirmed_newest_sort_and_new_publication_still_unverified",
+      "note": "Old probe missed Location; improved probe rejected redirect outside allowlist or relative target. Do not invent target or bypass challenge."
+    },
+    "live_donor_example": {
+      "status": "HTTP410",
+      "repeat_same_url": false
+    },
+    "market_accuracy": {
+      "status": "no_independent_real_control_or_sufficient_comparables"
+    }
+  },
+  "next_tasks": [
+    {
+      "id": "source_contract",
+      "status": "partial",
+      "action": "Resolve legitimate public pagination/newest-sort contract from actually observed markup; small bounded new hypothesis only. Do not retry blocked URLs without changed evidence. Save raw privately, metadata only in git."
+    },
+    {
+      "id": "real_price_and_eligibility",
+      "status": "partial",
+      "action": "Obtain a small independent set of active whole-car detail examples; review complete description, actual original price and explicit full-price evidence. Hold unknowns. Publicly retain only short redacted evidence."
+    },
+    {
+      "id": "real_market_cohort",
+      "status": "pending",
+      "action": "If permitted channel and real eligible comparable cohort exist, compare the three methods on independent labeled targets with no self/crosspost leakage. Otherwise record missing fields/cohort and remain not ready."
+    },
+    {
+      "id": "adapter_and_resources",
+      "status": "partial",
+      "action": "Continue isolated gaps: safely retain detail-review provenance through collect/update and review mapping of current backend filter/entitlement boundaries read-only; source switch off; no production imports. Estimate shared crawl requests and storage using measured data, identify unknowns."
+    },
+    {
+      "id": "morning_readiness",
+      "status": "pending",
+      "action": "Update this single NIGHT-20261003.md report and roadmap with actual evidence, launch diff and rollback; status not ready unless gates proven. Final run only report/release lease before hard stop."
+    }
+  ],
+  "limits_per_run": {
+    "seconds": 1800,
+    "olx_http_requests": 4,
+    "olx_body_bytes": 8388608,
+    "nbu_http_requests": 1,
+    "nbu_body_bytes": 262144,
+    "timeout_seconds": 20,
+    "between_requests_seconds": 5,
+    "paid_requests": 0,
+    "telegram_sends": 0
+  },
+  "publication_guard": "GitHub create commit parent=observed HEAD then update_ref(force=false); no branch overwrite; reread own active lease before network work and publication",
+  "report": "experiments/olx_offline/NIGHT-20261003.md",
+  "closed_reason": "Window expired without creating an independent task; continued foreground on owner instruction 2026-10-03 09:23 Kyiv."
+}

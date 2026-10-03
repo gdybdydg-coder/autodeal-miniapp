@@ -1,0 +1,248 @@
+{
+  "checked_date": "2026-10-03",
+  "http_interval_utc": {
+    "start": "2026-10-03T07:56:23.728293+00:00",
+    "end": "2026-10-03T07:59:51.172029+00:00"
+  },
+  "http_interval_kyiv": {
+    "start": "2026-10-03T10:56:23.728293+03:00",
+    "end": "2026-10-03T10:59:51.172029+03:00"
+  },
+  "ui": {
+    "observed_at_utc": "2026-10-03T07:55:03.463Z",
+    "selected_sort": "Найновіші",
+    "url": "https://www.olx.ua/uk/transport/legkovye-avtomobili/?currency=UAH&search%5Border%5D=created_at:desc",
+    "page2_href": "/transport/legkovye-avtomobili/?currency=UAH&page=2&search%5Border%5D=created_at%3Adesc",
+    "browser_first_organic_label": "Тернопіль - Сьогодні о 10:48",
+    "http_same_card_label": "Тернопіль - Сьогодні о 07:48",
+    "label_timezone_verified": false,
+    "publication_semantics_verified": false
+  },
+  "http": [
+    {
+      "url": "https://www.olx.ua/uk/transport/legkovye-avtomobili/?currency=UAH&search%5Border%5D=created_at:desc",
+      "started_utc": "2026-10-03T07:56:23.728293+00:00",
+      "attempts": 1,
+      "body_cap": 2097152,
+      "redirects_followed": 0,
+      "retries": 0,
+      "status": 200,
+      "bytes_read": 2097152,
+      "at_byte_cap": true,
+      "content_type": "text/html",
+      "sha256": "9dd415fc03913dd71d8c124b1086b1ba14bb880737e83dedac154538c0315e2e",
+      "seconds": 16.869,
+      "finished_utc": "2026-10-03T07:56:40.596825+00:00"
+    },
+    {
+      "url": "https://www.olx.ua/transport/legkovye-avtomobili/?currency=UAH&page=2&search%5Border%5D=created_at%3Adesc",
+      "started_utc": "2026-10-03T07:56:45.598280+00:00",
+      "attempts": 1,
+      "body_cap": 2097152,
+      "redirects_followed": 0,
+      "retries": 0,
+      "status": 302,
+      "bytes_read": 0,
+      "http_error": true,
+      "observed_redirect": "https://www.olx.ua/uk/transport/legkovye-avtomobili/?currency=UAH&page=2&search%5Border%5D=created_at%3Adesc",
+      "seconds": 8.719,
+      "finished_utc": "2026-10-03T07:56:54.317366+00:00"
+    },
+    {
+      "url": "https://www.olx.ua/uk/transport/legkovye-avtomobili/?currency=UAH&page=2&search%5Border%5D=created_at%3Adesc",
+      "started_utc": "2026-10-03T07:58:21.710208+00:00",
+      "attempts": 1,
+      "body_cap": 2097152,
+      "redirects_followed": 0,
+      "retries": 0,
+      "status": 200,
+      "bytes_read": 2097152,
+      "at_byte_cap": true,
+      "content_type": "text/html",
+      "sha256": "ee8a636a948dd11e69613cd41bfd118ec9da5ef950c2532999f71e3cafa7fd26",
+      "seconds": 10.31,
+      "finished_utc": "2026-10-03T07:58:32.020393+00:00"
+    },
+    {
+      "url": "https://www.olx.ua/d/uk/obyavlenie/bmw-e39-523i-2-5gaz-benzin-avtomat-ID11dLBI.html",
+      "started_utc": "2026-10-03T07:59:39.741559+00:00",
+      "attempts": 1,
+      "body_cap": 2097152,
+      "redirects_followed": 0,
+      "retries": 0,
+      "status": 200,
+      "bytes_read": 1569209,
+      "at_byte_cap": false,
+      "content_type": "text/html",
+      "sha256": "bb7f6929e7258415a9fb2e32358c5dff40b139dc6fdba5faf4fccb9ddf9057df",
+      "seconds": 11.43,
+      "finished_utc": "2026-10-03T07:59:51.172029+00:00"
+    }
+  ],
+  "http_attempts": 4,
+  "http_received_bytes": 5763513,
+  "http_max_reserved_bytes": 8388608,
+  "browser_network_bytes_measured": false,
+  "page_summaries": [
+    {
+      "fetched_at": 1791014200,
+      "bytes_parsed": 2097152,
+      "download_truncated": true,
+      "closed_cards": 52,
+      "unique_cards": 52,
+      "duplicate_cards": 0,
+      "rejected_cards": 0,
+      "jsonld_offer_count": 20,
+      "jsonld_urls_in_cards": 20,
+      "cards_absent_from_jsonld": 32,
+      "cards_with_photo_urls": 22,
+      "observed_pagination_links": [
+        "/transport/legkovye-avtomobili/?currency=UAH&page=2&search%5Border%5D=created_at%3Adesc",
+        "/transport/legkovye-avtomobili/?currency=UAH&page=25&search%5Border%5D=created_at%3Adesc",
+        "/transport/legkovye-avtomobili/?currency=UAH&page=3&search%5Border%5D=created_at%3Adesc",
+        "/transport/legkovye-avtomobili/?currency=UAH&page=4&search%5Border%5D=created_at%3Adesc",
+        "/transport/legkovye-avtomobili/?currency=UAH&page=5&search%5Border%5D=created_at%3Adesc"
+      ],
+      "observed_sort": {
+        "value": "created_at:desc",
+        "label": "Найновіші"
+      },
+      "placement_counts": {
+        "promoted": 12,
+        "organic": 40,
+        "unknown": 0
+      },
+      "publication_verified": 0,
+      "whole_car_category_verified": 0,
+      "full_price_verified": 0,
+      "collection_complete": false,
+      "ready_for_delivery": false
+    },
+    {
+      "fetched_at": 1791014312,
+      "bytes_parsed": 2097152,
+      "download_truncated": true,
+      "closed_cards": 52,
+      "unique_cards": 52,
+      "duplicate_cards": 0,
+      "rejected_cards": 0,
+      "jsonld_offer_count": 0,
+      "jsonld_urls_in_cards": 0,
+      "cards_absent_from_jsonld": 52,
+      "cards_with_photo_urls": 5,
+      "observed_pagination_links": [
+        "/transport/legkovye-avtomobili/?currency=UAH&page=2&search%5Border%5D=created_at%3Adesc",
+        "/transport/legkovye-avtomobili/?currency=UAH&page=25&search%5Border%5D=created_at%3Adesc",
+        "/transport/legkovye-avtomobili/?currency=UAH&page=3&search%5Border%5D=created_at%3Adesc",
+        "/transport/legkovye-avtomobili/?currency=UAH&page=4&search%5Border%5D=created_at%3Adesc",
+        "/transport/legkovye-avtomobili/?currency=UAH&page=5&search%5Border%5D=created_at%3Adesc"
+      ],
+      "observed_sort": {
+        "value": "created_at:desc",
+        "label": "Найновіші"
+      },
+      "placement_counts": {
+        "promoted": 12,
+        "organic": 40,
+        "unknown": 0
+      },
+      "publication_verified": 0,
+      "whole_car_category_verified": 0,
+      "full_price_verified": 0,
+      "collection_complete": false,
+      "ready_for_delivery": false
+    }
+  ],
+  "observed_rows": 104,
+  "unique_listings": 91,
+  "overlap": 13,
+  "detail_pages_processed": 1,
+  "detail_summary": {
+    "bytes_parsed": 1569209,
+    "download_truncated": false,
+    "price_relationship": "different_display_currencies",
+    "photo_urls": 5,
+    "field_conflicts": [],
+    "full_price_verified": false,
+    "publication_verified": false,
+    "ready_for_delivery": false,
+    "seller_data_exported": false
+  },
+  "offline_saved_example_replay": {
+    "kind": "saved_real_examples_offline_replay",
+    "partial_response_runs": [
+      {
+        "status": "incomplete",
+        "pages": 1,
+        "rows": 52,
+        "reason": "page_incomplete"
+      },
+      {
+        "status": "incomplete",
+        "pages": 1,
+        "rows": 52,
+        "reason": "page_incomplete"
+      }
+    ],
+    "detail_ingest": {
+      "stored": true,
+      "eligibility": "unverified",
+      "offer_review": "allowed",
+      "summary": {
+        "bytes_parsed": 1569209,
+        "download_truncated": false,
+        "price_relationship": "different_display_currencies",
+        "photo_urls": 5,
+        "field_conflicts": [],
+        "full_price_verified": false,
+        "publication_verified": false,
+        "ready_for_delivery": false,
+        "seller_data_exported": false
+      }
+    },
+    "stored_unique": 91,
+    "stored_after_restart": 91,
+    "first_seen_retained": true,
+    "checkpoint": {
+      "cursor": null,
+      "complete": 0,
+      "last_success": null
+    },
+    "detail_price_retained": {
+      "amount": "3500",
+      "currency": "USD"
+    },
+    "assessed": 91,
+    "profitability_confirmed": 0,
+    "unconfirmed": 91,
+    "valuation_reasons": {
+      "eligibility_not_allowed": 90,
+      "full_price_unconfirmed": 1
+    },
+    "comparables": 0,
+    "independent_control_size": 0,
+    "missing": null,
+    "recall": null,
+    "matched_to_user_filters": null,
+    "recommended": 0,
+    "pending": 0,
+    "seconds_parse_collect_detail_restart_assess": 0.139833,
+    "network_requests": 0,
+    "paid_requests": 0,
+    "telegram_calls": 0
+  },
+  "channel_permission": {
+    "partner_api_all_seller_search": false,
+    "regular_public_collection_confirmed": false,
+    "approved_feed_confirmed": false,
+    "public_api_limit_applied_to_html": false
+  },
+  "limits": [
+    "Two truncated 2 MiB HTML responses; no claim of complete pages or catalogue.",
+    "Promoted cards include older dates despite newest sorting.",
+    "UI/HTTP date labels differ by three hours; timezone and initial-publication semantics unverified.",
+    "No independent control sample, repeated time-series, confirmed full price, NBU quote or comparable cohort.",
+    "No production changes, paid AUTO.RIA requests, Telegram or bank calls.",
+    "Four explicit HTTP attempts total including one redirect; no automatic redirect/retry. Browser page assets are separate and unmeasured."
+  ]
+}

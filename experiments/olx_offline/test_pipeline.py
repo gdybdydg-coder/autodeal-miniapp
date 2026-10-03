@@ -10,7 +10,9 @@ def raw(i, **changes):
     r=dict(id=str(i),source='olx',url='https://example.invalid/car/'+str(i),title='Volkswagen Golf — синтетичний приклад',
            price=7000,currency='USD',price_kind='full',category='whole_passenger_car',brand='Volkswagen',model='Golf',
            generation='VII',body='hatchback',engine_cc=1400,year=2016,mileage_km=120000,region='Київська',
-           locality='Київ',fuel='petrol',transmission='manual',published_at=NOW,publication_verified=True,checked_at=NOW-100,evidence='synthetic')
+           locality='Київ',fuel='petrol',transmission='manual',published_at=NOW,publication_verified=True,checked_at=NOW-100,evidence='synthetic',
+           description='Розмитнений, українська реєстрація. Продаю цілим, не на розбір.',description_available=True,
+           customs_status='cleared',sale_mode='whole',condition='normal')
     r.update(changes);return r
 
 def comps():
@@ -63,7 +65,9 @@ class PipelineTests(unittest.TestCase):
         for kind in ('deposit','monthly','conditional','part',None):
             self.assertEqual(estimate(canonical(raw(1,price_kind=kind),NOW),comps(),NOW)['status'],'profitability_unconfirmed')
         self.assertEqual(estimate(canonical(raw(1,generation=None),NOW),comps(),NOW)['status'],'profitability_unconfirmed')
-        self.assertEqual(estimate(canonical(raw(1,condition='damaged'),NOW),comps(),NOW)['status'],'experimental_estimate')
+        damaged=canonical(raw(1,condition='damaged'),NOW)
+        self.assertEqual(damaged['eligibility_review']['status'],'allowed')
+        self.assertEqual(estimate(damaged,comps(),NOW)['status'],'profitability_unconfirmed')
         self.assertEqual(estimate(canonical(raw(1,currency='EUR'),NOW),comps(),NOW)['status'],'profitability_unconfirmed')
     def test_comparables_dedup_stale_and_different_model(self):
         target=canonical(raw(1),NOW)

@@ -1,0 +1,225 @@
+{
+  "kind": "two_direct_real_detail_checks_not_independent_control",
+  "verified_comparables": 0,
+  "restart_retained": 2,
+  "details": [
+    {
+      "id": "928711498",
+      "url": "https://www.olx.ua/d/uk/obyavlenie/prodam-bmw-e36-m52b28-ID10QMhI.html",
+      "title": "Продам BMW e36 m52b28",
+      "request": {
+        "url": "https://www.olx.ua/d/uk/obyavlenie/prodam-bmw-e36-m52b28-ID10QMhI.html",
+        "started_utc": "2026-10-03T06:26:57.813751+00:00",
+        "attempts": 1,
+        "body_cap": 2097152,
+        "redirects_followed": 0,
+        "retries": 0,
+        "status": 200,
+        "bytes_read": 1557227,
+        "at_byte_cap": false,
+        "content_type": "text/html",
+        "sha256": "20e5108dccd8fee59797d2dbc5a7280b798e777987159ada1f5997ad9519291f",
+        "seconds": 0.874,
+        "finished_utc": "2026-10-03T06:26:58.687966+00:00"
+      },
+      "stored": {
+        "stored": true,
+        "eligibility": "unverified",
+        "offer_review": "allowed",
+        "summary": {
+          "bytes_parsed": 1557227,
+          "download_truncated": false,
+          "price_relationship": "different_display_currencies",
+          "photo_urls": 1,
+          "field_conflicts": [],
+          "full_price_verified": false,
+          "publication_verified": false,
+          "ready_for_delivery": false,
+          "seller_data_exported": false
+        }
+      },
+      "fields": {
+        "brand": "BMW",
+        "model": "3 серія",
+        "generation": null,
+        "year": 1996,
+        "body": "wagon",
+        "engine_cc": null,
+        "mileage_km": 1000,
+        "fuel": "petrol",
+        "transmission": "manual",
+        "price": "7000",
+        "currency": "USD",
+        "condition": null
+      },
+      "eligibility_review": {
+        "status": "allowed",
+        "reasons": [
+          "customs_cleared_declared",
+          "no_forbidden_offer_evidence"
+        ],
+        "evidence": [
+          {
+            "reason": "customs_cleared_declared",
+            "field": "customs_cleared",
+            "snippet": "true"
+          },
+          {
+            "reason": "no_forbidden_offer_evidence",
+            "field": "title/category/description",
+            "snippet": ""
+          }
+        ],
+        "used_fields": [
+          "title",
+          "category",
+          "customs_cleared",
+          "description",
+          "description_available"
+        ],
+        "fingerprint": "134d67d79e674a2937c4a61f0976bd3a79e8198b05f35ee79470573ac91dfa15",
+        "customs_status": "cleared_declared",
+        "customs_independently_verified": false,
+        "description_complete": true,
+        "version": "olx-eligibility-v1"
+      },
+      "usd_price": {
+        "status": "ready",
+        "reason": "already_usd",
+        "original_amount": "7000",
+        "original_currency": "USD",
+        "usd_amount": "7000",
+        "fx": null,
+        "conversion_precision": null
+      },
+      "assessment": {
+        "status": "profitability_unconfirmed",
+        "reason": "full_price_unconfirmed",
+        "reasons": [
+          "full_price_unconfirmed"
+        ],
+        "sample": 0,
+        "currency": "USD",
+        "method": "lower_quartile",
+        "reference_usd": null,
+        "range_usd": null,
+        "discount_percent": null,
+        "reliability": "insufficient",
+        "real_world_accuracy_verified": false,
+        "exclusions": {},
+        "next_action": "Obtain or verify eligible independent comparable evidence."
+      },
+      "full_description_exported": false,
+      "observed_sale_terms": "Звичайний продаж"
+    },
+    {
+      "id": "929589435",
+      "url": "https://www.olx.ua/d/uk/obyavlenie/nissan-primera-p12-ID10UsFZ.html",
+      "title": "Nissan Primera P12",
+      "request": {
+        "url": "https://www.olx.ua/d/uk/obyavlenie/nissan-primera-p12-ID10UsFZ.html",
+        "started_utc": "2026-10-03T06:27:03.689308+00:00",
+        "attempts": 1,
+        "body_cap": 2097152,
+        "redirects_followed": 0,
+        "retries": 0,
+        "status": 200,
+        "bytes_read": 1568388,
+        "at_byte_cap": false,
+        "content_type": "text/html",
+        "sha256": "90c4f5f69ac2639c263e1f91f6c55c79770b4d114d632f5d70bf457d2650647e",
+        "seconds": 0.831,
+        "finished_utc": "2026-10-03T06:27:04.519883+00:00"
+      },
+      "stored": {
+        "stored": true,
+        "eligibility": "unverified",
+        "offer_review": "allowed",
+        "summary": {
+          "bytes_parsed": 1568388,
+          "download_truncated": false,
+          "price_relationship": "different_display_currencies",
+          "photo_urls": 5,
+          "field_conflicts": [],
+          "full_price_verified": false,
+          "publication_verified": false,
+          "ready_for_delivery": false,
+          "seller_data_exported": false
+        }
+      },
+      "fields": {
+        "brand": "Nissan",
+        "model": "Primera",
+        "generation": null,
+        "year": 2003,
+        "body": "sedan",
+        "engine_cc": 2200,
+        "mileage_km": 293000,
+        "fuel": "diesel",
+        "transmission": "manual",
+        "price": "3199",
+        "currency": "USD",
+        "condition": "normal"
+      },
+      "eligibility_review": {
+        "status": "allowed",
+        "reasons": [
+          "customs_cleared_declared",
+          "no_forbidden_offer_evidence"
+        ],
+        "evidence": [
+          {
+            "reason": "customs_cleared_declared",
+            "field": "customs_cleared",
+            "snippet": "true"
+          },
+          {
+            "reason": "no_forbidden_offer_evidence",
+            "field": "title/category/description",
+            "snippet": ""
+          }
+        ],
+        "used_fields": [
+          "title",
+          "category",
+          "customs_cleared",
+          "description",
+          "description_available"
+        ],
+        "fingerprint": "ac123d966f349dad43c12ebf31de94052fcaef6f57ac416874ebd49fd70c42f2",
+        "customs_status": "cleared_declared",
+        "customs_independently_verified": false,
+        "description_complete": true,
+        "version": "olx-eligibility-v1"
+      },
+      "usd_price": {
+        "status": "ready",
+        "reason": "already_usd",
+        "original_amount": "3199",
+        "original_currency": "USD",
+        "usd_amount": "3199",
+        "fx": null,
+        "conversion_precision": null
+      },
+      "assessment": {
+        "status": "profitability_unconfirmed",
+        "reason": "full_price_unconfirmed",
+        "reasons": [
+          "full_price_unconfirmed"
+        ],
+        "sample": 0,
+        "currency": "USD",
+        "method": "lower_quartile",
+        "reference_usd": null,
+        "range_usd": null,
+        "discount_percent": null,
+        "reliability": "insufficient",
+        "real_world_accuracy_verified": false,
+        "exclusions": {},
+        "next_action": "Obtain or verify eligible independent comparable evidence."
+      },
+      "full_description_exported": false,
+      "observed_sale_terms": "Звичайний продаж"
+    }
+  ]
+}

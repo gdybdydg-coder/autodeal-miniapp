@@ -15,9 +15,10 @@ class PriceReviewTests(unittest.TestCase):
             self.assertEqual(review(raw(1,price_context=text))['status'],'needs_review')
     def test_text_cannot_confirm_full(self):
         self.assertEqual(review(raw(1,price_kind=None,price_context='Ціна за весь автомобіль'))['status'],'needs_review')
-    def test_whole_car_for_parts_not_rejected(self):
+    def test_whole_car_for_parts_held_under_new_owner_rule(self):
         c=canonical(raw(1,title='Цілий автомобіль на запчастини',condition='damaged',price_context='Ціна за весь автомобіль'),NOW)
-        self.assertEqual(estimate(c,comps(),NOW)['status'],'experimental_estimate')
+        self.assertNotEqual(c['eligibility_review']['status'],'allowed')
+        self.assertEqual(estimate(c,comps(),NOW)['status'],'profitability_unconfirmed')
     def test_low_price_not_fraud(self):
         c=canonical(raw(1,price=200),NOW)
         self.assertNotIn('fraud',str(c));self.assertEqual(c['price'],'200')
