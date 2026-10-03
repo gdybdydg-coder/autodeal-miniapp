@@ -283,3 +283,29 @@ def test_forged_user_id_and_stopped_paid_miniapp_cannot_spend(setup, monkeypatch
             db.commit()
         assert client.post("/api/cars/search", headers=headers(111), json={}).status_code == 402
     assert not calls
+
+
+def test_live_diagnostic_observes_normal_work_once_without_an_extra_source_call(p, monkeypatch):
+    from backend import source_pipeline_health
+    strict(p); approve(p)
+    p.runner.settings = replace(p.settings, admin_telegram_id=987654321)
+    captured = []
+    monkeypatch.setattr(source_pipeline_health, "log_snapshot", lambda *_: captured.append("read-only snapshot"))
+    enable(p, monkeypatch)
+    # enable replaces settings; keep the verified synthetic owner setting.
+    p.runner.settings = replace(p.runner.settings, admin_telegram_id=987654321)
+    drain(p)
+    assert captured == ["read-only snapshot"]
+    before = len(p.calls)
+    p.runner.observe_source_work(0)
+    p.runner.observe_source_work(1)
+    assert captured == ["read-only snapshot"] and len(p.calls) == before
+
+
+def test_strict_idle_monitor_never_runs_legacy_selected_probe(p, monkeypatch):
+    from backend import notification_diagnostic
+    strict(p)
+    p.runner.settings = replace(p.settings, ria_diagnostic_listing_id="124")
+    monkeypatch.setattr(notification_diagnostic, "retry_selected", lambda *_: pytest.fail("legacy paid probe"))
+    drain(p)
+    assert not p.calls

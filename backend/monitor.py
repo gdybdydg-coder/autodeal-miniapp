@@ -804,9 +804,21 @@ class Monitor:
                 batch_log.info("Monitor parallel batch tasks=%s evaluations=%s peak_requests=%s elapsed_seconds=%.3f",
                     len(tasks), sum(kind == "evaluate" for kind, _ in tasks),
                     source._lease_state["peak"], time.monotonic() - started)
+            self.observe_source_work(source._lease_state["peak"])
         finally:
             source.release()
         return status, True
+
+    def observe_source_work(self, accounted_work):
+        # A startup snapshot can describe a predecessor process. Observe this
+        # process after normal uncached work, without issuing a diagnostic probe.
+        if (not accounted_work or not paid_source_access.strict(self.engine)
+                or not self.settings.admin_telegram_id
+                or time.monotonic() < getattr(self, "_next_health_diagnostic", 0)):
+            return
+        self._next_health_diagnostic = time.monotonic() + 300
+        from .source_pipeline_health import log_snapshot
+        log_snapshot(self.engine, self.settings)
 
     def after_primary(self, groups):
         """Progress bounded extra work after a full healthy primary batch.
@@ -940,7 +952,7 @@ class Monitor:
                             db.commit()
             # Active-page discovery remains a single bounded step. Both kinds
             # of valuation may overlap; due publication search keeps its slot.
-            if kind is None and self.settings.ria_diagnostic_listing_id:
+            if kind is None and self.settings.ria_diagnostic_listing_id and not paid_source_access.strict(self.engine):
                 from .notification_diagnostic import retry_selected
                 if retry_selected(self):
                     status = "diagnostic"

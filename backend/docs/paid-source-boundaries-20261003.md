@@ -48,6 +48,10 @@ treated as unauthorized or reconstructed from guesses. Prospective transport
 summaries count each actual HTTP attempt once, with category, retry relation,
 reason and distinct groups. Neither group tokens nor identities are published.
 Local observations are not provider invoices or verified remaining quota.
+The private pipeline snapshot also runs after a normal accounted primary batch,
+at most once every five minutes per process. It performs local reads only, not a
+paid probe, and permits verification of new scoped calls after deployment rather
+than interpreting the predecessor's startup counters as the new process's work.
 
 SQLite exercises additive creation twice and preservation of old rows; PostgreSQL
 DDL is compiled locally. A PostgreSQL production rollout must additionally verify
