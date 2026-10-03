@@ -14,11 +14,17 @@ from sqlalchemy import delete, func, select, update
 from sqlalchemy.orm import Session
 
 from .auto_ria import RiaError
-from . import market_cache
+from . import market_cache, paid_source_access
 from .models import Filters, FullScan, MarketCar, ScanItem
 from .ria_search import FRESH_SECONDS, PAGE_REQUEST_LIMIT, RiaSearch, estimate, matches, parse_ids, quota_status
 from .valuation import is_deal
 from .monitor import access_allowed_clause, bind_source_access
+
+
+def scan_access(engine, uid, now=None):
+    paid = paid_source_access.strict(engine)
+    clause = access_allowed_clause(uid, now, paid_only=paid)
+    return clause & paid_source_access.ready_clause(uid) if paid else clause
 
 log = logging.getLogger(__name__)
 ACTIVE = ("queued", "running", "waiting")
@@ -153,14 +159,14 @@ class Scanner:
         with Session(self.engine) as db:
             row = db.scalar(select(FullScan).where(FullScan.status.in_(ACTIVE), FullScan.next_run <= now,
                                                     FullScan.lease_until <= now,
-                                                    access_allowed_clause(FullScan.user_id, now))
+                                                    scan_access(self.engine, FullScan.user_id, now))
                             .order_by(FullScan.next_run, FullScan.updated_at).limit(1))
             if row is None:
                 return None
             scan_id = row.id
             result = db.execute(update(FullScan).where(FullScan.id == scan_id, FullScan.status.in_(ACTIVE),
                                                         FullScan.lease_until <= now,
-                                                        access_allowed_clause(FullScan.user_id, now)).values(
+                                                        scan_access(self.engine, FullScan.user_id, now)).values(
                 owner=self.owner, lease_until=now + LEASE_SECONDS, status="running"))
             db.commit()
             return scan_id if result.rowcount else None
@@ -169,7 +175,7 @@ class Scanner:
         query = select(FullScan).where(FullScan.id == scan_id, FullScan.owner == self.owner,
             FullScan.status.in_(ACTIVE), FullScan.lease_until > time.time())
         if require_access:
-            query = query.where(access_allowed_clause(FullScan.user_id))
+            query = query.where(scan_access(self.engine, FullScan.user_id))
         return db.scalar(query.with_for_update())
 
     def enumerate_page(self, scan_id, source, context):
@@ -292,7 +298,7 @@ class Scanner:
         source = self.search_factory(self.engine, self.key)
         bind_source_access(source, lambda now: select(FullScan.id).where(
             FullScan.id == scan_id, FullScan.owner == self.owner, FullScan.status.in_(ACTIVE),
-            FullScan.lease_until > now, access_allowed_clause(FullScan.user_id, now)))
+            FullScan.lease_until > now, scan_access(self.engine, FullScan.user_id, now)))
         acquired, reason = False, ""
         try:
             source.acquire()

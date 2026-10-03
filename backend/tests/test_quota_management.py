@@ -12,6 +12,7 @@ from backend.app import Settings, create_app
 from backend.auto_ria import RiaError
 from backend.models import (Delivery, MonitorFeed, MonitorJob, MonitorMembership,
                             MonitorWatch, SourceBudget, SourceProbe, User)
+from backend.manual_payment_models import ManualBase
 from backend.ria_budget import BudgetLimits, TOTAL_OVERRIDE_ID, total_cap
 from backend.ria_search import RiaSearch, budget_state, budget_usage, quota_status
 from backend.tests.test_backend import TOKEN, SECRET, command
@@ -25,6 +26,8 @@ def q(tmp_path, monkeypatch):
         await stop.wait()
     monkeypatch.setattr(bot_commands, "run", idle)
     engine = create_engine("sqlite:///"+str(tmp_path/"quota.db"), connect_args={"check_same_thread":False})
+    # /stats reads purchase history even when this fixture disables sales.
+    ManualBase.metadata.create_all(engine)
     settings = Settings("unused", TOKEN, SECRET, True, True, admin_telegram_id=111,
                         ria_quota_management_enabled=True)
     with TestClient(create_app(settings, engine)) as api:

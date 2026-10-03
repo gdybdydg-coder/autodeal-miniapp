@@ -23,7 +23,7 @@ from .models import (Car, Filters, Listing, MonitorControl, MonitorFeed, Monitor
                      MonitorMatch, MonitorMembership, MonitorSeen, MonitorWatch, Search, SourceBudget,
                      StarsTestOrder, User)
 from .billing_models import BillingControl, Entitlement
-from . import billing
+from . import billing, paid_source_access
 from .ria_budget import BudgetLimits
 from .ria_search import RiaSearch, estimate, matches, parse_ids, quota_status, budget_state
 from .valuation import (MAX_AGE, VERSION, PeerBatch, is_deal, price_only_evidence,
@@ -114,13 +114,15 @@ def poll_interval(groups, limits=None, *, provider_pricing_enabled=False, active
                math.ceil(groups * 3600 / max(1, limits.hourly * share // 4)))
 
 
-def access_allowed_clause(uid, now=None):
+def access_allowed_clause(uid, now=None, *, paid_only=False):
     """Bulk SQL equivalent of billing.allowed; access is not a purchase fact.
 
-    Keep gifts, legacy pilot access and disabled enforcement exactly as before.
-    This predicate only prevents source work for currently ineligible clients.
+    Production requires current confirmed payment. Explicit legacy/offline
+    applications retain gifts, pilot access and their enforcement policy.
     """
     now = time.time() if now is None else now
+    if paid_only:
+        return paid_source_access.confirmed_clause(uid, now)
     enforced = func.coalesce(select(BillingControl.enforce).where(
         BillingControl.id == billing.CONTROL).scalar_subquery(), False)
     entitlement = exists(select(Entitlement.user_id).where(
@@ -132,21 +134,21 @@ def access_allowed_clause(uid, now=None):
     return (~enforced) | entitlement | pilot
 
 
-def member_query(now=None):
+def member_query(now=None, *, paid_only=False):
     return select(Search, MonitorWatch, MonitorMembership).join(User, User.id == Search.user_id).join(
         MonitorWatch, MonitorWatch.search_id == Search.id).join(
         MonitorMembership, MonitorMembership.search_id == Search.id).where(
         Search.enabled.is_(True), User.ready.is_(True),
-        MonitorWatch.epoch == MonitorMembership.epoch, access_allowed_clause(User.id, now))
+        MonitorWatch.epoch == MonitorMembership.epoch, access_allowed_clause(User.id, now, paid_only=paid_only))
 
 
-def interest_query(source_id, now=None):
+def interest_query(source_id, now=None, *, paid_only=False):
     return select(Search.id, Search.user_id, MonitorWatch.epoch, Search.filters).join(
         User, User.id == Search.user_id).join(MonitorWatch, MonitorWatch.search_id == Search.id).join(
         MonitorSeen, MonitorSeen.search_id == Search.id).where(
         User.ready.is_(True), Search.enabled.is_(True), MonitorSeen.source_id == source_id,
         MonitorSeen.state == "pending", MonitorSeen.epoch == MonitorWatch.epoch,
-        access_allowed_clause(User.id, now))
+        access_allowed_clause(User.id, now, paid_only=paid_only))
 
 
 def bind_source_access(source, query):
@@ -165,7 +167,7 @@ def bind_source_access(source, query):
 
 
 def active_members(db):
-    return list(db.execute(member_query().order_by(Search.user_id, Search.id)))
+    return list(db.execute(member_query(paid_only=paid_source_access.strict(db.get_bind())).order_by(Search.user_id, Search.id)))
 
 
 def runtime_status(engine, enabled, uid=None, *, active_window_enabled=False, provider_pricing_enabled=False,
@@ -307,7 +309,7 @@ class Monitor:
                          .execution_options(populate_existing=True))
         row, watch = db.get(Search, sid, populate_existing=True), db.get(MonitorWatch, sid, populate_existing=True)
         if (not user or not user.ready or not row or not row.enabled or not watch
-                or not db.scalar(select(access_allowed_clause(uid)))
+                or not db.scalar(select(access_allowed_clause(uid, paid_only=paid_source_access.strict(db.get_bind()))))
                 or watch.epoch != epoch or not self.owned(db)):
             return None
         return row, watch
@@ -343,7 +345,7 @@ class Monitor:
             legacy = db.execute(select(Search.id, Search.user_id).join(User, User.id == Search.user_id)
                 .outerjoin(MonitorMembership, MonitorMembership.search_id == Search.id)
                 .where(Search.enabled.is_(True), User.ready.is_(True), MonitorMembership.search_id.is_(None),
-                       access_allowed_clause(User.id))
+                       access_allowed_clause(User.id, paid_only=paid_source_access.strict(db.get_bind())))
                 .order_by(Search.user_id, Search.id)).all()
             for sid, uid in legacy:
                 db.scalar(select(User).where(User.id == uid).with_for_update())
@@ -407,7 +409,7 @@ class Monitor:
         if not prepared:
             return
         context, filters = prepared
-        bind_source_access(source, lambda now: member_query(now).where(
+        bind_source_access(source, lambda now: member_query(now, paid_only=paid_source_access.strict(source.engine)).where(
             MonitorMembership.feed_id == feed_id))
         current_slice = context["slices"][0]
         params, _ = source.discovery_parameters(filters)
@@ -495,7 +497,7 @@ class Monitor:
             db.commit()
 
     def interests(self, db, source_id):
-        return list(db.execute(interest_query(source_id).order_by(Search.user_id, Search.id)))
+        return list(db.execute(interest_query(source_id, paid_only=paid_source_access.strict(db.get_bind())).order_by(Search.user_id, Search.id)))
 
     def complete(self, source_id, evidence, outcome):
         with self._state_lock, Session(self.engine) as db:
@@ -600,7 +602,7 @@ class Monitor:
             return
         if html_job:
             source.request_policy = recent_publications.reserve_api
-        bind_source_access(source, lambda now: interest_query(source_id, now))
+        bind_source_access(source, lambda now: interest_query(source_id, now, paid_only=paid_source_access.strict(source.engine)))
         candidate = evidence.get("candidate")
         reusable = bool(candidate and "condition_exclusions" in candidate
                         and 0 <= time.time() - candidate["observed_at"] <= EVIDENCE_SECONDS)
@@ -827,9 +829,9 @@ class Monitor:
             primary = func.coalesce(MonitorJob.result["discovery_kind"].as_string(), "").not_in(
                 [active_window.KIND, recent_publications.KIND])
             if db.scalar(select(MonitorJob.source_id).where(MonitorJob.state == "pending",
-                    MonitorJob.next_run <= now, primary, exists(interest_query(MonitorJob.source_id, now))).limit(1)) is not None:
+                    MonitorJob.next_run <= now, primary, exists(interest_query(MonitorJob.source_id, now, paid_only=paid_source_access.strict(db.get_bind())))).limit(1)) is not None:
                 return False
-        if self.settings.ria_diagnostic_listing_id:
+        if self.settings.ria_diagnostic_listing_id and not paid_source_access.strict(self.engine):
             from .notification_diagnostic import retry_selected
             if retry_selected(self):
                 return True
@@ -858,7 +860,7 @@ class Monitor:
                 return False
             self.sync()
             with Session(self.engine) as db:
-                if not db.scalar(select(exists(member_query()))):
+                if not db.scalar(select(exists(member_query(paid_only=paid_source_access.strict(db.get_bind()))))):
                     # A stored enabled search is not authorization to spend the
                     # provider quota after access ends. Preserve it for renewal.
                     return False
@@ -884,7 +886,7 @@ class Monitor:
                 supplemental = func.coalesce(MonitorJob.result["discovery_kind"].as_string(), "") == active_window.KIND
                 html_job = func.coalesce(MonitorJob.result["discovery_kind"].as_string(), "") == recent_publications.KIND
                 job_query = select(MonitorJob).where(MonitorJob.state == "pending", MonitorJob.next_run <= time.time(),
-                    exists(interest_query(MonitorJob.source_id)))
+                    exists(interest_query(MonitorJob.source_id, paid_only=paid_source_access.strict(db.get_bind()))))
                 if not recent_publications.enabled(self.settings):
                     job_query = job_query.where(~html_job)
                 if not self.settings.ria_active_window_enabled or not active_window.budget_available(db):
@@ -968,7 +970,7 @@ class Monitor:
                                         time.time() - active_window.FRESH_ARRIVAL_SECONDS)):
                                 raise RiaError("reserved_for_new_publications")
                     if kind == active_window.KIND:
-                        bind_source_access(source, lambda now: member_query(now).where(
+                        bind_source_access(source, lambda now: member_query(now, paid_only=paid_source_access.strict(source.engine)).where(
                             MonitorMembership.feed_id == key))
                         active_window.discover(self, key, source)
                     elif kind == "discover":

@@ -11,7 +11,7 @@ import time
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from . import billing, ria_market_range
+from . import billing, ria_market_range, paid_source_access
 from .auto_ria import RiaError
 from .delivery_diagnostic import receipt
 from .models import Car, Delivery, DeliveryTiming, Listing, SourceProbe, User
@@ -75,7 +75,7 @@ def run_once(monitor, sender=None):
             delivery = db.scalar(select(Delivery).where(Delivery.user_id == uid,
                 Delivery.listing_id == listing.id)) if listing else None
             timing = db.get(DeliveryTiming, delivery.id) if delivery else None
-            if not (user and user.ready and billing.allowed(db, uid) and delivery and delivery.state == 'sent' and delivery.message_id
+            if not (user and user.ready and paid_source_access.allowed(db, uid) and delivery and delivery.state == 'sent' and delivery.message_id
                     and timing and timing.accepted_at and time.time() - timing.accepted_at < 48 * 3600
                     and db.scalar(matching_searches(uid, listing.id).limit(1)) is not None):
                 continue
@@ -109,7 +109,7 @@ def run_once(monitor, sender=None):
                 # A configured operator selector is not an access override.
                 # Recheck after acquire and before the accounted provider call.
                 user = db.get(User, uid)
-                if not (user and user.ready and billing.allowed(db, uid, now)
+                if not (user and user.ready and paid_source_access.allowed(db, uid, now)
                         and monitor.owned(db)
                         and db.scalar(matching_searches(uid, listing.id).limit(1)) is not None):
                     raise RiaError('no_eligible_subscription')
@@ -140,7 +140,7 @@ def run_once(monitor, sender=None):
                 continue
             delivery = db.scalar(select(Delivery).where(Delivery.user_id == uid,
                 Delivery.listing_id == listing.id).with_for_update())
-            if not (user and user.ready and billing.allowed(db, uid) and delivery and delivery.state == 'sent' and delivery.message_id
+            if not (user and user.ready and paid_source_access.allowed(db, uid) and delivery and delivery.state == 'sent' and delivery.message_id
                     and db.scalar(matching_searches(uid, listing.id).limit(1)) is not None):
                 continue
             message_id = delivery.message_id
@@ -157,7 +157,7 @@ def run_once(monitor, sender=None):
             user = db.scalar(select(User).where(User.id == uid).with_for_update())
             delivery = db.scalar(select(Delivery).where(Delivery.user_id == uid,
                 Delivery.listing_id == listing.id).with_for_update())
-            if not (user and user.ready and billing.allowed(db, uid) and delivery and delivery.state == 'sent'
+            if not (user and user.ready and paid_source_access.allowed(db, uid) and delivery and delivery.state == 'sent'
                     and delivery.message_id == message_id
                     and db.scalar(matching_searches(uid, listing.id).limit(1)) is not None):
                 result = {'cancelled': True}

@@ -19,7 +19,7 @@ from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 from .auto_ria import RiaError, fetch_json, listing_preview
-from . import api_attempt_audit
+from . import api_attempt_audit, paid_source_access
 from .ria_ai_price import fetch_quote as _default_ai_fetch
 from .models import Filters, SourceBudget, SourceCache, SourceProbe
 from .ria_budget import BudgetLimits, peer_scan_limit, total_cap
@@ -366,6 +366,8 @@ class RiaSearch:
                 raise RiaError("quota_exceeded")
             if self.request_policy is not None:
                 self.request_policy(db, now, self.limits)
+            if paid_source_access.strict(self.engine) and not paid_source_access.any_paid(db, now):
+                raise RiaError("paid_access_required")
             row.calls, row.total = calls + [now], row.total + 1
             attempt_id = api_attempt_audit.reserve(db, path, digest, self._audit_clock(), force=force)
             db.commit()  # Failed calls consume budget too, even on a process crash.

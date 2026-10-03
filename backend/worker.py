@@ -1,5 +1,5 @@
 """Explicit one-shot worker. Never started by importing the API."""
-from . import billing
+from . import billing, paid_source_access
 import json
 import logging
 import time
@@ -153,7 +153,7 @@ def enqueue(engine, now=None, *, allow_active_window=True, allow_recent_publicat
                                  Delivery.user_id == user.id,
                                  Delivery.listing_id == listing.id)) is None)
         for uid, listing_id in pairs:
-            if not billing.allowed(db, uid, now):
+            if not paid_source_access.allowed(db, uid, now):
                 continue
             listing = db.get(Listing, listing_id)
             if not allow_active_window and supplemental_listing(listing):
@@ -358,7 +358,7 @@ def deliver_one(engine, settings: Settings, sender, now=None, *, enforce_chat_in
         if not retired and not unconfirmed and user and user.ready and listing and listing.source == "auto_ria" and not fresh(
                 Car.model_validate(listing.car), now, db, require_provider_range=settings.ria_ai_price_enabled):
             refresh = list(db.scalars(matching_searches(user.id, listing.id)))
-        if user and not billing.allowed(db, user.id, now):
+        if user and not paid_source_access.allowed(db, user.id, now):
             row.state = "cancelled"
         elif retired or unconfirmed:
             row.state = "cancelled"

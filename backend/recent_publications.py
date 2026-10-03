@@ -323,6 +323,7 @@ def take(monitor, source, *, after_primary=False):
     if not enabled(monitor.settings):
         return False
     from .monitor import active_members, source_filters, bind_source_access, member_query
+    from . import paid_source_access
     from .shared_distribution import claimed
     now = time.time()
     with monitor._state_lock, Session(monitor.engine) as db:
@@ -369,7 +370,7 @@ def take(monitor, source, *, after_primary=False):
         db.commit()
     source.request_policy = reserve_api
     target_epochs = [(search_id, uid, epoch) for search_id, uid, epoch, _ in targets]
-    bind_source_access(source, lambda now: member_query(now).where(
+    bind_source_access(source, lambda now: member_query(now, paid_only=paid_source_access.strict(source.engine)).where(
         tuple_(Search.id, Search.user_id, MonitorWatch.epoch).in_(target_epochs)))
     try:
         candidate = source.car(sid, force=True)

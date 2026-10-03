@@ -17,7 +17,7 @@ from sqlalchemy import create_engine, func, select, update
 from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 from sqlalchemy.orm import Session
 
-from . import billing, billing_campaign
+from . import billing, billing_campaign, paid_source_access
 from . import manual_payments, manual_payment_routes, manual_checkout, manual_launch
 from .auth import telegram_user
 from .auto_ria import probe_once, probe_status
@@ -119,7 +119,7 @@ class Settings:
         return self.delivery_enabled and self.source_ready
 
 
-def create_app(settings: Settings, engine=None):
+def create_app(settings: Settings, engine=None, *, paid_source_only=False):
     BudgetLimits.env()  # Validate before serving requests or running startup probes.
     peer_scan_limit()
     validate_run_id(settings.ria_validation_run_id)
@@ -139,6 +139,8 @@ def create_app(settings: Settings, engine=None):
     if not settings.bot_token or len(settings.webhook_secret) < 32:
         raise ValueError("Configure server-only Telegram secrets")
     engine = engine or create_engine(settings.database_url, pool_pre_ping=True)
+    if paid_source_only:
+        engine.update_execution_options(**{paid_source_access.OPTION: True})
 
     @asynccontextmanager
     async def lifespan(app):
@@ -163,12 +165,14 @@ def create_app(settings: Settings, engine=None):
         await asyncio.to_thread(owner_trace.log_once, engine, settings)
         from .delivery_cohort_audit import log_once as audit_delivery_cohorts
         await asyncio.to_thread(audit_delivery_cohorts, engine)
-        await asyncio.to_thread(valuation_audit.check_once, engine, settings.valuation_audit_run_id)
+        if not paid_source_access.strict(engine):
+            await asyncio.to_thread(valuation_audit.check_once, engine, settings.valuation_audit_run_id)
         if not settings.full_scan_enabled:
             full_scan.pause_all(engine)
-        await asyncio.to_thread(probe_once, engine, settings.auto_ria_api_key)
-        await asyncio.to_thread(verify_search_once, engine, settings.auto_ria_api_key)
-        await asyncio.to_thread(ria_rollout.check_once, engine, settings.auto_ria_api_key, settings.catalog_rollout_check)
+        if not paid_source_access.strict(engine):
+            await asyncio.to_thread(probe_once, engine, settings.auto_ria_api_key)
+            await asyncio.to_thread(verify_search_once, engine, settings.auto_ria_api_key)
+            await asyncio.to_thread(ria_rollout.check_once, engine, settings.auto_ria_api_key, settings.catalog_rollout_check)
         await asyncio.to_thread(telegram_setup.configure, engine, settings)
         await asyncio.to_thread(telegram_setup.configure_menu, engine, settings)
         await asyncio.to_thread(bot_commands.configure, engine, settings)
@@ -177,17 +181,19 @@ def create_app(settings: Settings, engine=None):
         await asyncio.to_thread(quota_management.configure, engine, settings)
         from . import subscription_preview
         await asyncio.to_thread(subscription_preview.configure, engine, settings)
-        await asyncio.to_thread(notification_diagnostic.check_once, engine,
-                               settings.auto_ria_api_key, settings.ria_diagnostic_listing_id)
-        await asyncio.to_thread(notification_diagnostic.check_dates_once, engine,
-                               settings.auto_ria_api_key, settings.ria_diagnostic_listing_id)
-        await asyncio.to_thread(notification_diagnostic.check_vin_dates_once, engine,
-                               settings.auto_ria_api_key, settings.ria_diagnostic_listing_id)
-        await asyncio.to_thread(notification_diagnostic.check_vin_presence_once, engine,
-                               settings.auto_ria_api_key, settings.ria_diagnostic_listing_id)
-        if settings.ria_ai_price_enabled:
-            await asyncio.to_thread(ria_ai_price.check_once, engine, settings.auto_ria_api_key,
-                                   settings.auto_ria_user_id, settings.ria_ai_price_probe_id)
+        if not paid_source_access.strict(engine):
+            await asyncio.to_thread(notification_diagnostic.check_once, engine,
+                                   settings.auto_ria_api_key, settings.ria_diagnostic_listing_id)
+            await asyncio.to_thread(notification_diagnostic.check_dates_once, engine,
+                                   settings.auto_ria_api_key, settings.ria_diagnostic_listing_id)
+            await asyncio.to_thread(notification_diagnostic.check_vin_dates_once, engine,
+                                   settings.auto_ria_api_key, settings.ria_diagnostic_listing_id)
+            await asyncio.to_thread(notification_diagnostic.check_vin_presence_once, engine,
+                                   settings.auto_ria_api_key, settings.ria_diagnostic_listing_id)
+            if settings.ria_ai_price_enabled:
+                await asyncio.to_thread(ria_ai_price.check_once, engine, settings.auto_ria_api_key,
+                                       settings.auto_ria_user_id, settings.ria_ai_price_probe_id)
+        await asyncio.to_thread(paid_source_access.log_snapshot, engine)
         stop = asyncio.Event()
         manual_notice_task = asyncio.create_task(manual_payments.run_notices(engine, settings, stop)) if (
             settings.manual_payment_review_enabled and settings.manual_payment_notices_enabled) else None
@@ -203,7 +209,8 @@ def create_app(settings: Settings, engine=None):
         validation_task = asyncio.create_task(asyncio.to_thread(
             validate_once, engine, settings.auto_ria_api_key, settings.ria_validation_run_id,
             profile=settings.ria_validation_profile, stop=validation_stop,
-        )) if settings.auto_ria_api_key and settings.ria_validation_run_id else None
+        )) if (settings.auto_ria_api_key and settings.ria_validation_run_id
+               and not paid_source_access.strict(engine)) else None
         try:
             yield
         finally:
@@ -272,7 +279,7 @@ def create_app(settings: Settings, engine=None):
     manual_payment_routes.install(app, engine, settings, identity)
 
     def check_access(db, uid):
-        if not billing.allowed(db, uid):
+        if not paid_source_access.allowed(db, uid):
             raise HTTPException(402, "subscription_required")
 
     def check_enable(user, db, search_id=None):
@@ -337,7 +344,11 @@ def create_app(settings: Settings, engine=None):
 
     @app.get("/api/billing/status")
     def billing_status(uid=Depends(identity), db=Depends(session)):
-        return billing.public_status(db, uid)
+        result = billing.public_status(db, uid)
+        if paid_source_access.strict(engine):
+            result["paid_access_required"] = True
+            result["access_available"] = paid_source_access.allowed(db, uid)
+        return result
 
     @app.get("/api/billing/admin")
     def billing_admin_status(uid=Depends(identity), db=Depends(session)):
@@ -437,10 +448,15 @@ def create_app(settings: Settings, engine=None):
         if not settings.full_scan_enabled:
             raise HTTPException(409, "full_scan_disabled")
         try:
-            return RiaSearch(engine, settings.auto_ria_api_key).search(payload, cursor)
+            source = RiaSearch(engine, settings.auto_ria_api_key)
+            def eligible_request(db, now, limits):
+                if not paid_source_access.allowed(db, uid, now):
+                    raise RiaError("paid_access_required")
+            source.request_policy = eligible_request
+            return source.search(payload, cursor)
         except RiaError as exc:
             code = str(exc)
-            status = 422 if code in {"unsupported_filter", "search_expired"} else 429 if code in {"quota_exceeded", "busy", "search_limit"} else 503
+            status = 402 if code == "paid_access_required" else 422 if code in {"unsupported_filter", "search_expired"} else 429 if code in {"quota_exceeded", "busy", "search_limit"} else 503
             return JSONResponse({"detail": code, "quota": quota_status(engine)}, status_code=status)
         except Exception:
             return JSONResponse({"detail": "source_unavailable"}, status_code=503)
@@ -486,7 +502,7 @@ def create_app(settings: Settings, engine=None):
             def eligible_catalog_request(db, now, limits):
                 # Unpaid clients may read already-cached filter dictionaries,
                 # but a cold UI read must not reserve paid provider work.
-                if not billing.allowed(db, uid, now):
+                if not paid_source_access.allowed(db, uid, now):
                     raise RiaError("paid_access_required")
             source.request_policy = eligible_catalog_request
             return source.catalog(brand)
@@ -698,4 +714,4 @@ def create_app(settings: Settings, engine=None):
 
 
 def factory():
-    return create_app(Settings.env())
+    return create_app(Settings.env(), paid_source_only=True)
