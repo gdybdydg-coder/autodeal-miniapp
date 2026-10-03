@@ -17,7 +17,7 @@ from sqlalchemy import create_engine, func, select, update
 from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 from sqlalchemy.orm import Session
 
-from . import billing, billing_campaign, paid_source_access
+from . import billing, billing_campaign, paid_source_access, tariff_reminders, tariff_reminder_commands
 from . import manual_payments, manual_payment_routes, manual_checkout, manual_launch
 from .auth import telegram_user
 from .auto_ria import probe_once, probe_status
@@ -151,6 +151,7 @@ def create_app(settings: Settings, engine=None, *, paid_source_only=False):
         await asyncio.to_thread(log_purchase_stats, engine, settings)
         billing_campaign.initialize(engine, settings)
         manual_launch.initialize(engine, settings)
+        await asyncio.to_thread(tariff_reminders.initialize, engine, settings)
         from .subscription_promotion import audit_queue as audit_promotion_queue
         await asyncio.to_thread(audit_promotion_queue, engine, settings)
         if settings.manual_payment_review_enabled:
@@ -647,6 +648,9 @@ def create_app(settings: Settings, engine=None, *, paid_source_only=False):
                 return billing.message(uid, bot_commands.STATS_UNAVAILABLE)
             telegram_setup.call(settings.bot_token, "sendMessage", {"chat_id": uid, "text": text})
             return {"ok": True}
+        reminder_reply = await asyncio.to_thread(tariff_reminder_commands.handle, engine, settings, event)
+        if reminder_reply is not None:
+            return reminder_reply
         checkout_reply = await asyncio.to_thread(manual_checkout.handle, engine, settings, event)
         if checkout_reply is not None:
             return checkout_reply

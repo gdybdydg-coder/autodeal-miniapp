@@ -91,3 +91,26 @@ class BillingNotice(Base):
     attempted_at: Mapped[float] = mapped_column(Float, default=0)
     message_id: Mapped[int | None] = mapped_column(BigInteger, nullable=True)
     retry_at: Mapped[float] = mapped_column(Float, default=0)
+
+
+class TariffReminderSchedule(Base):
+    """One durable schedule; recipient queues reuse BillingCampaign tables."""
+    __tablename__ = "tariff_reminder_schedule"
+    id: Mapped[str] = mapped_column(String(64), primary_key=True)
+    enabled: Mapped[bool] = mapped_column(Boolean, default=False)
+    admin_update_id: Mapped[int] = mapped_column(BigInteger, default=-1)
+    installed_at: Mapped[float] = mapped_column(Float)
+    first_run_at: Mapped[float] = mapped_column(Float)
+    next_run_at: Mapped[float] = mapped_column(Float)
+    heartbeat: Mapped[float] = mapped_column(Float, default=0)
+    last_campaign_id: Mapped[str] = mapped_column(String(64), default="")
+    last_result: Mapped[dict] = mapped_column(JSON, default=dict)
+
+
+class TariffReminderPreference(Base):
+    """Explicit category choice; never changes access, filters or global consent."""
+    __tablename__ = "tariff_reminder_preferences"
+    user_id: Mapped[int] = mapped_column(BigInteger, primary_key=True)
+    enabled: Mapped[bool] = mapped_column(Boolean)
+    update_id: Mapped[int] = mapped_column(BigInteger, default=-1)
+    at: Mapped[float] = mapped_column(Float)

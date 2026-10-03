@@ -441,8 +441,9 @@ def deliver_notice(engine, settings, request, now=None):
 
 
 async def run_notices(engine, settings, stop):
-    from . import telegram_setup, manual_launch, manual_repeat_notice, manual_repeat_preflight
+    from . import telegram_setup, manual_launch, manual_repeat_notice, manual_repeat_preflight, tariff_reminders
     next_progress = 0
+    next_daily_progress = 0
     while not stop.is_set():
         try:
             await asyncio.to_thread(deliver_notice, engine, settings, telegram_setup.call)
@@ -456,6 +457,15 @@ async def run_notices(engine, settings, stop):
                 next_progress = time.monotonic() + 30
         except Exception:
             logging.getLogger(__name__).error("Manual notice delivery unavailable; durable state retained")
+        # Reuse this executor, but an unrelated legacy campaign failure must not
+        # suppress the new schedule. Service/payment outboxes always run first.
+        try:
+            daily_outcome = await asyncio.to_thread(tariff_reminders.tick, engine, settings, telegram_setup.call)
+            if time.monotonic() >= next_daily_progress:
+                await asyncio.to_thread(tariff_reminders.log_progress, engine, settings, daily_outcome)
+                next_daily_progress = time.monotonic() + 30
+        except Exception:
+            logging.getLogger(__name__).error("Daily tariff reminder check unavailable; durable state retained")
         try:
             await asyncio.wait_for(stop.wait(), timeout=1)
         except asyncio.TimeoutError:

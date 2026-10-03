@@ -31,6 +31,28 @@ class EligibilityUnavailable(Exception):
     """No reliable decision: leave the queued advertisement untouched/deferred."""
 
 
+def blocked_clause(uid, now):
+    """Shared authoritative history/checkout exclusions, usable in a bulk query."""
+    from .manual_payment_models import ReceiptExpectation
+    return or_(
+        exists().where(CampaignRecipient.user_id == uid, CampaignRecipient.state == "failed",
+                       CampaignRecipient.error == "403"),
+        exists().where(Entitlement.user_id == uid, Entitlement.expires_at > 0),
+        exists().where(AccessEvent.user_id == uid, or_(AccessEvent.expires_at > now,
+                       AccessEvent.kind.in_(("paid", "manual_paid")))),
+        exists().where(BillingOrder.user_id == uid, or_(BillingOrder.state.in_((*PAID_STATES, "pending")),
+                       BillingOrder.charge_id.is_not(None))),
+        exists().where(StarsTestOrder.user_id == uid, or_(StarsTestOrder.state.in_(PAID_STATES),
+                       StarsTestOrder.charge_id.is_not(None))),
+        exists().where(BankCredit.user_id == uid),
+        exists().where(PaymentRequest.user_id == uid, or_(
+            PaymentRequest.state.not_in(("created", "rejected")), PaymentRequest.expires_at > 0)),
+        exists().where(PaymentAudit.request_id == PaymentRequest.id,
+                       PaymentRequest.user_id == uid, PaymentAudit.action == "approved"),
+        exists().where(ReceiptExpectation.user_id == uid, ReceiptExpectation.active.is_(True)),
+        )
+
+
 def eligible(db, uid, now=None, *, require_consent=False):
     """Return an authoritative decision; database failures never mean unpaid.
 
@@ -50,24 +72,7 @@ def eligible(db, uid, now=None, *, require_consent=False):
             return False
         if consent is not None and (not consent.allowed or consent.blocked):
             return False
-        from .manual_payment_models import ReceiptExpectation
-        blocked = db.scalar(select(or_(
-            exists().where(CampaignRecipient.user_id == uid, CampaignRecipient.state == "failed",
-                           CampaignRecipient.error == "403"),
-            exists().where(Entitlement.user_id == uid, Entitlement.expires_at > 0),
-            exists().where(AccessEvent.user_id == uid, or_(AccessEvent.expires_at > now,
-                           AccessEvent.kind.in_(("paid", "manual_paid")))),
-            exists().where(BillingOrder.user_id == uid, or_(BillingOrder.state.in_((*PAID_STATES, "pending")),
-                           BillingOrder.charge_id.is_not(None))),
-            exists().where(StarsTestOrder.user_id == uid, or_(StarsTestOrder.state.in_(PAID_STATES),
-                           StarsTestOrder.charge_id.is_not(None))),
-            exists().where(BankCredit.user_id == uid),
-            exists().where(PaymentRequest.user_id == uid, or_(
-                PaymentRequest.state.not_in(("created", "rejected")), PaymentRequest.expires_at > 0)),
-            exists().where(PaymentAudit.request_id == PaymentRequest.id,
-                           PaymentRequest.user_id == uid, PaymentAudit.action == "approved"),
-            exists().where(ReceiptExpectation.user_id == uid, ReceiptExpectation.active.is_(True)),
-        )))
+        blocked = db.scalar(select(blocked_clause(uid, now)))
         return not blocked
     except SQLAlchemyError:
         # Do not log SQL, connection strings, bound identifiers, or treat an
@@ -97,7 +102,8 @@ def _defer_claim(engine, campaign_id, uid, now, prior_state, prior_attempted_at)
 
 
 def dispatch_claim(engine, settings, campaign_id, uid, request, payload, now, *,
-                   prior_state, prior_attempted_at, require_consent=False):
+                   prior_state, prior_attempted_at, require_consent=False,
+                   eligibility_check=None, dispatch_guard=None, clock=None, result_callback=None):
     """Serialize the final eligibility check + bounded send against access grants.
 
     A payment may commit after the original durable claim. Reacquire the SAME
@@ -118,9 +124,20 @@ def dispatch_claim(engine, settings, campaign_id, uid, request, payload, now, *,
             if not ctrl or not ctrl.sales or not ctrl.enforce or not campaign or campaign.status != "running":
                 _restore_unattempted_claim(db, item, prior_state, prior_attempted_at, now)
                 return "deferred"
-            if not eligible(db, uid, now, require_consent=require_consent):
+            current = clock() if clock is not None else now
+            if dispatch_guard is not None and not dispatch_guard(db, settings, campaign, current):
+                _restore_unattempted_claim(db, item, prior_state, prior_attempted_at, current)
+                return "deferred"
+            permitted = (eligibility_check(db, settings, uid, current) if eligibility_check is not None
+                         else eligible(db, uid, current, require_consent=require_consent))
+            if not permitted:
                 item.state, item.error = "excluded", "recipient_no_longer_eligible"
                 return "excluded"
+            if clock is not None:
+                current = clock()
+                if not campaign.not_before <= current < campaign.deadline:
+                    _restore_unattempted_claim(db, item, prior_state, prior_attempted_at, current)
+                    return "deferred"
             transport_started = True
             try:
                 result = request(settings.bot_token, "sendMessage", payload, timeout=5)
@@ -129,7 +146,10 @@ def dispatch_claim(engine, settings, campaign_id, uid, request, payload, now, *,
             if not isinstance(result, dict):
                 result = {}
             from .billing_campaign import apply_send_result
-            apply_send_result(item, result, now)
+            completed_at = clock() if clock is not None else now
+            apply_send_result(item, result, completed_at)
+            if result_callback is not None:
+                result_callback(db, campaign, item, completed_at)
             if result.get("error_code") == 403:
                 consent = db.get(MarketingConsent, uid)
                 if consent:
