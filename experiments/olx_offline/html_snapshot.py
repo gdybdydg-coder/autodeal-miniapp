@@ -12,6 +12,7 @@ from urllib.parse import parse_qs,urljoin,urlsplit,urlunsplit
 from .pipeline import canonical
 
 VOID={'area','base','br','col','embed','hr','img','input','link','meta','param','source','track','wbr'}
+MAX_HTML_BYTES=4*1024*1024
 
 class Node:
     def __init__(self,tag,attrs):self.tag=tag;self.attrs=dict(attrs);self.children=[];self.closed=tag in VOID
@@ -62,7 +63,7 @@ def money(text):
 
 
 def parse_search_snapshot(data, *, fetched_at, truncated):
-    if len(data)>2*1024*1024:raise ValueError('Input exceeds 2 MiB')
+    if len(data)>MAX_HTML_BYTES:raise ValueError('Input exceeds 4 MiB observation limit')
     if type(fetched_at) is not int or fetched_at<=0:raise ValueError('Explicit observation timestamp required')
     parser=SearchParser();parser.feed(data.decode('utf-8',errors='replace'));parser.close()
     listings={};rejected=0;duplicates=0
@@ -148,7 +149,7 @@ def parse_search_page(data, *, fetched_at, truncated, next_cursor=None):
 def main():
     ap=argparse.ArgumentParser();ap.add_argument('--input',required=True);ap.add_argument('--fetched-at',required=True,type=int)
     ap.add_argument('--truncated',action='store_true');args=ap.parse_args()
-    with Path(args.input).open('rb') as f:data=f.read(2*1024*1024+1)
+    with Path(args.input).open('rb') as f:data=f.read(MAX_HTML_BYTES+1)
     print(json.dumps(parse_search_snapshot(data,fetched_at=args.fetched_at,truncated=args.truncated)['summary'],ensure_ascii=False,indent=2))
 
 if __name__=='__main__':main()

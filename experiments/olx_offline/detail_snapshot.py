@@ -6,9 +6,91 @@ and a content fingerprint survive. Truncated description nodes cannot pass.
 """
 from decimal import Decimal
 import re
-from urllib.parse import urlsplit
+from urllib.parse import parse_qs, urlsplit
 from .html_snapshot import SearchParser,clean_url,money
 from .pipeline import canonical
+from .source_dates import observe_source_dates
+
+
+def _geography(nodes, vehicle):
+    """Read explicit geography from the observed, complete breadcrumb scope.
+
+    A region/city/district slug is never translated into another platform's ID.
+    JSON-LD AdministrativeArea can mean a district, so it cannot supply a city.
+    City is only corroborating evidence here, not a missing-breadcrumb fallback.
+    """
+    values = {key: [] for key in ('region', 'locality', 'district')}
+    scopes = [n for n in nodes if n.attrs.get('data-testid') == 'breadcrumbs']
+    status = 'unavailable'
+    brand = vehicle.get('brand')
+    category = clean_url(vehicle.get('category', '')) if isinstance(vehicle.get('category'), str) else None
+
+    def path(url):
+        value = urlsplit(url).path
+        return value[3:] if value.startswith('/uk/') else value
+
+    prefix = path(category).rstrip('/') + '/' if category else None
+    if len(scopes) == 1 and not scopes[0].closed:
+        status = 'incomplete'
+    elif len(scopes) > 1:
+        status = 'ambiguous_scope'
+    elif len(scopes) == 1 and isinstance(brand, str) and prefix:
+        status = 'observed'
+        for node in scopes[0].nodes():
+            if node.tag != 'a' or not node.closed:
+                continue
+            href = node.attrs.get('href', '')
+            url = clean_url(href)
+            label = node.text()
+            expected = brand + ' - '
+            if not url or not label.startswith(expected):
+                continue
+            location = label[len(expected):].strip()
+            tail = path(url)[len(prefix):] if path(url).startswith(prefix) else ''
+            if not location or len(location) > 100 or not tail.strip('/') or '/' in tail.strip('/'):
+                continue
+            query = parse_qs(urlsplit(href).query, keep_blank_values=True)
+            if query:
+                district = query.get('search[district_id]')
+                if set(query) != {'search[district_id]'} or len(district) != 1 or not district[0].isdecimal():
+                    continue
+                key = 'district'
+            else:
+                key = 'region' if location.casefold().endswith(' область') else 'locality'
+            observation = {'value': location, 'source': 'visible_breadcrumbs', 'url': url}
+            if observation not in values[key]:
+                values[key].append(observation)
+
+    result = {}
+    conflicts = []
+    provenance = {}
+    for key, observations in values.items():
+        distinct = {item['value'].casefold() for item in observations}
+        result[key] = observations[0]['value'] if len(distinct) == 1 else None
+        if len(distinct) > 1:
+            conflicts.append(key)
+        provenance[key] = {'source': 'visible_breadcrumbs',
+                           'status': 'conflicting' if len(distinct) > 1 else 'observed' if distinct else status if status != 'observed' else 'unavailable',
+                           'observations': observations}
+
+    offer = vehicle.get('offers')
+    area = offer.get('areaServed') if isinstance(offer, dict) else None
+    area_observation = None
+    if isinstance(area, dict) and area.get('@type') in ('City', 'AdministrativeArea'):
+        name = area.get('name')
+        if isinstance(name, str) and 0 < len(name.strip()) <= 100:
+            area_observation = {'type': area['@type'], 'name': name.strip(), 'source': 'jsonld_offers_areaServed', 'corroborates': []}
+            if area['@type'] == 'City' and result['locality'] is not None:
+                if name.strip().casefold() != result['locality'].casefold():
+                    conflicts.append('locality')
+                    result['locality'] = None
+                    provenance['locality']['status'] = 'conflicting'
+                    provenance['locality']['observations'].append({'value': name.strip(), 'source': 'jsonld_offers_areaServed', 'type': 'City'})
+                else:
+                    area_observation['corroborates'].append('locality')
+            elif area['@type'] == 'AdministrativeArea':
+                area_observation['corroborates'] = [key for key in ('region', 'district') if result[key] is not None and name.strip().casefold() == result[key].casefold()]
+    return result, provenance, area_observation, conflicts
 
 
 def parse_detail_snapshot(data, *, fetched_at, truncated, fx_quote=None):
@@ -68,6 +150,9 @@ def parse_detail_snapshot(data, *, fetched_at, truncated, fx_quote=None):
     # Exact observed source wording, not a claim of independently verified state.
     if fields.get('technical_condition')=='На ходу, технічно справна':
         raw['condition']='normal'
+    geography, geography_provenance, area_observation, geography_conflicts = _geography(nodes, v)
+    raw.update(geography)
+    conflicts.extend(geography_conflicts)
     for field in conflicts:
         target={'engine':'engine_cc','mileage':'mileage_km'}.get(field,field)
         raw.pop(target,None)
@@ -76,6 +161,10 @@ def parse_detail_snapshot(data, *, fetched_at, truncated, fx_quote=None):
     images=v.get('image',[])
     raw['photos']=list(dict.fromkeys(u for u in images if isinstance(u,str) and urlsplit(u).scheme=='https' and (urlsplit(u).hostname or '').endswith('.olxcdn.com'))) if isinstance(images,list) else []
     c=canonical(raw,fetched_at,fx_quote=fx_quote);c['research_only']=True
+    c['district']=geography['district']
+    c['field_provenance']=geography_provenance
+    c['observed_area_served']=area_observation
+    c['source_date_observations']=observe_source_dates(nodes,expected_id=id,fetched_at=fetched_at)
     c['field_conflicts']=sorted(set(conflicts))
     c['price_conflicts']=['same_currency_conflict'] if state=='same_currency_conflict' else []
     c['observed_sale_terms']=fields.get('sale_terms') if 'sale_terms' not in conflicts else None
@@ -84,6 +173,8 @@ def parse_detail_snapshot(data, *, fetched_at, truncated, fx_quote=None):
     c['price_observations']={'visible':{'amount':price,'currency':currency},'jsonld':{'amount':structured_price,'currency':structured_currency},'relationship':state,'fx_rate':None}
     return {'listing':c,'summary':{'bytes_parsed':len(data),'download_truncated':truncated or not p.html_closed,
         'price_relationship':state,'photo_urls':len(c['photos']),'field_conflicts':sorted(set(conflicts)),
+        'source_date_identity_matches':c['source_date_observations']['identity_matches'],
+        'source_date_fields':sorted(c['source_date_observations']['values']),
         'full_price_verified':False,'publication_verified':False,'ready_for_delivery':False,'seller_data_exported':False}}
 
 

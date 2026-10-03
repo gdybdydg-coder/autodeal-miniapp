@@ -1,0 +1,303 @@
+{
+  "kind": "allowlisted_real_html_observations",
+  "records": [
+    {
+      "source": "olx",
+      "id": "934190438",
+      "url": "https://www.olx.ua/d/uk/obyavlenie/bmw-e39-523i-2-5gaz-benzin-avtomat-ID11dLBI.html",
+      "title": "Bmw е39 523i 2.5газ/бензин, автомат",
+      "price": "3500",
+      "currency": "USD",
+      "brand": "BMW",
+      "model": "5 серія",
+      "year": 2000,
+      "region": "Тернопільська область",
+      "locality": "Тернопіль",
+      "district": null,
+      "generation": null,
+      "engine_cc": null,
+      "mileage_km": 328000,
+      "fuel": "gas_petrol",
+      "transmission": "automatic",
+      "body": "wagon",
+      "field_provenance": {
+        "region": {
+          "source": "visible_breadcrumbs",
+          "status": "observed",
+          "observations": [
+            {
+              "value": "Тернопільська область",
+              "source": "visible_breadcrumbs",
+              "url": "https://www.olx.ua/uk/transport/legkovye-avtomobili/bmw/ter/"
+            }
+          ]
+        },
+        "locality": {
+          "source": "visible_breadcrumbs",
+          "status": "observed",
+          "observations": [
+            {
+              "value": "Тернопіль",
+              "source": "visible_breadcrumbs",
+              "url": "https://www.olx.ua/uk/transport/legkovye-avtomobili/bmw/ternopol/"
+            }
+          ]
+        },
+        "district": {
+          "source": "visible_breadcrumbs",
+          "status": "unavailable",
+          "observations": []
+        }
+      },
+      "source_date_observations": {
+        "origin": "public_html_prerendered_state",
+        "path": "ad.ad",
+        "identity_matches": true,
+        "values": {
+          "createdTime": {
+            "iso": "2026-09-08T14:28:20+03:00",
+            "utc": "2026-09-08T11:28:20+00:00",
+            "epoch": 1788866900
+          },
+          "lastRefreshTime": {
+            "iso": "2026-10-03T10:48:48+03:00",
+            "utc": "2026-10-03T07:48:48+00:00",
+            "epoch": 1791013728
+          },
+          "pushupTime": {
+            "iso": "2026-10-03T10:48:48+03:00",
+            "utc": "2026-10-03T07:48:48+00:00",
+            "epoch": 1791013728
+          },
+          "validToTime": {
+            "iso": "2026-10-08T14:28:21+03:00",
+            "utc": "2026-10-08T11:28:21+00:00",
+            "epoch": 1791458901
+          }
+        },
+        "issues": [],
+        "publication_semantics_verified": false,
+        "other_state_exported": false
+      },
+      "observed_utc": "2026-10-03T07:59:51.172029+00:00",
+      "body_sha256": "bb7f6929e7258415a9fb2e32358c5dff40b139dc6fdba5faf4fccb9ddf9057df",
+      "full_price_verified": false,
+      "newness_review": {
+        "status": "reported_preexisting",
+        "reasons": [
+          "source_created_before_boundary"
+        ],
+        "ready_for_delivery": false,
+        "publication_verified": false,
+        "source_semantics_verified": false,
+        "negative_hold": true,
+        "boundary": 1790985600
+      },
+      "assessment": {
+        "status": "profitability_unconfirmed",
+        "reason": "full_price_unconfirmed",
+        "sample": 0,
+        "reference_usd": null
+      }
+    },
+    {
+      "source": "olx",
+      "id": "928711498",
+      "url": "https://www.olx.ua/d/uk/obyavlenie/prodam-bmw-e36-m52b28-ID10QMhI.html",
+      "title": "Продам BMW e36 m52b28",
+      "price": "7000",
+      "currency": "USD",
+      "brand": "BMW",
+      "model": "3 серія",
+      "year": 1996,
+      "region": "Дніпропетровська область",
+      "locality": "Дніпро",
+      "district": "Самарський",
+      "generation": null,
+      "engine_cc": null,
+      "mileage_km": 1000,
+      "fuel": "petrol",
+      "transmission": "manual",
+      "body": "wagon",
+      "field_provenance": {
+        "region": {
+          "source": "visible_breadcrumbs",
+          "status": "observed",
+          "observations": [
+            {
+              "value": "Дніпропетровська область",
+              "source": "visible_breadcrumbs",
+              "url": "https://www.olx.ua/uk/transport/legkovye-avtomobili/bmw/dnp/"
+            }
+          ]
+        },
+        "locality": {
+          "source": "visible_breadcrumbs",
+          "status": "observed",
+          "observations": [
+            {
+              "value": "Дніпро",
+              "source": "visible_breadcrumbs",
+              "url": "https://www.olx.ua/uk/transport/legkovye-avtomobili/bmw/dnepr/"
+            }
+          ]
+        },
+        "district": {
+          "source": "visible_breadcrumbs",
+          "status": "observed",
+          "observations": [
+            {
+              "value": "Самарський",
+              "source": "visible_breadcrumbs",
+              "url": "https://www.olx.ua/uk/transport/legkovye-avtomobili/bmw/dnepr/"
+            }
+          ]
+        }
+      },
+      "source_date_observations": {
+        "origin": "public_html_prerendered_state",
+        "path": "ad.ad",
+        "identity_matches": true,
+        "values": {
+          "createdTime": {
+            "iso": "2026-07-12T09:44:51+03:00",
+            "utc": "2026-07-12T06:44:51+00:00",
+            "epoch": 1783838691
+          },
+          "lastRefreshTime": {
+            "iso": "2026-10-01T20:13:25+03:00",
+            "utc": "2026-10-01T17:13:25+00:00",
+            "epoch": 1790874805
+          },
+          "pushupTime": {
+            "iso": "2026-10-01T20:13:25+03:00",
+            "utc": "2026-10-01T17:13:25+00:00",
+            "epoch": 1790874805
+          },
+          "validToTime": {
+            "iso": "2026-10-13T20:13:22+03:00",
+            "utc": "2026-10-13T17:13:22+00:00",
+            "epoch": 1791911602
+          }
+        },
+        "issues": [],
+        "publication_semantics_verified": false,
+        "other_state_exported": false
+      },
+      "observed_utc": "2026-10-03T06:26:58.687966+00:00",
+      "body_sha256": "20e5108dccd8fee59797d2dbc5a7280b798e777987159ada1f5997ad9519291f",
+      "full_price_verified": false,
+      "newness_review": {
+        "status": "reported_preexisting",
+        "reasons": [
+          "source_created_before_boundary"
+        ],
+        "ready_for_delivery": false,
+        "publication_verified": false,
+        "source_semantics_verified": false,
+        "negative_hold": true,
+        "boundary": 1790985600
+      },
+      "assessment": {
+        "status": "profitability_unconfirmed",
+        "reason": "full_price_unconfirmed",
+        "sample": 0,
+        "reference_usd": null
+      }
+    },
+    {
+      "source": "olx",
+      "id": "929589435",
+      "url": "https://www.olx.ua/d/uk/obyavlenie/nissan-primera-p12-ID10UsFZ.html",
+      "title": "Nissan Primera P12",
+      "price": "3199",
+      "currency": "USD",
+      "brand": "Nissan",
+      "model": "Primera",
+      "year": 2003,
+      "region": "Івано-Франківська область",
+      "locality": "Коломия",
+      "district": null,
+      "generation": null,
+      "engine_cc": 2200,
+      "mileage_km": 293000,
+      "fuel": "diesel",
+      "transmission": "manual",
+      "body": "sedan",
+      "field_provenance": {
+        "region": {
+          "source": "visible_breadcrumbs",
+          "status": "observed",
+          "observations": [
+            {
+              "value": "Івано-Франківська область",
+              "source": "visible_breadcrumbs",
+              "url": "https://www.olx.ua/uk/transport/legkovye-avtomobili/nissan/if/"
+            }
+          ]
+        },
+        "locality": {
+          "source": "visible_breadcrumbs",
+          "status": "observed",
+          "observations": [
+            {
+              "value": "Коломия",
+              "source": "visible_breadcrumbs",
+              "url": "https://www.olx.ua/uk/transport/legkovye-avtomobili/nissan/kolomyya/"
+            }
+          ]
+        },
+        "district": {
+          "source": "visible_breadcrumbs",
+          "status": "unavailable",
+          "observations": []
+        }
+      },
+      "source_date_observations": {
+        "origin": "public_html_prerendered_state",
+        "path": "ad.ad",
+        "identity_matches": true,
+        "values": {
+          "createdTime": {
+            "iso": "2026-07-21T21:01:41+03:00",
+            "utc": "2026-07-21T18:01:41+00:00",
+            "epoch": 1784656901
+          },
+          "lastRefreshTime": {
+            "iso": "2026-09-09T06:48:38+03:00",
+            "utc": "2026-09-09T03:48:38+00:00",
+            "epoch": 1788925718
+          },
+          "validToTime": {
+            "iso": "2026-10-09T06:48:38+03:00",
+            "utc": "2026-10-09T03:48:38+00:00",
+            "epoch": 1791517718
+          }
+        },
+        "issues": [],
+        "publication_semantics_verified": false,
+        "other_state_exported": false
+      },
+      "observed_utc": "2026-10-03T06:27:04.519883+00:00",
+      "body_sha256": "90c4f5f69ac2639c263e1f91f6c55c79770b4d114d632f5d70bf457d2650647e",
+      "full_price_verified": false,
+      "newness_review": {
+        "status": "reported_preexisting",
+        "reasons": [
+          "source_created_before_boundary"
+        ],
+        "ready_for_delivery": false,
+        "publication_verified": false,
+        "source_semantics_verified": false,
+        "negative_hold": true,
+        "boundary": 1790985600
+      },
+      "assessment": {
+        "status": "profitability_unconfirmed",
+        "reason": "full_price_unconfirmed",
+        "sample": 0,
+        "reference_usd": null
+      }
+    }
+  ]
+}

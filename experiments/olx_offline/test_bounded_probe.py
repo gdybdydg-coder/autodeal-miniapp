@@ -9,6 +9,24 @@ from experiments.olx_offline.test_pipeline import NOW
 
 
 class BoundedProbeTests(unittest.TestCase):
+    def test_explicit_larger_sample_charged_without_hidden_redirect_or_retry(self):
+        url='https://www.olx.ua/uk/transport/legkovye-avtomobili/'
+        calls=[];cap=3*1024*1024
+        class Response:
+            status=200
+            headers=Message()
+            def __enter__(self):return self
+            def __exit__(self,*args):return False
+            def read(self,limit):calls.append(limit);return b'x'*limit
+        with tempfile.TemporaryDirectory() as tmp:
+            with RunGuard(Path(tmp),clock=lambda:NOW,monotonic=lambda:0) as guard:
+                report,body=fetch_once(url,guard,open_url=lambda *a,**k:Response(),max_html_bytes=cap)
+                self.assertEqual(calls,[cap]);self.assertEqual(len(body),cap)
+                self.assertTrue(report['at_byte_cap']);self.assertEqual(report['attempts'],1)
+                self.assertEqual(guard.counters['olx']['reserved_bytes'],cap)
+    def test_html_cap_cannot_be_unbounded_or_boolean(self):
+        for cap in (0,True,4*1024*1024+1):
+            with self.assertRaises(ValueError):fetch_once('https://www.olx.ua/uk/transport/legkovye-avtomobili/',None,max_html_bytes=cap)
     def test_observed_newest_ui_urls_allowed_only_with_exact_contract(self):
         prefix='https://www.olx.ua/uk/transport/legkovye-avtomobili/'
         self.assertEqual(validate_url(prefix+'?currency=UAH&search%5Border%5D=created_at:desc',NOW),2*1024*1024)

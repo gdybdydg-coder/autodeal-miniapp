@@ -117,3 +117,5 @@ Acceptance now: independently reviewable offline prototype, not live OLX support
 
 Прямі деталі: [DETAIL-AND-TERMS-20261002.md](DETAIL-AND-TERMS-20261002.md).
 Поточний набір74 тести; detail parser перевірено на1 реальній неповній відповіді.
+
+Current continuation (3 October): see [DATES-GEOGRAPHY-20261003.md](DATES-GEOGRAPHY-20261003.md) for real source-date/region evidence, negative newness gates and remaining channel/valuation blockers. Historical test totals and live samples elsewhere are dated results, not current readiness guarantees.

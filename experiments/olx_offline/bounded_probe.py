@@ -53,8 +53,13 @@ def validate_url(url, now):
     return 2*1024*1024
 
 
-def fetch_once(url, guard, *, open_url=None):
+def fetch_once(url, guard, *, open_url=None, max_html_bytes=2*1024*1024):
+    # A larger foreground sample is explicit and still charged against the
+    # total guard budget. Never enlarge NBU limits or retry a truncated response.
+    if type(max_html_bytes) is not int or not 1<=max_html_bytes<=4*1024*1024:
+        raise ValueError('Explicit HTML cap must be positive and at most 4 MiB')
     now=time.time();cap=validate_url(url,now)
+    if urlsplit(url).hostname in ('olx.ua','www.olx.ua'):cap=max_html_bytes
     reservation=guard.reserve_request(urlsplit(url).hostname,cap)
     started=datetime.now(timezone.utc).isoformat();start=time.monotonic()
     report={'url':url,'started_utc':started,'attempts':1,'body_cap':cap,'redirects_followed':0,'retries':0}
@@ -92,9 +97,11 @@ def main():
     ap.add_argument('--url',action='append',required=True,help='Actually observed public URL; no invented endpoints')
     ap.add_argument('--private-work-root',required=True)
     ap.add_argument('--allow-network',action='store_true')
+    ap.add_argument('--max-html-bytes',type=int,default=2*1024*1024,help='Explicit sample cap, at most 4 MiB; charged to the existing 8 MiB run limit')
     ap.add_argument('--deadline',help='Explicit aware ISO deadline for a newly authorized foreground run; default keeps the expired night cutoff')
     args=ap.parse_args()
     if not args.allow_network:ap.error('Network is disabled without explicit --allow-network')
+    if not 1<=args.max_html_bytes<=4*1024*1024:ap.error('HTML cap must be positive and at most 4 MiB')
     root=Path(args.private_work_root).resolve()
     if root==Path.cwd() or Path.cwd() in root.parents:
         ap.error('Private raw-body directory must be outside the checkout')
@@ -113,7 +120,7 @@ def main():
             if i:
                 if guard.remaining_seconds()<6:break
                 time.sleep(5);guard.checkpoint()
-            metadata,body=fetch_once(url,guard);reports.append(metadata)
+            metadata,body=fetch_once(url,guard,max_html_bytes=args.max_html_bytes);reports.append(metadata)
             if body:
                 path=root/('response-'+str(i)+'.bin')
                 fd=os.open(path,os.O_CREAT|os.O_EXCL|os.O_WRONLY,0o600)

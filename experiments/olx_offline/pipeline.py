@@ -13,6 +13,7 @@ from .price_review import review
 from .eligibility import review_listing
 from .fx import normalize_price, display_price
 from .market import estimate_usd
+from .source_dates import review_newness
 
 
 def canonical(raw, now, first_seen=None, *, fx_quote=None):
@@ -72,6 +73,49 @@ def estimate(target, comparables, now, *, minimum=8, max_age=30*86400):
                 'real_world_accuracy_verified': False, 'exclusions': {},
                 'next_action': 'Obtain a fresh matching detail before valuation or delivery.'}
     return estimate_usd(target, comparables, now, minimum=minimum, max_age=max_age)
+
+
+def _review_detail_newness(car, boundary, now):
+    """Apply only a negative source-date gate; never establish publication.
+
+    Reported creation predating the launch boundary, conflicting dates and
+    wrong identities are held separately from trusted publication history.
+    Missing dates/state and an apparently recent createdTime stay unknown;
+    they cannot authorize delivery but do not erase independent prior proof.
+    The persisted launch boundary is mandatory for a new review.
+    """
+    if car.get('source') != 'olx' or 'source_date_observations' not in car:
+        return False
+    previous_evidence = car.get('newness_negative_evidence', {})
+    unresolved_previous = isinstance(previous_evidence, dict) and previous_evidence.get('review', {}).get('negative_hold') is True
+    if boundary is None:
+        if unresolved_previous:
+            # Reuse an existing dated review; never invent a new boundary.
+            car['newness_review'] = dict(previous_evidence['review'])
+            car['newness_review']['reasons'] = sorted(set(car['newness_review'].get('reasons', [])) | {'previous_negative_evidence_unresolved'})
+            return True
+        return bool(car.get('newness_review', {}).get('negative_hold'))
+    observations = car['source_date_observations']
+    result = review_newness(observations, boundary=boundary, now=now)
+    issues = observations.get('issues', []) if isinstance(observations, dict) else []
+    # A missing state node is unavailable evidence. Present but malformed,
+    # ambiguous or wrong-identity state is contradictory evidence and held.
+    invalid = bool(issues) and issues != ['source_dates_unavailable']
+    if isinstance(observations, dict) and observations.get('values') and not observations.get('identity_matches'):
+        invalid = True
+    result['negative_hold'] = result['status'] == 'reported_preexisting' or invalid
+    result['boundary'] = boundary
+    if unresolved_previous and not result['negative_hold']:
+        # Unavailable or apparently recent source dates are not an audited
+        # resolution of previously observed preexisting/conflicting evidence.
+        result['negative_hold'] = True
+        result['reasons'] = sorted(set(result['reasons']) | {'previous_negative_evidence_unresolved'})
+    if result['negative_hold'] and not unresolved_previous:
+        # Keep the first negative proof, bounded and without recursive history.
+        car['newness_negative_evidence'] = {'review': dict(result),
+                                           'source_date_observations': observations}
+    car['newness_review'] = result
+    return result['negative_hold']
 
 
 def fingerprint(c):
@@ -308,6 +352,14 @@ class Pipeline:
                 car['publication_evidence_origin'] = 'preserved_previous_verified_record'
             if previous.get('search_provenance'):
                 car['search_provenance'] = previous['search_provenance']
+            if previous.get('newness_negative_evidence'):
+                car['newness_negative_evidence'] = previous['newness_negative_evidence']
+            elif previous.get('newness_review', {}).get('negative_hold'):
+                # Compatibility with a negative review saved before the
+                # immutable first-proof field was introduced.
+                car['newness_negative_evidence'] = {
+                    'review': previous['newness_review'],
+                    'source_date_observations': previous.get('source_date_observations')}
         car['detail_provenance'] = {
             'body_sha256': hashlib.sha256(data).hexdigest(),
             'bytes_parsed': len(data),
@@ -315,12 +367,31 @@ class Pipeline:
             'description_complete': car['eligibility_review']['description_complete'],
             'fetched_at': fetched_at,
         }
+        boundary = self.db.execute('SELECT boundary FROM checkpoint WHERE id=1').fetchone()[0]
+        negative_hold = _review_detail_newness(car, boundary, fetched_at)
         with self.db:
             self.db.execute('INSERT INTO listings VALUES(?,?,?,?) ON CONFLICT(source,id) DO UPDATE SET payload=excluded.payload,eligibility=excluded.eligibility',
                             ('olx', expected_id, json.dumps(car), eligibility))
+            if negative_hold:
+                self.db.execute("UPDATE deliveries SET status='needs_revalidation' WHERE source=? AND id=? AND status='pending'",
+                                ('olx', expected_id))
         return {'stored': True, 'eligibility': eligibility,
                 'offer_review': car['eligibility_review']['status'],
+                'newness_review': car.get('newness_review'),
                 'summary': result['summary']}
+
+    def _persist_current_newness(self, car, boundary, now):
+        """Refresh a saved source-date gate once a real launch boundary exists."""
+        before = car.get('newness_review')
+        held = _review_detail_newness(car, boundary, now)
+        if car.get('newness_review') != before:
+            self.db.execute('UPDATE listings SET payload=? WHERE source=? AND id=?',
+                            (json.dumps(car), car['source'], car['id']))
+        changed = 0
+        if held:
+            changed = self.db.execute("UPDATE deliveries SET status='needs_revalidation' WHERE source=? AND id=? AND status='pending'",
+                                     (car['source'], car['id'])).rowcount
+        return held, changed
 
     def cars(self, only_new=False):
         return [json.loads(r[0]) for r in self.db.execute('SELECT payload FROM listings' + (" WHERE eligibility='new'" if only_new else ''))]
@@ -345,7 +416,15 @@ class Pipeline:
     def enqueue(self, users, comparisons, now, *, capacity, olx_enabled=False):
         counts = dict(queued=0, filtered=0, uncertain=0, denied=0, overflow=0)
         pending = self.db.execute("SELECT count(*) FROM deliveries WHERE status='pending'").fetchone()[0]
-        for c in self.cars(True):
+        boundary = self.db.execute('SELECT boundary FROM checkpoint WHERE id=1').fetchone()[0]
+        # Details may have been saved before the launch boundary existed.
+        # Review those observations now without promoting their classification.
+        for payload, eligibility in self.db.execute('SELECT payload,eligibility FROM listings').fetchall():
+            c = json.loads(payload)
+            newness_held, invalidated = self._persist_current_newness(c, boundary, now)
+            pending -= invalidated
+            if eligibility != 'new':
+                continue
             assessment = estimate(c, comparisons, now)
             self.db.execute('INSERT OR REPLACE INTO assessments VALUES(?,?,?,?,?)',(c['source'],c['id'],now,fingerprint(c),json.dumps(assessment)))
             for u in users:
@@ -356,7 +435,7 @@ class Pipeline:
                 match = filtered(c,u['filters'])
                 if match is False:
                     counts['filtered'] += 1; continue
-                if match is None or assessment['status'] != 'experimental_estimate':
+                if newness_held or match is None or assessment['status'] != 'experimental_estimate':
                     counts['uncertain'] += 1; continue
                 if Decimal(str(assessment['discount_percent'])) < Decimal(str(u.get('min_discount',15))):
                     counts['filtered'] += 1; continue
@@ -375,6 +454,7 @@ class Pipeline:
     def deliver_fake(self, sender, access, *, now, olx_enabled=False):
         """Caller must supply a fake sender. This module ships no live sender adapter."""
         counts = dict(accepted=0, denied=0, uncertain=0, held=0)
+        boundary = self.db.execute('SELECT boundary FROM checkpoint WHERE id=1').fetchone()[0]
         for uid,source,id in self.db.execute("SELECT uid,source,id FROM deliveries WHERE status='pending'").fetchall():
             if source=='olx' and not olx_enabled:
                 continue
@@ -382,12 +462,14 @@ class Pipeline:
                 counts['denied'] += 1; continue
             key=(uid,source,id)
             c=json.loads(self.db.execute('SELECT payload FROM listings WHERE source=? AND id=?',(source,id)).fetchone()[0])
+            newness_held, _ = self._persist_current_newness(c, boundary, now)
             proof=self.db.execute('SELECT fingerprint,expires FROM delivery_proof WHERE uid=? AND source=? AND id=?',key).fetchone()
             from datetime import datetime
             from zoneinfo import ZoneInfo
             fx = c.get('usd_price', {}).get('fx')
             fx_current = not fx or fx.get('effective_date') == datetime.fromtimestamp(now, ZoneInfo('Europe/Kyiv')).date().isoformat()
             if (proof is None or proof[0] != fingerprint(c) or now > proof[1]
+                    or newness_held
                     or c.get('detail_refresh_required')
                     or c.get('eligibility_review', {}).get('status') != 'allowed'
                     or c.get('usd_price', {}).get('status') != 'ready' or not fx_current):
