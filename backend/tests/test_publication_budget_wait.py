@@ -164,3 +164,34 @@ def test_success_clears_stale_collection_error(p, monkeypatch):
         data["last_error"] = "unexpected_html"; row.result = data; db.commit()
     offer(p)
     assert probe(p)["last_error"] is None
+
+
+@pytest.mark.parametrize("change,expected", [("discount", "below_user_discount_threshold"),
+    ("filter", "filter_mismatch"), ("quote", "valuation_unconfirmed"), ("none", "delivery_sent")])
+def test_private_decision_audit_explains_silence_from_saved_evidence(p, monkeypatch, change, expected):
+    strict(p); approve(p)
+    setup(p, monkeypatch); offer(p); drain(p)
+    from backend.models import Delivery, Search
+    from backend.source_pipeline_health import snapshot
+    with Session(p.engine) as db:
+        if change != "none":
+            delivery = db.scalar(select(Delivery)); db.delete(delivery)
+        if change == "discount":
+            search = db.get(Search, 1); filters = rp.Filters.model_validate(search.filters)
+            search.filters = filters.model_copy(update={"minDiscount": 95.0}).canonical()
+        if change == "filter":
+            search = db.get(Search, 1); filters = rp.Filters.model_validate(search.filters)
+            search.filters = filters.model_copy(update={"fuel": ["Бензин"]}).canonical()
+            job = db.get(MonitorJob, "77"); data = copy.deepcopy(job.result)
+            from backend.monitor import source_filters
+            data["filters"][source_filters(search.filters).fingerprint()] = {**next(iter(data["filters"].values())), "fuel": [1]}
+            job.result = data
+        if change == "quote":
+            job = db.get(MonitorJob, "77"); data = copy.deepcopy(job.result)
+            data["rating"] = {"valuation": "unavailable", "market": None}; job.result = data
+        db.commit()
+        before = db.get(SourceBudget, "auto_ria").total
+        result = snapshot(db, p.settings, p.clock[0])["primary"]["recorded_decisions_last_hour"]
+        assert result["distinct_cars"] == result["search_car_pairs"] == 1
+        assert result["reasons"] == {expected: 1} and not result["truncated"]
+        assert db.get(SourceBudget, "auto_ria").total == before

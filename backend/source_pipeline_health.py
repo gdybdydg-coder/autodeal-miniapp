@@ -13,10 +13,60 @@ from sqlalchemy import exists, func, select
 from sqlalchemy.orm import Session
 
 from . import api_attempt_audit, paid_source_access
-from .models import (Delivery, DeliveryTiming, MonitorControl, MonitorFeed, MonitorJob,
+from .models import (Delivery, DeliveryTiming, Filters, Listing, MonitorControl, MonitorFeed, MonitorJob,
                      MonitorSeen, MonitorWatch, Search, SourceBudget, User)
 from .ria_budget import BudgetLimits, total_cap
 from .ria_search import budget_state
+
+
+def completed_decisions(db, now, current_seen):
+    """Bounded local audit of recorded decisions, without repricing old cars.
+
+    Reasons partition search/car pairs; distinct-car totals are reported apart.
+    Applying current filters to saved data does not prove current market value.
+    """
+    from .monitor import VALUED, source_filters
+    from .ria_search import matches
+    from .valuation import is_deal, notification_condition_allowed
+    rows = list(db.execute(select(MonitorSeen, Search).join(Search, Search.id == MonitorSeen.search_id)
+        .join(User, User.id == Search.user_id).join(MonitorWatch, MonitorWatch.search_id == Search.id)
+        .where(*current_seen, MonitorSeen.first_seen >= now - 3600)
+        .order_by(MonitorSeen.first_seen.desc(), MonitorSeen.search_id).limit(501)))
+    truncated, rows = len(rows) > 500, rows[:500]
+    ids = {seen.source_id for seen, _ in rows}
+    jobs = {job.source_id: job for job in db.scalars(select(MonitorJob).where(MonitorJob.source_id.in_(ids)))}
+    claims = {(uid, sid): state for uid, sid, state in db.execute(select(Delivery.user_id, Listing.source_id, Delivery.state)
+        .join(Listing, Listing.id == Delivery.listing_id).where(Listing.source == "auto_ria", Listing.source_id.in_(ids),
+            Delivery.user_id.in_({search.user_id for _, search in rows})))}
+    reasons = Counter()
+    for seen, search in rows:
+        job = jobs.get(seen.source_id)
+        evidence = job.result if job and isinstance(job.result, dict) else {}
+        candidate, rating = evidence.get("candidate"), evidence.get("rating") or {}
+        filters = Filters.model_validate(search.filters)
+        resolved = evidence.get("filters", {}).get(source_filters(filters).fingerprint())
+        claim = claims.get((search.user_id, seen.source_id))
+        if claim:
+            reason = "delivery_" + claim
+        elif seen.state == "pending":
+            reason = "pending_evaluation"
+        elif not candidate:
+            reason = "saved_details_unavailable"
+        elif not notification_condition_allowed(candidate):
+            reason = "foreign_or_custom_exclusion"
+        elif resolved is None:
+            reason = "saved_filter_resolution_unavailable"
+        elif not matches(candidate, filters, resolved):
+            reason = "filter_mismatch"
+        elif rating.get("valuation") not in VALUED or not rating.get("market"):
+            reason = "valuation_unconfirmed"
+        elif not is_deal(candidate["price_usd"], rating["market"], filters.minDiscount):
+            reason = "below_user_discount_threshold"
+        else:
+            reason = "eligible_without_delivery_record"
+        reasons[reason] += 1
+    return {"distinct_cars": len(ids), "search_car_pairs": len(rows), "reasons": dict(reasons),
+            "truncated": truncated, "basis": "saved_decisions_current_filters_no_new_source_calls"}
 
 
 def snapshot(db, settings, now):
@@ -70,6 +120,7 @@ def snapshot(db, settings, now):
             "last_success_at": max((feed.checked_at for feed in feeds if feed.checked_at > 0), default=None),
             "oldest_cursor_at": oldest, "cursor_lag_seconds": max(0, round(now - oldest)) if oldest else None,
             "candidate_search_states_last_hour": dict(db.execute(seen).all()),
+            "recorded_decisions_last_hour": completed_decisions(db, now, current_seen),
             "pending_jobs_by_reason": dict(db.execute(pending).all()),
         },
         "global_budget": {
@@ -83,6 +134,8 @@ def snapshot(db, settings, now):
             "transport_by_category": attempts["transport_by_category"],
             "states": attempts["states"], "errors": errors, "http_statuses": attempts["http_statuses"],
             "incomplete": attempts["incomplete"], "provider_charged_units": None,
+            "transport_authorization": attempts["transport_authorization"],
+            "transport_without_authorization_context": attempts["transport_without_authorization_context"],
         },
         "delivery": {"states_queued_last_hour": dict(db.execute(deliveries).all()),
                      "last_client_accepted_at": last_client, "last_owner_accepted_at": last_owner,

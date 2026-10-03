@@ -45,7 +45,8 @@ def confirmed_clause(uid, now=None, *, excluded=()):
     purchase = exists(select(PaymentRequest.id).where(
         PaymentRequest.user_id == uid, PaymentRequest.state == "approved",
         PaymentRequest.amount_minor > 0, PaymentRequest.currency == "UAH",
-        PaymentRequest.days > 0, PaymentRequest.expires_at > now))
+        PaymentRequest.days > 0, PaymentRequest.updated_at <= now,
+        PaymentRequest.expires_at > now))
     # A later revocation/expiry of operational access also blocks the purchase.
     entitlement = exists(select(Entitlement.user_id).where(
         Entitlement.user_id == uid, Entitlement.expires_at > now))

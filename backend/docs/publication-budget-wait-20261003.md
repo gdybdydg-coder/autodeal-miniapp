@@ -30,6 +30,9 @@ Server health alone did not identify that loss or establish fresh discovery.
   and Telegram receipt timestamps. Do not expose purchase/search aggregates in
   a public endpoint. No recipient IDs, filter contents or payment receipts enter
   the new diagnostic. Missing diagnostics are logged as unavailable, not zeros.
+  A bounded local audit also partitions recorded search/car pairs by filter,
+  valuation, discount and delivery outcome. It distinguishes distinct cars from
+  per-search decisions and flags truncation; it performs no new source calls.
 
 Hourly/daily/total caps, accounting, payment policy, subscription records,
 filter values, the AUTO.RIA price formula, scheduler cadence, OLX and marketing

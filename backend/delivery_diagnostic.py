@@ -28,7 +28,8 @@ def summary(result, method):
     return {'method': method if method in {'sendPhoto', 'sendMessage'} else 'unknown',
             'accepted': accepted,
             'error_code': code if type(code) is int and code in {400, 401, 403, 404, 429, 500, 502, 503} else None,
-            'reason': ('accepted' if accepted else next(
+            'reason': ('accepted' if accepted else 'access_blocked' if result.get('_access_blocked') else
+                'access_unavailable' if result.get('_access_unavailable') else next(
                 (label for pattern, label in REASONS.items() if pattern in description),
                 'explicit_rejection' if result.get('ok') is False else 'uncertain'))}
 
@@ -58,7 +59,8 @@ def record(db, delivery, car, result, logger):
                 'error_code': item.get('error_code') if type(item.get('error_code')) is int and
                     item['error_code'] in {400, 401, 403, 404, 429, 500, 502, 503} else None,
                 'reason': item.get('reason') if item.get('reason') in
-                    {*REASONS.values(), 'accepted', 'explicit_rejection', 'uncertain'} else 'uncertain'})
+                    {*REASONS.values(), 'accepted', 'explicit_rejection', 'uncertain',
+                     'access_blocked', 'access_unavailable'} else 'uncertain'})
     attempts = attempts or [summary(result, 'unknown')]
     key = 'telegram-delivery-result-v1-' + str(delivery.id)
     row = db.get(SourceProbe, key)

@@ -457,8 +457,12 @@ def create_app(settings: Settings, engine=None, *, paid_source_only=False):
         try:
             source = RiaSearch(engine, settings.auto_ria_api_key)
             def eligible_request(db, now, limits):
-                if not paid_source_access.allowed(db, uid, now):
+                if not paid_source_access.allowed(db, uid, now) or (
+                        paid_source_access.strict(engine) and not db.scalar(
+                            select(paid_source_access.ready_clause(uid)))):
                     raise RiaError("paid_access_required")
+                from .api_attempt_audit import authorization
+                return authorization("authenticated_search", str(uid) + ":" + payload.fingerprint())
             source.request_policy = eligible_request
             return source.search(payload, cursor)
         except RiaError as exc:
@@ -509,8 +513,12 @@ def create_app(settings: Settings, engine=None, *, paid_source_only=False):
             def eligible_catalog_request(db, now, limits):
                 # Unpaid clients may read already-cached filter dictionaries,
                 # but a cold UI read must not reserve paid provider work.
-                if not paid_source_access.allowed(db, uid, now):
+                if not paid_source_access.allowed(db, uid, now) or (
+                        paid_source_access.strict(engine) and not db.scalar(
+                            select(paid_source_access.ready_clause(uid)))):
                     raise RiaError("paid_access_required")
+                from .api_attempt_audit import authorization
+                return authorization("authenticated_catalog", str(uid) + ":" + brand)
             source.request_policy = eligible_catalog_request
             return source.catalog(brand)
         except RiaError as exc:

@@ -115,6 +115,8 @@ def run_once(monitor, sender=None):
                     raise RiaError('no_eligible_subscription')
                 if previous_policy is not None:
                     previous_policy(db, now, limits)
+                from .api_attempt_audit import authorization
+                return authorization('paid_receipt_photo_repair', 'auto_ria:' + source_id)
             source.request_policy = access_policy
             try:
                 source.acquire()

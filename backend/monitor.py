@@ -23,7 +23,7 @@ from .models import (Car, Filters, Listing, MonitorControl, MonitorFeed, Monitor
                      MonitorMatch, MonitorMembership, MonitorSeen, MonitorWatch, Search, SourceBudget,
                      StarsTestOrder, User)
 from .billing_models import BillingControl, Entitlement
-from . import billing, paid_source_access
+from . import billing, paid_source_access, api_attempt_audit
 from .ria_budget import BudgetLimits
 from .ria_search import RiaSearch, estimate, matches, parse_ids, quota_status, budget_state
 from .valuation import (MAX_AGE, VERSION, PeerBatch, is_deal, price_only_evidence,
@@ -72,7 +72,7 @@ def incomplete_optional_details(candidate):
     return any(candidate.get(field) is None for field in OPTIONAL_DETAIL_FIELDS)
 
 
-def reset_watch(db, search_id, enabled):
+def reset_watch(db, search_id, enabled, *, started_at=None):
     """Caller holds User lock. Changing an epoch invalidates in-flight recipients."""
     db.execute(delete(MonitorSeen).where(MonitorSeen.search_id == search_id))
     db.execute(delete(MonitorMatch).where(MonitorMatch.search_id == search_id))
@@ -90,7 +90,8 @@ def reset_watch(db, search_id, enabled):
     watch.status, watch.next_poll, watch.checked_at = "starting", 0, 0
     search = db.get(Search, search_id)
     db.add(MonitorMembership(search_id=search_id, epoch=watch.epoch,
-        feed_id=source_filters(search.filters).fingerprint(), started_at=math.ceil(time.time())))
+        feed_id=source_filters(search.filters).fingerprint(),
+        started_at=math.ceil(time.time()) if started_at is None else started_at))
 
 
 def poll_interval(groups, limits=None, *, provider_pricing_enabled=False, active_window_enabled=False,
@@ -152,7 +153,7 @@ def interest_query(source_id, now=None, *, paid_only=False, excluded=()):
         access_allowed_clause(User.id, now, paid_only=paid_only, excluded=excluded))
 
 
-def bind_source_access(source, query):
+def bind_source_access(source, query, *, reason, group):
     """Recheck immediately before each accounted HTTP call, including dictionaries.
 
     Existing quota/reserve policy remains composed after this eligibility check.
@@ -164,6 +165,7 @@ def bind_source_access(source, query):
             raise RiaError("no_eligible_subscription")
         if previous is not None:
             previous(db, now, limits)
+        return api_attempt_audit.authorization(reason, group)
     source.request_policy = policy
 
 
@@ -411,7 +413,7 @@ class Monitor:
             return
         context, filters = prepared
         bind_source_access(source, lambda now: member_query(now, **paid_source_access.query_options(source.engine)).where(
-            MonitorMembership.feed_id == feed_id))
+            MonitorMembership.feed_id == feed_id), reason="publication_search", group=feed_id)
         current_slice = context["slices"][0]
         params, _ = source.discovery_parameters(filters)
         params.update(countpage=PAGE_SIZE, page=context["page"], order_by=7,
@@ -603,7 +605,8 @@ class Monitor:
             return
         if html_job:
             source.request_policy = recent_publications.reserve_api
-        bind_source_access(source, lambda now: interest_query(source_id, now, **paid_source_access.query_options(source.engine)))
+        bind_source_access(source, lambda now: interest_query(source_id, now, **paid_source_access.query_options(source.engine)),
+                           reason="candidate_evaluation", group="auto_ria:" + source_id)
         candidate = evidence.get("candidate")
         reusable = bool(candidate and "condition_exclusions" in candidate
                         and 0 <= time.time() - candidate["observed_at"] <= EVIDENCE_SECONDS)
@@ -972,7 +975,7 @@ class Monitor:
                                 raise RiaError("reserved_for_new_publications")
                     if kind == active_window.KIND:
                         bind_source_access(source, lambda now: member_query(now, **paid_source_access.query_options(source.engine)).where(
-                            MonitorMembership.feed_id == key))
+                            MonitorMembership.feed_id == key), reason="active_window_search", group=key)
                         active_window.discover(self, key, source)
                     elif kind == "discover":
                         self.discover(key, source, poll_interval(len(groups), source.limits,

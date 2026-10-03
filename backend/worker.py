@@ -269,7 +269,7 @@ class TelegramSender:
         return text, {"inline_keyboard": [
             [{"text": "🔗 Відкрити оголошення", "url": str(car.url)}]]}
 
-    def __call__(self, user_id, car):
+    def __call__(self, user_id, car, *, before_transport=None):
         text, markup = self.card(car)
         payload = {"chat_id": user_id, "reply_markup": markup}
         photo = self.photos.load(str(car.photo)) if car.photo else None
@@ -281,8 +281,23 @@ class TelegramSender:
             method = "sendMessage"
             payload.update(text=text)
         attempts = []
+        def blocked():
+            if before_transport is None:
+                return None
+            try:
+                allowed = before_transport()
+            except Exception:
+                return {"ok": False, "_access_unavailable": True,
+                        "_delivery_attempts": attempts}
+            if not allowed:
+                return {"ok": False, "_access_blocked": True,
+                        "_delivery_attempts": attempts}
+            return None
         try:
             with httpx.Client(timeout=15, follow_redirects=False) as client:
+                denial = blocked()
+                if denial:
+                    return denial
                 if photo:
                     form = {"chat_id": str(user_id), "caption": payload["caption"],
                             "reply_markup": json.dumps(markup, ensure_ascii=False)}
@@ -302,6 +317,9 @@ class TelegramSender:
                     method = "sendMessage"
                     plain = {"chat_id": user_id, "reply_markup": payload["reply_markup"],
                              "text": text[:4096], "link_preview_options": {"is_disabled": True}}
+                    denial = blocked()
+                    if denial:
+                        return denial
                     response = client.post(f"https://api.telegram.org/bot{self.token}/{method}", json=plain)
                     result = response.json()
                     if response.status_code >= 500:
@@ -337,7 +355,10 @@ def deliver_one(engine, settings: Settings, sender, now=None, *, enforce_chat_in
     from .owner_car_notifications import QUEUE_STATE, payload as owner_copy_payload
     if not settings.live:
         return "disabled"
-    now = time.time() if now is None else now
+    # Explicit timestamps belong to isolated deterministic callers. Production
+    # uses a fresh clock after locks and at every actual transport boundary.
+    clock = time.time if now is None else lambda fixed=now: fixed
+    now = clock()
     with Session(engine) as db:
         row = db.scalar(select(Delivery).where(
             Delivery.state.in_(("pending", QUEUE_STATE)), Delivery.retry_at <= now).order_by(Delivery.id)
@@ -356,6 +377,7 @@ def deliver_one(engine, settings: Settings, sender, now=None, *, enforce_chat_in
         row = db.get(Delivery, delivery_id)
         # Same lock as /stop and subscription edits; recheck immediately before send.
         user = db.scalar(select(User).where(User.id == row.user_id).with_for_update())
+        now = clock()  # A row-lock wait can outlast the paid period.
         listing = db.get(Listing, row.listing_id)
         owner_copy = owner_copy_payload(db, settings, row)
         last_send = db.scalar(select(func.max(DeliveryTiming.send_started_at))
@@ -371,6 +393,8 @@ def deliver_one(engine, settings: Settings, sender, now=None, *, enforce_chat_in
             refresh = list(db.scalars(matching_searches(user.id, listing.id)))
         if user and not owner_copy and not paid_source_access.allowed(db, user.id, now):
             row.state = "cancelled"
+            db.execute(update(Delivery).where(Delivery.user_id == user.id,
+                Delivery.state == "pending").values(state="cancelled"))
         elif not owner_copy and (retired or unconfirmed):
             row.state = "cancelled"
             if unconfirmed:
@@ -412,9 +436,35 @@ def deliver_one(engine, settings: Settings, sender, now=None, *, enforce_chat_in
                 db.add(timing)
             for field in ("discovered_at", "evaluated_at", "source_added_at"):
                 setattr(timing, field, (car.pipeline or {}).get(field))
-            timing.send_started_at = time.time()
+            transport_started = False
+            def before_transport():
+                nonlocal transport_started
+                checked_at = clock()
+                if not db.scalar(select(User.ready).where(User.id == row.user_id)):
+                    db.execute(update(Delivery).where(Delivery.user_id == row.user_id,
+                        Delivery.state == "pending").values(state="cancelled"))
+                    return False
+                if not owner_copy:
+                    if not paid_source_access.allowed(db, row.user_id, checked_at):
+                        db.execute(update(Delivery).where(Delivery.user_id == row.user_id,
+                            Delivery.state == "pending").values(state="cancelled"))
+                        return False
+                    if recent_listing(listing, checked_at)[1] or not eligible(
+                            db, row.user_id, listing, checked_at,
+                            require_provider_range=settings.ria_ai_price_enabled,
+                            require_confirmed_deal=settings.ria_confirmed_deals_only):
+                        return False
+                if not transport_started:
+                    timing.send_started_at = checked_at
+                    transport_started = True
+                return True
             try:
-                result = sender(row.user_id, car)
+                if isinstance(sender, TelegramSender):
+                    result = sender(row.user_id, car, before_transport=before_transport)
+                elif before_transport():
+                    result = sender(row.user_id, car)
+                else:
+                    result = {"ok": False, "_access_blocked": True}
             except Exception:
                 result = {"uncertain": True}
             if not isinstance(result, dict):
@@ -447,6 +497,11 @@ def deliver_one(engine, settings: Settings, sender, now=None, *, enforce_chat_in
                     delivery_log.info("Unpriced notification accepted source_id=%s reasons=%s comparables=%s peer_prices_usd=%s",
                                       car.source_id, rating.get("valuation_reasons", []), rating.get("comparables", 0),
                                       sorted(peer["price_usd"] for peer in proof.get("peers", [])))
+            elif result.get("_access_blocked"):
+                row.state = "cancelled"
+            elif result.get("_access_unavailable"):
+                # A known pre-transport read failure is not Telegram acceptance.
+                row.state, row.retry_at = QUEUE_STATE if owner_copy else "pending", time.time() + 60
             elif result.get("error_code") == 429:
                 retry = result.get("parameters", {}).get("retry_after", 60)
                 row.retry_at = now + max(1, min(int(retry), 86400))
@@ -472,6 +527,7 @@ def main():
         print("Delivery disabled; no network requests made.")
         return
     engine = create_engine(settings.database_url, pool_pre_ping=True)
+    paid_source_access.configure(engine, settings)
     enqueue(engine, allow_active_window=settings.ria_active_window_enabled,
             require_provider_range=settings.ria_ai_price_enabled,
             require_confirmed_deal=settings.ria_confirmed_deals_only)

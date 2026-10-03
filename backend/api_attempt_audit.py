@@ -5,6 +5,7 @@ An interrupted process may leave a reserved/dispatched/started row incomplete;
 never infer success, exact provider acceptance, or billable units from it.
 """
 import re
+import hashlib
 import time
 import uuid
 from contextlib import contextmanager
@@ -59,6 +60,25 @@ class RiaApiAttempt(Base):
     forced: Mapped[bool] = mapped_column(Boolean)
 
 
+class RiaApiAuthorization(Base):
+    """Additive table; old attempt rows and payment schemas remain unchanged."""
+    __tablename__ = "ria_api_authorizations"
+    attempt_id: Mapped[str] = mapped_column(String(32), primary_key=True)
+    reason: Mapped[str] = mapped_column(String(40))
+    group_fingerprint: Mapped[str] = mapped_column(String(64))
+
+
+REASONS = frozenset({"publication_search", "candidate_evaluation", "active_window_search",
+    "recent_publication_validation", "user_requested_scan", "authenticated_search",
+    "authenticated_catalog", "paid_receipt_photo_repair"})
+
+
+def authorization(reason, group):
+    if reason not in REASONS or not isinstance(group, str) or not group:
+        raise ValueError("invalid_source_authorization_context")
+    return {"reason": reason, "group_fingerprint": hashlib.sha256(group.encode()).hexdigest()}
+
+
 def category(path):
     if path == "search":
         return "search"
@@ -74,7 +94,7 @@ def category(path):
     return "other"
 
 
-def reserve(db, path, fingerprint, now, *, force):
+def reserve(db, path, fingerprint, now, *, force, authorization_context=None):
     """Same transaction as SourceBudget. No raw path, parameters or IDs stored."""
     previous = db.scalar(select(RiaApiAttempt).where(
         RiaApiAttempt.request_fingerprint == fingerprint).order_by(
@@ -87,6 +107,12 @@ def reserve(db, path, fingerprint, now, *, force):
         request_ordinal=previous.request_ordinal + 1 if previous else 1,
         prior_attempt_id=previous.id if previous else None, forced=bool(force))
     db.add(attempt)
+    if authorization_context is not None:
+        reason = authorization_context.get("reason")
+        group = authorization_context.get("group_fingerprint")
+        if reason not in REASONS or not isinstance(group, str) or not re.fullmatch(r"[0-9a-f]{64}", group):
+            raise ValueError("invalid_source_authorization_context")
+        db.add(RiaApiAuthorization(attempt_id=attempt.id, reason=reason, group_fingerprint=group))
     return attempt.id
 
 
@@ -156,6 +182,10 @@ def summary(db, after, before):
             .group_by(RiaApiAttempt.category, RiaApiAttempt.call_relation))]
     dispatched = db.scalar(select(func.count()).select_from(RiaApiAttempt).where(
         *criteria, RiaApiAttempt.dispatched_at.is_not(None))) or 0
+    authorized = db.execute(select(RiaApiAuthorization.reason, func.count(),
+            func.count(func.distinct(RiaApiAuthorization.group_fingerprint)))
+        .join(RiaApiAttempt, RiaApiAttempt.id == RiaApiAuthorization.attempt_id)
+        .where(*transport_criteria).group_by(RiaApiAuthorization.reason)).all()
     return {"window": {"after_inclusive": after, "before_exclusive": before},
         "reservations": sum(states.values()), "dispatched_operations": dispatched,
         "transport_observed_attempts": transported, "states": states, "categories": categories,
@@ -163,6 +193,9 @@ def summary(db, after, before):
         "transport_window_basis": "transport_started_at", "transport_call_relations": transport_relations,
         "transport_breakdown": transport_breakdown,
         "call_relations": relations, "http_statuses": statuses,
+        "transport_authorization": [{"reason": reason, "attempts": count, "distinct_groups": groups}
+                                    for reason, count, groups in authorized],
+        "transport_without_authorization_context": transported - sum(count for _, count, _ in authorized),
         "incomplete": sum(count for state, count in states.items() if state not in COMPLETE),
         "cache_hits_in_attempts": 0, "cache_hit_calls": None, "provider_charged_units": None,
         "scope": "new_source_budget_reservations_only", "historical_backfill": False}

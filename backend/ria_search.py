@@ -364,12 +364,16 @@ class RiaSearch:
                 raise RiaError("search_limit")
             if budget_state(row, now, self.limits, db=db)["reason"] != "available":
                 raise RiaError("quota_exceeded")
+            authorization_context = None
             if self.request_policy is not None:
-                self.request_policy(db, now, self.limits)
+                authorization_context = self.request_policy(db, now, self.limits)
             if paid_source_access.strict(self.engine) and not paid_source_access.any_paid(db, now):
                 raise RiaError("paid_access_required")
+            if paid_source_access.strict(self.engine) and authorization_context is None:
+                raise RiaError("no_eligible_subscription")
             row.calls, row.total = calls + [now], row.total + 1
-            attempt_id = api_attempt_audit.reserve(db, path, digest, self._audit_clock(), force=force)
+            attempt_id = api_attempt_audit.reserve(db, path, digest, self._audit_clock(), force=force,
+                authorization_context=authorization_context)
             db.commit()  # Failed calls consume budget too, even on a process crash.
             self.requests_made += 1
             self._lease_state["in_flight"] += 1

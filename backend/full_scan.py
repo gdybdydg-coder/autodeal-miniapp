@@ -298,7 +298,8 @@ class Scanner:
         source = self.search_factory(self.engine, self.key)
         bind_source_access(source, lambda now: select(FullScan.id).where(
             FullScan.id == scan_id, FullScan.owner == self.owner, FullScan.status.in_(ACTIVE),
-            FullScan.lease_until > now, scan_access(self.engine, FullScan.user_id, now)))
+            FullScan.lease_until > now, scan_access(self.engine, FullScan.user_id, now)),
+            reason="user_requested_scan", group=scan_id)
         acquired, reason = False, ""
         try:
             source.acquire()

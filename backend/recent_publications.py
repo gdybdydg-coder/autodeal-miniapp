@@ -454,7 +454,8 @@ def take(monitor, source, *, after_primary=False):
     source.request_policy = reserve_api
     target_epochs = [(search_id, uid, epoch) for search_id, uid, epoch, _ in targets]
     bind_source_access(source, lambda now: member_query(now, **paid_source_access.query_options(source.engine)).where(
-        tuple_(Search.id, Search.user_id, MonitorWatch.epoch).in_(target_epochs)))
+        tuple_(Search.id, Search.user_id, MonitorWatch.epoch).in_(target_epochs)),
+        reason="recent_publication_validation", group="auto_ria:" + sid)
     requests_before = source.requests_made
     try:
         candidate = source.car(sid, force=True)

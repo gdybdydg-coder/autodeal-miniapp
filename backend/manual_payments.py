@@ -18,12 +18,12 @@ import unicodedata
 from sqlalchemy import func, or_, select, update
 from sqlalchemy.orm import Session, object_session
 
-from . import billing
+from . import billing, paid_source_access
 from .billing_models import AccessEvent, Entitlement
 from .manual_payment_models import (ManualBase, PaymentRequest, PaymentConfirmation, PaymentEvidence,
                                    BankCredit, PaymentAudit, PaymentNotice, PaymentOwnerConfirmation,
                                    ReceiptExpectation, ReceiptNotice)
-from .models import User
+from .models import Delivery, Search, User
 
 STATES = ("created", "review", "clarification", "approved", "rejected")
 OPEN = STATES[:3]
@@ -357,6 +357,9 @@ def confirm(engine, settings, actor, token, now):
         legacy_key = getattr(review, "bank_key", None)
         if legacy_key and db.get(BankCredit, legacy_key):
             raise ReviewError("bank_credit_already_used")
+        user = db.scalar(select(User).where(User.id == row.user_id).with_for_update())
+        activate = (paid_source_access.strict(engine)
+                    and not paid_source_access.allowed(db, row.user_id, now))
         until = max(now, before) + row.days*DAY
         if legacy_key:
             db.add(BankCredit(bank_key=legacy_key, request_id=row.id, user_id=row.user_id,
@@ -367,6 +370,17 @@ def confirm(engine, settings, actor, token, now):
                            at=now, expires_at=until, reason="Owner explicitly confirmed bank credit"))
         row.state, row.active_user_id, row.expires_at, row.updated_at = "approved", None, until, now
         row.revision += 1
+        if activate:
+            # Retain filters, disabled searches and /stop. A newly paid period
+            # starts at the approval boundary, never at an old unpaid cursor.
+            # Provider dates have second precision: keep that boundary second.
+            db.execute(update(Delivery).where(Delivery.user_id == row.user_id,
+                Delivery.state == "pending").values(state="cancelled"))
+            if user and user.ready:
+                from .monitor import reset_watch
+                for search in db.scalars(select(Search).where(
+                        Search.user_id == row.user_id, Search.enabled.is_(True))):
+                    reset_watch(db, search.id, True, started_at=math.floor(now))
         expectation = db.get(ReceiptExpectation, row.user_id)
         if expectation and expectation.request_id in (None, row.id):
             expectation.active = expectation.awaiting_image = False
