@@ -24,8 +24,8 @@ from sqlalchemy.orm import Session
 from . import html_shadow
 from .auto_ria import RiaError
 from .models import Filters, MonitorJob, MonitorSeen, MonitorWatch, Search, SourceBudget, SourceProbe
-from .ria_budget import total_cap
-from .ria_search import RiaSearch, matches
+from .ria_budget import BudgetLimits
+from .ria_search import RiaSearch, budget_state, matches, normalize
 from .valuation import notification_condition_allowed
 
 PROBE_ID = "recent-publications-v1"
@@ -82,7 +82,7 @@ class Cards(HTMLParser):
                     raise html_shadow.ProbeError("unexpected_html")
                 self.count += 1
                 self.current = {"id": data.get("data-advertisement-id"), "added": [], "prices": [],
-                                "links": [], "promoted": False}
+                                "links": [], "promoted": False, "previews": []}
                 self.depth = 1
             elif self.current is not None:
                 self.depth += 1
@@ -94,6 +94,16 @@ class Cards(HTMLParser):
             self.current["promoted"] = True
         if "data-add-date" in data:
             self.current["added"].append(added_at(data["data-add-date"]))
+        if "data-advertisement-data" in data and data.get("data-id") == self.current["id"]:
+            preview = {}
+            for name, attribute in (("brand", "data-mark-name"), ("model", "data-model-name")):
+                value = data.get(attribute)
+                if isinstance(value, str) and 0 < len(value.strip()) <= 150:
+                    preview[name] = value.strip()
+            year = data.get("data-year", "")
+            if re.fullmatch(r"(?:19|20)[0-9]{2}", year):
+                preview["year"] = int(year)
+            self.current["previews"].append(preview)
         if "price-ticket" in classes and data.get("data-main-currency") == "USD":
             value = data.get("data-main-price", "")
             if re.fullmatch(r"[0-9]{1,9}(?:\.[0-9]{1,2})?", value):
@@ -133,7 +143,12 @@ def parse(body):
         price = prices[0] if len(prices) == 1 else None
         if price is not None and price <= 0:
             continue
-        result.append({"id": sid, "added_at": row["added"][0], "preview_usd": price})
+        item = {"id": sid, "added_at": row["added"][0], "preview_usd": price}
+        # A conflicting/missing preview is unknown, never a reason to lose a car.
+        previews = row["previews"]
+        if previews and all(value == previews[0] for value in previews) and previews[0]:
+            item["preview"] = previews[0]
+        result.append(item)
     return result
 
 
@@ -218,6 +233,8 @@ def collect(engine, settings, fetcher=html_shadow.fetch, now=None):
                     continue
                 if previous is not None and previous["preview_usd"] != item["preview_usd"]:
                     item["preview_usd"] = None
+                if previous is not None and previous.get("preview") != item.get("preview"):
+                    item.pop("preview", None)
                 rows[item["id"]] = item
         if not rows and not conflicts:
             raise html_shadow.ProbeError("unexpected_html")
@@ -244,6 +261,7 @@ def collect(engine, settings, fetcher=html_shadow.fetch, now=None):
                 if event[3] == owner:
                     event[2] = transferred
             data["errors"], data["last_success_at"] = 0, finished
+            data["last_error"] = None
             if robots_due:
                 data["robots_until"] = finished + 21600
             # The whole first successful snapshot is a baseline, even if its
@@ -282,24 +300,84 @@ def collect(engine, settings, fetcher=html_shadow.fetch, now=None):
         db.commit()
 
 
+def api_gate(db, data, now, limits):
+    """Read-only local availability; a provider balance is never inferred."""
+    budget = db.get(SourceBudget, "auto_ria")
+    if budget is None:
+        return {"reason": "accounting_unavailable", "retry_at": None}
+    shared = budget_state(budget, now, limits, db=db)
+    if shared["reason"] == "total":
+        return {"reason": "shared_total", "retry_at": None}
+    waits = []
+    if shared["reason"] != "available":
+        waits.append((now + shared["retry_after_seconds"], "shared_" + shared["reason"]))
+    for calls, seconds, cap, reason in (
+        (budget.calls, 3600, limits.hourly * 4 // 5, "primary_hourly_headroom"),
+        (budget.calls, 86400, limits.daily * 4 // 5, "primary_daily_headroom"),
+        (data.get("api", []), 3600, API_HOURLY, "intake_hourly"),
+        (data.get("api", []), 86400, API_DAILY, "intake_daily"),
+    ):
+        events = sorted(at for at in calls if at > now - seconds)
+        if cap <= 0:
+            return {"reason": reason, "retry_at": None}
+        if len(events) >= cap:
+            waits.append((events[-cap] + seconds, reason))
+    if waits:
+        at, reason = max(waits)
+        return {"reason": reason, "retry_at": at}
+    return {"reason": "available", "retry_at": now}
+
+
 def reserve_api(db, now, limits):
     """Extra calls retain primary headroom and share the unchanged hard caps."""
     row = db.scalar(select(SourceProbe).where(SourceProbe.id == PROBE_ID).with_for_update())
     if row is None or row.status == "disabled":
         raise RiaError("reserved_for_new_publications")
-    budget = db.get(SourceBudget, "auto_ria")
-    calls = budget.calls
-    if (sum(t > now - 3600 for t in calls) + 1 > limits.hourly * 4 // 5
-            or sum(t > now - 86400 for t in calls) + 1 > limits.daily * 4 // 5
-            or budget.total + 1 > total_cap(db, limits)):
-        raise RiaError("reserved_for_new_publications")
     data = copy.deepcopy(row.result)
-    data["api"] = [at for at in data["api"] if at > now - 86400]
-    if len(data["api"]) >= API_DAILY or sum(at > now - 3600 for at in data["api"]) >= API_HOURLY:
+    if api_gate(db, data, now, limits)["reason"] != "available":
         raise RiaError("reserved_for_new_publications")
+    data["api"] = [at for at in data["api"] if at > now - 86400]
     data["api"].append(now)
     row.result = data
     # Committed atomically with RiaSearch's normal budget reservation before fetch.
+
+
+def preview_matches(item, filters):
+    """Reject only explicit same-ID brand/model/year/price contradictions.
+
+    Optional preview data never authorizes valuation/delivery and unknown values
+    retain the existing official-detail path. No location or category is guessed.
+    """
+    preview = item.get("preview") or {}
+    for field in ("brand", "model"):
+        wanted, actual = getattr(filters, field), preview.get(field)
+        if wanted and actual and normalize(wanted) != normalize(actual):
+            return False
+    for value, bounds in ((item.get("preview_usd"), filters.price),
+                          (preview.get("year"), filters.year)):
+        if value is not None and ((bounds.from_ is not None and value < bounds.from_)
+                                  or (bounds.to is not None and value > bounds.to)):
+            return False
+    return True
+
+
+def defer_candidate(monitor, sid, item, reason, attempted, limits):
+    """Quota/access/lease waits do not exhaust a detail transport retry budget."""
+    now = time.time()
+    with monitor._state_lock, Session(monitor.engine) as db:
+        if not monitor.owned(db):
+            return
+        row = db.scalar(select(SourceProbe).where(SourceProbe.id == PROBE_ID).with_for_update())
+        data = copy.deepcopy(row.result)
+        current = data["pending"].get(sid)
+        if not current or current["added_at"] != item["added_at"]:
+            return
+        current["attempts"] = item["attempts"] + int(attempted)
+        current["wait_reason"] = reason
+        gate = api_gate(db, data, now, limits)
+        current["next_at"] = max(now + 1, gate["retry_at"]) if gate["reason"] != "available" and gate["retry_at"] else now + 60
+        row.result = data
+        db.commit()
 
 
 def valid_proof(evidence, now=None):
@@ -348,9 +426,7 @@ def take(monitor, source, *, after_primary=False):
                 if member.started_at > item["added_at"] or db.get(MonitorSeen, (search.id, sid)) is not None or claimed(db, search.user_id, sid):
                     continue
                 filters = Filters.model_validate(search.filters)
-                preview = item["preview_usd"]
-                if preview is not None and ((filters.price.from_ is not None and preview < filters.price.from_)
-                        or (filters.price.to is not None and preview > filters.price.to)):
+                if not preview_matches(item, filters):
                     continue
                 try:
                     _, resolved = RiaSearch.cached_parameters(db, source_filters(filters))
@@ -363,7 +439,14 @@ def take(monitor, source, *, after_primary=False):
             row.result = data
             db.commit()
             return True
-        item["attempts"] += 1
+        gate = api_gate(db, data, now, source.limits)
+        if gate["reason"] != "available":
+            item["wait_reason"] = gate["reason"]
+            item["next_at"] = max(now + 1, gate["retry_at"]) if gate["retry_at"] else now + 300
+            data["pending"][sid] = item
+            row.result = data
+            db.commit()
+            return True
         item["next_at"] = now + 60
         data["pending"][sid] = item
         row.result = data
@@ -372,11 +455,17 @@ def take(monitor, source, *, after_primary=False):
     target_epochs = [(search_id, uid, epoch) for search_id, uid, epoch, _ in targets]
     bind_source_access(source, lambda now: member_query(now, **paid_source_access.query_options(source.engine)).where(
         tuple_(Search.id, Search.user_id, MonitorWatch.epoch).in_(target_epochs)))
+    requests_before = source.requests_made
     try:
         candidate = source.car(sid, force=True)
     except RiaError as exc:
+        attempted = source.requests_made > requests_before
         if str(exc) in {"quota_exceeded", "reserved_for_new_publications", "busy", "search_limit",
-                        "connection_error", "upstream_error"} and item["attempts"] < 3:
+                        "no_eligible_subscription", "paid_access_required"}:
+            defer_candidate(monitor, sid, item, str(exc), attempted=False, limits=source.limits)
+            return True
+        if str(exc) in {"connection_error", "upstream_error"} and item["attempts"] + int(attempted) < 3:
+            defer_candidate(monitor, sid, item, str(exc), attempted=attempted, limits=source.limits)
             return True
         candidate = None
     with monitor._state_lock, Session(monitor.engine) as db:
@@ -441,6 +530,8 @@ def status(engine, settings):
                            "paid_daily": API_DAILY, "maximum_pending_candidates": MAX_QUEUE},
                 **{k: data.get(k) for k in ("cycles", "queued", "validated", "duplicates", "discarded", "discard_reasons",
                     "queue_overflow", "last_success_at", "last_error")},
+                "api_availability": api_gate(db, data, now, BudgetLimits.env()),
+                "waiting_candidates": sum(bool(item.get("wait_reason")) for item in data.get("pending", {}).values()),
                 "whole_market_coverage_measured": False}
 
 
