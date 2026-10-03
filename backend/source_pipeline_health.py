@@ -48,6 +48,10 @@ def completed_decisions(db, now, current_seen):
         claim = claims.get((search.user_id, seen.source_id))
         if claim:
             reason = "delivery_" + claim
+        elif seen.state == "html_cancelled":
+            reason = job.reason if job and job.reason else "supplemental_publication_retired"
+        elif seen.state == "cancelled" and evidence.get("html_verified") is True:
+            reason = "legacy_supplemental_publication_retired"
         elif seen.state == "pending":
             reason = "pending_evaluation"
         elif not candidate:
@@ -81,7 +85,8 @@ def snapshot(db, settings, now):
     interval = poll_interval(len(groups), limits,
         provider_pricing_enabled=settings.ria_ai_price_enabled,
         active_window_enabled=settings.ria_active_window_enabled,
-        schedule_enabled=settings.ria_poll_schedule_enabled, now=now)
+        schedule_enabled=settings.ria_poll_schedule_enabled, now=now,
+        continuous_paid=paid_source_access.strict(db.get_bind()))
     paid = paid_source_access.confirmed_clause(User.id, now, excluded=paid_source_access.exclusions(db.get_bind()))
     access = paid if paid_source_access.strict(db.get_bind()) else True
     current_seen = (Search.enabled.is_(True), User.ready.is_(True),

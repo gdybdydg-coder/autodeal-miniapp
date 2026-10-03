@@ -95,7 +95,7 @@ def reset_watch(db, search_id, enabled, *, started_at=None):
 
 
 def poll_interval(groups, limits=None, *, provider_pricing_enabled=False, active_window_enabled=False,
-                  schedule_enabled=False, now=None):
+                  schedule_enabled=False, now=None, continuous_paid=False):
     """Pace distinct searches while reserving capacity for fresh valuations.
 
     Paid listing-specific pricing needs a detail read and a quote, rather than
@@ -106,7 +106,7 @@ def poll_interval(groups, limits=None, *, provider_pricing_enabled=False, active
     limits = limits or BudgetLimits.env()
     fast = provider_pricing_enabled and not active_window_enabled
     if provider_pricing_enabled and schedule_enabled:
-        schedule = poll_schedule.policy(groups, limits, now)
+        schedule = poll_schedule.policy(groups, limits, now, continuous_paid=continuous_paid)
         if schedule["enabled"]:
             return schedule["interval_seconds"]
     share = 3 if fast else 2
@@ -182,8 +182,9 @@ def runtime_status(engine, enabled, uid=None, *, active_window_enabled=False, pr
         members = active_members(db)
         groups = len({member.feed_id for _, _, member in members})
         interval = poll_interval(groups, provider_pricing_enabled=provider_pricing_enabled,
-                                 active_window_enabled=active_window_enabled, schedule_enabled=schedule_enabled)
-        schedule = (poll_schedule.policy(groups, BudgetLimits.env())
+                                 active_window_enabled=active_window_enabled, schedule_enabled=schedule_enabled,
+                                 continuous_paid=paid_source_access.strict(engine))
+        schedule = (poll_schedule.policy(groups, BudgetLimits.env(), continuous_paid=paid_source_access.strict(engine))
                     if schedule_enabled and provider_pricing_enabled
                     else {"enabled": False})
         own_groups = {member.feed_id for search, _, member in members
@@ -245,7 +246,8 @@ class Monitor:
             return
         if not (self.settings.ria_poll_schedule_enabled and self.settings.ria_ai_price_enabled):
             return
-        schedule = poll_schedule.policy(len(groups), BudgetLimits.env())
+        schedule = poll_schedule.policy(len(groups), BudgetLimits.env(),
+                                        continuous_paid=paid_source_access.strict(self.engine))
         if not schedule["enabled"]:
             return
         interval = schedule["interval_seconds"]
@@ -324,7 +326,7 @@ class Monitor:
                 retired_ids = select(MonitorJob.source_id).where(MonitorJob.state == "pending",
                     MonitorJob.result["discovery_kind"].as_string() == recent_publications.KIND)
                 db.execute(update(MonitorSeen).where(MonitorSeen.source_id.in_(retired_ids),
-                    MonitorSeen.state == "pending").values(state="html_cancelled"))
+                    MonitorSeen.state == "pending").values(state=recent_publications.RETIRED_STATE))
                 db.execute(update(MonitorJob).where(MonitorJob.source_id.in_(retired_ids)).values(
                     state="cancelled", reason="recent_publications_disabled"))
             if not self.settings.ria_active_window_enabled:
@@ -425,6 +427,7 @@ class Monitor:
                 or (len(ids) < PAGE_SIZE and context["page"] * PAGE_SIZE + len(ids) < total)):
             raise RiaError("invalid_response")
         now = time.time()
+        recovered_html = 0
         with self._state_lock, Session(self.engine) as db:
             if not self.owned(db):
                 return
@@ -436,14 +439,15 @@ class Monitor:
                 _, watch = state
                 for source_id in ids:
                     seen = db.get(MonitorSeen, (sid, source_id))
+                    job = db.get(MonitorJob, source_id)
+                    retired_html = recent_publications.retired_interest(db, seen, job, uid, now)
                     if seen is not None and not (seen.epoch == epoch
-                            and seen.state == active_window.RETIRED_STATE):
+                            and (seen.state == active_window.RETIRED_STATE or retired_html)):
                         # A current publication-window result supersedes the
                         # unverified newest-page origin of an unevaluated ID.
                         # Turning that extra search off must not cancel primary
                         # work, including an ID already observed by this search.
                         if seen.epoch == epoch and seen.state == "pending":
-                            job = db.get(MonitorJob, source_id)
                             if job:
                                 job.result = {**job.result, "discovery_kind": "new_publication",
                                               "publication_after": current_slice["after"]}
@@ -457,7 +461,7 @@ class Monitor:
                         # evidence for the same active subscription epoch.
                         # Sent/uncertain delivery claims are never modified.
                         seen.state = "pending"
-                    job = db.get(MonitorJob, source_id)
+                        recovered_html += int(retired_html)
                     if job is None:
                         db.add(MonitorJob(source_id=source_id, first_seen=now,
                             result={"discovery_kind": "new_publication", "publication_after": current_slice["after"]}))
@@ -498,15 +502,25 @@ class Monitor:
                     watch.status = feed.status if watch.initialized else "starting"
                     watch.next_poll = feed.next_poll
             db.commit()
+        if recovered_html:
+            batch_log.info("Monitor primary HTML recovery recovered_search_car_pairs=%s", recovered_html)
 
     def interests(self, db, source_id):
         return list(db.execute(interest_query(source_id, **paid_source_access.query_options(db.get_bind())).order_by(Search.user_id, Search.id)))
 
-    def complete(self, source_id, evidence, outcome):
+    def complete(self, source_id, evidence, outcome, *, reason=""):
         with self._state_lock, Session(self.engine) as db:
             if not self.owned(db):
                 return
             job = db.get(MonitorJob, source_id)
+            if (outcome == "cancelled" and reason in recent_publications.RETIREMENT_REASONS
+                    and job.result.get("discovery_kind") == "new_publication"):
+                # A parallel dated API page promoted this job after the HTML
+                # evaluator took its snapshot. Keep that stronger proof and
+                # re-evaluate normally instead of cancelling its recipients.
+                job.state, job.reason, job.next_run = "pending", "", 0
+                db.commit()
+                return
             evidence = {**evidence, "discovered_at": job.first_seen, "evaluated_at": time.time(),
                         "notification_version": NOTIFICATION_VERSION}
             # Keep publication evidence promoted by a concurrent search while
@@ -535,13 +549,17 @@ class Monitor:
                 # Dispatch may request a refresh for another subscription while
                 # this evaluation is in flight. Resolve its filters on the next
                 # work step, rather than consuming unexamined evidence.
-                if evidence.get("candidate") and fingerprint not in evidence.get("filters", {}):
+                if (outcome != "cancelled" and evidence.get("candidate")
+                        and fingerprint not in evidence.get("filters", {})):
                     continue
-                seen.state = outcome
+                seen.state = (recent_publications.RETIRED_STATE if outcome == "cancelled"
+                              and reason in recent_publications.RETIREMENT_REASONS else outcome)
                 listing = db.scalar(select(Listing).where(Listing.source == "auto_ria", Listing.source_id == source_id))
                 if listing:
                     db.execute(delete(MonitorMatch).where(MonitorMatch.search_id == sid,
                                                          MonitorMatch.listing_id == listing.id))
+                if outcome == "cancelled":
+                    continue
                 candidate, rating = evidence.get("candidate"), evidence.get("rating")
                 resolved = evidence.get("filters", {}).get(fingerprint)
                 filters = Filters.model_validate(search.filters)
@@ -578,7 +596,7 @@ class Monitor:
                 shared_matches += sid not in original_ids
             db.flush()
             job.state = "pending" if self.interests(db, source_id) else outcome
-            job.reason, job.result = "", evidence
+            job.reason, job.result = reason, evidence
             if job.state == "pending":
                 job.next_run = 0
             db.commit()
@@ -600,9 +618,15 @@ class Monitor:
             job.last_attempt, job.attempts = time.time(), job.attempts + 1
             db.commit()
         html_job = evidence.get("discovery_kind") == recent_publications.KIND
-        if html_job and (not recent_publications.enabled(self.settings) or not recent_publications.valid_proof(evidence)):
-            self.complete(source_id, {}, "cancelled")
-            return
+        if html_job:
+            if not recent_publications.enabled(self.settings):
+                self.complete(source_id, evidence, "cancelled", reason="recent_publications_disabled")
+                return
+            if not recent_publications.valid_proof(evidence):
+                reason = ("html_publication_expired" if recent_publications.expired_proof(evidence)
+                          else "invalid_publication_proof")
+                self.complete(source_id, evidence, "cancelled", reason=reason)
+                return
         if html_job:
             source.request_policy = recent_publications.reserve_api
         bind_source_access(source, lambda now: interest_query(source_id, now, **paid_source_access.query_options(source.engine)),
@@ -762,7 +786,8 @@ class Monitor:
         try:
             interval = poll_interval(groups, source.limits, provider_pricing_enabled=True,
                                      active_window_enabled=self.settings.ria_active_window_enabled,
-                                     schedule_enabled=self.settings.ria_poll_schedule_enabled)
+                                     schedule_enabled=self.settings.ria_poll_schedule_enabled,
+                                     continuous_paid=paid_source_access.strict(self.engine))
             with Session(self.engine) as db:
                 db.execute(update(MonitorControl).where(MonitorControl.id == "pilot",
                     MonitorControl.owner == self.owner).values(status=status, heartbeat=time.time()))
@@ -833,7 +858,8 @@ class Monitor:
         source = self.search_factory(self.engine, self.settings.auto_ria_api_key)
         interval = poll_interval(len(groups), source.limits, provider_pricing_enabled=True,
             active_window_enabled=self.settings.ria_active_window_enabled,
-            schedule_enabled=self.settings.ria_poll_schedule_enabled)
+            schedule_enabled=self.settings.ria_poll_schedule_enabled,
+            continuous_paid=paid_source_access.strict(self.engine))
         now = time.time()
         with Session(self.engine) as db:
             if not self.owned(db):
@@ -993,7 +1019,8 @@ class Monitor:
                         self.discover(key, source, poll_interval(len(groups), source.limits,
                             provider_pricing_enabled=self.settings.ria_ai_price_enabled,
                             active_window_enabled=self.settings.ria_active_window_enabled,
-                            schedule_enabled=self.settings.ria_poll_schedule_enabled))
+                            schedule_enabled=self.settings.ria_poll_schedule_enabled,
+                            continuous_paid=paid_source_access.strict(self.engine)))
                     else:
                         self.evaluate(key, source)
                 except RiaError as exc:

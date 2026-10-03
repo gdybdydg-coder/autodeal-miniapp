@@ -30,6 +30,8 @@ from .valuation import notification_condition_allowed
 
 PROBE_ID = "recent-publications-v1"
 KIND = "html_new_publication"
+RETIRED_STATE = "html_cancelled"
+RETIREMENT_REASONS = {"recent_publications_disabled", "html_publication_expired"}
 KYIV = ZoneInfo("Europe/Kyiv")
 MAX_AGE, MAX_QUEUE, MAX_SEEN = 3600, 128, 10000
 HTTP_HOURLY, HTTP_DAILY, HTTP_BYTES = 125, 1600, 3 * 1024**3
@@ -387,6 +389,44 @@ def valid_proof(evidence, now=None):
             all(type(v) in (int, float) and math.isfinite(v) for v in (added, baseline, expires)) and
             0 < baseline < added <= now <= expires and expires == added + MAX_AGE and
             evidence.get("publication_after") == added)
+
+
+def expired_proof(evidence, now=None):
+    """Previously valid supplementary proof; expiration is not a sold-car fact."""
+    now = time.time() if now is None else now
+    if not isinstance(evidence, dict):
+        return False
+    expires = evidence.get("html_expires_at")
+    return (type(expires) in (int, float) and expires < now
+            and valid_proof(evidence, expires))
+
+
+def retired_interest(db, seen, job, uid, now):
+    """Only dated primary discovery may recover unclaimed HTML retirement.
+
+    Old releases erased origin/reason on expiry but retained the verified proof.
+    No delivered/uncertain/cancelled Telegram claim is ever reopened here.
+    The caller separately checks current payment, /stop and watch epoch.
+    """
+    if seen is None or job is None:
+        return False
+    evidence = job.result if isinstance(job.result, dict) else {}
+    promoted = (job.state in {"pending", "checked"}
+                and evidence.get("discovery_kind") == "new_publication")
+    if job.state != "cancelled" and not promoted:
+        return False
+    explicit = seen.state == RETIRED_STATE and (job.reason in RETIREMENT_REASONS or promoted)
+    # First recipient promotion changes the shared job, while each other
+    # recipient still owns its retired seen row. Retain the dated HTML shape
+    # check but do not treat the new primary lower boundary as an HTML date.
+    legacy_proof = ({**evidence, "publication_after": evidence.get("html_added_at")}
+                    if promoted else evidence)
+    legacy = (seen.state == "cancelled" and not job.reason
+              and expired_proof(legacy_proof, now))
+    if not (explicit or legacy):
+        return False
+    from .shared_distribution import claimed
+    return not claimed(db, uid, job.source_id)
 
 
 def due(engine):
