@@ -1023,6 +1023,8 @@ class Monitor:
                 allow_recent_publications=recent_publications.enabled(self.settings),
                 require_provider_range=self.settings.ria_ai_price_enabled,
                 require_confirmed_deal=self.settings.ria_confirmed_deals_only)
+        from .owner_car_notifications import enqueue_confirmed
+        enqueue_confirmed(self.engine, self.settings)
         # Legacy single-step test/operator helper; the running dispatcher below
         # enforces per-chat spacing when sending batches concurrently.
         deliver_one(self.engine, self.settings, self.sender or TelegramSender(self.settings.bot_token),
@@ -1058,6 +1060,8 @@ async def run(engine, settings, stop):
                             allow_recent_publications=recent_publications.enabled(settings),
                             require_provider_range=settings.ria_ai_price_enabled,
                             require_confirmed_deal=settings.ria_confirmed_deals_only)
+                        from .owner_car_notifications import enqueue_confirmed
+                        await asyncio.to_thread(enqueue_confirmed, engine, settings)
                         next_enqueue = time.monotonic() + 1
                     # Four simultaneous requests, with at least .25s between
                     # batches: at most 16/s, below Telegram's free broadcast cap.

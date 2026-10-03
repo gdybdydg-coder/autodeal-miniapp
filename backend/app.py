@@ -72,6 +72,7 @@ class Settings:
     manual_payment_review_enabled: bool = False
     manual_payment_notices_enabled: bool = False
     stats_excluded_user_ids: str = ""
+    owner_car_notifications_enabled: bool = True
 
     @classmethod
     def env(cls):
@@ -110,6 +111,7 @@ class Settings:
             manual_payment_review_enabled=os.getenv("MANUAL_PAYMENT_REVIEW_ENABLED") == "true",
             manual_payment_notices_enabled=os.getenv("MANUAL_PAYMENT_NOTICES_ENABLED") == "true",
             stats_excluded_user_ids=os.getenv("STATS_EXCLUDED_USER_IDS", "").strip(),
+            owner_car_notifications_enabled=os.getenv("OWNER_CAR_NOTIFICATIONS_ENABLED", "true") == "true",
             ria_quota_management_enabled=os.getenv("RIA_QUOTA_MANAGEMENT_ENABLED") == "true",
             ria_failed_delivery_recovery_id=os.getenv("RIA_FAILED_DELIVERY_RECOVERY_ID", "").strip(),
         )
@@ -195,6 +197,8 @@ def create_app(settings: Settings, engine=None, *, paid_source_only=False):
                 await asyncio.to_thread(ria_ai_price.check_once, engine, settings.auto_ria_api_key,
                                        settings.auto_ria_user_id, settings.ria_ai_price_probe_id)
         await asyncio.to_thread(paid_source_access.log_snapshot, engine)
+        from . import owner_car_notifications
+        await asyncio.to_thread(owner_car_notifications.initialize, engine, settings)
         stop = asyncio.Event()
         manual_notice_task = asyncio.create_task(manual_payments.run_notices(engine, settings, stop)) if (
             settings.manual_payment_review_enabled and settings.manual_payment_notices_enabled) else None

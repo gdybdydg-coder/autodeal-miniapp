@@ -3,6 +3,8 @@ from . import billing, paid_source_access
 import json
 import logging
 import time
+from datetime import datetime
+from zoneinfo import ZoneInfo
 
 import httpx
 from sqlalchemy import exists, func, select, update
@@ -192,6 +194,9 @@ class TelegramSender:
 
     @staticmethod
     def card(car, *, historical_at=None):
+        owner_copy = (car.pipeline or {}).get("owner_copy")
+        if isinstance(owner_copy, dict):
+            historical_at = owner_copy["observed_at"]
         price = f"${car.price:,.0f}".replace(",", " ")
         details = []
         if car.fuel:
@@ -252,6 +257,9 @@ class TelegramSender:
                 pricing.append("Витрати на ремонт не враховані" if provider_range else
                                "Орієнтир аналогів без позначених пошкоджень; витрати на ремонт не враховані")
         sections = [f"🚘 {car.brand} {car.model} · {car.year}"]
+        if isinstance(owner_copy, dict):
+            stamp = datetime.fromtimestamp(historical_at, ZoneInfo("Europe/Kyiv"))
+            sections.insert(0, f"👁 Копія клієнтського сповіщення\nДані на {stamp:%d.%m %H:%M}")
         if (car.pipeline or {}).get("discovery_kind") == "active_window":
             sections.append("🕘 Активне оголошення з додаткової перевірки")
         if details:
@@ -347,6 +355,8 @@ def deliver_one(engine, settings: Settings, sender, now=None, *, enforce_chat_in
         # Same lock as /stop and subscription edits; recheck immediately before send.
         user = db.scalar(select(User).where(User.id == row.user_id).with_for_update())
         listing = db.get(Listing, row.listing_id)
+        from .owner_car_notifications import payload as owner_copy_payload
+        owner_copy = owner_copy_payload(db, settings, row)
         last_send = db.scalar(select(func.max(DeliveryTiming.send_started_at))
             .join(Delivery, Delivery.id == DeliveryTiming.delivery_id)
             .where(Delivery.user_id == row.user_id, Delivery.id != delivery_id)) if user else None
@@ -355,12 +365,12 @@ def deliver_one(engine, settings: Settings, sender, now=None, *, enforce_chat_in
         recent, expired = recent_listing(listing, now)
         retired |= expired or (recent and not getattr(settings, "ria_recent_publications_enabled", False))
         unconfirmed = settings.ria_confirmed_deals_only and unpriced_listing(listing)
-        if not retired and not unconfirmed and user and user.ready and listing and listing.source == "auto_ria" and not fresh(
+        if not owner_copy and not retired and not unconfirmed and user and user.ready and listing and listing.source == "auto_ria" and not fresh(
                 Car.model_validate(listing.car), now, db, require_provider_range=settings.ria_ai_price_enabled):
             refresh = list(db.scalars(matching_searches(user.id, listing.id)))
-        if user and not paid_source_access.allowed(db, user.id, now):
+        if user and not owner_copy and not paid_source_access.allowed(db, user.id, now):
             row.state = "cancelled"
-        elif retired or unconfirmed:
+        elif not owner_copy and (retired or unconfirmed):
             row.state = "cancelled"
             if unconfirmed:
                 delivery_log.info("Unconfirmed notification suppressed source_id=%s", listing.source_id)
@@ -389,12 +399,12 @@ def deliver_one(engine, settings: Settings, sender, now=None, *, enforce_chat_in
             # Telegram limits each private chat separately; do not keep a user
             # row locked while waiting or jeopardize other recipients' slots.
             row.state, row.retry_at = "pending", last_send + 1.05
-        elif not user or not user.ready or not listing or not eligible(
+        elif not user or not user.ready or not listing or (not owner_copy and not eligible(
                 db, row.user_id, listing, now, require_provider_range=settings.ria_ai_price_enabled,
-                require_confirmed_deal=settings.ria_confirmed_deals_only):
+                require_confirmed_deal=settings.ria_confirmed_deals_only)):
             row.state = "cancelled"
         else:
-            car = Car.model_validate(listing.car)
+            car = owner_copy or Car.model_validate(listing.car)
             timing = db.get(DeliveryTiming, delivery_id)
             if timing is None:
                 timing = DeliveryTiming(delivery_id=delivery_id, queued_at=now)
@@ -416,7 +426,9 @@ def deliver_one(engine, settings: Settings, sender, now=None, *, enforce_chat_in
                 timing.accepted_at = time.time()
                 stamp = message.get("date")
                 timing.telegram_date = stamp if type(stamp) is int and stamp > 0 else None
-                if car.source == "auto_ria" and car.market is not None:
+                if owner_copy:
+                    delivery_log.info("Owner car copy accepted source_id=%s basis=confirmed_client_receipt", car.source_id)
+                elif car.source == "auto_ria" and car.market is not None:
                     proof = car.valuation_evidence or {}
                     if proof.get("version") == ria_market_range.VERSION:
                         quote = proof["source_range"]
