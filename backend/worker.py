@@ -196,7 +196,7 @@ class TelegramSender:
     def card(car, *, historical_at=None):
         owner_copy = (car.pipeline or {}).get("owner_copy")
         if isinstance(owner_copy, dict):
-            historical_at = owner_copy["observed_at"]
+            historical_at = owner_copy.get("rendered_at", owner_copy["observed_at"])
         price = f"${car.price:,.0f}".replace(",", " ")
         details = []
         if car.fuel:
@@ -258,7 +258,7 @@ class TelegramSender:
                                "Орієнтир аналогів без позначених пошкоджень; витрати на ремонт не враховані")
         sections = [f"🚘 {car.brand} {car.model} · {car.year}"]
         if isinstance(owner_copy, dict):
-            stamp = datetime.fromtimestamp(historical_at, ZoneInfo("Europe/Kyiv"))
+            stamp = datetime.fromtimestamp(owner_copy["observed_at"], ZoneInfo("Europe/Kyiv"))
             sections.insert(0, f"👁 Копія клієнтського сповіщення\nДані на {stamp:%d.%m %H:%M}")
         if (car.pipeline or {}).get("discovery_kind") == "active_window":
             sections.append("🕘 Активне оголошення з додаткової перевірки")
@@ -334,18 +334,20 @@ class TelegramSender:
 
 
 def deliver_one(engine, settings: Settings, sender, now=None, *, enforce_chat_interval=True):
+    from .owner_car_notifications import QUEUE_STATE, payload as owner_copy_payload
     if not settings.live:
         return "disabled"
     now = time.time() if now is None else now
     with Session(engine) as db:
         row = db.scalar(select(Delivery).where(
-            Delivery.state == "pending", Delivery.retry_at <= now).order_by(Delivery.id)
+            Delivery.state.in_(("pending", QUEUE_STATE)), Delivery.retry_at <= now).order_by(Delivery.id)
             .with_for_update(skip_locked=True).limit(1))
         if row is None:
             return "empty"
         delivery_id = row.id
+        claimed_state = row.state
         claimed = db.execute(update(Delivery).where(
-            Delivery.id == delivery_id, Delivery.state == "pending",
+            Delivery.id == delivery_id, Delivery.state == claimed_state,
             Delivery.retry_at <= now).values(state="sending", retry_at=now))
         db.commit()
         if claimed.rowcount != 1:
@@ -355,7 +357,6 @@ def deliver_one(engine, settings: Settings, sender, now=None, *, enforce_chat_in
         # Same lock as /stop and subscription edits; recheck immediately before send.
         user = db.scalar(select(User).where(User.id == row.user_id).with_for_update())
         listing = db.get(Listing, row.listing_id)
-        from .owner_car_notifications import payload as owner_copy_payload
         owner_copy = owner_copy_payload(db, settings, row)
         last_send = db.scalar(select(func.max(DeliveryTiming.send_started_at))
             .join(Delivery, Delivery.id == DeliveryTiming.delivery_id)
@@ -398,7 +399,7 @@ def deliver_one(engine, settings: Settings, sender, now=None, *, enforce_chat_in
         elif enforce_chat_interval and user and user.ready and last_send and now < last_send + 1.05:
             # Telegram limits each private chat separately; do not keep a user
             # row locked while waiting or jeopardize other recipients' slots.
-            row.state, row.retry_at = "pending", last_send + 1.05
+            row.state, row.retry_at = QUEUE_STATE if owner_copy else "pending", last_send + 1.05
         elif not user or not user.ready or not listing or (not owner_copy and not eligible(
                 db, row.user_id, listing, now, require_provider_range=settings.ria_ai_price_enabled,
                 require_confirmed_deal=settings.ria_confirmed_deals_only)):
@@ -449,7 +450,7 @@ def deliver_one(engine, settings: Settings, sender, now=None, *, enforce_chat_in
             elif result.get("error_code") == 429:
                 retry = result.get("parameters", {}).get("retry_after", 60)
                 row.retry_at = now + max(1, min(int(retry), 86400))
-                row.state = "pending"
+                row.state = QUEUE_STATE if owner_copy else "pending"
             elif result.get("error_code") == 403:
                 row.state = "failed"
                 user.ready = False

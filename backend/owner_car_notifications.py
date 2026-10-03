@@ -23,6 +23,7 @@ REQUESTED_LISTING = "40514216"  # Explicitly requested recovery, once for this r
 RECOVERY = "owner-car-copy-request-40514216-v1"
 CATCHUP_SECONDS = 300
 MAX_BATCH = 50
+QUEUE_STATE = "owner_pending"  # Older processes must never claim/cancel copies.
 
 
 def enabled(engine, settings):
@@ -53,7 +54,7 @@ def _queue(db, settings, client, timing, listing, now):
     try:
         with db.begin_nested():
             copy = Delivery(user_id=settings.admin_telegram_id, listing_id=listing.id,
-                            state="pending", retry_at=0)
+                            state=QUEUE_STATE, retry_at=0)
             db.add(copy)
             db.flush()
             db.add(DeliveryTiming(delivery_id=copy.id, queued_at=now))
@@ -113,6 +114,19 @@ def _initialize(engine, settings):
                 state = _queue(db, settings, *rows[0], now)
             db.add(SourceProbe(id=RECOVERY, status=state, checked_at=now, requests=0,
                                result={"source_id": REQUESTED_LISTING}))
+        elif user and user.ready:
+            # A predecessor may cancel a new copy before Telegram is called
+            # during an overlapping deploy. Only restore this requested card
+            # when no transport started and no acceptance could have occurred.
+            cancelled = db.scalar(select(Delivery).join(Listing, Listing.id == Delivery.listing_id)
+                .where(Delivery.user_id == settings.admin_telegram_id,
+                    Listing.source == "auto_ria", Listing.source_id == REQUESTED_LISTING,
+                    Delivery.state == "cancelled", Delivery.message_id.is_(None)))
+            timing = db.get(DeliveryTiming, cancelled.id) if cancelled else None
+            if (cancelled and timing and timing.send_started_at is None
+                    and timing.accepted_at is None and payload(db, settings, cancelled)):
+                cancelled.state, cancelled.retry_at = QUEUE_STATE, 0
+                log.info("Owner car copy restored source_id=%s previous_send_started=false", REQUESTED_LISTING)
         db.commit()
     log.info("Owner car copy policy enabled=true source_api_access=false old_history_replay=false")
     log_snapshot(engine, settings)
@@ -168,7 +182,14 @@ def payload(db, settings, delivery):
     if (not listing or car.source != "auto_ria" or car.source_id != listing.source_id
             or not isinstance((car.pipeline or {}).get("owner_copy"), dict)):
         return None
-    return car
+    # Use the saved source/send time for rendering, never a fresh-price claim
+    # and never a timestamp preceding a quote obtained after the details.
+    quote_at = ((car.valuation_evidence or {}).get("source_range") or {}).get("observed_at")
+    times = [car.observed_at]
+    times.extend(t for t in (timing.send_started_at, quote_at) if type(t) in (int, float) and t > 0)
+    pipeline = dict(car.pipeline)
+    pipeline["owner_copy"] = {**pipeline["owner_copy"], "rendered_at": max(times)}
+    return car.model_copy(update={"pipeline": pipeline})
 
 
 def log_snapshot(engine, settings):
@@ -196,10 +217,14 @@ def log_snapshot(engine, settings):
                         Delivery.user_id.not_in(paid_source_access.exclusions(engine)))
                     .group_by(Delivery.state)).all())
             recovery = db.get(SourceProbe, RECOVERY)
+            owner_delivery = db.scalar(select(Delivery).where(
+                Delivery.user_id == settings.admin_telegram_id,
+                Delivery.listing_id == listing.id)) if listing else None
             result = {"checked_at": now, "source_id": REQUESTED_LISTING,
                       "current_paid_clients": total, "current_matched_paid_clients": matched,
                       "saved_client_delivery_states": states,
                       "owner_recovery": recovery.status if recovery else "not_initialized",
+                      "owner_delivery_state": owner_delivery.state if owner_delivery else None,
                       "extra_source_requests": 0}
         log.info("Owner car copy verification %s", json.dumps(result, sort_keys=True))
     except Exception as exc:

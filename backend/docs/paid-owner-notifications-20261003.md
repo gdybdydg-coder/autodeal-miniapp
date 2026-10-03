@@ -22,6 +22,10 @@ the administrator from paid-source access together with test/service accounts.
 - Multiple matching client receipts generate one owner delivery through the
   existing unique `(user_id, listing_id)` constraint. Restart retains queued
   cards and does not resend accepted or uncertain cards.
+- Owner cards use `owner_pending`, which predecessor workers cannot claim.
+  Chat-spacing and rate-limit deferrals preserve this state across overlapping
+  Render deployments. The requested Bora may be restored from `cancelled` only
+  if transport never started and no acceptance or message ID exists.
 
 The dispatcher reconciles at most 50 recently accepted receipts once per second.
 The five-minute reconciliation window repairs a short interruption before copy
@@ -56,10 +60,12 @@ enqueue, restart, rate limits, uncertain timeouts, immutable stale copies,
 source failure isolation and the single requested recovery. No production seed
 payments, real source requests or client test sends are used.
 
-Local verification on 2026-10-03: 22 new cases passed; the full backend suite
-passed 1,637 cases in 263.98 seconds. PostgreSQL compilation of the correlated
-receipt query also passed. These are isolated checks; production acceptance
-must be verified separately after deployment.
+Local verification on 2026-10-03: the initial change passed 22 new cases and
+the full backend suite (1,637 cases in 263.98 seconds). The final overlap fix
+passed 206 affected cases, including all 27 owner-copy scenarios and the
+monitor, paid-source, shared-delivery, Telegram, valuation and API suites.
+PostgreSQL compilation of the correlated receipt query also passed. These are
+isolated checks; production acceptance is verified separately after deployment.
 
 ## Disable and rollback
 

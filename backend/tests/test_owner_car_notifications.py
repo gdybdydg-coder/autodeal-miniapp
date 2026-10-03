@@ -176,7 +176,7 @@ def test_owner_stop_rechecked_after_copy_queue(p, monkeypatch):
 
 
 @pytest.mark.parametrize("result,state", [({"uncertain":True},"uncertain"),
-    ({"error_code":429,"parameters":{"retry_after":7}},"pending")])
+    ({"error_code":429,"parameters":{"retry_after":7}},copies.QUEUE_STATE)])
 def test_owner_transport_uses_existing_timeout_and_rate_limit_rules(p,monkeypatch,result,state):
     configure(p,monkeypatch);approve(p);publish(p)
     with Session(p.engine) as db:
@@ -248,3 +248,44 @@ def test_requested_bora_recovery_once_without_replaying_other_history(p,monkeypa
     assert deliver_one(p.engine,p.settings,p.runner.sender,now=p.clock[0]) == "sent"
     copies.initialize(p.engine,p.settings)
     assert len(owner_deliveries(p))==1 and len(p.calls)==before
+
+
+def test_old_process_cannot_claim_owner_copy_during_render_overlap(p,monkeypatch):
+    configure(p,monkeypatch);approve(p)
+    queue_new(p)
+    deliver_one(p.engine,p.settings,p.runner.sender,now=p.clock[0])
+    copies.enqueue_confirmed(p.engine,p.settings)
+    with Session(p.engine) as db:
+        copy=db.scalar(select(Delivery).where(Delivery.user_id==OWNER))
+        assert copy.state==copies.QUEUE_STATE
+        assert db.scalar(select(Delivery).where(Delivery.state=="pending")) is None
+    assert deliver_one(p.engine,p.settings,p.runner.sender,now=p.clock[0])=="sent"
+
+
+def test_restore_requested_copy_cancelled_before_any_send_only(p,monkeypatch):
+    configure(p,monkeypatch);approve(p)
+    p.prices[copies.REQUESTED_LISTING]=2000
+    publish(p,sid=copies.REQUESTED_LISTING)
+    with Session(p.engine) as db:
+        copy=db.scalar(select(Delivery).where(Delivery.user_id==OWNER))
+        copy.state="cancelled";copy.message_id=None
+        timing=db.get(DeliveryTiming,copy.id)
+        timing.send_started_at=None;timing.accepted_at=None
+        db.commit()
+    copies.initialize(p.engine,p.settings)
+    assert owner_deliveries(p)[0].state==copies.QUEUE_STATE
+    assert deliver_one(p.engine,p.settings,p.runner.sender,now=p.clock[0]+2)=="sent"
+    copies.initialize(p.engine,p.settings)
+    assert owner_deliveries(p)[0].state=="sent"
+
+
+@pytest.mark.parametrize("state",["sent","uncertain","failed"])
+def test_requested_recovery_never_resets_an_attempted_send(p,monkeypatch,state):
+    configure(p,monkeypatch);approve(p)
+    p.prices[copies.REQUESTED_LISTING]=2000
+    publish(p,sid=copies.REQUESTED_LISTING)
+    with Session(p.engine) as db:
+        copy=db.scalar(select(Delivery).where(Delivery.user_id==OWNER));copy.state=state
+        db.commit()
+    copies.initialize(p.engine,p.settings)
+    assert owner_deliveries(p)[0].state==state
