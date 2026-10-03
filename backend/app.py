@@ -140,7 +140,7 @@ def create_app(settings: Settings, engine=None, *, paid_source_only=False):
         raise ValueError("Configure server-only Telegram secrets")
     engine = engine or create_engine(settings.database_url, pool_pre_ping=True)
     if paid_source_only:
-        engine.update_execution_options(**{paid_source_access.OPTION: True})
+        paid_source_access.configure(engine, settings)
 
     @asynccontextmanager
     async def lifespan(app):

@@ -23,7 +23,7 @@ from .monitor import access_allowed_clause, bind_source_access
 
 def scan_access(engine, uid, now=None):
     paid = paid_source_access.strict(engine)
-    clause = access_allowed_clause(uid, now, paid_only=paid)
+    clause = access_allowed_clause(uid, now, **paid_source_access.query_options(engine))
     return clause & paid_source_access.ready_clause(uid) if paid else clause
 
 log = logging.getLogger(__name__)

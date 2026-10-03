@@ -55,7 +55,7 @@ def test_two_current_paid_clients_one_unpaid_only_paid_source_and_recipients(p, 
         assert len(active_members(db))==2
 
 
-@pytest.mark.parametrize("kind",["none","gift","pending","expired_purchase","revoked","pilot","enforcement_off"])
+@pytest.mark.parametrize("kind",["none","gift","pending","expired_purchase","revoked","pilot","enforcement_off","service_account"])
 def test_non_purchase_access_never_authorizes_api_or_notifications(p,kind):
     strict(p)
     if kind=="pending": approve(p,state="review")
@@ -71,6 +71,9 @@ def test_non_purchase_access_never_authorizes_api_or_notifications(p,kind):
     elif kind=="enforcement_off":
         with Session(p.engine) as db:
             db.add(BillingControl(id="commercial-v1",enforce=False,sales=False,offer={}));db.commit()
+    elif kind=="service_account":
+        approve(p)
+        paid_source_access.configure(p.engine,replace(p.settings,stats_excluded_user_ids="111"))
     drain(p)
     assert not p.calls and not p.sent
     with Session(p.engine) as db:

@@ -11,6 +11,11 @@
 
 Production entry point `backend.app:factory` завжди вмикає
 `autodeal_confirmed_paid_sources_only` на спільному SQLAlchemy Engine.
+Перевірені службові/тестові облікові записи виключаються тим самим
+`purchase_stats.excluded_user_ids(settings)` із конфігурації; жодних
+нових чи вгаданих ID немає. Навіть approved тестовий запис не є дозволом
+на production API-роботу. Список зберігається в execution options Engine
+і застосовується до bulk SQL, request gates і доставки.
 Дозвіл на оплачувану роботу потребує одночасно:
 
 - заявки `manual_payment_requests` зі станом `approved`, додатною сумою,
@@ -60,7 +65,7 @@ selected listing diagnostic у normal monitor tick. Штатний моніто�
 
 ## Перевірки та межі
 
-17 нових strict-production сценаріїв і 43 quota regression тести:
+Перші 17 strict-production сценаріїв і 43 quota regression тести:
 **60 passed**, 6.53 с, без зовнішньої мережі.
 Перевірено двох оплачених та одного неоплаченого, спільний API пошук/detail/AI,
 HTML publication fan-out, подарований/pending/expired/revoked/pilot доступ,
@@ -71,7 +76,11 @@ cold catalog за наявності іншого покупця, factory і в�
 У `test_quota_management` виправлено лише ізольовану схему: `/stats` читає
 історію покупок, тому потрібні ManualBase таблиці навіть без увімкнених продажів.
 Assertions не послаблено, код `/stats` не змінено; цей тест повторно пройшов.
-Остаточний повний прогін записується в результаті розгортання.
+Остаточний повний прогін першого rollout: **1479 passed**, 235.79 с.
+Після перевірки живого запуску додано 18-й strict сценарій: approved запис
+службового/тестового користувача, виключеного конфігурацією, не створює
+API-викликів чи доставки. Результат прогону цього уточнення та фактичні
+production агрегати зберігаються в окремому звіті запуску.
 
 SQL для paid members, interests та scan predicates компілюється діалектом
 PostgreSQL. Це не видається за перевірку всіх PostgreSQL concurrency сценаріїв.
@@ -84,8 +93,10 @@ PostgreSQL. Це не видається за перевірку всіх Postgr
 1. Перевірити, що main не змінився після baseline `2d94954`.
 2. Опублікувати перевірений child commit у research branch; workflow не має
    trigger для цієї гілки, Render стежить лише за main, previews off.
-3. Fast-forward main без force. Render autoDeploy on commit запускає один deploy;
-   дублюючий manual deploy не створювати.
+3. Fast-forward main без force. Спочатку перевірити фактичний auto deploy.
+   Перший rollout: через 148 с нового deploy не було попри autoDeploy on;
+   один manual deploy `dep-db0du2mgekts7398ret0` запущено після перевірки черги,
+   live о 2026-10-03 10:56:41 UTC. Не запускати manual deploy поверх queued/building.
 4. Дочекатися live, перевірити `/health`: release exact SHA, database connected.
 5. Прочитати `Paid source access guard` startup aggregate: enabled,
    current paid clients, paid/excluded ready searches, paid filter fingerprints,
