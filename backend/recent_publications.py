@@ -17,13 +17,13 @@ import uuid
 from urllib.parse import urlsplit
 from zoneinfo import ZoneInfo
 
-from sqlalchemy import create_engine, select
+from sqlalchemy import create_engine, select, tuple_
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 from . import html_shadow
 from .auto_ria import RiaError
-from .models import Filters, MonitorJob, MonitorSeen, SourceBudget, SourceProbe
+from .models import Filters, MonitorJob, MonitorSeen, MonitorWatch, Search, SourceBudget, SourceProbe
 from .ria_budget import total_cap
 from .ria_search import RiaSearch, matches
 from .valuation import notification_condition_allowed
@@ -322,7 +322,7 @@ def take(monitor, source, *, after_primary=False):
     """One shared detail validation, with a durable saturated-loop throttle."""
     if not enabled(monitor.settings):
         return False
-    from .monitor import active_members, source_filters
+    from .monitor import active_members, source_filters, bind_source_access, member_query
     from .shared_distribution import claimed
     now = time.time()
     with monitor._state_lock, Session(monitor.engine) as db:
@@ -368,6 +368,9 @@ def take(monitor, source, *, after_primary=False):
         row.result = data
         db.commit()
     source.request_policy = reserve_api
+    target_epochs = [(search_id, uid, epoch) for search_id, uid, epoch, _ in targets]
+    bind_source_access(source, lambda now: member_query(now).where(
+        tuple_(Search.id, Search.user_id, MonitorWatch.epoch).in_(target_epochs)))
     try:
         candidate = source.car(sid, force=True)
     except RiaError as exc:

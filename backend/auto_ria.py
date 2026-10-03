@@ -23,23 +23,53 @@ PROBE_ID = "auto-ria-connection-v1"
 class RiaError(Exception):
     """Only fixed, non-secret error codes may leave this adapter."""
 
+    def __init__(self, code, *, http_status=None, request_attempted=None):
+        super().__init__(code)
+        self.http_status = http_status
+        self.request_attempted = request_attempted
+
+
+def _attempt_event(callback, event, **fields):
+    """Transport evidence only; an unavailable audit never repeats a request."""
+    if callback is None:
+        return
+    try:
+        callback({"event": event, **fields})
+    except Exception:
+        # No exception text, request URL or credentials may enter a fallback log.
+        pass
+
 
 class NoRedirect(HTTPRedirectHandler):
     def redirect_request(self, req, fp, code, msg, headers, newurl):
         return None
 
 
-def fetch_json(key, method, params, telemetry=None):
+def fetch_json(key, method, params, telemetry=None, *, attempt_telemetry=None):
+    if attempt_telemetry is None:
+        # Diagnostic wrappers retain transport evidence from the active request;
+        # direct startup calls outside that context acquire no invented row.
+        from .api_attempt_audit import current_observer
+        attempt_telemetry = current_observer()
     modification_catalog = bool(re.fullmatch(
         r"modifications/by/generation/[1-9][0-9]{0,11}/body/[1-9][0-9]{0,11}/modifications", method))
     if not modification_catalog and method not in {"search", "info", "states", "type", "categories/1/marks",
                       "categories/1/bodystyles", "categories/1/gearboxes"} and not re.fullmatch(r"categories/1/marks/[1-9][0-9]*/models", method):
-        raise RiaError("invalid_method")
+        raise RiaError("invalid_method", request_attempted=False)
     base = "https://developers.ria.com/" if modification_catalog else "https://developers.ria.com/auto/"
     url = base + method + "?" + urlencode({**params, "api_key": key})
+    attempted, http_status = False, None
     try:
         # urllib emits no request URL logs. Do not print exceptions: URLs contain the key.
-        with build_opener(NoRedirect()).open(Request(url, headers={"Accept": "application/json"}), timeout=8) as response:
+        opener = build_opener(NoRedirect())
+        request = Request(url, headers={"Accept": "application/json"})
+        attempted = True
+        _attempt_event(attempt_telemetry, "transport_started")
+        with opener.open(request, timeout=8) as response:
+            status = getattr(response, "status", None)
+            if isinstance(status, int) and not isinstance(status, bool) and 100 <= status <= 599:
+                http_status = int(status)
+                _attempt_event(attempt_telemetry, "http_response", http_status=http_status)
             if telemetry:
                 # Only these numeric public quota headers; never cookies or URLs.
                 quota = {}
@@ -51,15 +81,22 @@ def fetch_json(key, method, params, telemetry=None):
                 telemetry(quota)
             raw = response.read(1024 * 1024 + 1)
             if len(raw) > 1024 * 1024:
-                raise RiaError("invalid_response")
+                raise RiaError("invalid_response", http_status=http_status, request_attempted=attempted)
             return json.loads(raw)
     except HTTPError as exc:
-        code = {401: "key_rejected", 403: "access_denied", 429: "quota_exceeded"}.get(exc.code, "upstream_error")
-        raise RiaError(code) from None
+        status = exc.code
+        _attempt_event(attempt_telemetry, "http_response", http_status=status)
+        # NOT_FOUND may describe an API route, rather than a removed automobile.
+        # Preserve uncertainty and pause automatic paid retries for operator review.
+        code = ("info_endpoint_unavailable" if method == "info" and status in (404, 410) else
+                {401: "key_rejected", 403: "access_denied", 429: "quota_exceeded"}.get(status, "upstream_error"))
+        exc.close()
+        raise RiaError(code, http_status=status, request_attempted=attempted) from None
     except (URLError, TimeoutError, OSError):
-        raise RiaError("connection_error") from None
+        _attempt_event(attempt_telemetry, "transport_failed")
+        raise RiaError("connection_error", http_status=http_status, request_attempted=attempted) from None
     except (ValueError, UnicodeError):
-        raise RiaError("invalid_response") from None
+        raise RiaError("invalid_response", http_status=http_status, request_attempted=attempted) from None
 
 
 def first_id(data):

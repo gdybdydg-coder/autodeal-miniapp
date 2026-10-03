@@ -1,0 +1,449 @@
+{
+  "data_kind": "synthetic_offline_sameflow",
+  "baseline_tree": "576876c391ac4573456733cf3a986e1a30db0d3b",
+  "baseline_remote_commit": "2d94954bd4e93cec9f819526cc984baeff7ed885",
+  "production_updated": false,
+  "actual_provider_quota_measured": false,
+  "runs": [
+    {
+      "label": "production-tree-baseline",
+      "data_kind": "synthetic_offline_sameflow",
+      "cases": {
+        "two_paid_one_unpaid_distinct": {
+          "initial_poll": {
+            "counts": {
+              "search": 2,
+              "detail": 0,
+              "valuation": 0,
+              "catalog": 4,
+              "fake_provider_dispatches": 6,
+              "fake_telegram_acceptances": 0,
+              "paid_acceptances": 0,
+              "unpaid_acceptances": 0,
+              "local_budget_total_including_existing_seed": 6
+            },
+            "offline_elapsed_seconds": 0.067905
+          },
+          "new_publication": {
+            "counts": {
+              "search": 2,
+              "detail": 1,
+              "valuation": 1,
+              "catalog": 0,
+              "fake_provider_dispatches": 4,
+              "fake_telegram_acceptances": 2,
+              "paid_acceptances": 2,
+              "unpaid_acceptances": 0,
+              "local_budget_total_including_existing_seed": 4
+            },
+            "offline_elapsed_seconds": 0.105184
+          },
+          "total_counts": {
+            "search": 4,
+            "detail": 1,
+            "valuation": 1,
+            "catalog": 4,
+            "fake_provider_dispatches": 10,
+            "fake_telegram_acceptances": 2,
+            "paid_acceptances": 2,
+            "unpaid_acceptances": 0,
+            "local_budget_total_including_existing_seed": 12
+          },
+          "saved_filters_and_enabled_retained": true,
+          "fake_paid_clients": 2,
+          "expected_paid_recipients": 2,
+          "real_network_requests": 0,
+          "real_telegram_requests": 0
+        },
+        "only_unpaid": {
+          "initial_poll": {
+            "counts": {
+              "search": 1,
+              "detail": 0,
+              "valuation": 0,
+              "catalog": 4,
+              "fake_provider_dispatches": 5,
+              "fake_telegram_acceptances": 0,
+              "paid_acceptances": 0,
+              "unpaid_acceptances": 0,
+              "local_budget_total_including_existing_seed": 5
+            },
+            "offline_elapsed_seconds": 0.105253
+          },
+          "new_publication": {
+            "counts": {
+              "search": 1,
+              "detail": 1,
+              "valuation": 1,
+              "catalog": 0,
+              "fake_provider_dispatches": 3,
+              "fake_telegram_acceptances": 0,
+              "paid_acceptances": 0,
+              "unpaid_acceptances": 0,
+              "local_budget_total_including_existing_seed": 3
+            },
+            "offline_elapsed_seconds": 0.063396
+          },
+          "total_counts": {
+            "search": 2,
+            "detail": 1,
+            "valuation": 1,
+            "catalog": 4,
+            "fake_provider_dispatches": 8,
+            "fake_telegram_acceptances": 0,
+            "paid_acceptances": 0,
+            "unpaid_acceptances": 0,
+            "local_budget_total_including_existing_seed": 10
+          },
+          "saved_filters_and_enabled_retained": true,
+          "fake_paid_clients": 0,
+          "expected_paid_recipients": 0,
+          "real_network_requests": 0,
+          "real_telegram_requests": 0
+        },
+        "identical_paid": {
+          "initial_poll": {
+            "counts": {
+              "search": 1,
+              "detail": 0,
+              "valuation": 0,
+              "catalog": 4,
+              "fake_provider_dispatches": 5,
+              "fake_telegram_acceptances": 0,
+              "paid_acceptances": 0,
+              "unpaid_acceptances": 0,
+              "local_budget_total_including_existing_seed": 5
+            },
+            "offline_elapsed_seconds": 0.058924
+          },
+          "new_publication": {
+            "counts": {
+              "search": 1,
+              "detail": 1,
+              "valuation": 1,
+              "catalog": 0,
+              "fake_provider_dispatches": 3,
+              "fake_telegram_acceptances": 2,
+              "paid_acceptances": 2,
+              "unpaid_acceptances": 0,
+              "local_budget_total_including_existing_seed": 3
+            },
+            "offline_elapsed_seconds": 0.092855
+          },
+          "total_counts": {
+            "search": 2,
+            "detail": 1,
+            "valuation": 1,
+            "catalog": 4,
+            "fake_provider_dispatches": 8,
+            "fake_telegram_acceptances": 2,
+            "paid_acceptances": 2,
+            "unpaid_acceptances": 0,
+            "local_budget_total_including_existing_seed": 10
+          },
+          "saved_filters_and_enabled_retained": true,
+          "fake_paid_clients": 2,
+          "expected_paid_recipients": 2,
+          "real_network_requests": 0,
+          "real_telegram_requests": 0
+        },
+        "two_distinct_paid_one_unpaid": {
+          "initial_poll": {
+            "counts": {
+              "search": 3,
+              "detail": 0,
+              "valuation": 0,
+              "catalog": 4,
+              "fake_provider_dispatches": 7,
+              "fake_telegram_acceptances": 0,
+              "paid_acceptances": 0,
+              "unpaid_acceptances": 0,
+              "local_budget_total_including_existing_seed": 7
+            },
+            "offline_elapsed_seconds": 0.078311
+          },
+          "new_publication": {
+            "counts": {
+              "search": 3,
+              "detail": 1,
+              "valuation": 1,
+              "catalog": 0,
+              "fake_provider_dispatches": 5,
+              "fake_telegram_acceptances": 2,
+              "paid_acceptances": 2,
+              "unpaid_acceptances": 0,
+              "local_budget_total_including_existing_seed": 5
+            },
+            "offline_elapsed_seconds": 0.118901
+          },
+          "total_counts": {
+            "search": 6,
+            "detail": 1,
+            "valuation": 1,
+            "catalog": 4,
+            "fake_provider_dispatches": 12,
+            "fake_telegram_acceptances": 2,
+            "paid_acceptances": 2,
+            "unpaid_acceptances": 0,
+            "local_budget_total_including_existing_seed": 14
+          },
+          "saved_filters_and_enabled_retained": true,
+          "fake_paid_clients": 2,
+          "expected_paid_recipients": 2,
+          "real_network_requests": 0,
+          "real_telegram_requests": 0
+        },
+        "persistent_info_404": {
+          "cycles": 60,
+          "fake_clock_step_seconds": 60,
+          "flow": {
+            "counts": {
+              "search": 60,
+              "detail": 60,
+              "valuation": 0,
+              "catalog": 0,
+              "fake_provider_dispatches": 120,
+              "fake_telegram_acceptances": 0,
+              "paid_acceptances": 0,
+              "unpaid_acceptances": 0,
+              "local_budget_total_including_existing_seed": 120
+            },
+            "offline_elapsed_seconds": 2.134174
+          },
+          "fake_info_404_transport_invocations": 60,
+          "retained_job": {
+            "state": "pending",
+            "reason": "upstream_error",
+            "attempts": 60
+          },
+          "saved_filters_and_enabled_retained": true,
+          "real_network_requests": 0,
+          "real_telegram_requests": 0
+        }
+      },
+      "elapsed_seconds": 3.066686,
+      "provider_charged_units": null,
+      "live_behavior_measured": false
+    },
+    {
+      "label": "isolated-patch",
+      "data_kind": "synthetic_offline_sameflow",
+      "cases": {
+        "two_paid_one_unpaid_distinct": {
+          "initial_poll": {
+            "counts": {
+              "search": 1,
+              "detail": 0,
+              "valuation": 0,
+              "catalog": 4,
+              "fake_provider_dispatches": 5,
+              "fake_telegram_acceptances": 0,
+              "paid_acceptances": 0,
+              "unpaid_acceptances": 0,
+              "local_budget_total_including_existing_seed": 5
+            },
+            "offline_elapsed_seconds": 0.080634
+          },
+          "new_publication": {
+            "counts": {
+              "search": 1,
+              "detail": 1,
+              "valuation": 1,
+              "catalog": 0,
+              "fake_provider_dispatches": 3,
+              "fake_telegram_acceptances": 2,
+              "paid_acceptances": 2,
+              "unpaid_acceptances": 0,
+              "local_budget_total_including_existing_seed": 3
+            },
+            "offline_elapsed_seconds": 0.152851
+          },
+          "total_counts": {
+            "search": 2,
+            "detail": 1,
+            "valuation": 1,
+            "catalog": 4,
+            "fake_provider_dispatches": 8,
+            "fake_telegram_acceptances": 2,
+            "paid_acceptances": 2,
+            "unpaid_acceptances": 0,
+            "local_budget_total_including_existing_seed": 10
+          },
+          "saved_filters_and_enabled_retained": true,
+          "fake_paid_clients": 2,
+          "expected_paid_recipients": 2,
+          "real_network_requests": 0,
+          "real_telegram_requests": 0
+        },
+        "only_unpaid": {
+          "initial_poll": {
+            "counts": {
+              "search": 0,
+              "detail": 0,
+              "valuation": 0,
+              "catalog": 0,
+              "fake_provider_dispatches": 0,
+              "fake_telegram_acceptances": 0,
+              "paid_acceptances": 0,
+              "unpaid_acceptances": 0,
+              "local_budget_total_including_existing_seed": 0
+            },
+            "offline_elapsed_seconds": 0.017338
+          },
+          "new_publication": {
+            "counts": {
+              "search": 0,
+              "detail": 0,
+              "valuation": 0,
+              "catalog": 0,
+              "fake_provider_dispatches": 0,
+              "fake_telegram_acceptances": 0,
+              "paid_acceptances": 0,
+              "unpaid_acceptances": 0,
+              "local_budget_total_including_existing_seed": 0
+            },
+            "offline_elapsed_seconds": 0.012125
+          },
+          "total_counts": {
+            "search": 0,
+            "detail": 0,
+            "valuation": 0,
+            "catalog": 0,
+            "fake_provider_dispatches": 0,
+            "fake_telegram_acceptances": 0,
+            "paid_acceptances": 0,
+            "unpaid_acceptances": 0,
+            "local_budget_total_including_existing_seed": 2
+          },
+          "saved_filters_and_enabled_retained": true,
+          "fake_paid_clients": 0,
+          "expected_paid_recipients": 0,
+          "real_network_requests": 0,
+          "real_telegram_requests": 0
+        },
+        "identical_paid": {
+          "initial_poll": {
+            "counts": {
+              "search": 1,
+              "detail": 0,
+              "valuation": 0,
+              "catalog": 4,
+              "fake_provider_dispatches": 5,
+              "fake_telegram_acceptances": 0,
+              "paid_acceptances": 0,
+              "unpaid_acceptances": 0,
+              "local_budget_total_including_existing_seed": 5
+            },
+            "offline_elapsed_seconds": 0.073275
+          },
+          "new_publication": {
+            "counts": {
+              "search": 1,
+              "detail": 1,
+              "valuation": 1,
+              "catalog": 0,
+              "fake_provider_dispatches": 3,
+              "fake_telegram_acceptances": 2,
+              "paid_acceptances": 2,
+              "unpaid_acceptances": 0,
+              "local_budget_total_including_existing_seed": 3
+            },
+            "offline_elapsed_seconds": 0.113574
+          },
+          "total_counts": {
+            "search": 2,
+            "detail": 1,
+            "valuation": 1,
+            "catalog": 4,
+            "fake_provider_dispatches": 8,
+            "fake_telegram_acceptances": 2,
+            "paid_acceptances": 2,
+            "unpaid_acceptances": 0,
+            "local_budget_total_including_existing_seed": 10
+          },
+          "saved_filters_and_enabled_retained": true,
+          "fake_paid_clients": 2,
+          "expected_paid_recipients": 2,
+          "real_network_requests": 0,
+          "real_telegram_requests": 0
+        },
+        "two_distinct_paid_one_unpaid": {
+          "initial_poll": {
+            "counts": {
+              "search": 2,
+              "detail": 0,
+              "valuation": 0,
+              "catalog": 4,
+              "fake_provider_dispatches": 6,
+              "fake_telegram_acceptances": 0,
+              "paid_acceptances": 0,
+              "unpaid_acceptances": 0,
+              "local_budget_total_including_existing_seed": 6
+            },
+            "offline_elapsed_seconds": 0.090283
+          },
+          "new_publication": {
+            "counts": {
+              "search": 2,
+              "detail": 1,
+              "valuation": 1,
+              "catalog": 0,
+              "fake_provider_dispatches": 4,
+              "fake_telegram_acceptances": 2,
+              "paid_acceptances": 2,
+              "unpaid_acceptances": 0,
+              "local_budget_total_including_existing_seed": 4
+            },
+            "offline_elapsed_seconds": 0.129547
+          },
+          "total_counts": {
+            "search": 4,
+            "detail": 1,
+            "valuation": 1,
+            "catalog": 4,
+            "fake_provider_dispatches": 10,
+            "fake_telegram_acceptances": 2,
+            "paid_acceptances": 2,
+            "unpaid_acceptances": 0,
+            "local_budget_total_including_existing_seed": 12
+          },
+          "saved_filters_and_enabled_retained": true,
+          "fake_paid_clients": 2,
+          "expected_paid_recipients": 2,
+          "real_network_requests": 0,
+          "real_telegram_requests": 0
+        },
+        "persistent_info_404": {
+          "cycles": 60,
+          "fake_clock_step_seconds": 60,
+          "flow": {
+            "counts": {
+              "search": 60,
+              "detail": 1,
+              "valuation": 0,
+              "catalog": 0,
+              "fake_provider_dispatches": 61,
+              "fake_telegram_acceptances": 0,
+              "paid_acceptances": 0,
+              "unpaid_acceptances": 0,
+              "local_budget_total_including_existing_seed": 61
+            },
+            "offline_elapsed_seconds": 2.343364
+          },
+          "fake_info_404_transport_invocations": 1,
+          "retained_job": {
+            "state": "manual_review",
+            "reason": "info_endpoint_unavailable",
+            "attempts": 1
+          },
+          "saved_filters_and_enabled_retained": true,
+          "real_network_requests": 0,
+          "real_telegram_requests": 0
+        }
+      },
+      "elapsed_seconds": 3.279984,
+      "provider_charged_units": null,
+      "live_behavior_measured": false
+    }
+  ]
+}

@@ -482,10 +482,17 @@ def create_app(settings: Settings, engine=None):
     @app.get("/api/catalog")
     def catalog(brand: str = Query(default="", max_length=150), uid=Depends(identity)):
         try:
-            return RiaSearch(engine, settings.auto_ria_api_key).catalog(brand)
+            source = RiaSearch(engine, settings.auto_ria_api_key)
+            def eligible_catalog_request(db, now, limits):
+                # Unpaid clients may read already-cached filter dictionaries,
+                # but a cold UI read must not reserve paid provider work.
+                if not billing.allowed(db, uid, now):
+                    raise RiaError("paid_access_required")
+            source.request_policy = eligible_catalog_request
+            return source.catalog(brand)
         except RiaError as exc:
             code = str(exc)
-            status = 422 if code == "unsupported_filter" else 429 if code in {"quota_exceeded", "busy", "search_limit"} else 503
+            status = 402 if code == "paid_access_required" else 422 if code == "unsupported_filter" else 429 if code in {"quota_exceeded", "busy", "search_limit"} else 503
             return JSONResponse({"detail": code, "quota": quota_status(engine)}, status_code=status)
         except Exception:
             return JSONResponse({"detail": "source_unavailable"}, status_code=503)

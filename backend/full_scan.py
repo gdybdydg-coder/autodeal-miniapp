@@ -18,6 +18,7 @@ from . import market_cache
 from .models import Filters, FullScan, MarketCar, ScanItem
 from .ria_search import FRESH_SECONDS, PAGE_REQUEST_LIMIT, RiaSearch, estimate, matches, parse_ids, quota_status
 from .valuation import is_deal
+from .monitor import access_allowed_clause, bind_source_access
 
 log = logging.getLogger(__name__)
 ACTIVE = ("queued", "running", "waiting")
@@ -151,28 +152,34 @@ class Scanner:
         now = time.time()
         with Session(self.engine) as db:
             row = db.scalar(select(FullScan).where(FullScan.status.in_(ACTIVE), FullScan.next_run <= now,
-                                                    FullScan.lease_until <= now)
+                                                    FullScan.lease_until <= now,
+                                                    access_allowed_clause(FullScan.user_id, now))
                             .order_by(FullScan.next_run, FullScan.updated_at).limit(1))
             if row is None:
                 return None
             scan_id = row.id
             result = db.execute(update(FullScan).where(FullScan.id == scan_id, FullScan.status.in_(ACTIVE),
-                                                        FullScan.lease_until <= now).values(
+                                                        FullScan.lease_until <= now,
+                                                        access_allowed_clause(FullScan.user_id, now)).values(
                 owner=self.owner, lease_until=now + LEASE_SECONDS, status="running"))
             db.commit()
             return scan_id if result.rowcount else None
 
-    def current(self, db, scan_id):
-        return db.scalar(select(FullScan).where(FullScan.id == scan_id, FullScan.owner == self.owner,
-                                                 FullScan.status.in_(ACTIVE), FullScan.lease_until > time.time())
-                         .with_for_update())
+    def current(self, db, scan_id, *, require_access=True):
+        query = select(FullScan).where(FullScan.id == scan_id, FullScan.owner == self.owner,
+            FullScan.status.in_(ACTIVE), FullScan.lease_until > time.time())
+        if require_access:
+            query = query.where(access_allowed_clause(FullScan.user_id))
+        return db.scalar(query.with_for_update())
 
     def enumerate_page(self, scan_id, source, context):
         params = {**context["params"], "page": context["page"], "countpage": PAGE_SIZE}
         result = source.request("search", params, parse_ids, force=True)
         source_ids = result["ids"]
         with Session(self.engine) as db:
-            row = self.current(db, scan_id)
+            # Save the already paid page even if access ended while HTTP was
+            # in flight. Every subsequent request still requires current access.
+            row = self.current(db, scan_id, require_access=False)
             if row is None:
                 return False
             existing = set(db.scalars(select(ScanItem.source_id).where(
@@ -283,6 +290,9 @@ class Scanner:
         if not scan_id:
             return
         source = self.search_factory(self.engine, self.key)
+        bind_source_access(source, lambda now: select(FullScan.id).where(
+            FullScan.id == scan_id, FullScan.owner == self.owner, FullScan.status.in_(ACTIVE),
+            FullScan.lease_until > now, access_allowed_clause(FullScan.user_id, now)))
         acquired, reason = False, ""
         try:
             source.acquire()
@@ -319,6 +329,10 @@ class Scanner:
                         elif reason in ("busy", "search_limit"):
                             row.next_run = time.time() + (5 if reason == "busy" else 2)
                         elif reason in ("connection_error", "upstream_error", "source_unavailable"):
+                            row.status, row.error, row.next_run = "waiting", reason, time.time() + 60
+                        elif reason == "no_eligible_subscription":
+                            # Keep progress intact. Claiming remains blocked until
+                            # the user's existing access policy permits work again.
                             row.status, row.error, row.next_run = "waiting", reason, time.time() + 60
                         elif reason:
                             row.status, row.error = "error", reason

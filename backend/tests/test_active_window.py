@@ -347,11 +347,16 @@ def test_recent_supplemental_arrival_does_not_wait_behind_accumulated_queue(p, m
     enable_window(p, monkeypatch)
     drain(p)
     with Session(p.engine) as db:
+        epoch = db.get(MonitorWatch, 1).epoch
         for n in range(663):
             db.add(MonitorJob(source_id=str(20000 + n), first_seen=p.clock[0] - 21600 + n,
                               result={"discovery_kind": active_window.KIND}))
+            db.add(MonitorSeen(search_id=1, source_id=str(20000 + n), epoch=epoch,
+                              state="pending", first_seen=p.clock[0] - 21600 + n))
         db.add(MonitorJob(source_id="37319411", first_seen=p.clock[0],
                           result={"discovery_kind": active_window.KIND}))
+        db.add(MonitorSeen(search_id=1, source_id="37319411", epoch=epoch,
+                          state="pending", first_seen=p.clock[0]))
         db.commit()
     selected = []
     monkeypatch.setattr(p.runner, "evaluate", lambda source_id, source: selected.append(source_id))
@@ -363,9 +368,14 @@ def test_primary_job_keeps_priority_over_even_newer_supplement(p, monkeypatch):
     enable_window(p, monkeypatch)
     drain(p)
     with Session(p.engine) as db:
+        epoch = db.get(MonitorWatch, 1).epoch
         db.add(MonitorJob(source_id="124", first_seen=p.clock[0] - 60))
+        db.add(MonitorSeen(search_id=1, source_id="124", epoch=epoch,
+                          state="pending", first_seen=p.clock[0] - 60))
         db.add(MonitorJob(source_id="37319411", first_seen=p.clock[0],
                           result={"discovery_kind": active_window.KIND}))
+        db.add(MonitorSeen(search_id=1, source_id="37319411", epoch=epoch,
+                          state="pending", first_seen=p.clock[0]))
         db.commit()
     selected = []
     monkeypatch.setattr(p.runner, "evaluate", lambda source_id, source: selected.append(source_id))
@@ -456,6 +466,8 @@ def test_old_backlog_leaves_extra_capacity_for_fresh_arrivals(p, monkeypatch):
         db.get(SourceBudget, "auto_ria").calls = [p.clock[0]] * 424
         db.add(MonitorJob(source_id="999", first_seen=p.clock[0] - 601,
                           result={"discovery_kind": active_window.KIND}))
+        db.add(MonitorSeen(search_id=1, source_id="999", epoch=db.get(MonitorWatch, 1).epoch,
+                          state="pending", first_seen=p.clock[0] - 601))
         db.commit()
     selected = []
     monkeypatch.setattr(p.runner, "evaluate", lambda source_id, source: selected.append(source_id))
@@ -464,6 +476,8 @@ def test_old_backlog_leaves_extra_capacity_for_fresh_arrivals(p, monkeypatch):
     with Session(p.engine) as db:
         db.add(MonitorJob(source_id="37319411", first_seen=p.clock[0],
                           result={"discovery_kind": active_window.KIND}))
+        db.add(MonitorSeen(search_id=1, source_id="37319411", epoch=db.get(MonitorWatch, 1).epoch,
+                          state="pending", first_seen=p.clock[0]))
         db.commit()
     assert p.runner.tick()
     assert selected == ["37319411"]

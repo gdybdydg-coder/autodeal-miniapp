@@ -369,7 +369,11 @@ def deliver_one(engine, settings: Settings, sender, now=None, *, enforce_chat_in
             # discard the opportunity. Revalidate through the normal budgeted job.
             job = db.get(MonitorJob, listing.source_id)
             origin = (listing.car.get("pipeline") or {}).get("discovery_kind", "new_publication")
-            if job is None:
+            if job is not None and job.state == "manual_review":
+                # A stale queue cannot override a provider-endpoint hold. Keep
+                # the card/evidence until explicit operator resolution.
+                row.state, row.retry_at = "pending", now + 60
+            elif job is None:
                 db.add(MonitorJob(source_id=listing.source_id, first_seen=now,
                                   result={"discovery_kind": origin}))
             elif job.state != "pending":
@@ -377,9 +381,10 @@ def deliver_one(engine, settings: Settings, sender, now=None, *, enforce_chat_in
                 job.state, job.next_run = "pending", 0
                 from .shared_distribution import proof
                 job.result = {"discovery_kind": origin, **proof(job.result)}
-            db.execute(update(MonitorSeen).where(MonitorSeen.search_id.in_(refresh),
-                MonitorSeen.source_id == listing.source_id).values(state="pending"))
-            row.state, row.retry_at = "pending", now + 5
+            if job is None or job.state != "manual_review":
+                db.execute(update(MonitorSeen).where(MonitorSeen.search_id.in_(refresh),
+                    MonitorSeen.source_id == listing.source_id).values(state="pending"))
+                row.state, row.retry_at = "pending", now + 5
         elif enforce_chat_interval and user and user.ready and last_send and now < last_send + 1.05:
             # Telegram limits each private chat separately; do not keep a user
             # row locked while waiting or jeopardize other recipients' slots.

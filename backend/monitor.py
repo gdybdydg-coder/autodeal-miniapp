@@ -20,7 +20,10 @@ from sqlalchemy.orm import Session
 
 from .auto_ria import RiaError
 from .models import (Car, Filters, Listing, MonitorControl, MonitorFeed, MonitorJob,
-                     MonitorMatch, MonitorMembership, MonitorSeen, MonitorWatch, Search, SourceBudget, User)
+                     MonitorMatch, MonitorMembership, MonitorSeen, MonitorWatch, Search, SourceBudget,
+                     StarsTestOrder, User)
+from .billing_models import BillingControl, Entitlement
+from . import billing
 from .ria_budget import BudgetLimits
 from .ria_search import RiaSearch, estimate, matches, parse_ids, quota_status, budget_state
 from .valuation import (MAX_AGE, VERSION, PeerBatch, is_deal, price_only_evidence,
@@ -38,6 +41,8 @@ PAGE_SIZE = 50
 WINDOW_SECONDS = 3600
 INDEX_OVERLAP = 600
 EVIDENCE_SECONDS = 60
+DETAIL_TRANSIENT_ERRORS = frozenset({"connection_error", "upstream_error", "invalid_response"})
+DETAIL_FAILURE_LIMIT = 5
 OPTIONAL_DETAIL_FIELDS = ("body_id", "fuel_id", "gear_id", "mileage")
 NOTIFICATION_VERSION = "informational-v3"
 log = logging.getLogger(__name__)
@@ -109,13 +114,58 @@ def poll_interval(groups, limits=None, *, provider_pricing_enabled=False, active
                math.ceil(groups * 3600 / max(1, limits.hourly * share // 4)))
 
 
+def access_allowed_clause(uid, now=None):
+    """Bulk SQL equivalent of billing.allowed; access is not a purchase fact.
+
+    Keep gifts, legacy pilot access and disabled enforcement exactly as before.
+    This predicate only prevents source work for currently ineligible clients.
+    """
+    now = time.time() if now is None else now
+    enforced = func.coalesce(select(BillingControl.enforce).where(
+        BillingControl.id == billing.CONTROL).scalar_subquery(), False)
+    entitlement = exists(select(Entitlement.user_id).where(
+        Entitlement.user_id == uid, Entitlement.expires_at > now))
+    pilot = exists(select(StarsTestOrder.id).where(
+        StarsTestOrder.user_id == uid,
+        StarsTestOrder.state.in_(("paid", "refund_sending", "refund_uncertain")),
+        StarsTestOrder.paid_until > now))
+    return (~enforced) | entitlement | pilot
+
+
+def member_query(now=None):
+    return select(Search, MonitorWatch, MonitorMembership).join(User, User.id == Search.user_id).join(
+        MonitorWatch, MonitorWatch.search_id == Search.id).join(
+        MonitorMembership, MonitorMembership.search_id == Search.id).where(
+        Search.enabled.is_(True), User.ready.is_(True),
+        MonitorWatch.epoch == MonitorMembership.epoch, access_allowed_clause(User.id, now))
+
+
+def interest_query(source_id, now=None):
+    return select(Search.id, Search.user_id, MonitorWatch.epoch, Search.filters).join(
+        User, User.id == Search.user_id).join(MonitorWatch, MonitorWatch.search_id == Search.id).join(
+        MonitorSeen, MonitorSeen.search_id == Search.id).where(
+        User.ready.is_(True), Search.enabled.is_(True), MonitorSeen.source_id == source_id,
+        MonitorSeen.state == "pending", MonitorSeen.epoch == MonitorWatch.epoch,
+        access_allowed_clause(User.id, now))
+
+
+def bind_source_access(source, query):
+    """Recheck immediately before each accounted HTTP call, including dictionaries.
+
+    Existing quota/reserve policy remains composed after this eligibility check.
+    Cached reads need no new provider request and do not reserve paid quota.
+    """
+    previous = getattr(source, "request_policy", None)
+    def policy(db, now, limits):
+        if not db.scalar(select(exists(query(now)))):
+            raise RiaError("no_eligible_subscription")
+        if previous is not None:
+            previous(db, now, limits)
+    source.request_policy = policy
+
+
 def active_members(db):
-    return list(db.execute(select(Search, MonitorWatch, MonitorMembership)
-        .join(User, User.id == Search.user_id)
-        .join(MonitorWatch, MonitorWatch.search_id == Search.id)
-        .join(MonitorMembership, MonitorMembership.search_id == Search.id)
-        .where(Search.enabled.is_(True), User.ready.is_(True),
-               MonitorWatch.epoch == MonitorMembership.epoch).order_by(Search.user_id, Search.id)))
+    return list(db.execute(member_query().order_by(Search.user_id, Search.id)))
 
 
 def runtime_status(engine, enabled, uid=None, *, active_window_enabled=False, provider_pricing_enabled=False,
@@ -257,6 +307,7 @@ class Monitor:
                          .execution_options(populate_existing=True))
         row, watch = db.get(Search, sid, populate_existing=True), db.get(MonitorWatch, sid, populate_existing=True)
         if (not user or not user.ready or not row or not row.enabled or not watch
+                or not db.scalar(select(access_allowed_clause(uid)))
                 or watch.epoch != epoch or not self.owned(db)):
             return None
         return row, watch
@@ -291,7 +342,8 @@ class Monitor:
             # to a new baseline, never reinterpret old windows as new arrivals.
             legacy = db.execute(select(Search.id, Search.user_id).join(User, User.id == Search.user_id)
                 .outerjoin(MonitorMembership, MonitorMembership.search_id == Search.id)
-                .where(Search.enabled.is_(True), User.ready.is_(True), MonitorMembership.search_id.is_(None))
+                .where(Search.enabled.is_(True), User.ready.is_(True), MonitorMembership.search_id.is_(None),
+                       access_allowed_clause(User.id))
                 .order_by(Search.user_id, Search.id)).all()
             for sid, uid in legacy:
                 db.scalar(select(User).where(User.id == uid).with_for_update())
@@ -355,12 +407,14 @@ class Monitor:
         if not prepared:
             return
         context, filters = prepared
+        bind_source_access(source, lambda now: member_query(now).where(
+            MonitorMembership.feed_id == feed_id))
         current_slice = context["slices"][0]
         params, _ = source.discovery_parameters(filters)
         params.update(countpage=PAGE_SIZE, page=context["page"], order_by=7,
                       published_after=stamp(current_slice["after"]),
                       published_before=stamp(current_slice["before"] + 1))
-        result = source.request("search", params, parse_ids, ttl=INTERVAL, force=True)
+        result = source.discovery_page(params, ttl=INTERVAL)
         ids, total = result["ids"], result["total"]
         if ((context["page"] and ids and ids == context["last_ids"])
                 or (len(ids) < PAGE_SIZE and context["page"] * PAGE_SIZE + len(ids) < total)):
@@ -403,7 +457,7 @@ class Monitor:
                         db.add(MonitorJob(source_id=source_id, first_seen=now,
                             result={"discovery_kind": "new_publication", "publication_after": current_slice["after"]}))
                     else:
-                        if job.state != "pending":
+                        if job.state not in ("pending", "manual_review"):
                             job.state, job.next_run, job.reason = "pending", 0, ""
                         job.result = {**job.result, "discovery_kind": "new_publication",
                                       "publication_after": current_slice["after"]}
@@ -441,12 +495,7 @@ class Monitor:
             db.commit()
 
     def interests(self, db, source_id):
-        return list(db.execute(select(Search.id, Search.user_id, MonitorWatch.epoch, Search.filters)
-            .join(User, User.id == Search.user_id).join(MonitorWatch, MonitorWatch.search_id == Search.id)
-            .join(MonitorSeen, MonitorSeen.search_id == Search.id)
-            .where(User.ready.is_(True), Search.enabled.is_(True), MonitorSeen.source_id == source_id,
-                   MonitorSeen.state == "pending", MonitorSeen.epoch == MonitorWatch.epoch)
-            .order_by(Search.user_id, Search.id)))
+        return list(db.execute(interest_query(source_id).order_by(Search.user_id, Search.id)))
 
     def complete(self, source_id, evidence, outcome):
         with self._state_lock, Session(self.engine) as db:
@@ -537,6 +586,10 @@ class Monitor:
             if not self.owned(db):
                 return
             interests = self.interests(db, source_id)
+            if not interests:
+                # Preserve pending work and epochs for a renewed entitlement.
+                # No paid source operation is started for an ineligible cohort.
+                return
             job = db.get(MonitorJob, source_id)
             evidence = copy.deepcopy(job.result)
             job.last_attempt, job.attempts = time.time(), job.attempts + 1
@@ -547,14 +600,21 @@ class Monitor:
             return
         if html_job:
             source.request_policy = recent_publications.reserve_api
-        if not interests:
-            self.complete(source_id, {}, "cancelled")
-            return
+        bind_source_access(source, lambda now: interest_query(source_id, now))
         candidate = evidence.get("candidate")
         reusable = bool(candidate and "condition_exclusions" in candidate
                         and 0 <= time.time() - candidate["observed_at"] <= EVIDENCE_SECONDS)
         if not reusable:
             candidate = source.car(source_id, force=True)
+            # Only a successful detail result resets consecutive detail failures.
+            # A later catalog/quote failure cannot turn them into repeated misses.
+            with self._state_lock, Session(self.engine) as db:
+                if self.owned(db):
+                    saved = db.get(MonitorJob, source_id)
+                    if saved and "detail_retry" in saved.result:
+                        saved.result = {name: value for name, value in saved.result.items()
+                                        if name != "detail_retry"}
+                        db.commit()
             evidence = {"candidate": candidate, "filters": {},
                         **shared_distribution.proof(evidence),
                         "discovery_kind": evidence.get("discovery_kind", "new_publication")}
@@ -591,7 +651,8 @@ class Monitor:
                 try:
                     quote = source.market_range(source_id, self.settings.auto_ria_user_id)
                 except RiaError as exc:
-                    if html_job and str(exc) in {"reserved_for_new_publications", "quota_exceeded", "search_limit"}:
+                    if str(exc) == "no_eligible_subscription" or (html_job and str(exc) in {
+                            "reserved_for_new_publications", "quota_exceeded", "search_limit"}):
                         raise
                     # Record unavailable valuation without inventing a market.
                     # The notification policy decides whether it may be sent.
@@ -631,7 +692,7 @@ class Monitor:
             batch_log.info("Unconfirmed valuation withheld source_id=%s", source_id)
         self.complete(source_id, evidence, outcome)
 
-    def defer(self, kind, key, reason, limits):
+    def defer(self, kind, key, reason, limits, *, stage=None):
         quota = quota_status(self.engine, limits)
         wait = (quota["retry_after_seconds"] or 3600) if reason == "quota_exceeded" else (
             1 if reason in {"busy", "search_limit"} else INTERVAL)
@@ -649,6 +710,29 @@ class Monitor:
                         watch.status, watch.next_poll = reason, feed.next_poll
             else:
                 job = db.get(MonitorJob, key)
+                if reason == "info_endpoint_unavailable":
+                    # Provider endpoint failure is not proof the car disappeared.
+                    # Preserve evidence and require explicit operator resolution.
+                    job.state = "manual_review"
+                elif stage == "info" and reason in DETAIL_TRANSIENT_ERRORS:
+                    # Count detail outcomes, not quota/access waits or total job
+                    # attempts. Persist across restarts; never infer wire charges.
+                    result = copy.deepcopy(job.result)
+                    prior = result.get("detail_retry")
+                    prior = prior if isinstance(prior, dict) else {}
+                    count = prior.get("consecutive_failures", 0)
+                    count = count if type(count) is int and 0 <= count <= DETAIL_FAILURE_LIMIT else 0
+                    count = min(DETAIL_FAILURE_LIMIT, count + 1)
+                    result["detail_retry"] = {
+                        "consecutive_failures": count,
+                        "last_reason": reason,
+                        "last_failure_at": time.time(),
+                        "automatic_retries_exhausted": count >= DETAIL_FAILURE_LIMIT,
+                    }
+                    job.result = result
+                    wait = INTERVAL * 2 ** min(count - 1, DETAIL_FAILURE_LIMIT - 2)
+                    if count >= DETAIL_FAILURE_LIMIT:
+                        job.state = "manual_review"
                 job.reason, job.next_run = reason, time.time() + wait
             db.commit()
 
@@ -700,7 +784,7 @@ class Monitor:
                     if kind == "evaluate" and str(exc) == "listing_unavailable":
                         self.complete(key, {}, "unavailable")
                     else:
-                        self.defer(kind, key, str(exc), child.limits)
+                        self.defer(kind, key, str(exc), child.limits, stage=child.stage)
                 except Exception as exc:
                     log.error("Monitor operation failed kind=%s (%s)", kind, type(exc).__name__)
                     self.defer(kind, key, "processing_error", child.limits)
@@ -743,7 +827,7 @@ class Monitor:
             primary = func.coalesce(MonitorJob.result["discovery_kind"].as_string(), "").not_in(
                 [active_window.KIND, recent_publications.KIND])
             if db.scalar(select(MonitorJob.source_id).where(MonitorJob.state == "pending",
-                    MonitorJob.next_run <= now, primary).limit(1)) is not None:
+                    MonitorJob.next_run <= now, primary, exists(interest_query(MonitorJob.source_id, now))).limit(1)) is not None:
                 return False
         if self.settings.ria_diagnostic_listing_id:
             from .notification_diagnostic import retry_selected
@@ -773,6 +857,11 @@ class Monitor:
                 status = "telegram_unavailable"
                 return False
             self.sync()
+            with Session(self.engine) as db:
+                if not db.scalar(select(exists(member_query()))):
+                    # A stored enabled search is not authorization to spend the
+                    # provider quota after access ends. Preserve it for renewal.
+                    return False
             if self.settings.ria_photo_repair_ids:
                 from .photo_repair import run_once
                 run_once(self)
@@ -794,7 +883,8 @@ class Monitor:
                 feed = feeds[0] if feeds else None
                 supplemental = func.coalesce(MonitorJob.result["discovery_kind"].as_string(), "") == active_window.KIND
                 html_job = func.coalesce(MonitorJob.result["discovery_kind"].as_string(), "") == recent_publications.KIND
-                job_query = select(MonitorJob).where(MonitorJob.state == "pending", MonitorJob.next_run <= time.time())
+                job_query = select(MonitorJob).where(MonitorJob.state == "pending", MonitorJob.next_run <= time.time(),
+                    exists(interest_query(MonitorJob.source_id)))
                 if not recent_publications.enabled(self.settings):
                     job_query = job_query.where(~html_job)
                 if not self.settings.ria_active_window_enabled or not active_window.budget_available(db):
@@ -878,6 +968,8 @@ class Monitor:
                                         time.time() - active_window.FRESH_ARRIVAL_SECONDS)):
                                 raise RiaError("reserved_for_new_publications")
                     if kind == active_window.KIND:
+                        bind_source_access(source, lambda now: member_query(now).where(
+                            MonitorMembership.feed_id == key))
                         active_window.discover(self, key, source)
                     elif kind == "discover":
                         self.discover(key, source, poll_interval(len(groups), source.limits,
@@ -890,7 +982,7 @@ class Monitor:
                     if kind == "evaluate" and str(exc) == "listing_unavailable":
                         self.complete(key, {}, "unavailable")
                     else:
-                        self.defer(kind, key, str(exc), source.limits)
+                        self.defer(kind, key, str(exc), source.limits, stage=source.stage)
                 finally:
                     if acquired:
                         source.release()

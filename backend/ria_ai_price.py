@@ -71,29 +71,48 @@ def parse_quote(data, source_id, *, now=None):
             "observed_at": time.time() if now is None else now}
 
 
-def fetch_quote(key, user_id, source_id):
+def fetch_quote(key, user_id, source_id, *, attempt_telemetry=None):
     if not key or not valid_id(user_id) or not valid_id(source_id):
         raise RiaError("ai_not_configured")
+    if attempt_telemetry is None:
+        from .api_attempt_audit import current_observer
+        attempt_telemetry = current_observer()
     url = "https://developers.ria.com/auto/" + METHOD + "/?" + urlencode(
         {"user_id": user_id, "api_key": key})
     body = json.dumps({"langId": 4, "period": PERIOD_HOURS,
                        "params": {"omniId": source_id}}).encode()
     request = Request(url, data=body, method="POST",
                       headers={"Accept": "application/json", "Content-Type": "application/json"})
+    def observe(event):
+        if attempt_telemetry is not None:
+            try:
+                attempt_telemetry(event)
+            except Exception:
+                # A telemetry error must not duplicate or retry a paid call.
+                pass
     try:
         # No redirects, credentials in logs, retries or browser-access workarounds.
-        with build_opener(NoRedirect()).open(request, timeout=TIMEOUT) as response:
+        opener = build_opener(NoRedirect())
+        observe({"event": "transport_started"})
+        with opener.open(request, timeout=TIMEOUT) as response:
+            status = getattr(response, "status", None)
+            if type(status) is not int and callable(getattr(response, "getcode", None)):
+                status = response.getcode()
+            if type(status) is int and 100 <= status <= 599:
+                observe({"event": "http_response", "http_status": status})
             raw = response.read(MAX_BYTES + 1)
             if len(raw) > MAX_BYTES:
                 raise RiaError("ai_invalid_response")
             return parse_quote(json.loads(raw), source_id)
     except HTTPError as exc:
+        observe({"event": "http_response", "http_status": exc.code})
         # Method permission failures must not stop the ordinary new-listing feed.
         code = {401: "ai_access_denied", 403: "ai_access_denied",
                 429: "quota_exceeded"}.get(exc.code, "ai_upstream_error")
-        raise RiaError(code) from None
+        raise RiaError(code, http_status=exc.code, request_attempted=True) from None
     except (URLError, TimeoutError, OSError):
-        raise RiaError("ai_connection_error") from None
+        observe({"event": "transport_failed"})
+        raise RiaError("ai_connection_error", request_attempted=True) from None
     except (ValueError, UnicodeError):
         raise RiaError("ai_invalid_response") from None
 

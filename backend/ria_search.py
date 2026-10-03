@@ -6,6 +6,7 @@ No search/valuation result is ingested into the notification pipeline.
 import copy
 import hashlib
 import json
+import logging
 import math
 import re
 import threading
@@ -18,6 +19,8 @@ from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 from .auto_ria import RiaError, fetch_json, listing_preview
+from . import api_attempt_audit
+from .ria_ai_price import fetch_quote as _default_ai_fetch
 from .models import Filters, SourceBudget, SourceCache, SourceProbe
 from .ria_budget import BudgetLimits, peer_scan_limit, total_cap
 from . import peer_cache
@@ -34,6 +37,20 @@ CATALOG_PATHS = {"brands": "categories/1/marks", "regions": "states",
                  "body": "categories/1/bodystyles", "fuel": "type",
                  "transmission": "categories/1/gearboxes"}
 TRANSIENT_ERRORS = {"quota_exceeded", "busy", "search_limit", "connection_error", "upstream_error"}
+audit_log = logging.getLogger("autodeal.api_attempt_audit")
+
+
+def discovery_group_key(filters):
+    """Candidate grouping for a future migration, not wired into live watches.
+
+    Optional constraints are applied after ``discovery_parameters`` broadens
+    the provider query. Price/year/region/model remain distinct. A future
+    caller must preserve each recipient's filters, epoch and frozen bounds.
+    """
+    criteria = filters.canonical()
+    for field in ("onlyDeals", "minDiscount", "body", "fuel", "transmission", "mileage"):
+        criteria.pop(field, None)
+    return hashlib.sha256(json.dumps(["discovery-group-v1", criteria], sort_keys=True).encode()).hexdigest()
 
 
 def snapshot_key(filters, cursor=None):
@@ -234,7 +251,7 @@ def parse_car(data, source_id):
 
 
 class RiaSearch:
-    def __init__(self, engine, key, fetch=fetch_json, limits=None):
+    def __init__(self, engine, key, fetch=fetch_json, limits=None, *, audit_clock=None):
         self.engine, self.key, self.fetch = engine, key, fetch
         self.limits = limits or BudgetLimits.env()
         self.peer_scan_limit = peer_scan_limit()
@@ -248,8 +265,10 @@ class RiaSearch:
         self._budget_lock = threading.RLock()
         self._request_locks = {}
         self._lease_state = {"in_flight": 0, "peak": 0}
+        self._discovery_cycle = {"active": False, "pages": {}, "locks": {}}
         self._acquired = False
         self._borrowed = False
+        self._audit_clock = audit_clock or time.time
 
     def fork(self):
         """Independent request state under one acquired, bounded source lease.
@@ -278,6 +297,7 @@ class RiaSearch:
             row.owner, row.busy_until = self.owner, time.time() + 90
             db.commit()
             self._acquired = True
+            self._discovery_cycle = {"active": True, "pages": {}, "locks": {}}
 
     def release(self):
         if self._borrowed:
@@ -287,18 +307,48 @@ class RiaSearch:
             if row.owner == self.owner:
                 row.busy_until = 0
                 db.commit()
+        self._discovery_cycle["active"] = False
         self._acquired = False
 
-    def request(self, path, params, parser, ttl=900, *, force=False, fetcher=None):
+    def discovery_page(self, params, *, ttl=60):
+        """Fetch one fresh discovery page per exact query in this source cycle.
+
+        Forks share successful pages and single-flight locks. Distinct frozen
+        time windows or page numbers remain distinct requests. Release clears
+        eligibility for reuse; a new acquire starts an empty cycle and still
+        forces the provider refresh. Failures are never cached here.
+        """
+        cycle = self._discovery_cycle
+        if not cycle["active"]:
+            raise RiaError("busy")
+        params = copy.deepcopy(params)
+        digest = hashlib.sha256(json.dumps(params, sort_keys=True).encode()).hexdigest()
+        with self._budget_lock:
+            lock = cycle["locks"].setdefault(digest, threading.Lock())
+        with lock:
+            if digest not in cycle["pages"]:
+                payload = self.request("search", params, parse_ids, ttl=ttl, force=True)
+                cycle["pages"][digest] = copy.deepcopy(payload)
+            return copy.deepcopy(cycle["pages"][digest])
+
+    def request(self, path, params, parser, ttl=900, *, force=False, fetcher=None, audited_fetcher=None):
         self.stage = path
         cache_key = [path, params, "car-v5"] if path == "info" else [path, params]
         digest = hashlib.sha256(json.dumps(cache_key, sort_keys=True).encode()).hexdigest()
         with self._budget_lock:
             lock = self._request_locks.setdefault(digest, threading.Lock())
         with lock:
-            return self._request(path, params, parser, ttl, digest, force=force, fetcher=fetcher)
+            return self._request(path, params, parser, ttl, digest, force=force, fetcher=fetcher,
+                                 audited_fetcher=audited_fetcher)
 
-    def _request(self, path, params, parser, ttl, digest, *, force, fetcher):
+    def _audit_update(self, attempt_id, phase, **kwargs):
+        try:
+            api_attempt_audit.update(self.engine, attempt_id, phase, clock=self._audit_clock, **kwargs)
+        except Exception:
+            # A failed completion write is incomplete evidence, never a retry.
+            audit_log.warning("AUTO.RIA attempt audit write unavailable")
+
+    def _request(self, path, params, parser, ttl, digest, *, force, fetcher, audited_fetcher):
         with self._budget_lock, Session(self.engine) as db:
             cached = db.get(SourceCache, digest)
             if not force and cached and cached.expires_at > time.time():
@@ -317,13 +367,28 @@ class RiaSearch:
             if self.request_policy is not None:
                 self.request_policy(db, now, self.limits)
             row.calls, row.total = calls + [now], row.total + 1
+            attempt_id = api_attempt_audit.reserve(db, path, digest, self._audit_clock(), force=force)
             db.commit()  # Failed calls consume budget too, even on a process crash.
             self.requests_made += 1
             self._lease_state["in_flight"] += 1
             self._lease_state["peak"] = max(self._lease_state["peak"], self._lease_state["in_flight"])
         try:
-            payload = parser(fetcher() if fetcher is not None else self.fetch(self.key, path, params))
+            self._audit_update(attempt_id, "dispatched")
+            record = api_attempt_audit.observer(self.engine, attempt_id, self._audit_clock)
+            with api_attempt_audit.active_observer(record):
+                if audited_fetcher is not None:
+                    raw = audited_fetcher(record)
+                elif fetcher is not None:
+                    raw = fetcher()
+                elif self.fetch is fetch_json:
+                    raw = self.fetch(self.key, path, params, attempt_telemetry=record)
+                else:
+                    # Wrapped real adapters read the scoped observer. An
+                    # injected fake without a transport event is only dispatch.
+                    raw = self.fetch(self.key, path, params)
+            payload = parser(raw)
         except RiaError as exc:
+            self._audit_update(attempt_id, "error", error_code=str(exc))
             if path == "info" and str(exc) in {"listing_unavailable", "invalid_response"}:
                 peer_cache.invalidate(self.engine, params["auto_id"])
                 with self._budget_lock, Session(self.engine) as db:
@@ -334,6 +399,9 @@ class RiaSearch:
                     row = db.scalar(select(SourceBudget).where(SourceBudget.id == "auto_ria").with_for_update())
                     row.blocked_until = time.time() + 3600
                     db.commit()
+            raise
+        except Exception:
+            self._audit_update(attempt_id, "error", error_code="operation_error")
             raise
         finally:
             with self._budget_lock:
@@ -346,6 +414,7 @@ class RiaSearch:
                 db.add(row)
             row.payload, row.expires_at = payload, time.time() + ttl
             db.commit()
+        self._audit_update(attempt_id, "success")
         return payload
 
     def market_range(self, source_id, user_id):
@@ -353,10 +422,14 @@ class RiaSearch:
         from . import ria_ai_price, ria_market_range
         if not ria_ai_price.valid_id(source_id) or not ria_ai_price.valid_id(user_id):
             raise RiaError("ai_not_configured")
+        def audited_fetch(record):
+            if ria_ai_price.fetch_quote is _default_ai_fetch:
+                return ria_ai_price.fetch_quote(self.key, user_id, source_id, attempt_telemetry=record)
+            return ria_ai_price.fetch_quote(self.key, user_id, source_id)
         return self.request(ria_ai_price.METHOD,
             {"omniId": source_id, "period": ria_ai_price.PERIOD_HOURS,
              "policy": ria_market_range.VERSION}, lambda value: value, ttl=60,
-            fetcher=lambda: ria_ai_price.fetch_quote(self.key, user_id, source_id))
+            audited_fetcher=audited_fetch)
 
     def catalog(self, brand=""):
         """Shared official dictionaries. A cached UI read spends no provider calls."""
