@@ -1,4 +1,4 @@
-"""Private Telegram controls for the daily, first-purchase reminder campaign.
+"""Private Telegram controls for the daily purchase/renewal reminder campaign.
 
 Only explicit reminder actions change category preferences. Administrative
 controls verify the protected owner configuration before opening a DB session.
@@ -43,7 +43,7 @@ def _admin_card(uid, data):
         if type(errors) is not int:
             temporary, permanent = last.get("temporary_errors"), last.get("permanent_errors")
             errors = temporary + permanent if type(temporary) is int and type(permanent) is int else None
-        lines.append("Останній запуск: обрано " + _number(last.get("selected"))
+        lines.append("Останній запуск " + escape(str(last.get("date_kyiv") or "")) + ": обрано " + _number(last.get("selected"))
                      + ", надіслано " + _number(last.get("sent"))
                      + ", виключено " + _number(last.get("excluded"))
                      + ", помилки " + _number(errors)
@@ -66,7 +66,8 @@ def _admin_card(uid, data):
 def _user_card(uid):
     return billing.message(uid,
         "🔔 <b>Нагадування про придбання тарифу</b>\n\n"
-        "За твоїм дозволом — щодня о 09:00 за Києвом, доки ти ще не придбав тариф.\n"
+        "За твоїм дозволом — щодня о 09:00 за Києвом, коли немає чинного доступу "
+        "й оплати на перевірці.\n"
         "Обери, чи хочеш отримувати ці нагадування. Налаштування пошуку й доступу збережуться.",
         [[{"text": "🔔 Дозволити щоденні нагадування", "callback_data": PREFIX + "on"}],
          [{"text": "🔕 Не нагадувати", "callback_data": PREFIX + "off"}]])

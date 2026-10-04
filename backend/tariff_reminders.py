@@ -1,4 +1,4 @@
-"""Daily first-purchase reminders on the existing server/payment outbox.
+"""Daily purchase/renewal reminders on the existing server/payment outbox.
 
 No car-source calls, Telegram polling, new service, or catch-up broadcast.
 BillingControl is the shared lock for owner confirmations, audience changes,
@@ -11,7 +11,7 @@ import time
 from datetime import datetime, timedelta, timezone
 from zoneinfo import ZoneInfo
 
-from sqlalchemy import func, or_, select, update
+from sqlalchemy import func, or_, select, text, update
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import Session
 
@@ -26,7 +26,7 @@ ID = "daily-first-purchase-v1"
 PREFIX = ID + ":"
 ZONE = ZoneInfo("Europe/Kyiv")
 WINDOW_MINUTES = 30
-SEND_INTERVAL = 2
+SEND_INTERVAL = 1
 LEASE = 60
 LOG = logging.getLogger("uvicorn.error")
 TEXT = (
@@ -36,6 +36,14 @@ TEXT = (
     "💳 Підписка — 250 грн на 30 днів.\n"
     "Доступ активується після перевірки оплати адміністратором.\n\n"
     "Налаштуй пошук під себе та переглянь умови підписки 👇"
+)
+RENEWAL_TEXT = (
+    "🔔 Продовж підписку AutoDeal, щоб знову отримувати оголошення.\n\n"
+    "AutoDeal шукає вигідні оголошення AUTO.RIA за твоїми фільтрами "
+    "та надсилає їх у Telegram.\n\n"
+    "💳 Підписка — 250 грн на 30 днів.\n"
+    "Доступ активується після перевірки оплати адміністратором.\n\n"
+    "Твої фільтри збережені. Переглянь умови продовження 👇"
 )
 BUTTONS = [[{"text": "💳 Переглянути тариф", "callback_data": manual_checkout.PREFIX + "view"}],
            [{"text": "🔕 Не нагадувати", "callback_data": "ad-reminder:off"}]]
@@ -101,7 +109,9 @@ def counts(db, campaign_id):
 def result(db, campaign, now):
     states = counts(db, campaign.id)
     return {"campaign_id": campaign.id, "date_kyiv": campaign.id.removeprefix(PREFIX),
-            "status": campaign.status, "selected": campaign.audience.get("selected", 0),
+            "status": campaign.status, "selected": campaign.audience.get("selected"),
+            "queued": sum(states.values()), "started_at": campaign.audience.get("at"),
+            "audience_at_selection": campaign.audience.get("summary"),
             "sent": states.get("sent", 0), "excluded": states.get("excluded", 0),
             "temporary_errors": states.get("retry", 0), "permanent_errors": states.get("failed", 0),
             "errors": states.get("retry", 0) + states.get("failed", 0),
@@ -111,15 +121,20 @@ def result(db, campaign, now):
 
 
 def snapshot(db, settings, now):
+    from .tariff_reminder_audit import history, pending_payments
     row = db.get(TariffReminderSchedule, ID, populate_existing=True)
     current = db.get(BillingCampaign, row.last_campaign_id) if row and row.last_campaign_id else None
     upcoming = row.next_run_at if row and row.enabled else None
+    cohort = audience.summary(db, settings, now)
     return {"id": ID, "installed": row is not None, "enabled": bool(row and row.enabled),
             "timezone": "Europe/Kyiv", "morning_window": "09:00–09:30",
             "next_run_at": upcoming,
             "next_run_kyiv": datetime.fromtimestamp(upcoming, ZONE).isoformat() if upcoming else None,
             "first_run_at": row.first_run_at if row else None,
-            "eligible_recipients": audience.count(db, settings, now),
+            "installed_at": row.installed_at if row else None,
+            "eligible_recipients": cohort["eligible"], "audience": cohort,
+            "history": history(db, row, now), "pending_payments": pending_payments(db, now),
+            "schedule_rows": db.scalar(select(func.count()).select_from(TariffReminderSchedule)),
             "text": TEXT, "buttons": [b[0]["text"] for b in BUTTONS],
             "last_result": result(db, current, now) if current else (row.last_result if row else {}),
             "heartbeat": row.heartbeat if row else None,
@@ -236,8 +251,10 @@ def tick(engine, settings, request, now=None, *, clock=None):
                 campaign = db.get(BillingCampaign, key)
                 if campaign is None:
                     users = audience.ids(db, settings, now)  # One authoritative bulk query.
+                    cohort = audience.summary(db, settings, now)
                     campaign = BillingCampaign(id=key, not_before=start, deadline=end, timezone="Europe/Kyiv",
-                        content={"text": TEXT, "buttons": BUTTONS}, audience={"selected": len(users), "at": now},
+                        content={"text": TEXT, "renewal_text": RENEWAL_TEXT, "buttons": BUTTONS},
+                        audience={"selected": len(users), "at": now, "summary": cohort},
                         status="running", blockers=[])
                     db.add(campaign)
                     db.add_all([CampaignRecipient(campaign_id=key, user_id=uid, state="pending") for uid in users])
@@ -270,7 +287,9 @@ def tick(engine, settings, request, now=None, *, clock=None):
         campaign.next_send = now + SEND_INTERVAL
         reservation = secrets.token_hex(16)
         campaign.lease_token = reservation
-        payload = {"chat_id": uid, "text": campaign.content["text"], "allow_paid_broadcast": False,
+        copy = (campaign.content.get("renewal_text", RENEWAL_TEXT) if audience.former_buyer(db, uid)
+                else campaign.content["text"])
+        payload = {"chat_id": uid, "text": copy, "allow_paid_broadcast": False,
                    "reply_markup": {"inline_keyboard": campaign.content["buttons"]}}
         # Commit the claim before any network I/O; another process sees 'sending'.
     # A delayed earlier worker must not bypass another worker's later send or
@@ -287,7 +306,9 @@ def tick(engine, settings, request, now=None, *, clock=None):
 def log_progress(engine, settings, outcome):
     """Private aggregate evidence that the actual server executor is ticking."""
     try:
-        with Session(engine) as db:
+        with Session(engine) as db, db.begin():
+            if db.get_bind().dialect.name == "postgresql":
+                db.execute(text("SET LOCAL statement_timeout = '3000ms'"))
             data = snapshot(db, settings, time.time())
         data.pop("text")
         data.pop("buttons")

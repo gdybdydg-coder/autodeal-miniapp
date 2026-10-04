@@ -178,7 +178,9 @@ def test_purchase_access_or_payment_in_progress_excludes(ledger, history):
         elif history == "prior_403":
             db.add(CampaignRecipient(campaign_id="OLD-FIXTURE", user_id=UID, state="failed",
                 attempted_at=NOW-100, retry_at=0, error="403"))
-    assert not eligible(ledger)
+    expired_history = {"approval_audit", "bank_credit", "expired_manual_paid",
+                       "expired_ambiguous_entitlement", "former_paid_order", "former_refunded_order"}
+    assert eligible(ledger) is (history in expired_history)
 
 
 @pytest.mark.parametrize("state", ["created", "rejected"])
@@ -234,7 +236,7 @@ def test_verified_config_accounts_are_excluded(ledger):
     assert not eligible(ledger)
     settings.stats_excluded_user_ids = ""
     settings.admin_telegram_id = UID
-    assert not eligible(ledger)
+    assert eligible(ledger)  # Role alone neither grants access nor excludes a client.
 
 
 def test_invalid_account_exclusion_config_fails_closed(ledger):

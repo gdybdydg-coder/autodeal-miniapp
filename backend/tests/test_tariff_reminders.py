@@ -133,7 +133,7 @@ def test_three_clients_two_confirmed_purchases_only_third_gets_reminder(daily):
         db.add_all([MarketingConsent(user_id=u, allowed=True, blocked=False, at=BEFORE, update_id=1,
                     source="explicit_marketing_button_v1") for u in (OTHER, THIRD)])
         buyer(db, UID)
-        buyer(db, OTHER, until=MORNING-100)  # Former buyers are never first-purchase targets.
+        buyer(db, OTHER)  # Both purchases are current; only the third is unpaid.
     calls = []
     assert reminders.tick(engine, settings, accepted(calls), MORNING) == "sent"
     assert [r["chat_id"] for r in calls] == [THIRD]
@@ -281,7 +281,7 @@ def test_delayed_claim_cannot_bypass_a_newer_workers_global_pause(daily, monkeyp
     monkeypatch.setattr(subscription_promotion, "dispatch_claim", newer_worker_before_old_dispatch)
     assert reminders.tick(engine, settings, no_send, clock=lambda: old_clock[0]) == "deferred"
     assert calls == [OTHER]
-    expected_pause = MORNING + (63 if newer_result == "rate_limited" else 9)
+    expected_pause = MORNING + (63 if newer_result == "rate_limited" else 8)
     with Session(engine) as db:
         assert db.get(BillingCampaign, KEY).next_send == expected_pause
         delayed = db.get(CampaignRecipient, (KEY, UID))

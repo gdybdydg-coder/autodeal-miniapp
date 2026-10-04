@@ -42,8 +42,8 @@ def test_restored_production_adapter_serves_two_paid_searches_not_unpaid_first(p
         assert car.market == 13537.5
         assert car.valuation_evidence["basis"] == ai.API_BASIS
         text, _ = TelegramSender.card(car, historical_at=p.clock[0])
-        assert "Оцінка API AUTO.RIA" in text
-        assert "може відрізнятися" in text
+        assert "Оцінка API AUTO.RIA" not in text
+        assert "може відрізнятися" not in text
     wake(p); drain(p)
     assert len(p.sent) == 2 and quotes == ["124"]
 

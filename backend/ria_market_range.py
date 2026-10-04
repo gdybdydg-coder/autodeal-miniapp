@@ -2,7 +2,8 @@
 
 The owner requested the previous working API selection after the native-only
 hold stopped delivery. The API band is not the native listing range: retain
-that distinction in evidence, policy and cards. Never invent missing bounds.
+that distinction in evidence and policy. Cards show an approximate reference.
+Never invent missing bounds.
 """
 import copy
 import re
@@ -111,5 +112,4 @@ def pricing_lines(car, *, historical_at=None):
     label = f"{abs(percent):.1f}".rstrip("0").rstrip(".").replace(".", ",")
     difference = (f"🔥 Вигода: {label}%" if percent >= 0
                   else f"📈 Вище ринкової ціни: {label}%")
-    return [f"📊 Ринкова ціна: ≈ {money(car.market)}", difference,
-            "ℹ️ Оцінка API AUTO.RIA; може відрізнятися від оцінки в оголошенні"]
+    return [f"📊 Ринкова ціна: ≈ {money(car.market)}", difference]
