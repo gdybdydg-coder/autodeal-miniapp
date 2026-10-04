@@ -73,6 +73,8 @@ class Settings:
     manual_payment_notices_enabled: bool = False
     stats_excluded_user_ids: str = ""
     owner_car_notifications_enabled: bool = True
+    olx_owner_canary_enabled: bool = False
+    olx_owner_canary_until: float = 0
 
     @classmethod
     def env(cls):
@@ -114,6 +116,8 @@ class Settings:
             owner_car_notifications_enabled=os.getenv("OWNER_CAR_NOTIFICATIONS_ENABLED", "true") == "true",
             ria_quota_management_enabled=os.getenv("RIA_QUOTA_MANAGEMENT_ENABLED") == "true",
             ria_failed_delivery_recovery_id=os.getenv("RIA_FAILED_DELIVERY_RECOVERY_ID", "").strip(),
+            olx_owner_canary_enabled=os.getenv("OLX_OWNER_CANARY_ENABLED") == "true",
+            olx_owner_canary_until=float(os.getenv("OLX_OWNER_CANARY_UNTIL", "0") or 0),
         )
 
     @property
@@ -204,6 +208,8 @@ def create_app(settings: Settings, engine=None, *, paid_source_only=False):
         from . import source_pipeline_health
         await asyncio.to_thread(source_pipeline_health.log_snapshot, engine, settings)
         stop = asyncio.Event()
+        from . import olx_owner_canary
+        olx_task = asyncio.create_task(olx_owner_canary.run(engine, settings, stop)) if olx_owner_canary.enabled(settings) else None
         manual_notice_task = asyncio.create_task(manual_payments.run_notices(engine, settings, stop)) if (
             settings.manual_payment_review_enabled and settings.manual_payment_notices_enabled) else None
         billing_task = asyncio.create_task(billing_campaign.run(engine, settings, stop)) if billing.prepared() else None
@@ -224,6 +230,8 @@ def create_app(settings: Settings, engine=None, *, paid_source_only=False):
             yield
         finally:
             stop.set()
+            if olx_task:
+                await olx_task
             if manual_notice_task:
                 await manual_notice_task
             validation_stop.set()
@@ -665,6 +673,10 @@ def create_app(settings: Settings, engine=None, *, paid_source_only=False):
             telegram_setup.call(settings.bot_token, "sendMessage", {"chat_id": uid, "text": text})
             return {"ok": True}
         reminder_reply = await asyncio.to_thread(tariff_reminder_commands.handle, engine, settings, event)
+        from . import olx_owner_canary
+        olx_reply = await asyncio.to_thread(olx_owner_canary.handle, engine, settings, event)
+        if olx_reply is not None:
+            return olx_reply
         if reminder_reply is not None:
             return reminder_reply
         checkout_reply = await asyncio.to_thread(manual_checkout.handle, engine, settings, event)
