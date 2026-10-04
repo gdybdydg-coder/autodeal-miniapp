@@ -41,3 +41,10 @@ def test_missing_holdout_stays_visible_in_denominator():
     r=evaluate_holdout(peers(),{c['id']:'reference' for c in peers()}|{'missing':'holdout'},None,EPOCH)
     assert r['frozen_holdout_count']==1 and r['loaded_holdout_count']==0
     assert r['eligible_coverage'] is None
+
+
+def test_mixed_frozen_cohorts_do_not_claim_one_seed():
+    rows=peers();provenance=[{'seed':'old','ids':['a']},{'seed':'new','ids':['b']}]
+    result=evaluate_holdout(rows,{c['id']:'reference' for c in rows},None,EPOCH,split_provenance=provenance)
+    assert result['split_seed'] is None
+    assert result['split_provenance']==provenance

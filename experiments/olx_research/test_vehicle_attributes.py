@@ -105,3 +105,13 @@ def test_description_tuning_power_cannot_silently_conflict_with_structured_power
     c=enrich(raw,parse_detail_snapshot(raw,fetched_at=NOW,truncated=False))['listing']
     assert c.get('power_hp') is None
     assert 'power_hp_description_conflict' in c['attribute_review']['issues']
+
+
+def test_known_modification_conflict_cannot_fill_market_minimum():
+    target=car(modification='1.6 mpi')
+    candidates=[{**c,'modification':'1.6 mpi'} for c in peers()]
+    candidates[0]['modification']='1.6 fsi'
+    result=estimate(target,candidates,None,EPOCH)
+    assert result['sample']==7
+    assert result['exclusions']['mismatch_modification']==1
+    assert result['status']=='profitability_unconfirmed'

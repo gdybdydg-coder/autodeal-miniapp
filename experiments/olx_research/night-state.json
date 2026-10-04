@@ -3,11 +3,7 @@
   "night": "2026-10-05-Europe-Kyiv",
   "status": "active",
   "deadline": "2026-10-05T08:00:00+03:00",
-  "lease": {
-    "owner": "night-20261005-0100",
-    "started_at": "2026-10-04T22:02:00.000Z",
-    "expires_at": "2026-10-04T22:42:00Z"
-  },
+  "lease": null,
   "budget": {
     "olx_get_cap": 60,
     "olx_bytes_cap": 167772160,
@@ -45,7 +41,8 @@
         "https://www.olx.ua/d/obyavlenie/prodam-skoda-octavia-a5-ID10XGkB.html",
         "https://www.olx.ua/d/uk/obyavlenie/prodam-skoda-octavia-a5-1-6-mpi-2008-ID10GF9Z.html"
       ],
-      "reserved_at": "2026-10-04T22:03:19.068353+00:00"
+      "reserved_at": "2026-10-04T22:03:19.068353+00:00",
+      "result": "examples/night0100-evidence.json"
     }
   ],
   "runs": [
@@ -58,7 +55,18 @@
       "subtests_passed": 150,
       "summary": "Corroborated drive/power/VIN hashes; fixed power conflict, independence and refresh; persisted371pending; localHTMLreview; marketstill0/42",
       "checkpoint": "NIGHT-CHECKPOINT-20261005.md"
+    },
+    {
+      "owner": "night-20261005-0100",
+      "completed_at": "2026-10-04T22:11:12.216447+00:00",
+      "olx_calls": 20,
+      "olx_bytes": 31463993,
+      "fx_calls": 0,
+      "tests_passed": 390,
+      "subtests_passed": 150,
+      "summary": "20 new details;62 total;0/62 estimates;fixed known modification mismatch and split provenance;106 local previews,unpaid0,restart0,Telegram0",
+      "checkpoint": "NIGHT-0100-20261005.md"
     }
   ],
-  "next_step": "Use persisted371pending candidates for a dense, compatible cohort; freeze holdout before detail prices, reserve finite exact URLs in remote state; do not loosen drive/power/body/condition or minimum8. HTML browser validation remains unavailable."
+  "next_step": "Read NIGHT-0100-20261005.md. Avoid repeating general cohort collection: complete power9/20,still0/62estimates. Investigate better evidenced compatible cohort; independently add verified EUR currency-pair support for observed932274776/931454683 with tests, no USD-quote misuse, no eligibility bypass. 40OLXGET/120MiB and6FXGET remain; reserve before I/O."
 }

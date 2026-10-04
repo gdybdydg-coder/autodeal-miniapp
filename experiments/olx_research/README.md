@@ -1,3 +1,5 @@
+Latest night checkpoint: [01:00 iteration](NIGHT-0100-20261005.md), 62 saved real details, 390 tests +150 subtests; market coverage remains 0/62.
+
 # OLX: isolated review, 2026-10-04
 
 Latest: [overnight checkpoint](NIGHT-CHECKPOINT-20261005.md), [overnight rules](NIGHT-20261005.md), and `night-state.json`. Current saved cohort now requires corroborated drive/power for valuation; historical numbers below remain dated checkpoints.

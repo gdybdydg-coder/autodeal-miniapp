@@ -46,7 +46,7 @@ def stability(target,reference,quote,now,*,minimum=8):
     return out
 
 
-def evaluate_holdout(cars,split,quote,now,*,minimum=8):
+def evaluate_holdout(cars,split,quote,now,*,minimum=8,split_provenance=None):
     if any(v not in ('reference','holdout') for v in split.values()):raise ValueError('Explicit frozen split required')
     known={}
     for c in cars:
@@ -82,7 +82,10 @@ def evaluate_holdout(cars,split,quote,now,*,minimum=8):
         for m,values in errors.items():
             metrics[m]={'evaluated':len(values),'mean_absolute_usd':str(sum(v[0] for v in values)/len(values)) if values else None,
                         'mean_absolute_percent':str(sum(v[1] for v in values)/len(values)) if values else None}
-    return {'split_seed':SPLIT_SEED,'benchmark_kind':'withheld_asking_price_only',
+    provenance=split_provenance or [{'seed':SPLIT_SEED,'basis':'legacy_frozen_partition'}]
+    seeds={p.get('seed') for p in provenance}
+    return {'split_seed':next(iter(seeds)) if len(seeds)==1 else None,
+            'split_provenance':provenance,'benchmark_kind':'withheld_asking_price_only',
             'frozen_holdout_count':sum(v=='holdout' for v in split.values()),'loaded_holdout_count':len(control),
             'reference_count':len(reference),'eligible_holdout_count':eligible,'estimated_holdout_count':estimated,
             'eligible_coverage':str(Decimal(estimated)/eligible) if eligible else None,

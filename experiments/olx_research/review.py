@@ -33,7 +33,7 @@ def build(raw,state):
             'assessment':a,'stability':stability(c,cars,quote,now) if a['status']=='experimental_asking_estimate' else None})
     return {'mode':'isolated_review_only','dataset_kind':raw['dataset_kind'],
             'cases':cases,'coverage':{k:v for k,v in dataset.items() if k!='results'},
-            'holdout':evaluate_holdout(cars,raw['split'],quote,now),
+            'holdout':evaluate_holdout(cars,raw['split'],quote,now,split_provenance=raw.get('split_provenance')),
             'local_previews':previews,'actual_telegram_calls':0,'production_changed':False}
 
 

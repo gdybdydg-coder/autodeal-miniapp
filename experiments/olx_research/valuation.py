@@ -55,7 +55,7 @@ def estimate(target,candidates,quote,now,*,minimum=8):
             v=c.get('vehicle_key')
             if v and c.get('checked_at')==vehicle_latest[v]:
                 if screened(c,quote,now)[1]:vehicle_held.add(v)
-                signature=tuple(str(c.get(k)) for k in (*FIELDS,'year','mileage_km','research_condition','price','currency'))
+                signature=tuple(str(c.get(k)) for k in (*FIELDS,'modification','year','mileage_km','research_condition','price','currency'))
                 vehicle_signatures.setdefault(v,set()).add(signature)
     vehicle_held.update(v for v,s in vehicle_signatures.items() if len(s)>1)
     for key,vs in sorted(versions.items(),key=lambda x:str(x[0])):
@@ -71,6 +71,9 @@ def estimate(target,candidates,quote,now,*,minimum=8):
         p,screen=screened(c,quote,now);why+=screen
         if not why:
             why+=['mismatch_'+f for f in FIELDS if str(comparable_value(c,f)).casefold()!=str(comparable_value(target,f)).casefold()]
+            if (c.get('modification') and target.get('modification')
+                    and c['modification'].casefold()!=target['modification'].casefold()):
+                why.append('mismatch_modification')
             if abs(c['year']-target['year'])>1:why.append('mismatch_year')
             if abs(c['mileage_km']-target['mileage_km'])>30000:why.append('mismatch_mileage')
             if c['research_condition']!=target['research_condition']:why.append('mismatch_condition')
