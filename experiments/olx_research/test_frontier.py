@@ -114,3 +114,52 @@ def test_offline_manifest_does_not_erase_other_pending_candidates(tmp_path):
     w=db.claim(users(),None,EPOCH,candidate_ids={'b'})
     assert len(w)==1 and w[0]['car']['id']=='b'
     assert db.snapshot()['candidate_counts']=={'claimed':1,'pending':1};db.close()
+
+
+def test_stored_price_change_refreshes_after_cooldown_and_keeps_first_seen(tmp_path):
+    db=Frontier(tmp_path/'refresh.db');c=car('a',6000);db.record_page('page',page([c]));w=db.claim(users(),None,EPOCH)[0];db.finish(w['token'],200,EPOCH+1,car=c)
+    newer=car('a',5500);newer['checked_at']=EPOCH+20;p=page([newer]);p['summary']['fetched_at']=EPOCH+20;db.record_page('page',p)
+    assert db.claim(users(),None,EPOCH+21)==[]
+    w=db.claim(users(),None,EPOCH+61)[0];db.finish(w['token'],200,EPOCH+62,car=newer)
+    row=db.db.execute('SELECT first_seen,changes FROM research_details').fetchone()
+    assert row['first_seen']==EPOCH
+    assert 'display_price_changed' in json.loads(row['changes'])['events']
+    assert db.db.execute('SELECT count(*) FROM research_detail_events').fetchone()[0]==2
+    db.close()
+
+
+def test_unchanged_search_does_not_refetch_until_hourly_detail_age(tmp_path):
+    active=[{**u,'expires_at':EPOCH+7200} for u in users()]
+    db=Frontier(tmp_path/'refresh.db');c=car();db.record_page('page',page([c]));w=db.claim(active,None,EPOCH)[0];db.finish(w['token'],200,EPOCH+1,car=c)
+    for offset in (10,60,900):
+        newer={**c,'checked_at':EPOCH+offset};p=page([newer]);p['summary']['fetched_at']=EPOCH+offset;db.record_page('page',p)
+        assert db.claim(active,None,EPOCH+offset)==[]
+    newer={**c,'checked_at':EPOCH+3601};p=page([newer]);p['summary']['fetched_at']=EPOCH+3601;db.record_page('page',p)
+    assert len(db.claim(active,None,EPOCH+3601))==1;db.close()
+
+
+def test_new_search_during_lease_is_retained_without_overwriting_claim(tmp_path):
+    path=tmp_path/'refresh.db';a=Frontier(path);b=Frontier(path);old=car('a',6000)
+    a.record_page('page',page([old]));w=a.claim(users(),None,EPOCH)[0]
+    newer=car('a',5500);newer['checked_at']=EPOCH+20;p=page([newer]);p['summary']['fetched_at']=EPOCH+20;b.record_page('page',p)
+    assert b.claim(users(),None,EPOCH+21)==[]
+    a.finish(w['token'],200,EPOCH+22,car={**old,'checked_at':EPOCH+10});a.close();b.close()
+    db=Frontier(path)
+    assert db.claim(users()[-1:],None,EPOCH+100)==[]
+    pending=db.claim(users(),None,EPOCH+100)[0]
+    assert pending['car']['price']==5500
+    db.finish(pending['token'],200,EPOCH+101,car={**newer,'checked_at':EPOCH+100})
+    assert db.snapshot()['candidate_counts']=={'stored':1};db.close()
+
+
+def test_later_detail_supersedes_search_observed_during_fetch(tmp_path):
+    db=Frontier(tmp_path/'refresh.db');c=car();db.record_page('page',page([c]));w=db.claim(users(),None,EPOCH)[0]
+    newer=car(price=5500);newer['checked_at']=EPOCH+10;p=page([newer]);p['summary']['fetched_at']=EPOCH+10;db.record_page('page',p)
+    db.finish(w['token'],200,EPOCH+22,car={**newer,'checked_at':EPOCH+20})
+    assert db.claim(users(),None,EPOCH+100)==[];db.close()
+
+
+def test_drive_and_power_changes_are_characteristic_events():
+    previous=car(drive_type='front',power_hp=105)
+    current={**previous,'drive_type':'full','power_hp':160,'checked_at':EPOCH+10}
+    assert 'characteristics_changed' in detail_change(previous,current,first_seen=EPOCH)['events']

@@ -5,6 +5,7 @@ import copy,hashlib,re,json
 from experiments.olx_offline.source_dates import ASSIGNMENT
 from experiments.olx_offline.html_snapshot import clean_url
 from experiments.olx_offline.html_snapshot import SearchParser
+from .vehicle_attributes import corroborate
 
 
 def enrich(data, parsed):
@@ -73,6 +74,7 @@ def enrich(data, parsed):
                                    'independently_verified':False}
     car['research_evidence']=evidence
     car['research_field_conflicts']=conflicts
+    car.update(corroborate(nodes,car))
     return out
 
 

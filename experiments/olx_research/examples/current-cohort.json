@@ -120,6 +120,30 @@
         "fingerprint": "1c95a99b3622dbb6a4c71bd879bf6af3d2c007b798dc7d3f8773b6cad4d14e36",
         "customs_status": "cleared_declared",
         "description_complete": true
+      },
+      "drive_type": "front",
+      "power_hp": null,
+      "modification": null,
+      "doors": 5,
+      "vehicle_key": null,
+      "vehicle_identity_verified": false,
+      "attribute_review": {
+        "version": "visible-state-v1",
+        "issues": [
+          "power_hp_missing_or_ambiguous",
+          "modification_missing_or_ambiguous",
+          "vin_missing_or_ambiguous"
+        ],
+        "evidence": {
+          "drive_type": {
+            "basis": "matching_visible_and_public_state",
+            "source_key": "drive_type"
+          },
+          "doors": {
+            "basis": "matching_visible_and_public_state",
+            "source_key": "doors_num"
+          }
+        }
       }
     },
     {
@@ -207,6 +231,33 @@
         "fingerprint": "b36b93c36e765ee21384e906f0bed4607499ee1a312dcd34d1a1624b1aaeea40",
         "customs_status": "uncleared_declared",
         "description_complete": true
+      },
+      "drive_type": "front",
+      "power_hp": 105,
+      "modification": null,
+      "doors": 4,
+      "vehicle_key": null,
+      "vehicle_identity_verified": false,
+      "attribute_review": {
+        "version": "visible-state-v1",
+        "issues": [
+          "modification_missing_or_ambiguous",
+          "vin_missing_or_ambiguous"
+        ],
+        "evidence": {
+          "drive_type": {
+            "basis": "matching_visible_and_public_state",
+            "source_key": "drive_type"
+          },
+          "power_hp": {
+            "basis": "matching_visible_and_public_state",
+            "source_key": "power"
+          },
+          "doors": {
+            "basis": "matching_visible_and_public_state",
+            "source_key": "doors_num"
+          }
+        }
       }
     },
     {
@@ -295,6 +346,30 @@
         "fingerprint": "d1fdb1d9bd5dbd1a1b7730fa50df740819d86461976dc4468bf784f328963682",
         "customs_status": "cleared_declared",
         "description_complete": true
+      },
+      "drive_type": "front",
+      "power_hp": null,
+      "modification": null,
+      "doors": 4,
+      "vehicle_key": null,
+      "vehicle_identity_verified": false,
+      "attribute_review": {
+        "version": "visible-state-v1",
+        "issues": [
+          "power_hp_missing_or_ambiguous",
+          "modification_missing_or_ambiguous",
+          "vin_missing_or_ambiguous"
+        ],
+        "evidence": {
+          "drive_type": {
+            "basis": "matching_visible_and_public_state",
+            "source_key": "drive_type"
+          },
+          "doors": {
+            "basis": "matching_visible_and_public_state",
+            "source_key": "doors_num"
+          }
+        }
       }
     },
     {
@@ -383,6 +458,33 @@
         "fingerprint": "d26d2b11dc6a0720616fd69ce42e0c9cde63188b13b48e8992fdfac481cefaec",
         "customs_status": "cleared_declared",
         "description_complete": true
+      },
+      "drive_type": "front",
+      "power_hp": 105,
+      "modification": null,
+      "doors": 5,
+      "vehicle_key": null,
+      "vehicle_identity_verified": false,
+      "attribute_review": {
+        "version": "visible-state-v1",
+        "issues": [
+          "modification_value_or_units_unconfirmed",
+          "vin_missing_or_ambiguous"
+        ],
+        "evidence": {
+          "drive_type": {
+            "basis": "matching_visible_and_public_state",
+            "source_key": "drive_type"
+          },
+          "power_hp": {
+            "basis": "matching_visible_and_public_state",
+            "source_key": "power"
+          },
+          "doors": {
+            "basis": "matching_visible_and_public_state",
+            "source_key": "doors_num"
+          }
+        }
       }
     },
     {
@@ -471,6 +573,37 @@
         "fingerprint": "6855378196811d7a37b5960f0d97d627384652da1385a710d3d60ec5688bd777",
         "customs_status": "cleared_declared",
         "description_complete": true
+      },
+      "drive_type": "front",
+      "power_hp": 105,
+      "modification": null,
+      "doors": 5,
+      "vehicle_key": "vin-sha256:213fcdd9dd595d56e6310c285517c653f2bab6799cf8088bbc44a18fb763ee62",
+      "vehicle_identity_verified": false,
+      "attribute_review": {
+        "version": "visible-state-v1",
+        "issues": [
+          "modification_missing_or_ambiguous"
+        ],
+        "evidence": {
+          "drive_type": {
+            "basis": "matching_visible_and_public_state",
+            "source_key": "drive_type"
+          },
+          "power_hp": {
+            "basis": "matching_visible_and_public_state",
+            "source_key": "power"
+          },
+          "doors": {
+            "basis": "matching_visible_and_public_state",
+            "source_key": "doors_num"
+          },
+          "vehicle_key": {
+            "basis": "matching_visible_and_public_state_vin_claim",
+            "physical_identity_verified": false,
+            "format_verified": true
+          }
+        }
       }
     },
     {
@@ -559,6 +692,30 @@
         "fingerprint": "a210f05bf3d8899c75d8d8976770fd0f952dc0682e86d2d8d4c879ea18eb877d",
         "customs_status": "cleared_declared",
         "description_complete": true
+      },
+      "drive_type": "front",
+      "power_hp": null,
+      "modification": null,
+      "doors": 5,
+      "vehicle_key": null,
+      "vehicle_identity_verified": false,
+      "attribute_review": {
+        "version": "visible-state-v1",
+        "issues": [
+          "power_hp_missing_or_ambiguous",
+          "modification_missing_or_ambiguous",
+          "vin_missing_or_ambiguous"
+        ],
+        "evidence": {
+          "drive_type": {
+            "basis": "matching_visible_and_public_state",
+            "source_key": "drive_type"
+          },
+          "doors": {
+            "basis": "matching_visible_and_public_state",
+            "source_key": "doors_num"
+          }
+        }
       }
     },
     {
@@ -647,6 +804,33 @@
         "fingerprint": "8618af94dc2dd8b90dcba8461bb4adc3e911263af4c00b10d3c5b191ad54dc38",
         "customs_status": "cleared_declared",
         "description_complete": true
+      },
+      "drive_type": "front",
+      "power_hp": 105,
+      "modification": null,
+      "doors": 5,
+      "vehicle_key": null,
+      "vehicle_identity_verified": false,
+      "attribute_review": {
+        "version": "visible-state-v1",
+        "issues": [
+          "modification_value_or_units_unconfirmed",
+          "vin_missing_or_ambiguous"
+        ],
+        "evidence": {
+          "drive_type": {
+            "basis": "matching_visible_and_public_state",
+            "source_key": "drive_type"
+          },
+          "power_hp": {
+            "basis": "matching_visible_and_public_state",
+            "source_key": "power"
+          },
+          "doors": {
+            "basis": "matching_visible_and_public_state",
+            "source_key": "doors_num"
+          }
+        }
       }
     },
     {
@@ -761,6 +945,37 @@
         "fingerprint": "8f1296ee991c4e88136bf0f19675e4630c200f9dae1d944155e14b11d682f099",
         "customs_status": "cleared_declared",
         "description_complete": true
+      },
+      "drive_type": "front",
+      "power_hp": 77,
+      "modification": null,
+      "doors": 5,
+      "vehicle_key": "vin-sha256:6b109eb94194d17ef4365d74014a46f8ca1b4f8ca6f42756798b28697ca0b0d7",
+      "vehicle_identity_verified": false,
+      "attribute_review": {
+        "version": "visible-state-v1",
+        "issues": [
+          "modification_missing_or_ambiguous"
+        ],
+        "evidence": {
+          "drive_type": {
+            "basis": "matching_visible_and_public_state",
+            "source_key": "drive_type"
+          },
+          "power_hp": {
+            "basis": "matching_visible_and_public_state",
+            "source_key": "power"
+          },
+          "doors": {
+            "basis": "matching_visible_and_public_state",
+            "source_key": "doors_num"
+          },
+          "vehicle_key": {
+            "basis": "matching_visible_and_public_state_vin_claim",
+            "physical_identity_verified": false,
+            "format_verified": true
+          }
+        }
       }
     },
     {
@@ -848,6 +1063,27 @@
         "fingerprint": "043b1f9e713da0129f09191446f665a2a1df8618dcc16bfcc80ec7e8e7848b1e",
         "customs_status": "cleared_declared",
         "description_complete": true
+      },
+      "drive_type": "front",
+      "power_hp": null,
+      "modification": null,
+      "doors": null,
+      "vehicle_key": null,
+      "vehicle_identity_verified": false,
+      "attribute_review": {
+        "version": "visible-state-v1",
+        "issues": [
+          "power_hp_missing_or_ambiguous",
+          "modification_value_or_units_unconfirmed",
+          "doors_missing_or_ambiguous",
+          "vin_missing_or_ambiguous"
+        ],
+        "evidence": {
+          "drive_type": {
+            "basis": "matching_visible_and_public_state",
+            "source_key": "drive_type"
+          }
+        }
       }
     },
     {
@@ -935,6 +1171,36 @@
         "fingerprint": "177a65e93d8b4389cda13c6c3b661c6e72e5a675ed5f7e0f766873b138363e1a",
         "customs_status": "cleared_declared",
         "description_complete": true
+      },
+      "drive_type": "front",
+      "power_hp": 105,
+      "modification": "1.6 тdi",
+      "doors": 5,
+      "vehicle_key": null,
+      "vehicle_identity_verified": false,
+      "attribute_review": {
+        "version": "visible-state-v1",
+        "issues": [
+          "vin_missing_or_ambiguous"
+        ],
+        "evidence": {
+          "drive_type": {
+            "basis": "matching_visible_and_public_state",
+            "source_key": "drive_type"
+          },
+          "power_hp": {
+            "basis": "matching_visible_and_public_state",
+            "source_key": "power"
+          },
+          "modification": {
+            "basis": "matching_visible_and_public_state",
+            "source_key": "modification"
+          },
+          "doors": {
+            "basis": "matching_visible_and_public_state",
+            "source_key": "doors_num"
+          }
+        }
       }
     },
     {
@@ -1023,6 +1289,30 @@
         "fingerprint": "e172343b0124722064b7358b7d1d1f09cba51e618e182ab7a3ac7ad0a50b164d",
         "customs_status": "cleared_declared",
         "description_complete": true
+      },
+      "drive_type": "front",
+      "power_hp": null,
+      "modification": null,
+      "doors": 5,
+      "vehicle_key": null,
+      "vehicle_identity_verified": false,
+      "attribute_review": {
+        "version": "visible-state-v1",
+        "issues": [
+          "power_hp_missing_or_ambiguous",
+          "modification_missing_or_ambiguous",
+          "vin_missing_or_ambiguous"
+        ],
+        "evidence": {
+          "drive_type": {
+            "basis": "matching_visible_and_public_state",
+            "source_key": "drive_type"
+          },
+          "doors": {
+            "basis": "matching_visible_and_public_state",
+            "source_key": "doors_num"
+          }
+        }
       }
     },
     {
@@ -1111,6 +1401,33 @@
         "fingerprint": "f94b2c0760ce90ebf07c84f6f3cf4284834d29b11ad34a2f454853908f7c739b",
         "customs_status": "cleared_declared",
         "description_complete": true
+      },
+      "drive_type": "front",
+      "power_hp": 105,
+      "modification": null,
+      "doors": 5,
+      "vehicle_key": null,
+      "vehicle_identity_verified": false,
+      "attribute_review": {
+        "version": "visible-state-v1",
+        "issues": [
+          "modification_missing_or_ambiguous",
+          "vin_missing_or_ambiguous"
+        ],
+        "evidence": {
+          "drive_type": {
+            "basis": "matching_visible_and_public_state",
+            "source_key": "drive_type"
+          },
+          "power_hp": {
+            "basis": "matching_visible_and_public_state",
+            "source_key": "power"
+          },
+          "doors": {
+            "basis": "matching_visible_and_public_state",
+            "source_key": "doors_num"
+          }
+        }
       }
     },
     {
@@ -1199,6 +1516,27 @@
         "fingerprint": "d9b07563463a121422845584f323d236f1e9d914c23da585f1035f34b535d95b",
         "customs_status": "cleared_declared",
         "description_complete": true
+      },
+      "drive_type": "front",
+      "power_hp": null,
+      "modification": null,
+      "doors": null,
+      "vehicle_key": null,
+      "vehicle_identity_verified": false,
+      "attribute_review": {
+        "version": "visible-state-v1",
+        "issues": [
+          "power_hp_missing_or_ambiguous",
+          "modification_missing_or_ambiguous",
+          "doors_missing_or_ambiguous",
+          "vin_missing_or_ambiguous"
+        ],
+        "evidence": {
+          "drive_type": {
+            "basis": "matching_visible_and_public_state",
+            "source_key": "drive_type"
+          }
+        }
       }
     },
     {
@@ -1287,6 +1625,27 @@
         "fingerprint": "cc9393c60fff3b22f097e9693b977ce395b8a44294d5f3d5322ce8ff28256daa",
         "customs_status": "cleared_declared",
         "description_complete": true
+      },
+      "drive_type": "front",
+      "power_hp": null,
+      "modification": null,
+      "doors": null,
+      "vehicle_key": null,
+      "vehicle_identity_verified": false,
+      "attribute_review": {
+        "version": "visible-state-v1",
+        "issues": [
+          "power_hp_missing_or_ambiguous",
+          "modification_missing_or_ambiguous",
+          "doors_missing_or_ambiguous",
+          "vin_missing_or_ambiguous"
+        ],
+        "evidence": {
+          "drive_type": {
+            "basis": "matching_visible_and_public_state",
+            "source_key": "drive_type"
+          }
+        }
       }
     },
     {
@@ -1379,6 +1738,34 @@
         "fingerprint": "48193f2d4458ff3ec1264d743d61c857a26e73571f727a835fa94c63efb1ffb9",
         "customs_status": "cleared_declared",
         "description_complete": true
+      },
+      "drive_type": "front",
+      "power_hp": null,
+      "modification": null,
+      "doors": 4,
+      "vehicle_key": "vin-sha256:08ad16ef16082a04358829c2b0108e6820433e21138d85be10a3c451ca6581af",
+      "vehicle_identity_verified": false,
+      "attribute_review": {
+        "version": "visible-state-v1",
+        "issues": [
+          "power_hp_missing_or_ambiguous",
+          "modification_missing_or_ambiguous"
+        ],
+        "evidence": {
+          "drive_type": {
+            "basis": "matching_visible_and_public_state",
+            "source_key": "drive_type"
+          },
+          "doors": {
+            "basis": "matching_visible_and_public_state",
+            "source_key": "doors_num"
+          },
+          "vehicle_key": {
+            "basis": "matching_visible_and_public_state_vin_claim",
+            "physical_identity_verified": false,
+            "format_verified": true
+          }
+        }
       }
     },
     {
@@ -1493,6 +1880,33 @@
         "fingerprint": "aacaad6f0732579d6c65871ea47d4b2b2b1e5804fcea5e5a934cdbacf9bb3721",
         "customs_status": "cleared_declared",
         "description_complete": true
+      },
+      "drive_type": "front",
+      "power_hp": 105,
+      "modification": null,
+      "doors": 5,
+      "vehicle_key": null,
+      "vehicle_identity_verified": false,
+      "attribute_review": {
+        "version": "visible-state-v1",
+        "issues": [
+          "modification_missing_or_ambiguous",
+          "vin_missing_or_ambiguous"
+        ],
+        "evidence": {
+          "drive_type": {
+            "basis": "matching_visible_and_public_state",
+            "source_key": "drive_type"
+          },
+          "power_hp": {
+            "basis": "matching_visible_and_public_state",
+            "source_key": "power"
+          },
+          "doors": {
+            "basis": "matching_visible_and_public_state",
+            "source_key": "doors_num"
+          }
+        }
       }
     },
     {
@@ -1612,6 +2026,27 @@
         "fingerprint": "ac007ce06aef0e54007d130ad9229926ab1e522c0956e46e10bbb5edbde3e6ef",
         "customs_status": "cleared_declared",
         "description_complete": true
+      },
+      "drive_type": "front",
+      "power_hp": null,
+      "modification": null,
+      "doors": null,
+      "vehicle_key": null,
+      "vehicle_identity_verified": false,
+      "attribute_review": {
+        "version": "visible-state-v1",
+        "issues": [
+          "power_hp_missing_or_ambiguous",
+          "modification_missing_or_ambiguous",
+          "doors_missing_or_ambiguous",
+          "vin_missing_or_ambiguous"
+        ],
+        "evidence": {
+          "drive_type": {
+            "basis": "matching_visible_and_public_state",
+            "source_key": "drive_type"
+          }
+        }
       }
     },
     {
@@ -1700,6 +2135,27 @@
         "fingerprint": "aede76f431e0a51172e9e69dd8113d97a4df363464f3d795052b45e301328153",
         "customs_status": "cleared_declared",
         "description_complete": true
+      },
+      "drive_type": "front",
+      "power_hp": null,
+      "modification": null,
+      "doors": null,
+      "vehicle_key": null,
+      "vehicle_identity_verified": false,
+      "attribute_review": {
+        "version": "visible-state-v1",
+        "issues": [
+          "power_hp_missing_or_ambiguous",
+          "modification_missing_or_ambiguous",
+          "doors_missing_or_ambiguous",
+          "vin_missing_or_ambiguous"
+        ],
+        "evidence": {
+          "drive_type": {
+            "basis": "matching_visible_and_public_state",
+            "source_key": "drive_type"
+          }
+        }
       }
     },
     {
@@ -1788,6 +2244,30 @@
         "fingerprint": "758902deba179fcc5efbbd315053a82aab473b8f3423c1d7682d05c6180fb857",
         "customs_status": "cleared_declared",
         "description_complete": true
+      },
+      "drive_type": "front",
+      "power_hp": 105,
+      "modification": null,
+      "doors": null,
+      "vehicle_key": null,
+      "vehicle_identity_verified": false,
+      "attribute_review": {
+        "version": "visible-state-v1",
+        "issues": [
+          "modification_missing_or_ambiguous",
+          "doors_missing_or_ambiguous",
+          "vin_missing_or_ambiguous"
+        ],
+        "evidence": {
+          "drive_type": {
+            "basis": "matching_visible_and_public_state",
+            "source_key": "drive_type"
+          },
+          "power_hp": {
+            "basis": "matching_visible_and_public_state",
+            "source_key": "power"
+          }
+        }
       }
     },
     {
@@ -1876,6 +2356,37 @@
         "fingerprint": "514b12932d699186c344b63f5894e74de7e74c95fbfcc44d215b674b77659699",
         "customs_status": "cleared_declared",
         "description_complete": true
+      },
+      "drive_type": "front",
+      "power_hp": 105,
+      "modification": null,
+      "doors": 5,
+      "vehicle_key": "vin-sha256:e546146903dc01e4325b89dddbe67245c2ac5f2d4f665a718a861b9b1be01190",
+      "vehicle_identity_verified": false,
+      "attribute_review": {
+        "version": "visible-state-v1",
+        "issues": [
+          "modification_missing_or_ambiguous"
+        ],
+        "evidence": {
+          "drive_type": {
+            "basis": "matching_visible_and_public_state",
+            "source_key": "drive_type"
+          },
+          "power_hp": {
+            "basis": "matching_visible_and_public_state",
+            "source_key": "power"
+          },
+          "doors": {
+            "basis": "matching_visible_and_public_state",
+            "source_key": "doors_num"
+          },
+          "vehicle_key": {
+            "basis": "matching_visible_and_public_state_vin_claim",
+            "physical_identity_verified": false,
+            "format_verified": true
+          }
+        }
       }
     },
     {
@@ -1967,6 +2478,30 @@
         "fingerprint": "f8d897e7a6575844fdb41486edc561394adb15bfcbbab46c208a588af9242310",
         "customs_status": "cleared_declared",
         "description_complete": true
+      },
+      "drive_type": "front",
+      "power_hp": null,
+      "modification": null,
+      "doors": 5,
+      "vehicle_key": null,
+      "vehicle_identity_verified": false,
+      "attribute_review": {
+        "version": "visible-state-v1",
+        "issues": [
+          "power_hp_missing_or_ambiguous",
+          "modification_value_or_units_unconfirmed",
+          "vin_missing_or_ambiguous"
+        ],
+        "evidence": {
+          "drive_type": {
+            "basis": "matching_visible_and_public_state",
+            "source_key": "drive_type"
+          },
+          "doors": {
+            "basis": "matching_visible_and_public_state",
+            "source_key": "doors_num"
+          }
+        }
       }
     },
     {
@@ -2081,6 +2616,30 @@
         "fingerprint": "234e8682a10a29872ebbecbdf65b369013a7b8bf20949eab825ce6506ad762d5",
         "customs_status": "cleared_declared",
         "description_complete": true
+      },
+      "drive_type": "front",
+      "power_hp": null,
+      "modification": null,
+      "doors": 4,
+      "vehicle_key": null,
+      "vehicle_identity_verified": false,
+      "attribute_review": {
+        "version": "visible-state-v1",
+        "issues": [
+          "power_hp_missing_or_ambiguous",
+          "modification_missing_or_ambiguous",
+          "vin_missing_or_ambiguous"
+        ],
+        "evidence": {
+          "drive_type": {
+            "basis": "matching_visible_and_public_state",
+            "source_key": "drive_type"
+          },
+          "doors": {
+            "basis": "matching_visible_and_public_state",
+            "source_key": "doors_num"
+          }
+        }
       }
     },
     {
@@ -2169,6 +2728,30 @@
         "reasons": [
           "full_price_unconfirmed"
         ]
+      },
+      "drive_type": "full",
+      "power_hp": null,
+      "modification": null,
+      "doors": 5,
+      "vehicle_key": null,
+      "vehicle_identity_verified": false,
+      "attribute_review": {
+        "version": "visible-state-v1",
+        "issues": [
+          "power_hp_missing_or_ambiguous",
+          "modification_missing_or_ambiguous",
+          "vin_missing_or_ambiguous"
+        ],
+        "evidence": {
+          "drive_type": {
+            "basis": "matching_visible_and_public_state",
+            "source_key": "drive_type"
+          },
+          "doors": {
+            "basis": "matching_visible_and_public_state",
+            "source_key": "doors_num"
+          }
+        }
       }
     },
     {
@@ -2256,6 +2839,39 @@
         "reasons": [
           "full_price_unconfirmed"
         ]
+      },
+      "drive_type": "front",
+      "power_hp": 160,
+      "modification": "1.8 tsi",
+      "doors": 4,
+      "vehicle_key": "vin-sha256:361673a9425fdd4fc1c4458dba55dd7eacbd655543755badaf6ae9b345309442",
+      "vehicle_identity_verified": false,
+      "attribute_review": {
+        "version": "visible-state-v1",
+        "issues": [],
+        "evidence": {
+          "drive_type": {
+            "basis": "matching_visible_and_public_state",
+            "source_key": "drive_type"
+          },
+          "power_hp": {
+            "basis": "matching_visible_and_public_state",
+            "source_key": "power"
+          },
+          "modification": {
+            "basis": "matching_visible_and_public_state",
+            "source_key": "modification"
+          },
+          "doors": {
+            "basis": "matching_visible_and_public_state",
+            "source_key": "doors_num"
+          },
+          "vehicle_key": {
+            "basis": "matching_visible_and_public_state_vin_claim",
+            "physical_identity_verified": false,
+            "format_verified": true
+          }
+        }
       }
     },
     {
@@ -2343,6 +2959,27 @@
         "reasons": [
           "full_price_unconfirmed"
         ]
+      },
+      "drive_type": "front",
+      "power_hp": null,
+      "modification": null,
+      "doors": null,
+      "vehicle_key": null,
+      "vehicle_identity_verified": false,
+      "attribute_review": {
+        "version": "visible-state-v1",
+        "issues": [
+          "power_hp_missing_or_ambiguous",
+          "modification_missing_or_ambiguous",
+          "doors_missing_or_ambiguous",
+          "vin_missing_or_ambiguous"
+        ],
+        "evidence": {
+          "drive_type": {
+            "basis": "matching_visible_and_public_state",
+            "source_key": "drive_type"
+          }
+        }
       }
     },
     {
@@ -2431,6 +3068,33 @@
         "reasons": [
           "full_price_unconfirmed"
         ]
+      },
+      "drive_type": "back",
+      "power_hp": 162,
+      "modification": null,
+      "doors": 4,
+      "vehicle_key": null,
+      "vehicle_identity_verified": false,
+      "attribute_review": {
+        "version": "visible-state-v1",
+        "issues": [
+          "modification_value_or_units_unconfirmed",
+          "vin_missing_or_ambiguous"
+        ],
+        "evidence": {
+          "drive_type": {
+            "basis": "matching_visible_and_public_state",
+            "source_key": "drive_type"
+          },
+          "power_hp": {
+            "basis": "matching_visible_and_public_state",
+            "source_key": "power"
+          },
+          "doors": {
+            "basis": "matching_visible_and_public_state",
+            "source_key": "doors_num"
+          }
+        }
       }
     },
     {
@@ -2519,6 +3183,37 @@
         "reasons": [
           "full_price_unconfirmed"
         ]
+      },
+      "drive_type": "front",
+      "power_hp": 160,
+      "modification": null,
+      "doors": 5,
+      "vehicle_key": "vin-sha256:7d84b1707ddeb5c8eecdf0dba44f53fbb48b4ae6a5293a53ae8eed78dd44fd45",
+      "vehicle_identity_verified": false,
+      "attribute_review": {
+        "version": "visible-state-v1",
+        "issues": [
+          "modification_value_or_units_unconfirmed"
+        ],
+        "evidence": {
+          "drive_type": {
+            "basis": "matching_visible_and_public_state",
+            "source_key": "drive_type"
+          },
+          "power_hp": {
+            "basis": "matching_visible_and_public_state",
+            "source_key": "power"
+          },
+          "doors": {
+            "basis": "matching_visible_and_public_state",
+            "source_key": "doors_num"
+          },
+          "vehicle_key": {
+            "basis": "matching_visible_and_public_state_vin_claim",
+            "physical_identity_verified": false,
+            "format_verified": true
+          }
+        }
       }
     },
     {
@@ -2633,6 +3328,30 @@
         "reasons": [
           "full_price_unconfirmed"
         ]
+      },
+      "drive_type": "front",
+      "power_hp": null,
+      "modification": null,
+      "doors": 5,
+      "vehicle_key": null,
+      "vehicle_identity_verified": false,
+      "attribute_review": {
+        "version": "visible-state-v1",
+        "issues": [
+          "power_hp_missing_or_ambiguous",
+          "modification_missing_or_ambiguous",
+          "vin_missing_or_ambiguous"
+        ],
+        "evidence": {
+          "drive_type": {
+            "basis": "matching_visible_and_public_state",
+            "source_key": "drive_type"
+          },
+          "doors": {
+            "basis": "matching_visible_and_public_state",
+            "source_key": "doors_num"
+          }
+        }
       }
     },
     {
@@ -2726,6 +3445,27 @@
           "full_price_unconfirmed",
           "price_context_deposit"
         ]
+      },
+      "drive_type": "front",
+      "power_hp": null,
+      "modification": null,
+      "doors": null,
+      "vehicle_key": null,
+      "vehicle_identity_verified": false,
+      "attribute_review": {
+        "version": "visible-state-v1",
+        "issues": [
+          "power_hp_missing_or_ambiguous",
+          "modification_missing_or_ambiguous",
+          "doors_missing_or_ambiguous",
+          "vin_missing_or_ambiguous"
+        ],
+        "evidence": {
+          "drive_type": {
+            "basis": "matching_visible_and_public_state",
+            "source_key": "drive_type"
+          }
+        }
       }
     },
     {
@@ -2814,6 +3554,30 @@
         "reasons": [
           "full_price_unconfirmed"
         ]
+      },
+      "drive_type": "front",
+      "power_hp": null,
+      "modification": null,
+      "doors": 5,
+      "vehicle_key": null,
+      "vehicle_identity_verified": false,
+      "attribute_review": {
+        "version": "visible-state-v1",
+        "issues": [
+          "power_hp_missing_or_ambiguous",
+          "modification_missing_or_ambiguous",
+          "vin_missing_or_ambiguous"
+        ],
+        "evidence": {
+          "drive_type": {
+            "basis": "matching_visible_and_public_state",
+            "source_key": "drive_type"
+          },
+          "doors": {
+            "basis": "matching_visible_and_public_state",
+            "source_key": "doors_num"
+          }
+        }
       }
     },
     {
@@ -2905,6 +3669,30 @@
         "reasons": [
           "full_price_unconfirmed"
         ]
+      },
+      "drive_type": "front",
+      "power_hp": null,
+      "modification": null,
+      "doors": 4,
+      "vehicle_key": null,
+      "vehicle_identity_verified": false,
+      "attribute_review": {
+        "version": "visible-state-v1",
+        "issues": [
+          "power_hp_missing_or_ambiguous",
+          "modification_missing_or_ambiguous",
+          "vin_missing_or_ambiguous"
+        ],
+        "evidence": {
+          "drive_type": {
+            "basis": "matching_visible_and_public_state",
+            "source_key": "drive_type"
+          },
+          "doors": {
+            "basis": "matching_visible_and_public_state",
+            "source_key": "doors_num"
+          }
+        }
       }
     },
     {
@@ -2993,6 +3781,33 @@
         "reasons": [
           "full_price_unconfirmed"
         ]
+      },
+      "drive_type": "full",
+      "power_hp": 160,
+      "modification": null,
+      "doors": 5,
+      "vehicle_key": null,
+      "vehicle_identity_verified": false,
+      "attribute_review": {
+        "version": "visible-state-v1",
+        "issues": [
+          "modification_missing_or_ambiguous",
+          "vin_missing_or_ambiguous"
+        ],
+        "evidence": {
+          "drive_type": {
+            "basis": "matching_visible_and_public_state",
+            "source_key": "drive_type"
+          },
+          "power_hp": {
+            "basis": "matching_visible_and_public_state",
+            "source_key": "power"
+          },
+          "doors": {
+            "basis": "matching_visible_and_public_state",
+            "source_key": "doors_num"
+          }
+        }
       }
     },
     {
@@ -3084,6 +3899,30 @@
         "reasons": [
           "full_price_unconfirmed"
         ]
+      },
+      "drive_type": "front",
+      "power_hp": null,
+      "modification": null,
+      "doors": 5,
+      "vehicle_key": null,
+      "vehicle_identity_verified": false,
+      "attribute_review": {
+        "version": "visible-state-v1",
+        "issues": [
+          "modification_missing_or_ambiguous",
+          "vin_missing_or_ambiguous",
+          "power_hp_description_conflict"
+        ],
+        "evidence": {
+          "drive_type": {
+            "basis": "matching_visible_and_public_state",
+            "source_key": "drive_type"
+          },
+          "doors": {
+            "basis": "matching_visible_and_public_state",
+            "source_key": "doors_num"
+          }
+        }
       }
     },
     {
@@ -3171,6 +4010,37 @@
         "reasons": [
           "full_price_unconfirmed"
         ]
+      },
+      "drive_type": "front",
+      "power_hp": 160,
+      "modification": null,
+      "doors": 5,
+      "vehicle_key": "vin-sha256:b2477fe9d9cfaa204b903ea22cc5fd01dada680bb68534c3b2f9cfc14c97ec99",
+      "vehicle_identity_verified": false,
+      "attribute_review": {
+        "version": "visible-state-v1",
+        "issues": [
+          "modification_missing_or_ambiguous"
+        ],
+        "evidence": {
+          "drive_type": {
+            "basis": "matching_visible_and_public_state",
+            "source_key": "drive_type"
+          },
+          "power_hp": {
+            "basis": "matching_visible_and_public_state",
+            "source_key": "power"
+          },
+          "doors": {
+            "basis": "matching_visible_and_public_state",
+            "source_key": "doors_num"
+          },
+          "vehicle_key": {
+            "basis": "matching_visible_and_public_state_vin_claim",
+            "physical_identity_verified": false,
+            "format_verified": true
+          }
+        }
       }
     },
     {
@@ -3259,6 +4129,33 @@
         "reasons": [
           "full_price_unconfirmed"
         ]
+      },
+      "drive_type": "front",
+      "power_hp": 160,
+      "modification": null,
+      "doors": 5,
+      "vehicle_key": null,
+      "vehicle_identity_verified": false,
+      "attribute_review": {
+        "version": "visible-state-v1",
+        "issues": [
+          "modification_missing_or_ambiguous",
+          "vin_missing_or_ambiguous"
+        ],
+        "evidence": {
+          "drive_type": {
+            "basis": "matching_visible_and_public_state",
+            "source_key": "drive_type"
+          },
+          "power_hp": {
+            "basis": "matching_visible_and_public_state",
+            "source_key": "power"
+          },
+          "doors": {
+            "basis": "matching_visible_and_public_state",
+            "source_key": "doors_num"
+          }
+        }
       }
     },
     {
@@ -3346,6 +4243,30 @@
         "reasons": [
           "full_price_unconfirmed"
         ]
+      },
+      "drive_type": "front",
+      "power_hp": null,
+      "modification": null,
+      "doors": 5,
+      "vehicle_key": null,
+      "vehicle_identity_verified": false,
+      "attribute_review": {
+        "version": "visible-state-v1",
+        "issues": [
+          "power_hp_missing_or_ambiguous",
+          "modification_value_or_units_unconfirmed",
+          "vin_missing_or_ambiguous"
+        ],
+        "evidence": {
+          "drive_type": {
+            "basis": "matching_visible_and_public_state",
+            "source_key": "drive_type"
+          },
+          "doors": {
+            "basis": "matching_visible_and_public_state",
+            "source_key": "doors_num"
+          }
+        }
       }
     },
     {
@@ -3433,6 +4354,33 @@
         "reasons": [
           "full_price_unconfirmed"
         ]
+      },
+      "drive_type": "front",
+      "power_hp": 160,
+      "modification": null,
+      "doors": 5,
+      "vehicle_key": null,
+      "vehicle_identity_verified": false,
+      "attribute_review": {
+        "version": "visible-state-v1",
+        "issues": [
+          "modification_value_or_units_unconfirmed",
+          "vin_missing_or_ambiguous"
+        ],
+        "evidence": {
+          "drive_type": {
+            "basis": "matching_visible_and_public_state",
+            "source_key": "drive_type"
+          },
+          "power_hp": {
+            "basis": "matching_visible_and_public_state",
+            "source_key": "power"
+          },
+          "doors": {
+            "basis": "matching_visible_and_public_state",
+            "source_key": "doors_num"
+          }
+        }
       }
     },
     {
@@ -3523,6 +4471,30 @@
         "reasons": [
           "full_price_unconfirmed"
         ]
+      },
+      "drive_type": "front",
+      "power_hp": 150,
+      "modification": null,
+      "doors": null,
+      "vehicle_key": null,
+      "vehicle_identity_verified": false,
+      "attribute_review": {
+        "version": "visible-state-v1",
+        "issues": [
+          "modification_value_or_units_unconfirmed",
+          "doors_missing_or_ambiguous",
+          "vin_missing_or_ambiguous"
+        ],
+        "evidence": {
+          "drive_type": {
+            "basis": "matching_visible_and_public_state",
+            "source_key": "drive_type"
+          },
+          "power_hp": {
+            "basis": "matching_visible_and_public_state",
+            "source_key": "power"
+          }
+        }
       }
     },
     {
@@ -3637,6 +4609,37 @@
         "reasons": [
           "full_price_unconfirmed"
         ]
+      },
+      "drive_type": "front",
+      "power_hp": 160,
+      "modification": null,
+      "doors": 5,
+      "vehicle_key": "vin-sha256:35daa8fa6c7847343e149e16b20c0cf376fc6e68ff4687a6aa41f27e87983e50",
+      "vehicle_identity_verified": false,
+      "attribute_review": {
+        "version": "visible-state-v1",
+        "issues": [
+          "modification_value_or_units_unconfirmed"
+        ],
+        "evidence": {
+          "drive_type": {
+            "basis": "matching_visible_and_public_state",
+            "source_key": "drive_type"
+          },
+          "power_hp": {
+            "basis": "matching_visible_and_public_state",
+            "source_key": "power"
+          },
+          "doors": {
+            "basis": "matching_visible_and_public_state",
+            "source_key": "doors_num"
+          },
+          "vehicle_key": {
+            "basis": "matching_visible_and_public_state_vin_claim",
+            "physical_identity_verified": false,
+            "format_verified": true
+          }
+        }
       }
     },
     {
@@ -3725,6 +4728,34 @@
         "reasons": [
           "full_price_unconfirmed"
         ]
+      },
+      "drive_type": "front",
+      "power_hp": null,
+      "modification": null,
+      "doors": 5,
+      "vehicle_key": "vin-sha256:63eba9892f06fb90442ceecd98234b22cc5c4bf45f91c2be0809eebcfb009711",
+      "vehicle_identity_verified": false,
+      "attribute_review": {
+        "version": "visible-state-v1",
+        "issues": [
+          "power_hp_missing_or_ambiguous",
+          "modification_value_or_units_unconfirmed"
+        ],
+        "evidence": {
+          "drive_type": {
+            "basis": "matching_visible_and_public_state",
+            "source_key": "drive_type"
+          },
+          "doors": {
+            "basis": "matching_visible_and_public_state",
+            "source_key": "doors_num"
+          },
+          "vehicle_key": {
+            "basis": "matching_visible_and_public_state_vin_claim",
+            "physical_identity_verified": false,
+            "format_verified": true
+          }
+        }
       }
     },
     {
@@ -3812,6 +4843,30 @@
         "reasons": [
           "full_price_unconfirmed"
         ]
+      },
+      "drive_type": "full",
+      "power_hp": null,
+      "modification": null,
+      "doors": 5,
+      "vehicle_key": null,
+      "vehicle_identity_verified": false,
+      "attribute_review": {
+        "version": "visible-state-v1",
+        "issues": [
+          "power_hp_missing_or_ambiguous",
+          "modification_value_or_units_unconfirmed",
+          "vin_missing_or_ambiguous"
+        ],
+        "evidence": {
+          "drive_type": {
+            "basis": "matching_visible_and_public_state",
+            "source_key": "drive_type"
+          },
+          "doors": {
+            "basis": "matching_visible_and_public_state",
+            "source_key": "doors_num"
+          }
+        }
       }
     },
     {
@@ -3900,6 +4955,33 @@
         "reasons": [
           "full_price_unconfirmed"
         ]
+      },
+      "drive_type": "front",
+      "power_hp": 190,
+      "modification": null,
+      "doors": 5,
+      "vehicle_key": null,
+      "vehicle_identity_verified": false,
+      "attribute_review": {
+        "version": "visible-state-v1",
+        "issues": [
+          "modification_missing_or_ambiguous",
+          "vin_missing_or_ambiguous"
+        ],
+        "evidence": {
+          "drive_type": {
+            "basis": "matching_visible_and_public_state",
+            "source_key": "drive_type"
+          },
+          "power_hp": {
+            "basis": "matching_visible_and_public_state",
+            "source_key": "power"
+          },
+          "doors": {
+            "basis": "matching_visible_and_public_state",
+            "source_key": "doors_num"
+          }
+        }
       }
     }
   ],

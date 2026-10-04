@@ -8,10 +8,11 @@ from collections import Counter
 from decimal import Decimal, localcontext
 from .fx_policy import normalize
 from .observations import asking_price_reasons
+from .body_policy import body_policy,comparable_value
 from experiments.olx_offline.market import _percentile
 
 METHODS=('median','trimmed_mean','weighted_median')
-FIELDS=('brand','model','generation','body','fuel','transmission','engine_cc')
+FIELDS=('brand','model','generation','body','fuel','transmission','engine_cc','drive_type','power_hp')
 
 
 def screened(car,quote,now):
@@ -38,7 +39,7 @@ def estimate(target,candidates,quote,now,*,minimum=8):
           'price_basis':'corroborated_full_page_asking_display_not_completed_sale',
           'seller_claims_independently_verified':False,'recommended':None,
           'extra_ria_margin_percent':'0','required_sample':minimum,'used_comparables':[],
-          'exclusions':{},'excluded':[],'selected_method':None}
+          'exclusions':{},'excluded':[],'selected_method':None,'body_policy':body_policy(target)}
     if reasons:return base
     # Keep latest source+ID; same-time conflicting versions are held together.
     versions={}
@@ -69,7 +70,7 @@ def estimate(target,candidates,quote,now,*,minimum=8):
         if vehicle and c.get('checked_at',0)<vehicle_latest[vehicle]:why.append('known_vehicle_superseded')
         p,screen=screened(c,quote,now);why+=screen
         if not why:
-            why+=['mismatch_'+f for f in FIELDS if str(c[f]).casefold()!=str(target[f]).casefold()]
+            why+=['mismatch_'+f for f in FIELDS if str(comparable_value(c,f)).casefold()!=str(comparable_value(target,f)).casefold()]
             if abs(c['year']-target['year'])>1:why.append('mismatch_year')
             if abs(c['mileage_km']-target['mileage_km'])>30000:why.append('mismatch_mileage')
             if c['research_condition']!=target['research_condition']:why.append('mismatch_condition')
@@ -80,7 +81,7 @@ def estimate(target,candidates,quote,now,*,minimum=8):
     base['excluded']=excluded;base['exclusions']=dict(Counter(r for e in excluded for r in e['reasons']))
     base['sample']=len(rows)
     base['used_comparables']=[{'id':c['id'],'asking_usd':str(v),'checked_at':c['checked_at'],'fx_basis':p['fx_basis']} for c,v,p in rows]
-    base['independent_vehicles_verified']=len(rows) if target_key and all(c.get('vehicle_key') for c,_,_ in rows) else None
+    base['independent_vehicles_verified']=len(rows) if (target_key and target.get('vehicle_identity_verified') is True and all(c.get('vehicle_key') and c.get('vehicle_identity_verified') is True for c,_,_ in rows)) else None
     if len(rows)<minimum:base['reasons']=['insufficient_comparables'];return base
     with localcontext() as ctx:
         ctx.prec=50
@@ -89,6 +90,9 @@ def estimate(target,candidates,quote,now,*,minimum=8):
         outliers=[{'id':c['id'],'reasons':['price_outlier']} for c,v,p in rows if not q1-Decimal('1.5')*iqr<=v<=q3+Decimal('1.5')*iqr]
         base['excluded']+=outliers
         base['exclusions']=dict(Counter(r for e in base['excluded'] for r in e['reasons']))
+        base['sample']=len(accepted)
+        base['used_comparables']=[{'id':c['id'],'asking_usd':str(v),'checked_at':c['checked_at'],'fx_basis':p['fx_basis']} for c,v,p in accepted]
+        base['independent_vehicles_verified']=len(accepted) if (target_key and target.get('vehicle_identity_verified') is True and all(c.get('vehicle_key') and c.get('vehicle_identity_verified') is True for c,_,_ in accepted)) else None
         if len(accepted)<minimum:
             base['sample']=len(accepted);base['reasons']=['insufficient_after_outliers']
             base['used_comparables']=[{'id':c['id'],'asking_usd':str(v),'checked_at':c['checked_at'],'fx_basis':p['fx_basis']} for c,v,p in accepted]

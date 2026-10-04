@@ -76,7 +76,7 @@ def detail_change(previous,current,*,first_seen):
         if current.get('currency')==previous.get('currency'):
             if current.get('price')!=previous.get('price'):events.append('display_price_changed')
         else:events.append('display_currency_changed_not_verified_seller_price_change')
-        if any(previous.get(f)!=current.get(f) for f in ('year','mileage_km','engine_cc','fuel','transmission','body')):
+        if any(previous.get(f)!=current.get(f) for f in ('year','mileage_km','engine_cc','fuel','transmission','body','generation','drive_type','power_hp','modification','doors')):
             events.append('characteristics_changed')
         old_dates=previous.get('source_date_observations',{}).get('values',{})
         for f,event in (('lastRefreshTime','source_refresh_advanced'),('pushupTime','source_pushup_advanced')):

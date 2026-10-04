@@ -3,11 +3,7 @@
   "night": "2026-10-05-Europe-Kyiv",
   "status": "active",
   "deadline": "2026-10-05T08:00:00+03:00",
-  "lease": {
-    "owner": "foreground-20261005-0017",
-    "started_at": "2026-10-04T21:21:08.240Z",
-    "expires_at": "2026-10-04T22:06:08.240Z"
-  },
+  "lease": null,
   "budget": {
     "olx_get_cap": 60,
     "olx_bytes_cap": 167772160,
@@ -18,6 +14,17 @@
   },
   "source_holds": [],
   "reservations": [],
-  "runs": [],
-  "next_step": "Extract corroborated drive/power/variant/hashed vehicle evidence from saved HTML; strengthen exact matching; then targeted cohort acquisition with frozen holdout."
+  "runs": [
+    {
+      "owner": "foreground-20261005-0017",
+      "completed_at": "2026-10-05T00:44:38+03:00",
+      "olx_calls": 0,
+      "fx_calls": 0,
+      "tests_passed": 387,
+      "subtests_passed": 150,
+      "summary": "Corroborated drive/power/VIN hashes; fixed power conflict, independence and refresh; persisted371pending; localHTMLreview; marketstill0/42",
+      "checkpoint": "NIGHT-CHECKPOINT-20261005.md"
+    }
+  ],
+  "next_step": "Use persisted371pending candidates for a dense, compatible cohort; freeze holdout before detail prices, reserve finite exact URLs in remote state; do not loosen drive/power/body/condition or minimum8. HTML browser validation remains unavailable."
 }

@@ -1,0 +1,64 @@
+{
+  "checked_at": "2026-10-05T00:42:49.210934+03:00",
+  "kind": "saved_real_reparse_no_new_OLX_or_FX",
+  "olx_calls": 0,
+  "fx_calls": 0,
+  "real_telegram_calls": 0,
+  "attributes": {
+    "details": 42,
+    "drive_known": 42,
+    "power_known": 20,
+    "known_vehicle_keys": 9,
+    "drives": {
+      "front": 38,
+      "full": 3,
+      "back": 1
+    }
+  },
+  "power_conflict_ids": [
+    "935257978"
+  ],
+  "tests_passed": 387,
+  "subtests_passed": 150,
+  "local_previews": 72,
+  "restart_new_previews": 0,
+  "unpaid_previews": 0,
+  "estimated": 0,
+  "total": 42,
+  "maximum_comparables": 4,
+  "valuation_reasons": {
+    "missing_power_hp": 22,
+    "eligibility_not_allowed": 1,
+    "insufficient_comparables": 13,
+    "missing_generation": 2,
+    "condition_unconfirmed": 10,
+    "ordinary_sale_not_corroborated": 5,
+    "visible_sale_terms_missing_or_conflicting": 5,
+    "price_context_deposit": 1
+  },
+  "holdout": {
+    "split_seed": "olx-stage2323-v1",
+    "benchmark_kind": "withheld_asking_price_only",
+    "frozen_holdout_count": 3,
+    "loaded_holdout_count": 3,
+    "reference_count": 39,
+    "eligible_holdout_count": 0,
+    "estimated_holdout_count": 0,
+    "eligible_coverage": null,
+    "unknown_holdout_count": 3,
+    "sale_price_accuracy_verified": false,
+    "profitable_labels": 0,
+    "false_positive": null,
+    "false_negative": null,
+    "winner_selected": null,
+    "unknown_crossposts_may_remain": true
+  },
+  "html_preview": {
+    "cases": 42,
+    "embedded_data_and_js_syntax_verified": true,
+    "browser_render_verified": false,
+    "reason": "Chromium absent; installation archive invalid; no screenshot success claimed"
+  },
+  "pending_manifest_count": 371,
+  "production_changed": false
+}

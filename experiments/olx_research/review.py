@@ -26,7 +26,7 @@ def build(raw,state):
     cases=[]
     for c,a in zip(cars,dataset['results']):
         cases.append({'id':c['id'],'url':c['url'],'title':c.get('title'),
-            'attributes':{k:c.get(k) for k in ('brand','model','generation','year','engine_cc','fuel','transmission','body','mileage_km','research_condition')},
+            'attributes':{k:c.get(k) for k in ('brand','model','generation','year','engine_cc','fuel','transmission','body','mileage_km','research_condition','drive_type','power_hp','modification','doors')},
             'price':normalize(c,quote,now),'asking_evidence_reasons':asking_price_reasons(c),
             'offer':{k:c.get('eligibility_review',{}).get(k) for k in ('status','reasons','customs_status')},
             'observed_at':c['checked_at'],'newness':detail_change(None,c,first_seen=c.get('first_seen_at') or c['checked_at']),

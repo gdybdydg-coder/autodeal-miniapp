@@ -1,5 +1,7 @@
 # OLX: isolated review, 2026-10-04
 
+Latest: [overnight checkpoint](NIGHT-CHECKPOINT-20261005.md), [overnight rules](NIGHT-20261005.md), and `night-state.json`. Current saved cohort now requires corroborated drive/power for valuation; historical numbers below remain dated checkpoints.
+
 **Not connected to the bot. No deployment or Telegram authorization.**
 Base and unchanged production: `afaf9cee348db64f0558e5d113b2895c48366421`.
 The continuation changes `experiments/olx_research` and fixes the isolated

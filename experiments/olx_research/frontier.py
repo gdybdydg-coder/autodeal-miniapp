@@ -3,11 +3,17 @@
 All observed candidates are saved before a work cap. An explicit coordinator
 claims finite batches. GET retries are bounded; source blocking is persistent.
 """
-import json,sqlite3,uuid
+import hashlib,json,sqlite3,uuid
 from .flow import access
 from .candidates import select_candidates
 from .source_tracking import detail_change,public_detail_url,same_detail_url
 from .candidates import filter_reasons
+
+
+def search_signature(car):
+    fields=('title','price','currency','brand','model','year','mileage_km','fuel',
+            'transmission','body','engine_cc','field_conflicts')
+    return json.dumps({k:car.get(k) for k in fields},sort_keys=True)
 
 
 class Frontier:
@@ -25,6 +31,11 @@ class Frontier:
         CREATE TABLE IF NOT EXISTS research_source_holds(source TEXT PRIMARY KEY,reason TEXT);
         CREATE TABLE IF NOT EXISTS research_details(source TEXT,id TEXT,first_seen INTEGER,
           payload TEXT,changes TEXT,PRIMARY KEY(source,id));
+        CREATE TABLE IF NOT EXISTS research_refreshes(source TEXT,id TEXT,payload TEXT,
+          PRIMARY KEY(source,id));
+        CREATE TABLE IF NOT EXISTS research_detail_events(source TEXT,id TEXT,
+          observed_at INTEGER,fingerprint TEXT,changes TEXT,
+          PRIMARY KEY(source,id,observed_at,fingerprint));
         ''')
 
     def close(self):self.db.close()
@@ -43,8 +54,20 @@ class Frontier:
                 old=self.db.execute('SELECT payload,state FROM research_candidates WHERE source=? AND id=?',(c['source'],c['id'])).fetchone()
                 previous=json.loads(old['payload'])
                 c['first_seen_at']=previous.get('first_seen_at') or previous['checked_at']
-                if old['state'] in ('pending','retry') and previous.get('checked_at',0)<c.get('checked_at',0):
+                if previous.get('checked_at',0)>=c.get('checked_at',0):continue
+                if old['state'] in ('pending','retry'):
                     self.db.execute('UPDATE research_candidates SET payload=? WHERE source=? AND id=?',(json.dumps(c),c['source'],c['id']))
+                elif old['state']=='claimed':
+                    queued=self.db.execute('SELECT payload FROM research_refreshes WHERE source=? AND id=?',(c['source'],c['id'])).fetchone()
+                    if not queued or json.loads(queued[0]).get('checked_at',0)<c['checked_at']:
+                        self.db.execute('INSERT OR REPLACE INTO research_refreshes VALUES(?,?,?)',(c['source'],c['id'],json.dumps(c)))
+                elif old['state']=='stored':
+                    detail=self.db.execute('SELECT payload FROM research_details WHERE source=? AND id=?',(c['source'],c['id'])).fetchone()
+                    observed=json.loads(detail[0])['checked_at'] if detail else 0
+                    changed=search_signature(previous)!=search_signature(c)
+                    self.db.execute('UPDATE research_candidates SET payload=? WHERE source=? AND id=?',(json.dumps(c),c['source'],c['id']))
+                    if c['checked_at']>observed and (changed or now-observed>=3600):
+                        self.db.execute("UPDATE research_candidates SET state='pending',attempts=0,next_at=?,reason=? WHERE source=? AND id=?",(max(now,observed+60),'search_change' if changed else 'detail_age',c['source'],c['id']))
             self.db.execute('COMMIT')
         except Exception:self.db.execute('ROLLBACK');raise
 
@@ -85,7 +108,16 @@ class Frontier:
                 first=old['first_seen'] if old else (original.get('first_seen_at') or original['checked_at'])
                 change=detail_change(json.loads(old['payload']) if old else None,car,first_seen=first)
                 self.db.execute('INSERT OR REPLACE INTO research_details VALUES(?,?,?,?,?)',(row['source'],row['id'],first,json.dumps(car),json.dumps(change)))
+                fingerprint=hashlib.sha256(json.dumps(car,sort_keys=True).encode()).hexdigest()
+                self.db.execute('INSERT OR IGNORE INTO research_detail_events VALUES(?,?,?,?,?)',(row['source'],row['id'],car['checked_at'],fingerprint,json.dumps(change)))
                 state='stored';reason=None
+                queued=self.db.execute('SELECT payload FROM research_refreshes WHERE source=? AND id=?',(row['source'],row['id'])).fetchone()
+                if queued:
+                    latest=json.loads(queued[0])
+                    if latest.get('checked_at',0)>car['checked_at'] and search_signature(latest)!=search_signature(original):
+                        state='pending';reason='search_changed_during_detail';next_at=max(now,car['checked_at']+60)
+                        self.db.execute('UPDATE research_candidates SET payload=?,attempts=0 WHERE source=? AND id=?',(queued[0],row['source'],row['id']))
+                    self.db.execute('DELETE FROM research_refreshes WHERE source=? AND id=?',(row['source'],row['id']))
             elif status in (401,403,429):
                 state='source_blocked';reason='http_'+str(status)
                 self.db.execute('INSERT OR REPLACE INTO research_source_holds VALUES(?,?)',(row['source'],reason))
