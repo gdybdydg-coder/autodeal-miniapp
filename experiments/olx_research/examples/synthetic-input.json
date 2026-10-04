@@ -1,0 +1,405 @@
+{
+  "mode": "isolated_research",
+  "dataset_kind": "synthetic_fixed_math_and_policy_fixture_NOT_real_ads",
+  "now": 1791142200,
+  "quote": null,
+  "listings": [
+    {
+      "source": "olx",
+      "id": "target",
+      "price": "6000",
+      "currency": "USD",
+      "title": "Skoda Octavia A5",
+      "brand": "Skoda",
+      "model": "Octavia",
+      "generation": "A5",
+      "year": 2008,
+      "body": "wagon",
+      "fuel": "diesel",
+      "transmission": "manual",
+      "engine_cc": 1900,
+      "mileage_km": 300000,
+      "region": "Хмельницька область",
+      "research_condition": "seller_declared_running",
+      "category": "whole_passenger_car",
+      "checked_at": 1791142200,
+      "publication_verified": true,
+      "published_at": 1791142190,
+      "eligibility_review": {
+        "status": "allowed"
+      },
+      "price_review": {
+        "reasons": [
+          "full_price_unconfirmed"
+        ]
+      },
+      "observed_asking_display": {
+        "status": "corroborated_display",
+        "amount": "6000",
+        "currency": "USD",
+        "description_reviewed_in_full": true,
+        "reasons": []
+      },
+      "field_conflicts": [],
+      "price_conflicts": [],
+      "photos": [],
+      "url": "https://www.olx.ua/d/uk/obyavlenie/test-IDexample.html"
+    },
+    {
+      "source": "olx",
+      "id": "0",
+      "price": "7800",
+      "currency": "USD",
+      "title": "Skoda Octavia A5",
+      "brand": "Skoda",
+      "model": "Octavia",
+      "generation": "A5",
+      "year": 2008,
+      "body": "wagon",
+      "fuel": "diesel",
+      "transmission": "manual",
+      "engine_cc": 1900,
+      "mileage_km": 300000,
+      "region": "Хмельницька область",
+      "research_condition": "seller_declared_running",
+      "category": "whole_passenger_car",
+      "checked_at": 1791142200,
+      "publication_verified": true,
+      "published_at": 1791142190,
+      "eligibility_review": {
+        "status": "allowed"
+      },
+      "price_review": {
+        "reasons": [
+          "full_price_unconfirmed"
+        ]
+      },
+      "observed_asking_display": {
+        "status": "corroborated_display",
+        "amount": "7800",
+        "currency": "USD",
+        "description_reviewed_in_full": true,
+        "reasons": []
+      },
+      "field_conflicts": [],
+      "price_conflicts": [],
+      "photos": [],
+      "url": "https://www.olx.ua/d/uk/obyavlenie/test-IDexample.html"
+    },
+    {
+      "source": "olx",
+      "id": "1",
+      "price": "7900",
+      "currency": "USD",
+      "title": "Skoda Octavia A5",
+      "brand": "Skoda",
+      "model": "Octavia",
+      "generation": "A5",
+      "year": 2008,
+      "body": "wagon",
+      "fuel": "diesel",
+      "transmission": "manual",
+      "engine_cc": 1900,
+      "mileage_km": 300000,
+      "region": "Хмельницька область",
+      "research_condition": "seller_declared_running",
+      "category": "whole_passenger_car",
+      "checked_at": 1791142200,
+      "publication_verified": true,
+      "published_at": 1791142190,
+      "eligibility_review": {
+        "status": "allowed"
+      },
+      "price_review": {
+        "reasons": [
+          "full_price_unconfirmed"
+        ]
+      },
+      "observed_asking_display": {
+        "status": "corroborated_display",
+        "amount": "7900",
+        "currency": "USD",
+        "description_reviewed_in_full": true,
+        "reasons": []
+      },
+      "field_conflicts": [],
+      "price_conflicts": [],
+      "photos": [],
+      "url": "https://www.olx.ua/d/uk/obyavlenie/test-IDexample.html"
+    },
+    {
+      "source": "olx",
+      "id": "2",
+      "price": "8000",
+      "currency": "USD",
+      "title": "Skoda Octavia A5",
+      "brand": "Skoda",
+      "model": "Octavia",
+      "generation": "A5",
+      "year": 2008,
+      "body": "wagon",
+      "fuel": "diesel",
+      "transmission": "manual",
+      "engine_cc": 1900,
+      "mileage_km": 300000,
+      "region": "Хмельницька область",
+      "research_condition": "seller_declared_running",
+      "category": "whole_passenger_car",
+      "checked_at": 1791142200,
+      "publication_verified": true,
+      "published_at": 1791142190,
+      "eligibility_review": {
+        "status": "allowed"
+      },
+      "price_review": {
+        "reasons": [
+          "full_price_unconfirmed"
+        ]
+      },
+      "observed_asking_display": {
+        "status": "corroborated_display",
+        "amount": "8000",
+        "currency": "USD",
+        "description_reviewed_in_full": true,
+        "reasons": []
+      },
+      "field_conflicts": [],
+      "price_conflicts": [],
+      "photos": [],
+      "url": "https://www.olx.ua/d/uk/obyavlenie/test-IDexample.html"
+    },
+    {
+      "source": "olx",
+      "id": "3",
+      "price": "8050",
+      "currency": "USD",
+      "title": "Skoda Octavia A5",
+      "brand": "Skoda",
+      "model": "Octavia",
+      "generation": "A5",
+      "year": 2008,
+      "body": "wagon",
+      "fuel": "diesel",
+      "transmission": "manual",
+      "engine_cc": 1900,
+      "mileage_km": 300000,
+      "region": "Хмельницька область",
+      "research_condition": "seller_declared_running",
+      "category": "whole_passenger_car",
+      "checked_at": 1791142200,
+      "publication_verified": true,
+      "published_at": 1791142190,
+      "eligibility_review": {
+        "status": "allowed"
+      },
+      "price_review": {
+        "reasons": [
+          "full_price_unconfirmed"
+        ]
+      },
+      "observed_asking_display": {
+        "status": "corroborated_display",
+        "amount": "8050",
+        "currency": "USD",
+        "description_reviewed_in_full": true,
+        "reasons": []
+      },
+      "field_conflicts": [],
+      "price_conflicts": [],
+      "photos": [],
+      "url": "https://www.olx.ua/d/uk/obyavlenie/test-IDexample.html"
+    },
+    {
+      "source": "olx",
+      "id": "4",
+      "price": "8100",
+      "currency": "USD",
+      "title": "Skoda Octavia A5",
+      "brand": "Skoda",
+      "model": "Octavia",
+      "generation": "A5",
+      "year": 2008,
+      "body": "wagon",
+      "fuel": "diesel",
+      "transmission": "manual",
+      "engine_cc": 1900,
+      "mileage_km": 300000,
+      "region": "Хмельницька область",
+      "research_condition": "seller_declared_running",
+      "category": "whole_passenger_car",
+      "checked_at": 1791142200,
+      "publication_verified": true,
+      "published_at": 1791142190,
+      "eligibility_review": {
+        "status": "allowed"
+      },
+      "price_review": {
+        "reasons": [
+          "full_price_unconfirmed"
+        ]
+      },
+      "observed_asking_display": {
+        "status": "corroborated_display",
+        "amount": "8100",
+        "currency": "USD",
+        "description_reviewed_in_full": true,
+        "reasons": []
+      },
+      "field_conflicts": [],
+      "price_conflicts": [],
+      "photos": [],
+      "url": "https://www.olx.ua/d/uk/obyavlenie/test-IDexample.html"
+    },
+    {
+      "source": "olx",
+      "id": "5",
+      "price": "8150",
+      "currency": "USD",
+      "title": "Skoda Octavia A5",
+      "brand": "Skoda",
+      "model": "Octavia",
+      "generation": "A5",
+      "year": 2008,
+      "body": "wagon",
+      "fuel": "diesel",
+      "transmission": "manual",
+      "engine_cc": 1900,
+      "mileage_km": 300000,
+      "region": "Хмельницька область",
+      "research_condition": "seller_declared_running",
+      "category": "whole_passenger_car",
+      "checked_at": 1791142200,
+      "publication_verified": true,
+      "published_at": 1791142190,
+      "eligibility_review": {
+        "status": "allowed"
+      },
+      "price_review": {
+        "reasons": [
+          "full_price_unconfirmed"
+        ]
+      },
+      "observed_asking_display": {
+        "status": "corroborated_display",
+        "amount": "8150",
+        "currency": "USD",
+        "description_reviewed_in_full": true,
+        "reasons": []
+      },
+      "field_conflicts": [],
+      "price_conflicts": [],
+      "photos": [],
+      "url": "https://www.olx.ua/d/uk/obyavlenie/test-IDexample.html"
+    },
+    {
+      "source": "olx",
+      "id": "6",
+      "price": "8200",
+      "currency": "USD",
+      "title": "Skoda Octavia A5",
+      "brand": "Skoda",
+      "model": "Octavia",
+      "generation": "A5",
+      "year": 2008,
+      "body": "wagon",
+      "fuel": "diesel",
+      "transmission": "manual",
+      "engine_cc": 1900,
+      "mileage_km": 300000,
+      "region": "Хмельницька область",
+      "research_condition": "seller_declared_running",
+      "category": "whole_passenger_car",
+      "checked_at": 1791142200,
+      "publication_verified": true,
+      "published_at": 1791142190,
+      "eligibility_review": {
+        "status": "allowed"
+      },
+      "price_review": {
+        "reasons": [
+          "full_price_unconfirmed"
+        ]
+      },
+      "observed_asking_display": {
+        "status": "corroborated_display",
+        "amount": "8200",
+        "currency": "USD",
+        "description_reviewed_in_full": true,
+        "reasons": []
+      },
+      "field_conflicts": [],
+      "price_conflicts": [],
+      "photos": [],
+      "url": "https://www.olx.ua/d/uk/obyavlenie/test-IDexample.html"
+    },
+    {
+      "source": "olx",
+      "id": "7",
+      "price": "8300",
+      "currency": "USD",
+      "title": "Skoda Octavia A5",
+      "brand": "Skoda",
+      "model": "Octavia",
+      "generation": "A5",
+      "year": 2008,
+      "body": "wagon",
+      "fuel": "diesel",
+      "transmission": "manual",
+      "engine_cc": 1900,
+      "mileage_km": 300000,
+      "region": "Хмельницька область",
+      "research_condition": "seller_declared_running",
+      "category": "whole_passenger_car",
+      "checked_at": 1791142200,
+      "publication_verified": true,
+      "published_at": 1791142190,
+      "eligibility_review": {
+        "status": "allowed"
+      },
+      "price_review": {
+        "reasons": [
+          "full_price_unconfirmed"
+        ]
+      },
+      "observed_asking_display": {
+        "status": "corroborated_display",
+        "amount": "8300",
+        "currency": "USD",
+        "description_reviewed_in_full": true,
+        "reasons": []
+      },
+      "field_conflicts": [],
+      "price_conflicts": [],
+      "photos": [],
+      "url": "https://www.olx.ua/d/uk/obyavlenie/test-IDexample.html"
+    }
+  ],
+  "users": [
+    {
+      "id": "paid-1",
+      "confirmed_at": 1791142100,
+      "expires_at": 1791143200,
+      "ready": true,
+      "search_enabled": true,
+      "stopped": false,
+      "filters": {},
+      "min_discount": 15
+    },
+    {
+      "id": "paid-2",
+      "confirmed_at": 1791142100,
+      "expires_at": 1791143200,
+      "ready": true,
+      "search_enabled": true,
+      "stopped": false,
+      "filters": {},
+      "min_discount": 15
+    },
+    {
+      "id": "unpaid",
+      "ready": true,
+      "search_enabled": true,
+      "filters": {}
+    }
+  ]
+}

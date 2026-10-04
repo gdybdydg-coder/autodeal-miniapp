@@ -1,0 +1,204 @@
+{
+  "dataset_kind": "real_public_observations_not_sale_labels",
+  "observed_date": "2026-10-04",
+  "production_base_unchanged": "afaf9cee348db64f0558e5d113b2895c48366421",
+  "olx_get_count": 15,
+  "olx_bytes": 24819426,
+  "olx_detail_410": 3,
+  "fx_data_get_count": 3,
+  "fx_documentation_get_count": 2,
+  "selected_quote": {
+    "rate": "44.8333000",
+    "source": "https://api.privatbank.ua/p24api/exchange_rates?json&date=04.10.2026",
+    "kind": "nbu_official",
+    "effective_date": "2026-10-04",
+    "fetched_at": "2026-10-04T19:32:14.036102+00:00",
+    "published_at": null,
+    "buy": null,
+    "sell": null,
+    "units": "UAH per 1 USD",
+    "policy": "olx-research-fx-v1",
+    "transaction_channel": "official_reference_not_transaction_rate"
+  },
+  "coverage": {
+    "dataset_kind": "real_observations",
+    "total": 11,
+    "estimated": 0,
+    "coverage": "0",
+    "independently_labeled_cases": 0,
+    "confusion": null,
+    "accuracy_verified": false
+  },
+  "observations": [
+    {
+      "id": "933794336",
+      "url": "https://www.olx.ua/d/uk/obyavlenie/shkoda-oktaviya-a5-ID11c6yY.html",
+      "http": 200,
+      "fetched_at": 1791142516,
+      "price": "4400",
+      "currency": "USD",
+      "eligible": "allowed",
+      "compatible_peer_count": 2,
+      "market_status": "profitability_unconfirmed",
+      "market_reasons": [
+        "insufficient_comparables"
+      ]
+    },
+    {
+      "id": "922614945",
+      "url": "https://www.olx.ua/d/uk/obyavlenie/shkoda-oktavya-a5-ID10rcid.html",
+      "http": 200,
+      "fetched_at": 1791142529,
+      "price": "5100",
+      "currency": "USD",
+      "eligible": "allowed",
+      "compatible_peer_count": 0,
+      "market_status": "profitability_unconfirmed",
+      "market_reasons": [
+        "insufficient_comparables"
+      ]
+    },
+    {
+      "id": "935032384",
+      "url": "https://www.olx.ua/d/uk/obyavlenie/shkoda-oktavya-a5-ID11hiDu.html",
+      "http": 200,
+      "fetched_at": 1791142538,
+      "price": "7000",
+      "currency": "USD",
+      "eligible": "allowed",
+      "compatible_peer_count": 0,
+      "market_status": "profitability_unconfirmed",
+      "market_reasons": [
+        "insufficient_comparables"
+      ]
+    },
+    {
+      "id": "912298191",
+      "url": "https://www.olx.ua/d/uk/obyavlenie/prodam-shkoda-oktaviya-a5-IDZJUqX.html",
+      "http": 200,
+      "fetched_at": 1791142551,
+      "price": "6400",
+      "currency": "USD",
+      "eligible": "allowed",
+      "compatible_peer_count": 0,
+      "market_status": "profitability_unconfirmed",
+      "market_reasons": [
+        "insufficient_comparables"
+      ]
+    },
+    {
+      "id": "934885570",
+      "url": "https://www.olx.ua/d/uk/obyavlenie/shkoda-oktaviya-a5-ID11gGrv.html",
+      "http": 200,
+      "fetched_at": 1791142562,
+      "price": "6500",
+      "currency": "USD",
+      "eligible": "allowed",
+      "compatible_peer_count": 2,
+      "market_status": "profitability_unconfirmed",
+      "market_reasons": [
+        "insufficient_comparables"
+      ]
+    },
+    {
+      "id": "935807909",
+      "url": "https://www.olx.ua/d/uk/obyavlenie/skoda-octavia-a5-ID11kynX.html",
+      "http": 200,
+      "fetched_at": 1791142571,
+      "price": "4700",
+      "currency": "USD",
+      "eligible": "allowed",
+      "compatible_peer_count": 2,
+      "market_status": "profitability_unconfirmed",
+      "market_reasons": [
+        "insufficient_comparables"
+      ]
+    },
+    {
+      "id": "935797647",
+      "url": "https://www.olx.ua/d/uk/obyavlenie/prodam-skoda-octavia-a5-2008-1-9tdi-ID11kwIr.html",
+      "http": 200,
+      "fetched_at": 1791142580,
+      "price": "3800",
+      "currency": "USD",
+      "eligible": "allowed",
+      "compatible_peer_count": 0,
+      "market_status": "profitability_unconfirmed",
+      "market_reasons": [
+        "insufficient_comparables"
+      ]
+    },
+    {
+      "id": "935624887",
+      "url": "https://www.olx.ua/d/uk/obyavlenie/skoda-octavia-a5-1-9-tdi-ID11jMLZ.html",
+      "http": 200,
+      "fetched_at": 1791142599,
+      "price": "2100",
+      "currency": "USD",
+      "eligible": "excluded",
+      "compatible_peer_count": 0,
+      "market_status": "profitability_unconfirmed",
+      "market_reasons": [
+        "condition_unconfirmed",
+        "eligibility_not_allowed"
+      ]
+    },
+    {
+      "id": "932803277",
+      "url": "https://www.olx.ua/d/uk/obyavlenie/termnovo-prodam-avto-mazda-626-ID117VK9.html",
+      "http": 200,
+      "fetched_at": 1791143209,
+      "price": "24999",
+      "currency": "UAH",
+      "eligible": "allowed",
+      "compatible_peer_count": 0,
+      "market_status": "profitability_unconfirmed",
+      "market_reasons": [
+        "missing_generation"
+      ]
+    },
+    {
+      "id": "936594906",
+      "url": "https://www.olx.ua/d/uk/obyavlenie/avtomobl-toyota-corolla-ID11nR7s.html",
+      "http": 200,
+      "fetched_at": 1791143219,
+      "price": "310000",
+      "currency": "UAH",
+      "eligible": "allowed",
+      "compatible_peer_count": 0,
+      "market_status": "profitability_unconfirmed",
+      "market_reasons": [
+        "missing_generation"
+      ]
+    },
+    {
+      "id": "936618692",
+      "url": "https://www.olx.ua/d/uk/obyavlenie/mercedes-w123-1978-2-4-ID11nXj6.html",
+      "http": 200,
+      "fetched_at": 1791143229,
+      "price": "40000",
+      "currency": "UAH",
+      "eligible": "allowed",
+      "compatible_peer_count": 0,
+      "market_status": "profitability_unconfirmed",
+      "market_reasons": [
+        "missing_generation"
+      ]
+    }
+  ],
+  "replay": {
+    "user_kind": "two_fake_paid_one_fake_unpaid",
+    "local_previews": 20,
+    "unpaid_previews": 0,
+    "restart_new_previews": 0,
+    "real_telegram_calls": 0,
+    "real_paid_ria_calls": 0
+  },
+  "verification": {
+    "command": "PYTHONPATH=.:experiments/olx_offline python3 -m experiments.olx_research.verify",
+    "tests_passed": 346,
+    "subtests_passed": 150,
+    "network_fenced": true,
+    "production_started": false
+  }
+}
