@@ -311,6 +311,61 @@ def snapshot(db, settings, now):
     }
 
 
+def closed_windows_snapshot(db, now):
+    """Closed event-clock windows; never sum overlapping rolling snapshots.
+
+    These are global retained records, not a reconstruction of historical
+    filters/access or a cohort conversion funnel. Job results are replaceable;
+    their last stored evaluation is not an immutable evaluation event ledger.
+    """
+    end = int(now // 3600) * 3600
+
+    def window(after):
+        def inside(column):
+            return (column >= after) & (column < end)
+        evaluation_time = MonitorJob.result["evaluated_at"].as_float()
+        valuation = MonitorJob.result["rating"]["valuation"].as_string()
+        evaluated = dict(db.execute(select(valuation, func.count()).where(
+            inside(evaluation_time)).group_by(valuation)).all())
+        columns = {"queued": DeliveryTiming.queued_at,
+                   "send_started": DeliveryTiming.send_started_at,
+                   "accepted": DeliveryTiming.accepted_at}
+        event_counts = db.execute(select(*(
+            func.count().filter(inside(column)) for column in columns.values()),
+            func.count(func.distinct(Delivery.user_id)).filter(inside(DeliveryTiming.accepted_at)))
+            .select_from(Delivery).join(DeliveryTiming, DeliveryTiming.delivery_id == Delivery.id)
+            .join(Listing, Listing.id == Delivery.listing_id)
+            .where(Listing.source == "auto_ria", ~historical_copy_clause())).one()
+        return {
+            "window": {"after_inclusive": after, "before_exclusive": end},
+            "source_attempts": api_attempt_audit.summary(db, after, end),
+            "candidate_ids_first_seen": db.scalar(select(func.count()).select_from(MonitorJob)
+                .where(inside(MonitorJob.first_seen))),
+            "evaluated_ids_by_saved_result": {key or "unrecorded": value for key, value in evaluated.items()},
+            "ordinary_delivery_events": dict(zip((*columns, "distinct_accepted_recipients"), event_counts)),
+            "matching_recipients_at_evaluation": None,
+            "scope": "all_retained_source_jobs_and_ordinary_autoria_delivery_records",
+            "historical_filter_and_access_reconstruction": False,
+            "evaluation_basis": "latest_retained_job_result_not_immutable_event_history",
+            "receipt_basis": "telegram_api_acceptance_not_read_receipt",
+        }
+    return {"observed_at": now, "last_complete_hour": window(end-3600),
+            "preceding_24_hours": window(end-86400)}
+
+
+def log_closed_windows(engine, settings):
+    """Startup-only SELECT diagnostic; no provider, Telegram or database writes."""
+    if not paid_source_access.strict(engine) or not settings.admin_telegram_id:
+        return
+    logger = logging.getLogger("uvicorn.error")
+    try:
+        with Session(engine) as db:
+            result = closed_windows_snapshot(db, time.time())
+        logger.info("Source completed windows %s", json.dumps(result, sort_keys=True))
+    except Exception as exc:
+        logger.error("Source completed windows unavailable (%s)", type(exc).__name__)
+
+
 def log_snapshot(engine, settings):
     """Private startup diagnostic only; never expose the paid cohort publicly."""
     if not paid_source_access.strict(engine) or not settings.admin_telegram_id:

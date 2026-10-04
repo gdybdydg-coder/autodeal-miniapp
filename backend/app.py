@@ -213,6 +213,7 @@ def create_app(settings: Settings, engine=None, *, paid_source_only=False):
         await asyncio.to_thread(paid_owner_restoration.initialize, engine, settings)
         from . import source_pipeline_health
         await asyncio.to_thread(source_pipeline_health.log_snapshot, engine, settings)
+        await asyncio.to_thread(source_pipeline_health.log_closed_windows, engine, settings)
         stop = asyncio.Event()
         from . import ria_source_comparison
         async def compare_source_once():
