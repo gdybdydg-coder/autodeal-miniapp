@@ -11,13 +11,43 @@
   "budget": {
     "olx_get_cap": 60,
     "olx_bytes_cap": 167772160,
-    "olx_reserved_calls": 0,
-    "olx_reserved_bytes": 0,
+    "olx_reserved_calls": 20,
+    "olx_reserved_bytes": 41943040,
     "fx_get_cap": 6,
     "fx_reserved_calls": 0
   },
   "source_holds": [],
-  "reservations": [],
+  "reservations": [
+    {
+      "owner": "night-20261005-0100",
+      "plan": "examples/night0100-plan.json",
+      "calls": 20,
+      "bytes": 41943040,
+      "urls": [
+        "https://www.olx.ua/d/obyavlenie/prodam-skoda-a5-ID113178.html",
+        "https://www.olx.ua/d/uk/obyavlenie/prodam-skoda-a5-3750-torg-ID112BNg.html",
+        "https://www.olx.ua/d/obyavlenie/prodam-skoda-octavia-a5-2006r-v-ID11nlX1.html",
+        "https://www.olx.ua/d/uk/obyavlenie/skoda-octavia-a5-ID11oAgc.html",
+        "https://www.olx.ua/d/obyavlenie/prodam-skoda-octavia-a5-ID11ikGl.html",
+        "https://www.olx.ua/d/obyavlenie/skoda-octavia-a5-unversal-2007-gaz-benzin-ID11icSs.html",
+        "https://www.olx.ua/d/uk/obyavlenie/prodam-skoda-oktavia-a5-elegance-1-6mpi-z-gbo4-ID11o5xB.html",
+        "https://www.olx.ua/d/obyavlenie/skoda-octavia-a5-2007-r-v-dvigun-1-6-benzin-gaz-ID11kRhU.html",
+        "https://www.olx.ua/d/uk/obyavlenie/skoda-octavia-a5-ID11aldA.html",
+        "https://www.olx.ua/d/obyavlenie/skoda-octavia-a5-1-6-mpi-2007-rk-ID11otvX.html",
+        "https://www.olx.ua/d/uk/obyavlenie/skoda-octavia-a5-2007-r-v-ID11acvS.html",
+        "https://www.olx.ua/d/uk/obyavlenie/skoda-octavia-a5-ID107YfW.html",
+        "https://www.olx.ua/d/uk/obyavlenie/za-kordonom-nmechchina-skoda-octavia-a5-ID115JfV.html",
+        "https://www.olx.ua/d/obyavlenie/skoda-octavia-a5-shkoda-oktaviya-a5-1-6-mpi-ID117oKX.html",
+        "https://www.olx.ua/d/obyavlenie/prodam-shkodu-oktaviyu-a5skoda-oktavia-a5-ID11gZNx.html",
+        "https://www.olx.ua/d/obyavlenie/skoda-octavia-a5-1-6-mpi-z-gazom-ID11lCuL.html",
+        "https://www.olx.ua/d/obyavlenie/skoda-octavia-a5-1-6-mpi-ID112hUD.html",
+        "https://www.olx.ua/d/uk/obyavlenie/skoda-octavia-a5-1-6-mpi-ID11l7jI.html",
+        "https://www.olx.ua/d/obyavlenie/prodam-skoda-octavia-a5-ID10XGkB.html",
+        "https://www.olx.ua/d/uk/obyavlenie/prodam-skoda-octavia-a5-1-6-mpi-2008-ID10GF9Z.html"
+      ],
+      "reserved_at": "2026-10-04T22:03:19.068353+00:00"
+    }
+  ],
   "runs": [
     {
       "owner": "foreground-20261005-0017",

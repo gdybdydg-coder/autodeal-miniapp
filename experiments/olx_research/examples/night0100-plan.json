@@ -1,0 +1,355 @@
+{
+  "created_at": "2026-10-04T22:03:19.068353+00:00",
+  "hypothesis": "Densest pending metadata cluster: A5 1.6 gas/petrol manual around2006/250k,13within fixed year/mileage criteria before unknown body/power. Select20 nearest by metadata only to test attainable compatible coverage; do not broaden valuation rules.",
+  "selection_uses_price": false,
+  "seed": "olx-night0100-v1",
+  "minimum": 8,
+  "year_tolerance": 1,
+  "mileage_tolerance_km": 30000,
+  "maximum_calls": 20,
+  "maximum_bytes": 41943040,
+  "split": {
+    "931628438": "reference",
+    "931531106": "reference",
+    "936475095": "reference",
+    "936768428": "reference",
+    "935278577": "reference",
+    "935248576": "reference",
+    "936650343": "holdout",
+    "935880570": "reference",
+    "933374014": "reference",
+    "936742559": "reference",
+    "933340614": "holdout",
+    "918032755": "holdout",
+    "932274776": "reference",
+    "932672631": "reference",
+    "934959971": "reference",
+    "936062035": "holdout",
+    "931454683": "reference",
+    "935942186": "reference",
+    "930356909": "reference",
+    "926300831": "reference"
+  },
+  "requests": [
+    {
+      "id": "931628438",
+      "url": "https://www.olx.ua/d/obyavlenie/prodam-skoda-a5-ID113178.html",
+      "year": 2006,
+      "mileage_km": 250000,
+      "engine_cc": 1600,
+      "fuel": "gas_petrol",
+      "transmission": "manual",
+      "first_seen_at": 1791145631,
+      "checked_at": 1791145631,
+      "title_hints": {
+        "explicit_a5": true,
+        "other_generation_or_tour": false,
+        "combi": false
+      }
+    },
+    {
+      "id": "931531106",
+      "url": "https://www.olx.ua/d/uk/obyavlenie/prodam-skoda-a5-3750-torg-ID112BNg.html",
+      "year": 2006,
+      "mileage_km": 248000,
+      "engine_cc": 1600,
+      "fuel": "gas_petrol",
+      "transmission": "manual",
+      "first_seen_at": 1791145569,
+      "checked_at": 1791146288,
+      "title_hints": {
+        "explicit_a5": true,
+        "other_generation_or_tour": false,
+        "combi": false
+      }
+    },
+    {
+      "id": "936475095",
+      "url": "https://www.olx.ua/d/obyavlenie/prodam-skoda-octavia-a5-2006r-v-ID11nlX1.html",
+      "year": 2006,
+      "mileage_km": 245000,
+      "engine_cc": 1600,
+      "fuel": "gas_petrol",
+      "transmission": "manual",
+      "first_seen_at": 1791145631,
+      "checked_at": 1791145631,
+      "title_hints": {
+        "explicit_a5": true,
+        "other_generation_or_tour": false,
+        "combi": false
+      }
+    },
+    {
+      "id": "936768428",
+      "url": "https://www.olx.ua/d/uk/obyavlenie/skoda-octavia-a5-ID11oAgc.html",
+      "year": 2005,
+      "mileage_km": 254000,
+      "engine_cc": 1600,
+      "fuel": "gas_petrol",
+      "transmission": "manual",
+      "first_seen_at": 1791145569,
+      "checked_at": 1791146288,
+      "title_hints": {
+        "explicit_a5": true,
+        "other_generation_or_tour": false,
+        "combi": false
+      }
+    },
+    {
+      "id": "935278577",
+      "url": "https://www.olx.ua/d/obyavlenie/prodam-skoda-octavia-a5-ID11ikGl.html",
+      "year": 2007,
+      "mileage_km": 258000,
+      "engine_cc": 1600,
+      "fuel": "gas_petrol",
+      "transmission": "manual",
+      "first_seen_at": 1791145617,
+      "checked_at": 1791145617,
+      "title_hints": {
+        "explicit_a5": true,
+        "other_generation_or_tour": false,
+        "combi": false
+      }
+    },
+    {
+      "id": "935248576",
+      "url": "https://www.olx.ua/d/obyavlenie/skoda-octavia-a5-unversal-2007-gaz-benzin-ID11icSs.html",
+      "year": 2007,
+      "mileage_km": 240000,
+      "engine_cc": 1600,
+      "fuel": "gas_petrol",
+      "transmission": "manual",
+      "first_seen_at": 1791145617,
+      "checked_at": 1791145617,
+      "title_hints": {
+        "explicit_a5": true,
+        "other_generation_or_tour": false,
+        "combi": true
+      }
+    },
+    {
+      "id": "936650343",
+      "url": "https://www.olx.ua/d/uk/obyavlenie/prodam-skoda-oktavia-a5-elegance-1-6mpi-z-gbo4-ID11o5xB.html",
+      "year": 2005,
+      "mileage_km": 264000,
+      "engine_cc": 1600,
+      "fuel": "gas_petrol",
+      "transmission": "manual",
+      "first_seen_at": 1791145569,
+      "checked_at": 1791146288,
+      "title_hints": {
+        "explicit_a5": true,
+        "other_generation_or_tour": false,
+        "combi": false
+      }
+    },
+    {
+      "id": "935880570",
+      "url": "https://www.olx.ua/d/obyavlenie/skoda-octavia-a5-2007-r-v-dvigun-1-6-benzin-gaz-ID11kRhU.html",
+      "year": 2007,
+      "mileage_km": 265000,
+      "engine_cc": 1600,
+      "fuel": "gas_petrol",
+      "transmission": "manual",
+      "first_seen_at": 1791145617,
+      "checked_at": 1791145617,
+      "title_hints": {
+        "explicit_a5": true,
+        "other_generation_or_tour": false,
+        "combi": false
+      }
+    },
+    {
+      "id": "933374014",
+      "url": "https://www.olx.ua/d/uk/obyavlenie/skoda-octavia-a5-ID11aldA.html",
+      "year": 2007,
+      "mileage_km": 268000,
+      "engine_cc": 1600,
+      "fuel": "gas_petrol",
+      "transmission": "manual",
+      "first_seen_at": 1791145569,
+      "checked_at": 1791146288,
+      "title_hints": {
+        "explicit_a5": true,
+        "other_generation_or_tour": false,
+        "combi": false
+      }
+    },
+    {
+      "id": "936742559",
+      "url": "https://www.olx.ua/d/obyavlenie/skoda-octavia-a5-1-6-mpi-2007-rk-ID11otvX.html",
+      "year": 2007,
+      "mileage_km": 225000,
+      "engine_cc": 1600,
+      "fuel": "gas_petrol",
+      "transmission": "manual",
+      "first_seen_at": 1791145617,
+      "checked_at": 1791145617,
+      "title_hints": {
+        "explicit_a5": true,
+        "other_generation_or_tour": false,
+        "combi": false
+      }
+    },
+    {
+      "id": "933340614",
+      "url": "https://www.olx.ua/d/uk/obyavlenie/skoda-octavia-a5-2007-r-v-ID11acvS.html",
+      "year": 2007,
+      "mileage_km": 221000,
+      "engine_cc": 1600,
+      "fuel": "gas_petrol",
+      "transmission": "manual",
+      "first_seen_at": 1791145569,
+      "checked_at": 1791146288,
+      "title_hints": {
+        "explicit_a5": true,
+        "other_generation_or_tour": false,
+        "combi": false
+      }
+    },
+    {
+      "id": "918032755",
+      "url": "https://www.olx.ua/d/uk/obyavlenie/skoda-octavia-a5-ID107YfW.html",
+      "year": 2005,
+      "mileage_km": 280000,
+      "engine_cc": 1600,
+      "fuel": "gas_petrol",
+      "transmission": "manual",
+      "first_seen_at": 1791145569,
+      "checked_at": 1791146288,
+      "title_hints": {
+        "explicit_a5": true,
+        "other_generation_or_tour": false,
+        "combi": false
+      }
+    },
+    {
+      "id": "932274776",
+      "url": "https://www.olx.ua/d/uk/obyavlenie/za-kordonom-nmechchina-skoda-octavia-a5-ID115JfV.html",
+      "year": 2008,
+      "mileage_km": 250000,
+      "engine_cc": 1600,
+      "fuel": "gas_petrol",
+      "transmission": "manual",
+      "first_seen_at": 1791145569,
+      "checked_at": 1791146288,
+      "title_hints": {
+        "explicit_a5": true,
+        "other_generation_or_tour": false,
+        "combi": false
+      }
+    },
+    {
+      "id": "932672631",
+      "url": "https://www.olx.ua/d/obyavlenie/skoda-octavia-a5-shkoda-oktaviya-a5-1-6-mpi-ID117oKX.html",
+      "year": 2007,
+      "mileage_km": 280000,
+      "engine_cc": 1600,
+      "fuel": "gas_petrol",
+      "transmission": "manual",
+      "first_seen_at": 1791145657,
+      "checked_at": 1791145657,
+      "title_hints": {
+        "explicit_a5": true,
+        "other_generation_or_tour": false,
+        "combi": false
+      }
+    },
+    {
+      "id": "934959971",
+      "url": "https://www.olx.ua/d/obyavlenie/prodam-shkodu-oktaviyu-a5skoda-oktavia-a5-ID11gZNx.html",
+      "year": 2005,
+      "mileage_km": 218000,
+      "engine_cc": 1600,
+      "fuel": "gas_petrol",
+      "transmission": "manual",
+      "first_seen_at": 1791145617,
+      "checked_at": 1791145617,
+      "title_hints": {
+        "explicit_a5": true,
+        "other_generation_or_tour": false,
+        "combi": false
+      }
+    },
+    {
+      "id": "936062035",
+      "url": "https://www.olx.ua/d/obyavlenie/skoda-octavia-a5-1-6-mpi-z-gazom-ID11lCuL.html",
+      "year": 2008,
+      "mileage_km": 256000,
+      "engine_cc": 1600,
+      "fuel": "gas_petrol",
+      "transmission": "manual",
+      "first_seen_at": 1791145643,
+      "checked_at": 1791145643,
+      "title_hints": {
+        "explicit_a5": true,
+        "other_generation_or_tour": false,
+        "combi": false
+      }
+    },
+    {
+      "id": "931454683",
+      "url": "https://www.olx.ua/d/obyavlenie/skoda-octavia-a5-1-6-mpi-ID112hUD.html",
+      "year": 2006,
+      "mileage_km": 320000,
+      "engine_cc": 1600,
+      "fuel": "gas_petrol",
+      "transmission": "manual",
+      "first_seen_at": 1791145657,
+      "checked_at": 1791145657,
+      "title_hints": {
+        "explicit_a5": true,
+        "other_generation_or_tour": false,
+        "combi": false
+      }
+    },
+    {
+      "id": "935942186",
+      "url": "https://www.olx.ua/d/uk/obyavlenie/skoda-octavia-a5-1-6-mpi-ID11l7jI.html",
+      "year": 2005,
+      "mileage_km": 202000,
+      "engine_cc": 1600,
+      "fuel": "gas_petrol",
+      "transmission": "manual",
+      "first_seen_at": 1791145569,
+      "checked_at": 1791146288,
+      "title_hints": {
+        "explicit_a5": true,
+        "other_generation_or_tour": false,
+        "combi": false
+      }
+    },
+    {
+      "id": "930356909",
+      "url": "https://www.olx.ua/d/obyavlenie/prodam-skoda-octavia-a5-ID10XGkB.html",
+      "year": 2008,
+      "mileage_km": 275000,
+      "engine_cc": 1600,
+      "fuel": "gas_petrol",
+      "transmission": "manual",
+      "first_seen_at": 1791145617,
+      "checked_at": 1791145617,
+      "title_hints": {
+        "explicit_a5": true,
+        "other_generation_or_tour": false,
+        "combi": false
+      }
+    },
+    {
+      "id": "926300831",
+      "url": "https://www.olx.ua/d/uk/obyavlenie/prodam-skoda-octavia-a5-1-6-mpi-2008-ID10GF9Z.html",
+      "year": 2008,
+      "mileage_km": 204000,
+      "engine_cc": 1600,
+      "fuel": "gas_petrol",
+      "transmission": "manual",
+      "first_seen_at": 1791145569,
+      "checked_at": 1791146288,
+      "title_hints": {
+        "explicit_a5": true,
+        "other_generation_or_tour": false,
+        "combi": false
+      }
+    }
+  ]
+}
