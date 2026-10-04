@@ -1,5 +1,41 @@
 # AUTO.RIA AI lower market boundary minus 5%
 
+## Superseded for deal selection on 2026-10-04
+
+The v1 integration below described an internally consistent API calculation,
+not verified equivalence with the native app. Listing **40517476** disproved
+that assumption: saved API mean **7012**, radius **0.05**, derived bounds
+**6661–7362**, reference **6327.95**, asking price **4999**. The owner's native
+app screenshot displayed **4707–5202**, whose adjusted lower bound is
+**4471.65**; the same asking price fails the unchanged saved discount threshold.
+
+Policy **autoria-native-lower-bound-v2** rejects the derived API basis for
+selection and dispatch. Explicit native listing bounds are a separate internal
+contract; no native transport is currently available. The published public UI
+popup route returned HTTP 403 in one unauthenticated bounded read on October 4;
+no retry, session, proxy or access workaround was attempted. Public page mean
+7055 also disagrees with the screenshot and cannot confirm the native bounds.
+
+Production `RiaSearch.market_range` therefore reports
+`ai_native_range_unverified` before a paid valuation reservation/transport.
+Publication searches and details continue for genuine current confirmed buyers
+with permitted searches. With the existing confirmed-only setting, notifications
+about profitable cars are held until an actual native-range adapter can be
+verified. This is a false-profit protection, **not a repaired AUTO.RIA source**
+and not evidence of successful delivery. No price haircut, subscription
+threshold, payment rule, quota, schedule, advertisement or OLX behavior changed.
+
+The previous API observation method remains separate for the existing guarded
+operator diagnostic; strict production startup does not run that probe. New
+native proof/version requirements invalidate unsent v1 cards; final sent and
+uncertain claims remain final. The formatter also rejects v1/API-basis cards
+before photo or Telegram transport. The API's documented `period` units are not
+established here; the historical wording below must not be treated as proof.
+
+Offline tests replay the exact retained Trafic API values and independently
+provided screenshot bounds. Positive native fixtures are explicitly synthetic
+and do not claim working live native access.
+
 ## Verified provider access on 2026-09-18
 
 The owner's existing paid account returned HTTP 200 twice from the documented

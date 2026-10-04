@@ -21,6 +21,7 @@ PERIOD_HOURS = 168
 TIMEOUT = 20
 MAX_BYTES = 1024 * 1024
 PROVIDER_FIELDS = {"average_usd", "range_fraction", "quantity", "period_hours"}
+API_BASIS = "auto_ria_ai_market_range"
 log = logging.getLogger("autodeal.ai_price")
 log.setLevel(logging.INFO)
 log.propagate = False
@@ -48,7 +49,6 @@ def boundaries(provider):
 
 
 def parse_quote(data, source_id, *, now=None):
-    from .ria_market_range import BASIS
     if not valid_id(source_id) or not isinstance(data, dict):
         return None
     blocks = data.get("statisticData")
@@ -66,7 +66,7 @@ def parse_quote(data, source_id, *, now=None):
         return None
     # The ID is bound to the single omniId request, not inferred from similarCars.
     # Do not retain similarCars, noticeData, seller IDs, VINs or raw response data.
-    return {"source_id": source_id, "basis": BASIS, "currency": "USD",
+    return {"source_id": source_id, "basis": API_BASIS, "currency": "USD",
             "lower_usd": limits[0], "upper_usd": limits[1], "provider": provider,
             "observed_at": time.time() if now is None else now}
 
@@ -142,9 +142,9 @@ def check_once(engine, key, user_id, source_id):
     try:
         source.acquire()
         acquired = True
-        quote = source.market_range(source_id, user_id)
+        quote = source.api_market_range_observation(source_id, user_id)
         if quote:
-            status, result = "verified", quote
+            status, result = "observed_unverified_native", quote
         else:
             status = "range_unavailable"
     except RiaError as exc:

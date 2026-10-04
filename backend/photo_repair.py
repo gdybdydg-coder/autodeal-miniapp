@@ -87,6 +87,19 @@ def run_once(monitor, sender=None):
             if (car.pipeline or {}).get('evaluated_at') != timing.evaluated_at:
                 continue
             historical_at = timing.accepted_at
+            # Reject obsolete/unverified valuation before optional paid photo IO.
+            # Persist the hold so it cannot abort discovery or retry every tick.
+            try:
+                TelegramSender.card(car, historical_at=historical_at)
+            except ValueError:
+                if previous is None:
+                    previous = SourceProbe(id=key, requests=0)
+                    db.add(previous)
+                previous.status, previous.checked_at = 'valuation_snapshot_invalid', time.time()
+                previous.result = {'source_id': source_id, 'reason': 'invalid_valuation_snapshot'}
+                db.commit()
+                log.warning('Owner photo repair source_id=%s state=valuation_snapshot_invalid', source_id)
+                continue
             had_photo = bool(car.photo)
             attempts = (receipt(db, delivery.id) or {}).get('attempts', [])
             known_text = bool(attempts and attempts[-1].get('method') == 'sendMessage'

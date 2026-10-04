@@ -60,7 +60,7 @@ def fresh(car, now, db=None, *, require_provider_range=False):
             if proof.get("pricing_policy") != ria_market_range.VERSION:
                 return False
         elif (proof.get("version") != ria_market_range.VERSION
-              or not (proof.get("source_range") or {}).get("provider")):
+              or not ria_market_range.range_valid(proof.get("source_range"), car.source_id, now)):
             return False
     return (-30 <= now - car.observed_at <= (300 if car.source == "auto_ria" else 86400)
             and (car.source != "auto_ria" or price_only_evidence_valid(car, now)
@@ -205,6 +205,13 @@ class TelegramSender:
 
     @staticmethod
     def card(car, *, historical_at=None):
+        proof = car.valuation_evidence or {}
+        if (car.source == "auto_ria" and car.market is not None
+                and (proof.get("version") == "autoria-lower-bound-v1"
+                     or proof.get("basis") == "auto_ria_ai_market_range"
+                     or isinstance(proof.get("source_range"), dict)
+                     and proof["source_range"].get("basis") == "auto_ria_ai_market_range")):
+            raise ValueError("invalid_provider_range_evidence")
         price = f"${car.price:,.0f}".replace(",", " ")
         details = []
         if car.fuel:
@@ -245,7 +252,9 @@ class TelegramSender:
         else:
             pricing.append("ℹ️ Ринкову оцінку не підтверджено — це не підтверджена вигода")
             reasons = (car.valuation_evidence or {}).get("uncertainty_reasons", [])
-            if "provider_market_range_unavailable" in reasons:
+            if "native_market_range_unverified" in reasons:
+                pricing.append("Діапазон оцінки цього авто в AUTO.RIA не підтверджено")
+            elif "provider_market_range_unavailable" in reasons:
                 pricing.append("AUTO.RIA не надала придатний діапазон оцінки")
             if "incomplete_details" in reasons:
                 pricing.append("Неповні характеристики — перевірте оголошення")

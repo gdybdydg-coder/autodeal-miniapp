@@ -29,6 +29,10 @@ def snapshot(db, uid, source_id):
         return {"source_id": source_id, "scope": "configured_admin", "account_found": False}
     result = {"source_id": source_id, "scope": "configured_admin", "account_found": True,
               "telegram_ready": user.ready, "trace": listing_trace(db, uid, source_id)}
+    from .ria_market_range import policy
+    result["valuation_policy"] = policy()
+    # snapshot has no runtime settings; this field depends on confirmed-only.
+    result["valuation_policy"].pop("missing_range", None)
     result["activity"] = activity(db, uid)
     result["recent_accepted"] = [
         {"source_id": listing.source_id, "message_id": delivery.message_id,
@@ -64,6 +68,7 @@ def snapshot(db, uid, source_id):
             "car": {key: candidate.get(key) for key in
                     ("brand", "model", "year", "price_usd", "region", "fuel", "transmission")},
             "market": rating.get("market"), "valuation": rating.get("valuation")}
+        result["job"]["valuation_reasons"] = rating.get("valuation_reasons", [])
         # Private, read-only retained price proof; no provider refresh or raw
         # responses/similarCars/contact/VIN data. Preserve exact inputs so an
         # owner screenshot can be compared with the actual send-time decision.

@@ -243,8 +243,8 @@ def test_ai_transport_uses_same_ledger_without_formula_change(source, monkeypatc
     client, _ = source
     from backend.tests.test_ria_ai_price import wire
     calls = opener(monkeypatch, ria_ai_price, [wire(15000)])
-    quote = client.market_range("123", "42")
-    assert client.market_range("123", "42") == quote
+    quote = client.api_market_range_observation("123", "42")
+    assert client.api_market_range_observation("123", "42") == quote
     row = rows(client)[0]
     assert calls == [20] and row.category == "valuation" and row.http_status == 200
     assert quote["lower_usd"] == 14250 and quote["upper_usd"] == 15750

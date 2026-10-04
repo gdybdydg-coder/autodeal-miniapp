@@ -669,8 +669,7 @@ class Monitor:
             and all(-30 <= time.time() - peer["observed_at"] <= MAX_AGE for peer in proof.get("peers", [])))
         if self.settings.ria_ai_price_enabled:
             reusable_rating = (rating.get("valuation_version") == ria_market_range.VERSION
-                and ria_market_range.range_valid(proof.get("source_range"), source_id, time.time())
-                and bool((proof.get("source_range") or {}).get("provider")))
+                and ria_market_range.range_valid(proof.get("source_range"), source_id, time.time()))
         if not reusable_rating:
             evidence.pop("rating", None)
         if any_match and not excluded and "rating" not in evidence:
@@ -699,6 +698,8 @@ class Monitor:
         if any_match and not excluded and rating.get("valuation") not in VALUED:
             if self.settings.ria_ai_price_enabled:
                 uncertainty.append("provider_market_range_unavailable")
+                if "native_market_range_unverified" in rating.get("valuation_reasons", []):
+                    uncertainty.append("native_market_range_unverified")
             if repair_notices(candidate):
                 uncertainty.append("repair_condition")
             if partial:

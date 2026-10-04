@@ -67,7 +67,9 @@ def completed_decisions(db, now, current_seen):
         elif not matches(candidate, filters, resolved):
             reason = "filter_mismatch"
         elif rating.get("valuation") not in VALUED or not rating.get("market"):
-            reason = "valuation_unconfirmed"
+            reason = ("native_market_range_unverified"
+                      if "native_market_range_unverified" in rating.get("valuation_reasons", [])
+                      else "valuation_unconfirmed")
         elif not is_deal(candidate["price_usd"], rating["market"], filters.minDiscount):
             reason = "below_user_discount_threshold"
         else:
@@ -262,6 +264,7 @@ def snapshot(db, settings, now):
             "full_scan_enabled": settings.full_scan_enabled,
             "active_window_enabled": settings.ria_active_window_enabled,
             "provider_valuation_enabled": settings.ria_ai_price_enabled,
+            "valuation_selection_status": "withheld_native_range_unverified" if settings.ria_ai_price_enabled else "legacy_comparisons",
             "manual_payment_notices_enabled": settings.manual_payment_notices_enabled,
             "automobile_admin_copies_enabled": False,
         },

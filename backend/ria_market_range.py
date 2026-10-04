@@ -1,7 +1,8 @@
-"""AUTO.RIA's listing-specific range, followed by the owner's 5% adjustment.
+"""Explicit listing market range, followed by the owner's 5% adjustment.
 
-The normalized range comes from ria_ai_price, using the provider's average AND
-range fraction. An average alone is insufficient. No comparable-car fallback.
+The paid AI method's derived band is not the native listing range. It cannot
+authorize a deal. A native-range transport is not currently available; the
+production adapter reports that absence instead of substituting an API band.
 """
 import copy
 import re
@@ -10,8 +11,8 @@ from decimal import Decimal
 
 from .valuation import FIELDS, is_deal, notification_condition_allowed, number, repair_notices
 
-VERSION = "autoria-lower-bound-v1"
-BASIS = "auto_ria_ai_market_range"
+VERSION = "autoria-native-lower-bound-v2"
+BASIS = "auto_ria_native_listing_market_range"
 FACTOR = Decimal("0.95")
 MAX_AGE = 300
 EVIDENCE_FIELDS = (*FIELDS, "condition_exclusions")
@@ -20,10 +21,9 @@ QUOTE_FIELDS = {"source_id", "basis", "currency", "lower_usd", "upper_usd", "obs
 
 def range_valid(quote, source_id, now):
     """Require an explicit range for this listing, never median/avgPrice/p25."""
-    from .ria_ai_price import boundaries
-    if not isinstance(quote, dict) or set(quote) not in (QUOTE_FIELDS, QUOTE_FIELDS | {"provider"}):
-        return False
-    if "provider" in quote and boundaries(quote["provider"]) != (quote["lower_usd"], quote["upper_usd"]):
+    # API-derived mean/radius boundaries are observation data, not native proof.
+    # No flag, tolerance or matching mean can promote that payload to this basis.
+    if not isinstance(quote, dict) or set(quote) != QUOTE_FIELDS:
         return False
     return bool(isinstance(source_id, str) and re.fullmatch(r"[1-9][0-9]{0,11}", source_id)
         and quote["source_id"] == source_id and quote["basis"] == BASIS
@@ -39,9 +39,12 @@ def policy(*, confirmed_deals_only=False):
     return {"version": VERSION, "basis": BASIS,
             "pricing_method": "provider_lower_bound_minus_5_percent",
             "adjustment_percent": 5, "threshold_scope": "subscription",
-            "period_hours": 168, "provider_calls_per_uncached_listing": 1,
+            "native_range_required": True, "native_range_transport_available": False,
+            "valuation_status": "withheld_native_range_unverified",
+            "provider_calls_per_uncached_listing": 0,
             "notification_comparable_requests": 0,
             "missing_range": "suppress_notification" if confirmed_deals_only else "informational_without_market_price",
+            "api_range_accepted_for_deal_selection": False,
             "native_app_range_identity_verified": False}
 
 
@@ -50,7 +53,7 @@ def estimate(candidate, quote, *, now=None):
     result = {"market": None, "discount": None, "comparables": 0,
               "valuation": "unavailable", "assessment": "unknown",
               "valuation_version": VERSION, "valuation_evidence": None,
-              "valuation_reasons": ["provider_market_range_unavailable"]}
+              "valuation_reasons": ["native_market_range_unverified"]}
     if not isinstance(candidate, dict) or not range_valid(quote, candidate.get("id"), now):
         return result
     if (not notification_condition_allowed(candidate)

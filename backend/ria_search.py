@@ -424,6 +424,15 @@ class RiaSearch:
         return payload
 
     def market_range(self, source_id, user_id):
+        """Never substitute the discrepant AI band for a native listing range.
+
+        The public UI route denies access and the documented paid AI method has
+        no verified native-range contract. Stop before reserving/calling that
+        method; discovery and fresh detail requests retain their paid guards.
+        """
+        raise RiaError("ai_native_range_unverified")
+
+    def api_market_range_observation(self, source_id, user_id):
         """One bounded paid valuation, counted in the unchanged shared budget."""
         from . import ria_ai_price, ria_market_range
         if not ria_ai_price.valid_id(source_id) or not ria_ai_price.valid_id(user_id):

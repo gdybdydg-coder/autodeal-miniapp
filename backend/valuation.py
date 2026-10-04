@@ -9,7 +9,7 @@ from decimal import Decimal
 
 VERSION = "asking-v5"
 PRICE_ONLY_VERSION = "listing-price-v3"
-INFORMATION_REASONS = {"provider_market_range_unavailable", "incomplete_details", "insufficient_comparables", "mixed_sample",
+INFORMATION_REASONS = {"provider_market_range_unavailable", "native_market_range_unverified", "incomplete_details", "insufficient_comparables", "mixed_sample",
                        "unverified_condition", "missing_valuation_details", "repair_condition"}
 REPAIR_CONDITIONS = {"damage", "technical_condition", "onRepairParts"}
 MAX_AGE = 900
@@ -286,7 +286,7 @@ def policy():
 
 def reason_category(rating):
     codes = rating.get("valuation_reasons", [])
-    for code in ("provider_market_range_unavailable", "stale_details", "comparison_limit", "mixed_sample"):
+    for code in ("native_market_range_unverified", "provider_market_range_unavailable", "stale_details", "comparison_limit", "mixed_sample"):
         if code in codes:
             return code
     if any(code.startswith(("missing_", "invalid_")) or code == "unverified_condition" for code in codes):
