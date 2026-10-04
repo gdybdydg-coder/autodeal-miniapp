@@ -1,0 +1,23 @@
+{
+  "version": 1,
+  "night": "2026-10-05-Europe-Kyiv",
+  "status": "active",
+  "deadline": "2026-10-05T08:00:00+03:00",
+  "lease": {
+    "owner": "foreground-20261005-0017",
+    "started_at": "2026-10-04T21:21:08.240Z",
+    "expires_at": "2026-10-04T22:06:08.240Z"
+  },
+  "budget": {
+    "olx_get_cap": 60,
+    "olx_bytes_cap": 167772160,
+    "olx_reserved_calls": 0,
+    "olx_reserved_bytes": 0,
+    "fx_get_cap": 6,
+    "fx_reserved_calls": 0
+  },
+  "source_holds": [],
+  "reservations": [],
+  "runs": [],
+  "next_step": "Extract corroborated drive/power/variant/hashed vehicle evidence from saved HTML; strengthen exact matching; then targeted cohort acquisition with frozen holdout."
+}
