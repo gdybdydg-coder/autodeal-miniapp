@@ -18,6 +18,8 @@ def test_closed_windows_use_event_time_and_do_not_double_count_or_write(p):
             db.add(MonitorJob(source_id=str(i), state="unvalued", first_seen=at,
                 result={"candidate": {"id": str(i)}, "evaluated_at": at,
                         "rating": {"valuation": "unavailable"}}))
+        db.add(MonitorJob(source_id="older-reevaluated", state="checked", first_seen=end-90000,
+            result={"evaluated_at": end-1, "rating": {"valuation": "unavailable"}}))
         for i, at in enumerate((end-3600, end-1, end, end-10), start=900):
             db.add(Listing(id=i, source="auto_ria", source_id="window-"+str(i), car={}))
             db.add(Delivery(id=i, listing_id=i, user_id=111, state="sent", message_id=i))
@@ -41,6 +43,8 @@ def test_closed_windows_use_event_time_and_do_not_double_count_or_write(p):
     assert hour["candidate_ids_first_seen"] == 2
     assert day["candidate_ids_first_seen"] == 3
     assert hour["evaluated_ids_by_saved_result"] == {"unavailable": 2}
+    assert day["evaluated_ids_by_saved_result"] == {"unavailable": 3}
+    assert hour["evaluation_cohort"] == "candidate_ids_first_seen_in_same_window"
     assert hour["ordinary_delivery_events"]["accepted"] == 2
     assert hour["ordinary_delivery_events"]["queued"] == 2
     assert hour["ordinary_delivery_events"]["distinct_accepted_recipients"] == 1

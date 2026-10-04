@@ -10,7 +10,7 @@ import logging
 import os
 import time
 
-from sqlalchemy import String, cast, exists, func, select
+from sqlalchemy import String, cast, exists, func, select, text
 from sqlalchemy.orm import Session
 
 from . import api_attempt_audit, paid_source_access, poll_schedule
@@ -325,8 +325,10 @@ def closed_windows_snapshot(db, now):
             return (column >= after) & (column < end)
         evaluation_time = MonitorJob.result["evaluated_at"].as_float()
         valuation = MonitorJob.result["rating"]["valuation"].as_string()
+        # Filter cheap timestamps before extracting historical JSON payloads.
+        # Count evaluations of this discovery cohort, not unrelated old jobs.
         evaluated = dict(db.execute(select(valuation, func.count()).where(
-            inside(evaluation_time)).group_by(valuation)).all())
+            inside(MonitorJob.first_seen), inside(evaluation_time)).group_by(valuation)).all())
         columns = {"queued": DeliveryTiming.queued_at,
                    "send_started": DeliveryTiming.send_started_at,
                    "accepted": DeliveryTiming.accepted_at}
@@ -335,7 +337,9 @@ def closed_windows_snapshot(db, now):
             func.count(func.distinct(Delivery.user_id)).filter(inside(DeliveryTiming.accepted_at)))
             .select_from(Delivery).join(DeliveryTiming, DeliveryTiming.delivery_id == Delivery.id)
             .join(Listing, Listing.id == Delivery.listing_id)
-            .where(Listing.source == "auto_ria", ~historical_copy_clause())).one()
+            .where(Listing.source == "auto_ria",
+                inside(DeliveryTiming.queued_at) | inside(DeliveryTiming.send_started_at)
+                | inside(DeliveryTiming.accepted_at), ~historical_copy_clause())).one()
         return {
             "window": {"after_inclusive": after, "before_exclusive": end},
             "source_attempts": api_attempt_audit.summary(db, after, end),
@@ -347,6 +351,7 @@ def closed_windows_snapshot(db, now):
             "scope": "all_retained_source_jobs_and_ordinary_autoria_delivery_records",
             "historical_filter_and_access_reconstruction": False,
             "evaluation_basis": "latest_retained_job_result_not_immutable_event_history",
+            "evaluation_cohort": "candidate_ids_first_seen_in_same_window",
             "receipt_basis": "telegram_api_acceptance_not_read_receipt",
         }
     return {"observed_at": now, "last_complete_hour": window(end-3600),
@@ -360,6 +365,10 @@ def log_closed_windows(engine, settings):
     logger = logging.getLogger("uvicorn.error")
     try:
         with Session(engine) as db:
+            if db.get_bind().dialect.name == "postgresql":
+                # Transaction-local timeout; restored when the session closes.
+                # Diagnostic failure must never block application startup.
+                db.execute(text("SELECT set_config('statement_timeout', '3000', true)"))
             result = closed_windows_snapshot(db, time.time())
         logger.info("Source completed windows %s", json.dumps(result, sort_keys=True))
     except Exception as exc:
