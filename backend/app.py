@@ -60,6 +60,7 @@ class Settings:
     admin_telegram_id: int = 0
     ria_poll_schedule_enabled: bool = True
     ria_owner_trace_listing_id: str = ""
+    ria_source_comparison_listing_id: str = ""
     ria_active_window_include_initial: bool = False
     ria_failed_delivery_recovery_id: str = ""
     ria_photo_repair_ids: str = ""
@@ -104,6 +105,7 @@ class Settings:
             admin_telegram_id=int(os.getenv("ADMIN_TELEGRAM_ID", "0") or 0),
             ria_poll_schedule_enabled=os.getenv("RIA_POLL_SCHEDULE_ENABLED", "true") == "true",
             ria_owner_trace_listing_id=os.getenv("RIA_OWNER_TRACE_LISTING_ID", "").strip(),
+            ria_source_comparison_listing_id=os.getenv("RIA_SOURCE_COMPARISON_LISTING_ID", "").strip(),
             ria_active_window_include_initial=os.getenv("RIA_ACTIVE_WINDOW_INCLUDE_INITIAL") == "true",
             ria_photo_repair_ids=os.getenv("RIA_PHOTO_REPAIR_IDS", "").strip(),
             ria_shared_distribution_enabled=os.getenv("RIA_SHARED_DISTRIBUTION_ENABLED") == "true",
@@ -142,6 +144,8 @@ def create_app(settings: Settings, engine=None, *, paid_source_only=False):
         raise ValueError("Configure server-only AUTO.RIA AI credentials")
     if settings.ria_ai_price_probe_id and not ria_ai_price.valid_id(settings.ria_ai_price_probe_id):
         raise ValueError("Invalid AUTO.RIA AI probe listing ID")
+    if settings.ria_source_comparison_listing_id and not ria_ai_price.valid_id(settings.ria_source_comparison_listing_id):
+        raise ValueError("Invalid AUTO.RIA source comparison listing ID")
     if settings.miniapp_release and not re.fullmatch(r"[a-z0-9-]{1,40}", settings.miniapp_release):
         raise ValueError("Invalid Mini App release")
     if not settings.bot_token or len(settings.webhook_secret) < 32:
@@ -210,6 +214,14 @@ def create_app(settings: Settings, engine=None, *, paid_source_only=False):
         from . import source_pipeline_health
         await asyncio.to_thread(source_pipeline_health.log_snapshot, engine, settings)
         stop = asyncio.Event()
+        from . import ria_source_comparison
+        async def compare_source_once():
+            try:
+                await asyncio.to_thread(ria_source_comparison.check_once, engine, settings)
+            except Exception as exc:
+                logging.getLogger("uvicorn.error").warning(
+                    "AUTO.RIA source comparison unavailable (%s)", type(exc).__name__)
+        comparison_task = asyncio.create_task(compare_source_once()) if settings.ria_source_comparison_listing_id else None
         from . import olx_owner_canary
         olx_task = asyncio.create_task(olx_owner_canary.run(engine, settings, stop)) if olx_owner_canary.enabled(settings) else None
         manual_notice_task = asyncio.create_task(manual_payments.run_notices(engine, settings, stop)) if (
@@ -232,6 +244,8 @@ def create_app(settings: Settings, engine=None, *, paid_source_only=False):
             yield
         finally:
             stop.set()
+            if comparison_task:
+                await comparison_task
             if olx_task:
                 await olx_task
             if manual_notice_task:

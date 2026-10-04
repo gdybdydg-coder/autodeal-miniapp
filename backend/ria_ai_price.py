@@ -72,6 +72,42 @@ def parse_quote(data, source_id, *, now=None):
 
 
 def fetch_quote(key, user_id, source_id, *, attempt_telemetry=None):
+    data = _fetch_payload(key, user_id, source_id,
+        {"langId": 4, "period": PERIOD_HOURS, "params": {"omniId": source_id}},
+        attempt_telemetry=attempt_telemetry)
+    return parse_quote(data, source_id)
+
+
+def fetch_observation(key, user_id, source_id, *, period_parameter, params,
+                      attempt_telemetry=None):
+    """Diagnostic-only projection, never admissible native range evidence.
+
+    The provider documents a period parameter but does not establish the AI
+    endpoint's unit or native app parity. Do not label 90/168 as hours or days.
+    This helper is used only by the confirmed-paid, once-only owner comparison.
+    """
+    if (type(period_parameter) is not int or period_parameter not in {90, 168}
+            or not isinstance(params, dict) or not params
+            or set(params) - {"omniId", "categoryId", "brandId", "modelId",
+                "generationId", "modificationId", "bodyId", "fuelId", "gearBoxId",
+                "year", "mileage", "engineVolume"}
+            or ("omniId" in params and params != {"omniId": source_id})):
+        raise RiaError("ai_not_configured")
+    data = _fetch_payload(key, user_id, source_id,
+        {"langId": 4, "period": period_parameter, "params": params},
+        attempt_telemetry=attempt_telemetry)
+    quote = parse_quote(data, source_id)
+    if quote is None:
+        return None
+    provider = quote["provider"]
+    return {key: quote[key] for key in (
+        "source_id", "basis", "currency", "lower_usd", "upper_usd", "observed_at")} | {
+        "average_usd": provider["average_usd"],
+        "range_fraction": provider["range_fraction"], "quantity": provider["quantity"],
+        "period_parameter": period_parameter}
+
+
+def _fetch_payload(key, user_id, source_id, body, *, attempt_telemetry=None):
     if not key or not valid_id(user_id) or not valid_id(source_id):
         raise RiaError("ai_not_configured")
     if attempt_telemetry is None:
@@ -79,9 +115,7 @@ def fetch_quote(key, user_id, source_id, *, attempt_telemetry=None):
         attempt_telemetry = current_observer()
     url = "https://developers.ria.com/auto/" + METHOD + "/?" + urlencode(
         {"user_id": user_id, "api_key": key})
-    body = json.dumps({"langId": 4, "period": PERIOD_HOURS,
-                       "params": {"omniId": source_id}}).encode()
-    request = Request(url, data=body, method="POST",
+    request = Request(url, data=json.dumps(body).encode(), method="POST",
                       headers={"Accept": "application/json", "Content-Type": "application/json"})
     def observe(event):
         if attempt_telemetry is not None:
@@ -103,7 +137,7 @@ def fetch_quote(key, user_id, source_id, *, attempt_telemetry=None):
             raw = response.read(MAX_BYTES + 1)
             if len(raw) > MAX_BYTES:
                 raise RiaError("ai_invalid_response")
-            return parse_quote(json.loads(raw), source_id)
+            return json.loads(raw)
     except HTTPError as exc:
         observe({"event": "http_response", "http_status": exc.code})
         # Method permission failures must not stop the ordinary new-listing feed.

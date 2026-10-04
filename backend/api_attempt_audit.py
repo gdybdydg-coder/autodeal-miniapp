@@ -70,7 +70,7 @@ class RiaApiAuthorization(Base):
 
 REASONS = frozenset({"publication_search", "candidate_evaluation", "active_window_search",
     "recent_publication_validation", "user_requested_scan", "authenticated_search",
-    "authenticated_catalog", "paid_receipt_photo_repair"})
+    "authenticated_catalog", "paid_receipt_photo_repair", "owner_source_discrepancy"})
 
 
 def authorization(reason, group):
@@ -82,7 +82,7 @@ def authorization(reason, group):
 def category(path):
     if path == "search":
         return "search"
-    if path == "info":
+    if path in {"info", "source-comparison-info"}:
         return "detail"
     if path == "ai-avarage-price":
         return "valuation"
