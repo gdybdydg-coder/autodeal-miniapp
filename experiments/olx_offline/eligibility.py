@@ -11,7 +11,7 @@ import json
 import re
 import unicodedata
 
-VERSION = 'olx-eligibility-v1'
+VERSION = 'olx-eligibility-v2'
 FACT_FIELDS = ('title', 'category', 'customs_status', 'customs_cleared',
                'sale_mode', 'description', 'description_available')
 MAX_TEXT = 131072
@@ -33,6 +33,7 @@ CLEARED = re.compile(
     r'|українськ\w*\s+реєстраці\w*|украинск\w*\s+регистраци\w*)\b')
 DISMANTLING = re.compile(
     r'\b(?:(?:під|на)\s+розб(?:ір|ор)\w*|(?:под|на)\s+разбор\w*'
+    r'|(?:авто(?:моб[іи]ль)?|машина)\s+(?:у|в)\s+(?:розбор[іу]|разборе)\b'
     r'|на\s+запчаст(?:ини|ин[иуа]|і|и|ь)\b|по\s+запчаст(?:инах|ям|ям)\b'
     r'|донор(?:а|ом|у|ів|ы|ов|ський|ский)?\b'
     r'|(?:прода\w*|продаж\w*)\s+(?:по\s+частинах|частинами|частями))')

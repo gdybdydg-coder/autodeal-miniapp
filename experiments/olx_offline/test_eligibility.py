@@ -12,6 +12,17 @@ def listing(description='Розмитнений, українська реєст
 
 
 class EligibilityTests(unittest.TestCase):
+    def test_whole_vehicle_already_dismantling(self):
+        for text in ('Автомобіль у розборі, продаю двигун та кузов окремо.',
+                     'Автомобиль в разборе, детали отдельно.'):
+            with self.subTest(text=text):
+                self.assertEqual(review_listing(listing(text))['status'], 'excluded')
+        for text in ('Розмитнений. Автомобіль не у розборі, продаю цілим.',
+                     'Растаможен. Автомобиль не в разборе.',
+                     'Купив двигун у розборі, встановив, авто продаю цілим.'):
+            with self.subTest(text=text):
+                self.assertEqual(review_listing(listing(text))['status'], 'allowed')
+
     def test_required_uncleared_examples(self):
         for text in ('Нерозмитнений, ціна без мита', 'Не розмитнена машина',
                      'Не-розмитнений', 'нерастаможен', 'НЕ РАСТАМОЖЕНА',
