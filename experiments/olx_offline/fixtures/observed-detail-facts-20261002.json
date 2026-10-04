@@ -1,0 +1,32 @@
+{
+  "kind": "observed_public_page_facts",
+  "observed_date": "2026-10-02",
+  "method": "manual transcription of factual fields from two web-rendered OLX pages; not raw HTML or independent quality labels",
+  "page_fetch_timestamp_known": false,
+  "personal_data_included": false,
+  "records": [
+    {
+      "id": "934235066", "source": "olx",
+      "url": "https://www.olx.ua/d/uk/obyavlenie/prodam-avtomobil-uaz-69-ID11dXdv.html",
+      "price": "68000", "currency": "UAH", "price_kind": null,
+      "year": 1980, "model": "Інша", "mileage_km": 1000000,
+      "fuel": "Бензин", "transmission": "Механічна", "body": "Позашляховик / Кроссовер",
+      "publication_verified": false, "published_at": null,
+      "observed_publication_label": "Опубліковано сьогодні о 17:42",
+      "observed_photo_link_count": 8,
+      "category": null, "evidence": "observed_public_page_facts"
+    },
+    {
+      "id": "934234445", "source": "olx",
+      "url": "https://www.olx.ua/d/uk/obyavlenie/skoda-fabia-2-fl-2012-r-v-1-4-benzin-shkoda-fabiya-restayling-fabya-ID11dX3w.html",
+      "price": "5750", "currency": "USD", "price_kind": null,
+      "year": 2012, "model": "Fabia", "mileage_km": 192000,
+      "engine_cc": 1400, "fuel": "Бензин", "transmission": "Механічна", "body": "Хетчбек",
+      "publication_verified": false, "published_at": null,
+      "observed_publication_label": "Опубліковано сьогодні о 17:34",
+      "observed_search_price": "258685.54", "observed_search_currency": "UAH",
+      "observed_photo_link_count": 24,
+      "category": null, "evidence": "observed_public_page_facts"
+    }
+  ]
+}

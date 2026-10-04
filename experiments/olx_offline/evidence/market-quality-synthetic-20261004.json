@@ -1,0 +1,719 @@
+{
+  "evidence_kind": "synthetic_only",
+  "scenario_count": 17,
+  "scenario_blueprint_sha256": "c9285052f55e51555b3de6ed6ae3b66df7ba35dbd0a59d01d2cdc78cec23fd8d",
+  "ground_truth": "Fictional market assumptions frozen in source; withheld from the estimator.",
+  "independent_real_labels": 0,
+  "real_peer_samples": 0,
+  "real_world_accuracy_verified": false,
+  "source_requests": 0,
+  "ria_paid_operations": 0,
+  "telegram_sends": 0,
+  "threshold_percent": "10",
+  "minimum_peer_ads": 8,
+  "comparable_sources": [
+    "olx"
+  ],
+  "method_selection": {
+    "selected_method": "lower_quartile",
+    "is_provisional": true,
+    "changed_by_this_report": false,
+    "reason": "Keep the explicit conservative research baseline; synthetic counts cannot validate real OLX accuracy."
+  },
+  "metrics": {
+    "robust_median": {
+      "tp": 4,
+      "fp": 2,
+      "tn": 4,
+      "fn": 2,
+      "valuation_unknown": 4,
+      "positive_unknown": 4,
+      "unlabeled_recommendations": 1,
+      "truth_unknown": 1,
+      "known_truth_evaluated": 12,
+      "positive_scenario_count": 10,
+      "positive_not_recommended_total": 6,
+      "precision_on_labeled_synthetic_proposals": 0.6666666666666666,
+      "end_to_end_synthetic_positive_recall": 0.4
+    },
+    "lower_quartile": {
+      "tp": 3,
+      "fp": 1,
+      "tn": 5,
+      "fn": 3,
+      "valuation_unknown": 4,
+      "positive_unknown": 4,
+      "unlabeled_recommendations": 1,
+      "truth_unknown": 1,
+      "known_truth_evaluated": 12,
+      "positive_scenario_count": 10,
+      "positive_not_recommended_total": 7,
+      "precision_on_labeled_synthetic_proposals": 0.75,
+      "end_to_end_synthetic_positive_recall": 0.3
+    },
+    "weighted_similar": {
+      "tp": 5,
+      "fp": 3,
+      "tn": 3,
+      "fn": 1,
+      "valuation_unknown": 4,
+      "positive_unknown": 4,
+      "unlabeled_recommendations": 1,
+      "truth_unknown": 1,
+      "known_truth_evaluated": 12,
+      "positive_scenario_count": 10,
+      "positive_not_recommended_total": 5,
+      "precision_on_labeled_synthetic_proposals": 0.625,
+      "end_to_end_synthetic_positive_recall": 0.5
+    }
+  },
+  "scenarios": [
+    {
+      "id": "clean_positive",
+      "synthetic_truth": "yes",
+      "assumed_market_usd": "10000",
+      "target_usd": "8000",
+      "methods": {
+        "robust_median": {
+          "status": "experimental_estimate",
+          "sample": 12,
+          "reference_usd": "10000.0",
+          "discount_percent": "20.0",
+          "threshold_simulation_recommended": true,
+          "reason": null,
+          "exclusions": {}
+        },
+        "lower_quartile": {
+          "status": "experimental_estimate",
+          "sample": 12,
+          "reference_usd": "9937.50",
+          "discount_percent": "19.496855345911949685534591194968553459119496855346",
+          "threshold_simulation_recommended": true,
+          "reason": null,
+          "exclusions": {}
+        },
+        "weighted_similar": {
+          "status": "experimental_estimate",
+          "sample": 12,
+          "reference_usd": "10000",
+          "discount_percent": "20.0",
+          "threshold_simulation_recommended": true,
+          "reason": null,
+          "exclusions": {}
+        }
+      }
+    },
+    {
+      "id": "clean_negative",
+      "synthetic_truth": "no",
+      "assumed_market_usd": "10000",
+      "target_usd": "9700",
+      "methods": {
+        "robust_median": {
+          "status": "experimental_estimate",
+          "sample": 12,
+          "reference_usd": "10000.0",
+          "discount_percent": "3.00",
+          "threshold_simulation_recommended": false,
+          "reason": null,
+          "exclusions": {}
+        },
+        "lower_quartile": {
+          "status": "experimental_estimate",
+          "sample": 12,
+          "reference_usd": "9937.50",
+          "discount_percent": "2.3899371069182389937106918238993710691823899371069",
+          "threshold_simulation_recommended": false,
+          "reason": null,
+          "exclusions": {}
+        },
+        "weighted_similar": {
+          "status": "experimental_estimate",
+          "sample": 12,
+          "reference_usd": "10000",
+          "discount_percent": "3.00",
+          "threshold_simulation_recommended": false,
+          "reason": null,
+          "exclusions": {}
+        }
+      }
+    },
+    {
+      "id": "positive_near_threshold",
+      "synthetic_truth": "yes",
+      "assumed_market_usd": "10000",
+      "target_usd": "8950",
+      "methods": {
+        "robust_median": {
+          "status": "experimental_estimate",
+          "sample": 12,
+          "reference_usd": "10000.0",
+          "discount_percent": "10.500",
+          "threshold_simulation_recommended": true,
+          "reason": null,
+          "exclusions": {}
+        },
+        "lower_quartile": {
+          "status": "experimental_estimate",
+          "sample": 12,
+          "reference_usd": "9937.50",
+          "discount_percent": "9.9371069182389937106918238993710691823899371069182",
+          "threshold_simulation_recommended": false,
+          "reason": null,
+          "exclusions": {}
+        },
+        "weighted_similar": {
+          "status": "experimental_estimate",
+          "sample": 12,
+          "reference_usd": "10000",
+          "discount_percent": "10.500",
+          "threshold_simulation_recommended": true,
+          "reason": null,
+          "exclusions": {}
+        }
+      }
+    },
+    {
+      "id": "negative_near_threshold",
+      "synthetic_truth": "no",
+      "assumed_market_usd": "10000",
+      "target_usd": "9050",
+      "methods": {
+        "robust_median": {
+          "status": "experimental_estimate",
+          "sample": 12,
+          "reference_usd": "10000.0",
+          "discount_percent": "9.500",
+          "threshold_simulation_recommended": false,
+          "reason": null,
+          "exclusions": {}
+        },
+        "lower_quartile": {
+          "status": "experimental_estimate",
+          "sample": 12,
+          "reference_usd": "9937.50",
+          "discount_percent": "8.9308176100628930817610062893081761006289308176101",
+          "threshold_simulation_recommended": false,
+          "reason": null,
+          "exclusions": {}
+        },
+        "weighted_similar": {
+          "status": "experimental_estimate",
+          "sample": 12,
+          "reference_usd": "10000",
+          "discount_percent": "9.500",
+          "threshold_simulation_recommended": false,
+          "reason": null,
+          "exclusions": {}
+        }
+      }
+    },
+    {
+      "id": "inflated_asking_consensus",
+      "synthetic_truth": "no",
+      "assumed_market_usd": "10000",
+      "target_usd": "10000",
+      "methods": {
+        "robust_median": {
+          "status": "experimental_estimate",
+          "sample": 12,
+          "reference_usd": "13075.0",
+          "discount_percent": "23.518164435946462715105162523900573613766730401530",
+          "threshold_simulation_recommended": true,
+          "reason": null,
+          "exclusions": {}
+        },
+        "lower_quartile": {
+          "status": "experimental_estimate",
+          "sample": 12,
+          "reference_usd": "12937.50",
+          "discount_percent": "22.705314009661835748792270531400966183574879227053",
+          "threshold_simulation_recommended": true,
+          "reason": null,
+          "exclusions": {}
+        },
+        "weighted_similar": {
+          "status": "experimental_estimate",
+          "sample": 12,
+          "reference_usd": "13100",
+          "discount_percent": "23.664122137404580152671755725190839694656488549618",
+          "threshold_simulation_recommended": true,
+          "reason": null,
+          "exclusions": {}
+        }
+      }
+    },
+    {
+      "id": "depressed_asking_consensus",
+      "synthetic_truth": "yes",
+      "assumed_market_usd": "10000",
+      "target_usd": "8800",
+      "methods": {
+        "robust_median": {
+          "status": "experimental_estimate",
+          "sample": 12,
+          "reference_usd": "8020.0",
+          "discount_percent": "-9.7256857855361596009975062344139650872817955112219",
+          "threshold_simulation_recommended": false,
+          "reason": null,
+          "exclusions": {}
+        },
+        "lower_quartile": {
+          "status": "experimental_estimate",
+          "sample": 12,
+          "reference_usd": "7910.00",
+          "discount_percent": "-11.251580278128950695322376738305941845764854614412",
+          "threshold_simulation_recommended": false,
+          "reason": null,
+          "exclusions": {}
+        },
+        "weighted_similar": {
+          "status": "experimental_estimate",
+          "sample": 12,
+          "reference_usd": "8040",
+          "discount_percent": "-9.4527363184079601990049751243781094527363184079602",
+          "threshold_simulation_recommended": false,
+          "reason": null,
+          "exclusions": {}
+        }
+      }
+    },
+    {
+      "id": "similarity_helpful",
+      "synthetic_truth": "yes",
+      "assumed_market_usd": "10000",
+      "target_usd": "8800",
+      "methods": {
+        "robust_median": {
+          "status": "experimental_estimate",
+          "sample": 12,
+          "reference_usd": "9000.0",
+          "discount_percent": "2.2222222222222222222222222222222222222222222222222",
+          "threshold_simulation_recommended": false,
+          "reason": null,
+          "exclusions": {}
+        },
+        "lower_quartile": {
+          "status": "experimental_estimate",
+          "sample": 12,
+          "reference_usd": "9000.00",
+          "discount_percent": "2.2222222222222222222222222222222222222222222222222",
+          "threshold_simulation_recommended": false,
+          "reason": null,
+          "exclusions": {}
+        },
+        "weighted_similar": {
+          "status": "experimental_estimate",
+          "sample": 12,
+          "reference_usd": "10000",
+          "discount_percent": "12.00",
+          "threshold_simulation_recommended": true,
+          "reason": null,
+          "exclusions": {}
+        }
+      }
+    },
+    {
+      "id": "similarity_misleading",
+      "synthetic_truth": "no",
+      "assumed_market_usd": "10000",
+      "target_usd": "9200",
+      "methods": {
+        "robust_median": {
+          "status": "experimental_estimate",
+          "sample": 12,
+          "reference_usd": "9000.0",
+          "discount_percent": "-2.2222222222222222222222222222222222222222222222222",
+          "threshold_simulation_recommended": false,
+          "reason": null,
+          "exclusions": {}
+        },
+        "lower_quartile": {
+          "status": "experimental_estimate",
+          "sample": 12,
+          "reference_usd": "9000.00",
+          "discount_percent": "-2.2222222222222222222222222222222222222222222222222",
+          "threshold_simulation_recommended": false,
+          "reason": null,
+          "exclusions": {}
+        },
+        "weighted_similar": {
+          "status": "experimental_estimate",
+          "sample": 12,
+          "reference_usd": "11000",
+          "discount_percent": "16.363636363636363636363636363636363636363636363636",
+          "threshold_simulation_recommended": true,
+          "reason": null,
+          "exclusions": {}
+        }
+      }
+    },
+    {
+      "id": "lower_quartile_resists_skew",
+      "synthetic_truth": "no",
+      "assumed_market_usd": "10000",
+      "target_usd": "9500",
+      "methods": {
+        "robust_median": {
+          "status": "experimental_estimate",
+          "sample": 12,
+          "reference_usd": "11000.0",
+          "discount_percent": "13.636363636363636363636363636363636363636363636364",
+          "threshold_simulation_recommended": true,
+          "reason": null,
+          "exclusions": {}
+        },
+        "lower_quartile": {
+          "status": "experimental_estimate",
+          "sample": 12,
+          "reference_usd": "10000.00",
+          "discount_percent": "5.00",
+          "threshold_simulation_recommended": false,
+          "reason": null,
+          "exclusions": {}
+        },
+        "weighted_similar": {
+          "status": "experimental_estimate",
+          "sample": 12,
+          "reference_usd": "11000",
+          "discount_percent": "13.636363636363636363636363636363636363636363636364",
+          "threshold_simulation_recommended": true,
+          "reason": null,
+          "exclusions": {}
+        }
+      }
+    },
+    {
+      "id": "one_extreme_outlier",
+      "synthetic_truth": "yes",
+      "assumed_market_usd": "10000",
+      "target_usd": "8000",
+      "methods": {
+        "robust_median": {
+          "status": "experimental_estimate",
+          "sample": 12,
+          "reference_usd": "10000.0",
+          "discount_percent": "20.0",
+          "threshold_simulation_recommended": true,
+          "reason": null,
+          "exclusions": {
+            "price_outlier": 1
+          }
+        },
+        "lower_quartile": {
+          "status": "experimental_estimate",
+          "sample": 12,
+          "reference_usd": "9937.50",
+          "discount_percent": "19.496855345911949685534591194968553459119496855346",
+          "threshold_simulation_recommended": true,
+          "reason": null,
+          "exclusions": {
+            "price_outlier": 1
+          }
+        },
+        "weighted_similar": {
+          "status": "experimental_estimate",
+          "sample": 12,
+          "reference_usd": "10000",
+          "discount_percent": "20.0",
+          "threshold_simulation_recommended": true,
+          "reason": null,
+          "exclusions": {
+            "price_outlier": 1
+          }
+        }
+      }
+    },
+    {
+      "id": "customs_and_parts_contamination",
+      "synthetic_truth": "yes",
+      "assumed_market_usd": "10000",
+      "target_usd": "8000",
+      "methods": {
+        "robust_median": {
+          "status": "experimental_estimate",
+          "sample": 12,
+          "reference_usd": "10000.0",
+          "discount_percent": "20.0",
+          "threshold_simulation_recommended": true,
+          "reason": null,
+          "exclusions": {
+            "verified_vehicle_current_policy_not_allowed": 24
+          }
+        },
+        "lower_quartile": {
+          "status": "experimental_estimate",
+          "sample": 12,
+          "reference_usd": "9937.50",
+          "discount_percent": "19.496855345911949685534591194968553459119496855346",
+          "threshold_simulation_recommended": true,
+          "reason": null,
+          "exclusions": {
+            "verified_vehicle_current_policy_not_allowed": 24
+          }
+        },
+        "weighted_similar": {
+          "status": "experimental_estimate",
+          "sample": 12,
+          "reference_usd": "10000",
+          "discount_percent": "20.0",
+          "threshold_simulation_recommended": true,
+          "reason": null,
+          "exclusions": {
+            "verified_vehicle_current_policy_not_allowed": 24
+          }
+        }
+      }
+    },
+    {
+      "id": "deposit_contamination",
+      "synthetic_truth": "no",
+      "assumed_market_usd": "10000",
+      "target_usd": "9500",
+      "methods": {
+        "robust_median": {
+          "status": "experimental_estimate",
+          "sample": 12,
+          "reference_usd": "10000.0",
+          "discount_percent": "5.00",
+          "threshold_simulation_recommended": false,
+          "reason": null,
+          "exclusions": {
+            "verified_vehicle_current_evidence_invalid": 24
+          }
+        },
+        "lower_quartile": {
+          "status": "experimental_estimate",
+          "sample": 12,
+          "reference_usd": "9937.50",
+          "discount_percent": "4.4025157232704402515723270440251572327044025157233",
+          "threshold_simulation_recommended": false,
+          "reason": null,
+          "exclusions": {
+            "verified_vehicle_current_evidence_invalid": 24
+          }
+        },
+        "weighted_similar": {
+          "status": "experimental_estimate",
+          "sample": 12,
+          "reference_usd": "10000",
+          "discount_percent": "5.00",
+          "threshold_simulation_recommended": false,
+          "reason": null,
+          "exclusions": {
+            "verified_vehicle_current_evidence_invalid": 24
+          }
+        }
+      }
+    },
+    {
+      "id": "too_few_independent_vehicles",
+      "synthetic_truth": "yes",
+      "assumed_market_usd": "10000",
+      "target_usd": "8000",
+      "methods": {
+        "robust_median": {
+          "status": "profitability_unconfirmed",
+          "sample": 1,
+          "reference_usd": null,
+          "discount_percent": null,
+          "threshold_simulation_recommended": false,
+          "reason": "insufficient_comparables",
+          "exclusions": {
+            "duplicate_source_id": 0,
+            "duplicate_verified_vehicle": 11
+          }
+        },
+        "lower_quartile": {
+          "status": "profitability_unconfirmed",
+          "sample": 1,
+          "reference_usd": null,
+          "discount_percent": null,
+          "threshold_simulation_recommended": false,
+          "reason": "insufficient_comparables",
+          "exclusions": {
+            "duplicate_source_id": 0,
+            "duplicate_verified_vehicle": 11
+          }
+        },
+        "weighted_similar": {
+          "status": "profitability_unconfirmed",
+          "sample": 1,
+          "reference_usd": null,
+          "discount_percent": null,
+          "threshold_simulation_recommended": false,
+          "reason": "insufficient_comparables",
+          "exclusions": {
+            "duplicate_source_id": 0,
+            "duplicate_verified_vehicle": 11
+          }
+        }
+      }
+    },
+    {
+      "id": "stale_peers",
+      "synthetic_truth": "yes",
+      "assumed_market_usd": "10000",
+      "target_usd": "8000",
+      "methods": {
+        "robust_median": {
+          "status": "profitability_unconfirmed",
+          "sample": 0,
+          "reference_usd": null,
+          "discount_percent": null,
+          "threshold_simulation_recommended": false,
+          "reason": "insufficient_comparables",
+          "exclusions": {
+            "duplicate_source_id": 0,
+            "verified_vehicle_current_evidence_invalid": 12
+          }
+        },
+        "lower_quartile": {
+          "status": "profitability_unconfirmed",
+          "sample": 0,
+          "reference_usd": null,
+          "discount_percent": null,
+          "threshold_simulation_recommended": false,
+          "reason": "insufficient_comparables",
+          "exclusions": {
+            "duplicate_source_id": 0,
+            "verified_vehicle_current_evidence_invalid": 12
+          }
+        },
+        "weighted_similar": {
+          "status": "profitability_unconfirmed",
+          "sample": 0,
+          "reference_usd": null,
+          "discount_percent": null,
+          "threshold_simulation_recommended": false,
+          "reason": "insufficient_comparables",
+          "exclusions": {
+            "duplicate_source_id": 0,
+            "verified_vehicle_current_evidence_invalid": 12
+          }
+        }
+      }
+    },
+    {
+      "id": "missing_gearbox",
+      "synthetic_truth": "yes",
+      "assumed_market_usd": "10000",
+      "target_usd": "8000",
+      "methods": {
+        "robust_median": {
+          "status": "profitability_unconfirmed",
+          "sample": 0,
+          "reference_usd": null,
+          "discount_percent": null,
+          "threshold_simulation_recommended": false,
+          "reason": "missing_comparison_attributes",
+          "exclusions": {}
+        },
+        "lower_quartile": {
+          "status": "profitability_unconfirmed",
+          "sample": 0,
+          "reference_usd": null,
+          "discount_percent": null,
+          "threshold_simulation_recommended": false,
+          "reason": "missing_comparison_attributes",
+          "exclusions": {}
+        },
+        "weighted_similar": {
+          "status": "profitability_unconfirmed",
+          "sample": 0,
+          "reference_usd": null,
+          "discount_percent": null,
+          "threshold_simulation_recommended": false,
+          "reason": "missing_comparison_attributes",
+          "exclusions": {}
+        }
+      }
+    },
+    {
+      "id": "wide_price_dispersion",
+      "synthetic_truth": "yes",
+      "assumed_market_usd": "10000",
+      "target_usd": "8000",
+      "methods": {
+        "robust_median": {
+          "status": "profitability_unconfirmed",
+          "sample": 8,
+          "reference_usd": null,
+          "discount_percent": null,
+          "threshold_simulation_recommended": false,
+          "reason": "wide_price_dispersion",
+          "exclusions": {
+            "duplicate_source_id": 0,
+            "price_outlier": 0
+          }
+        },
+        "lower_quartile": {
+          "status": "profitability_unconfirmed",
+          "sample": 8,
+          "reference_usd": null,
+          "discount_percent": null,
+          "threshold_simulation_recommended": false,
+          "reason": "wide_price_dispersion",
+          "exclusions": {
+            "duplicate_source_id": 0,
+            "price_outlier": 0
+          }
+        },
+        "weighted_similar": {
+          "status": "profitability_unconfirmed",
+          "sample": 8,
+          "reference_usd": null,
+          "discount_percent": null,
+          "threshold_simulation_recommended": false,
+          "reason": "wide_price_dispersion",
+          "exclusions": {
+            "duplicate_source_id": 0,
+            "price_outlier": 0
+          }
+        }
+      }
+    },
+    {
+      "id": "repair_cost_unobserved",
+      "synthetic_truth": "unknown",
+      "assumed_market_usd": null,
+      "target_usd": "8000",
+      "methods": {
+        "robust_median": {
+          "status": "experimental_estimate",
+          "sample": 12,
+          "reference_usd": "10000.0",
+          "discount_percent": "20.0",
+          "threshold_simulation_recommended": true,
+          "reason": null,
+          "exclusions": {}
+        },
+        "lower_quartile": {
+          "status": "experimental_estimate",
+          "sample": 12,
+          "reference_usd": "9937.50",
+          "discount_percent": "19.496855345911949685534591194968553459119496855346",
+          "threshold_simulation_recommended": true,
+          "reason": null,
+          "exclusions": {}
+        },
+        "weighted_similar": {
+          "status": "experimental_estimate",
+          "sample": 12,
+          "reference_usd": "10000",
+          "discount_percent": "20.0",
+          "threshold_simulation_recommended": true,
+          "reason": null,
+          "exclusions": {}
+        }
+      }
+    }
+  ],
+  "limitations": [
+    "Scenario construction and oracle labels have one author; no independent human truth verification.",
+    "No sale-price evidence, observed true market values or representative real OLX peer cohorts.",
+    "Consistently inflated or depressed asking prices can defeat every method.",
+    "Q25 trades fewer false positives in some scenarios for more missed positives; similarity weights can help or mislead.",
+    "Threshold decisions here are simulated; estimate_usd recommended stays None and no delivery occurs."
+  ]
+}

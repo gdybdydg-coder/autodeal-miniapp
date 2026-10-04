@@ -1,0 +1,98 @@
+{
+  "verification_date": "2026-10-03",
+  "kind": "saved_real_html_offline_replay",
+  "baseline_remote_commit": "ff9cf8f37c1e9a2310cebbe0cfa26ec0fcaacb48",
+  "isolated_demonstration_boundary_utc": "2026-10-03T00:00:00+00:00",
+  "isolated_demonstration_boundary_kyiv": "2026-10-03T03:00:00+03:00",
+  "boundary_is_production_configuration": false,
+  "saved_detail_counts": {
+    "processed": 3,
+    "source_identity_verified": 3,
+    "reported_preexisting": 3,
+    "geography_retained_after_restart": 3,
+    "profitability_confirmed": 0,
+    "profitability_unconfirmed": 3,
+    "pending": 0,
+    "market_comparables": 0,
+    "independent_control": 0
+  },
+  "timing": {
+    "parse_apply_restart_assessment_seconds": 0.73154,
+    "python_tracemalloc_peak_bytes": 9336373,
+    "sqlite_bytes": 81920,
+    "includes_http": false,
+    "server_rss_measured": false
+  },
+  "live_probe": {
+    "metadata": {
+      "url": "https://www.olx.ua/uk/transport/legkovye-avtomobili/?currency=UAH&search%5Border%5D=created_at:desc",
+      "started_utc": "2026-10-03T08:40:07.688989+00:00",
+      "attempts": 1,
+      "body_cap": 3145728,
+      "redirects_followed": 0,
+      "retries": 0,
+      "status": 200,
+      "bytes_read": 3145728,
+      "at_byte_cap": true,
+      "content_type": "text/html",
+      "sha256": "23eb81a97ea4f266c02d0647ac53e4775a361d97691f751482a8b8351f7df415",
+      "seconds": 9.468,
+      "finished_utc": "2026-10-03T08:40:17.157325+00:00"
+    },
+    "summary": {
+      "fetched_at": 1791016817,
+      "bytes_parsed": 3145728,
+      "download_truncated": true,
+      "closed_cards": 52,
+      "unique_cards": 52,
+      "duplicate_cards": 0,
+      "rejected_cards": 0,
+      "jsonld_offer_count": 20,
+      "jsonld_urls_in_cards": 20,
+      "cards_absent_from_jsonld": 32,
+      "cards_with_photo_urls": 23,
+      "observed_pagination_links": [
+        "/transport/legkovye-avtomobili/?currency=UAH&page=2&search%5Border%5D=created_at%3Adesc",
+        "/transport/legkovye-avtomobili/?currency=UAH&page=25&search%5Border%5D=created_at%3Adesc",
+        "/transport/legkovye-avtomobili/?currency=UAH&page=3&search%5Border%5D=created_at%3Adesc",
+        "/transport/legkovye-avtomobili/?currency=UAH&page=4&search%5Border%5D=created_at%3Adesc",
+        "/transport/legkovye-avtomobili/?currency=UAH&page=5&search%5Border%5D=created_at%3Adesc"
+      ],
+      "observed_sort": {
+        "value": "created_at:desc",
+        "label": "Найновіші"
+      },
+      "placement_counts": {
+        "promoted": 12,
+        "organic": 40,
+        "unknown": 0
+      },
+      "publication_verified": 0,
+      "whole_car_category_verified": 0,
+      "full_price_verified": 0,
+      "collection_complete": false,
+      "ready_for_delivery": false
+    },
+    "prerendered_state_script_closed": false,
+    "requests": 1,
+    "redirects": 0,
+    "retries": 0,
+    "full_crawl_verified": false
+  },
+  "limitations": [
+    "Source date field names are observations, not independently verified publication semantics.",
+    "Control=0: recall, missed listings, real FP/FN and publication latency remain unknown.",
+    "No FX or paid AUTO.RIA cache/API used.",
+    "Search response remains truncated even at 3 MiB.",
+    "Offline timings and Python allocation peak do not measure a complete live pipeline or server RSS."
+  ],
+  "private_fields_exported": false,
+  "code_validation": {
+    "tests": 228,
+    "passed": 228,
+    "seconds": 0.465,
+    "diff_check": "clean",
+    "network_in_tests": false
+  },
+  "synthetic_flow_evidence": "source-gate-synthetic-flow-20261003.json"
+}

@@ -1,0 +1,313 @@
+{
+  "recorded_at_utc": "2026-10-04T09:41:30.742536+00:00",
+  "scope": "read-only_research_not_production",
+  "olx_direct_gets": 9,
+  "nbu_direct_gets": 1,
+  "fixed_total_direct_get_budget": 10,
+  "total_direct_gets": 10,
+  "paid_ria_requests": 0,
+  "telegram_calls": 0,
+  "new_paid_services": 0,
+  "olx_received_bytes": 18847906,
+  "request_pause_seconds_between_series_calls": 4,
+  "max_timeout_seconds": 25,
+  "automatic_retries": 0,
+  "auth_or_captcha_bypass": false,
+  "browser_sessions": false,
+  "newest_pages_observed": 2,
+  "newest_cards_rows": 104,
+  "newest_unique_ids": 90,
+  "cross_page_overlap": 14,
+  "catalogue_complete": false,
+  "page_summaries": {
+    "category-complete.html": {
+      "fetched_at": 1791106198,
+      "bytes_parsed": 3976172,
+      "download_truncated": false,
+      "closed_cards": 52,
+      "unique_cards": 52,
+      "duplicate_cards": 0,
+      "rejected_cards": 0,
+      "jsonld_offer_count": 20,
+      "jsonld_urls_in_cards": 20,
+      "cards_absent_from_jsonld": 32,
+      "cards_with_photo_urls": 23,
+      "observed_pagination_links": [
+        "/transport/legkovye-avtomobili/?page=2",
+        "/transport/legkovye-avtomobili/?page=25",
+        "/transport/legkovye-avtomobili/?page=3",
+        "/transport/legkovye-avtomobili/?page=4",
+        "/transport/legkovye-avtomobili/?page=5"
+      ],
+      "observed_sort": {
+        "value": "relevance:desc",
+        "label": "Рекомендоване вам"
+      },
+      "placement_counts": {
+        "promoted": 12,
+        "organic": 40,
+        "unknown": 0
+      },
+      "publication_verified": 0,
+      "whole_car_category_verified": 0,
+      "full_price_verified": 0,
+      "collection_complete": false,
+      "ready_for_delivery": false
+    },
+    "newest-page1.html": {
+      "fetched_at": 1791106294,
+      "bytes_parsed": 4050495,
+      "download_truncated": false,
+      "closed_cards": 52,
+      "unique_cards": 52,
+      "duplicate_cards": 0,
+      "rejected_cards": 0,
+      "jsonld_offer_count": 20,
+      "jsonld_urls_in_cards": 20,
+      "cards_absent_from_jsonld": 32,
+      "cards_with_photo_urls": 23,
+      "observed_pagination_links": [
+        "/transport/legkovye-avtomobili/?currency=UAH&page=2&search%5Border%5D=created_at%3Adesc",
+        "/transport/legkovye-avtomobili/?currency=UAH&page=25&search%5Border%5D=created_at%3Adesc",
+        "/transport/legkovye-avtomobili/?currency=UAH&page=3&search%5Border%5D=created_at%3Adesc",
+        "/transport/legkovye-avtomobili/?currency=UAH&page=4&search%5Border%5D=created_at%3Adesc",
+        "/transport/legkovye-avtomobili/?currency=UAH&page=5&search%5Border%5D=created_at%3Adesc"
+      ],
+      "observed_sort": {
+        "value": "created_at:desc",
+        "label": "Найновіші"
+      },
+      "placement_counts": {
+        "promoted": 12,
+        "organic": 40,
+        "unknown": 0
+      },
+      "publication_verified": 0,
+      "whole_car_category_verified": 0,
+      "full_price_verified": 0,
+      "collection_complete": false,
+      "ready_for_delivery": false
+    },
+    "newest-page2.html": {
+      "fetched_at": 1791106306,
+      "bytes_parsed": 4045226,
+      "download_truncated": false,
+      "closed_cards": 52,
+      "unique_cards": 52,
+      "duplicate_cards": 0,
+      "rejected_cards": 0,
+      "jsonld_offer_count": 0,
+      "jsonld_urls_in_cards": 0,
+      "cards_absent_from_jsonld": 52,
+      "cards_with_photo_urls": 5,
+      "observed_pagination_links": [
+        "/transport/legkovye-avtomobili/?currency=UAH&page=2&search%5Border%5D=created_at%3Adesc",
+        "/transport/legkovye-avtomobili/?currency=UAH&page=25&search%5Border%5D=created_at%3Adesc",
+        "/transport/legkovye-avtomobili/?currency=UAH&page=3&search%5Border%5D=created_at%3Adesc",
+        "/transport/legkovye-avtomobili/?currency=UAH&page=4&search%5Border%5D=created_at%3Adesc",
+        "/transport/legkovye-avtomobili/?currency=UAH&page=5&search%5Border%5D=created_at%3Adesc"
+      ],
+      "observed_sort": {
+        "value": "created_at:desc",
+        "label": "Найновіші"
+      },
+      "placement_counts": {
+        "promoted": 12,
+        "organic": 40,
+        "unknown": 0
+      },
+      "publication_verified": 0,
+      "whole_car_category_verified": 0,
+      "full_price_verified": 0,
+      "collection_complete": false,
+      "ready_for_delivery": false
+    }
+  },
+  "channel_findings": {
+    "public_html_currently_accessible": true,
+    "full_details_observed": 3,
+    "all_seller_partner_api_available": false,
+    "public_html_regular_commercial_permission_confirmed": false,
+    "current_site_terms_text_available": false,
+    "robust_long_term_availability_tested": false,
+    "publication_semantics_verified": false,
+    "original_seller_currency_verified": false,
+    "real_fx_quote_obtained": false,
+    "profitability_accuracy_verified": false
+  },
+  "sources": [
+    {
+      "url": "https://developer.olx.ua/ua/articles/faq",
+      "finding": "Q6: only own authorized account advertisements; not a catalogue of all sellers."
+    },
+    {
+      "url": "https://developer.olx.ua/api/doc",
+      "finding": "Documentation page reachable; details client-rendered and no contrary all-seller access documented."
+    },
+    {
+      "url": "https://www.olx.ua/robots.txt",
+      "finding": "Public category/details allowed in robots; /rss/ and contact/account/ajax paths disallowed. Robots not permission for commercial reuse."
+    },
+    {
+      "url": "https://help.olx.ua/olxuahelp/s/article/%D0%BF%D1%80%D0%B0%D0%B2%D0%B8%D0%BB%D0%B0-%D1%81%D0%B5%D1%80%D0%B2%D1%96%D1%81%D1%83-olxua-V1",
+      "finding": "Direct HTTP20075,176bytes and web viewer both Loading/CSS Error without terms text."
+    },
+    {
+      "url": "https://developer.olx.ua/doc/regulations.uk.pdf?v49=",
+      "finding": "API terms available: authenticated account/developer approval and general site terms also apply; no all-seller collection permission established."
+    }
+  ],
+  "records": [
+    {
+      "url": "https://www.olx.ua/robots.txt",
+      "fetched_at": "2026-10-04T09:28:16.723628+00:00",
+      "status": 200,
+      "final_url": "https://www.olx.ua/robots.txt",
+      "bytes": 899,
+      "content_type": "text/plain",
+      "file": "robots.txt",
+      "cache_control": "no-cache",
+      "date": "Sun, 04 Oct 2026 09:28:17 GMT",
+      "age": null
+    },
+    {
+      "url": "https://www.olx.ua/uk/transport/legkovye-avtomobili/",
+      "fetched_at": "2026-10-04T09:28:27.938506+00:00",
+      "status": 200,
+      "final_url": "https://www.olx.ua/uk/transport/legkovye-avtomobili/",
+      "bytes": 2000000,
+      "content_type": "text/html; charset=utf-8",
+      "file": "category.html",
+      "cache_control": "public, max-age=300, stale-while-revalidate=60",
+      "date": "Sun, 04 Oct 2026 09:28:27 GMT",
+      "age": null
+    },
+    {
+      "url": "https://www.olx.ua/uk/transport/legkovye-avtomobili/",
+      "started_at": "2026-10-04T09:29:50.191050+00:00",
+      "fetched_at": "2026-10-04T09:29:58.859847+00:00",
+      "status": 200,
+      "final_url": "https://www.olx.ua/uk/transport/legkovye-avtomobili/",
+      "bytes_read": 3976172,
+      "truncated": false,
+      "cap": 4194304,
+      "body_sha256": "dcdc4e596bcaa325971931998fe64011fc550f093fd51191b2c57ed5cb098501",
+      "content_type": "text/html; charset=utf-8",
+      "file": "category-complete.html",
+      "cache_control": "public, max-age=300, stale-while-revalidate=60",
+      "date": "Sun, 04 Oct 2026 09:29:58 GMT",
+      "age": null
+    },
+    {
+      "url": "https://www.olx.ua/d/uk/obyavlenie/prodam-aud-nerozmitnena-a-4-ID11iXwe.html",
+      "started_at": "2026-10-04T09:30:02.862998+00:00",
+      "fetched_at": "2026-10-04T09:30:09.907506+00:00",
+      "status": 200,
+      "final_url": "https://www.olx.ua/d/uk/obyavlenie/prodam-aud-nerozmitnena-a-4-ID11iXwe.html",
+      "bytes_read": 1566948,
+      "truncated": false,
+      "cap": 4194304,
+      "body_sha256": "dd11b1c13ce616b68529b9429f30e104d407973915f96adb03a6d1be2b212eff",
+      "content_type": "text/html; charset=utf-8",
+      "file": "audi-detail.html",
+      "cache_control": "public, max-age=600",
+      "date": "Sun, 04 Oct 2026 09:30:09 GMT",
+      "age": null
+    },
+    {
+      "url": "https://www.olx.ua/d/uk/obyavlenie/prodam-bmv-520-2-0-benzin-ID11mmim.html",
+      "started_at": "2026-10-04T09:30:13.908899+00:00",
+      "fetched_at": "2026-10-04T09:30:19.243924+00:00",
+      "status": 200,
+      "final_url": "https://www.olx.ua/d/uk/obyavlenie/prodam-bmv-520-2-0-benzin-ID11mmim.html",
+      "bytes_read": 1565978,
+      "truncated": false,
+      "cap": 4194304,
+      "body_sha256": "ecc6cdc4d1a560def7854c9d5019de08528ece748dad43070630227a0ab0295c",
+      "content_type": "text/html; charset=utf-8",
+      "file": "bmw-detail.html",
+      "cache_control": "public, max-age=600",
+      "date": "Sun, 04 Oct 2026 09:30:19 GMT",
+      "age": null
+    },
+    {
+      "url": "https://www.olx.ua/uk/transport/legkovye-avtomobili/?currency=UAH&search%5Border%5D=created_at:desc",
+      "started_at": "2026-10-04T09:31:21.400805+00:00",
+      "fetched_at": "2026-10-04T09:31:34.407881+00:00",
+      "status": 200,
+      "final_url": "https://www.olx.ua/uk/transport/legkovye-avtomobili/?currency=UAH&search%5Border%5D=created_at:desc",
+      "bytes_read": 4050495,
+      "truncated": false,
+      "cap": 4194304,
+      "body_sha256": "c31cf72cf03186cbb2e596cf0156944c80abc8845fc0820995e2634ef027fa68",
+      "content_type": "text/html; charset=utf-8",
+      "file": "newest-page1.html",
+      "cache_control": "public, max-age=300, stale-while-revalidate=60",
+      "date": "Sun, 04 Oct 2026 09:31:33 GMT",
+      "age": null
+    },
+    {
+      "url": "https://www.olx.ua/uk/transport/legkovye-avtomobili/?currency=UAH&page=2&search%5Border%5D=created_at%3Adesc",
+      "started_at": "2026-10-04T09:31:38.410670+00:00",
+      "fetched_at": "2026-10-04T09:31:46.067167+00:00",
+      "status": 200,
+      "final_url": "https://www.olx.ua/uk/transport/legkovye-avtomobili/?currency=UAH&page=2&search%5Border%5D=created_at%3Adesc",
+      "bytes_read": 4045226,
+      "truncated": false,
+      "cap": 4194304,
+      "body_sha256": "b2d027a9280ad3be0b43479b90e4b66314fad4877e1cad8a3e4e1177a001906b",
+      "content_type": "text/html; charset=utf-8",
+      "file": "newest-page2.html",
+      "cache_control": "public, max-age=300, stale-while-revalidate=60",
+      "date": "Sun, 04 Oct 2026 09:31:45 GMT",
+      "age": null
+    },
+    {
+      "url": "https://help.olx.ua/olxuahelp/s/article/%D0%BF%D1%80%D0%B0%D0%B2%D0%B8%D0%BB%D0%B0-%D1%81%D0%B5%D1%80%D0%B2%D1%96%D1%81%D1%83-olxua-V1",
+      "started_at": "2026-10-04T09:31:50.070260+00:00",
+      "fetched_at": "2026-10-04T09:31:55.708926+00:00",
+      "status": 200,
+      "final_url": "https://help.olx.ua/olxuahelp/s/article/%D0%BF%D1%80%D0%B0%D0%B2%D0%B8%D0%BB%D0%B0-%D1%81%D0%B5%D1%80%D0%B2%D1%96%D1%81%D1%83-olxua-V1",
+      "bytes_read": 75176,
+      "truncated": false,
+      "cap": 4194304,
+      "body_sha256": "4eba38cc1861848307339772b8cc78ec6f601394341f6b41367e21c98abe9f85",
+      "content_type": "text/html;charset=UTF-8",
+      "file": "site-terms.html",
+      "cache_control": "no-cache,must-revalidate,max-age=0,no-store,private",
+      "date": "Sun, 04 Oct 2026 09:31:55 GMT",
+      "age": null
+    },
+    {
+      "url": "https://www.olx.ua/d/uk/obyavlenie/mazda-626-2-0-na-hodu-prodam-mazda-626-z-dvigunom-2-0-ID11oDHg.html",
+      "started_at": "2026-10-04T09:33:13.231785+00:00",
+      "fetched_at": "2026-10-04T09:33:18.750568+00:00",
+      "status": 200,
+      "final_url": "https://www.olx.ua/d/uk/obyavlenie/mazda-626-2-0-na-hodu-prodam-mazda-626-z-dvigunom-2-0-ID11oDHg.html",
+      "bytes_read": 1567012,
+      "truncated": false,
+      "cap": 4194304,
+      "body_sha256": "ca0a097f6b644567198f76d9b741591a1286182d187c740b0f351b63482d51a5",
+      "content_type": "text/html; charset=utf-8",
+      "file": "mazda-uah-detail.html",
+      "cache_control": "public, max-age=600",
+      "date": "Sun, 04 Oct 2026 09:33:18 GMT",
+      "age": null
+    }
+  ],
+  "nbu": {
+    "url": "https://bank.gov.ua/NBU_Exchange/exchange_site?start=20261004&end=20261004&valcode=usd&sort=exchangedate&order=desc&json",
+    "started_at": "2026-10-04T09:39:48.886880+00:00",
+    "fetched_at": "2026-10-04T09:39:55.211198+00:00",
+    "status": 403,
+    "final_url": "https://bank.gov.ua/NBU_Exchange/exchange_site?start=20261004&end=20261004&valcode=usd&sort=exchangedate&order=desc&json",
+    "bytes_read": 55,
+    "truncated": false,
+    "cap": 262144,
+    "body_sha256": "35e642f0e1bd426b9d8b0ee0284aefe801873dc13c18819fbeeaf2bf47136664",
+    "content_type": "application/json",
+    "date": "Sun, 04 Oct 2026 09:39:55 GMT",
+    "requests": 1,
+    "paid_requests": 0
+  }
+}

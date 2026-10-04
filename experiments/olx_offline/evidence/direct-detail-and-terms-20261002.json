@@ -1,0 +1,86 @@
+{
+  "detail_http": {
+    "url": "https://www.olx.ua/d/uk/obyavlenie/skoda-fabia-2-fl-2012-r-v-1-4-benzin-shkoda-fabiya-restayling-fabya-ID11dX3w.html",
+    "started_utc": "2026-10-02T19:11:15.765708+00:00",
+    "attempts": 1,
+    "timeout_seconds": 20,
+    "byte_cap": 1048576,
+    "redirects_followed": 0,
+    "retries": 0,
+    "status": 200,
+    "bytes_read": 1048576,
+    "at_byte_cap": true,
+    "content_type": "text/html",
+    "seconds": 1.014,
+    "finished_utc": "2026-10-02T19:11:16.780031+00:00"
+  },
+  "detail_summary": {
+    "bytes_parsed": 1048576,
+    "download_truncated": true,
+    "price_relationship": "different_display_currencies",
+    "photo_urls": 5,
+    "field_conflicts": [],
+    "full_price_verified": false,
+    "publication_verified": false,
+    "ready_for_delivery": false,
+    "seller_data_exported": false
+  },
+  "facts": {
+    "source": "olx",
+    "id": "934234445",
+    "url": "https://www.olx.ua/d/uk/obyavlenie/skoda-fabia-2-fl-2012-r-v-1-4-benzin-shkoda-fabiya-restayling-fabya-ID11dX3w.html",
+    "price": "5750",
+    "currency": "USD",
+    "brand": "Skoda",
+    "model": "Fabia",
+    "generation": null,
+    "year": 2012,
+    "mileage_km": 192000,
+    "engine_cc": 1400,
+    "fuel": "petrol",
+    "transmission": "manual",
+    "body": "hatchback",
+    "price_observations": {
+      "visible": {
+        "amount": "5750",
+        "currency": "USD"
+      },
+      "jsonld": {
+        "amount": "258685",
+        "currency": "UAH"
+      },
+      "relationship": "different_display_currencies",
+      "fx_rate": null
+    },
+    "published_at": null,
+    "publication_verified": false
+  },
+  "assessment": {
+    "status": "profitability_unconfirmed",
+    "reason": "full_price_unconfirmed",
+    "sample": 0
+  },
+  "sha256_body_prefix": "e7a8d954af0d4a61fb23e42c6b53a36bc152b8dbd5a865492757f643c09c62b4",
+  "terms_http": {
+    "url": "https://help.olx.ua/olxuahelp/s/article/%D0%BF%D1%80%D0%B0%D0%B2%D0%B8%D0%BB%D0%B0-%D1%81%D0%B5%D1%80%D0%B2%D1%96%D1%81%D1%83-olxua-V1",
+    "started_utc": "2026-10-02T19:10:29.935755+00:00",
+    "attempts": 1,
+    "timeout_seconds": 20,
+    "byte_cap": 2097152,
+    "redirects_followed": 0,
+    "retries": 0,
+    "status": 200,
+    "bytes_read": 75176,
+    "at_byte_cap": false,
+    "content_type": "text/html",
+    "seconds": 0.649,
+    "finished_utc": "2026-10-02T19:10:30.584685+00:00"
+  },
+  "terms_text_available": false,
+  "terms_visible_result": "Loading / CSS Error",
+  "regular_collection_permission_confirmed": false,
+  "http_requests_this_stage": 2,
+  "total_bytes_read": 1123752,
+  "independent_control_sample": 0,
+  "production_changes": false
+}

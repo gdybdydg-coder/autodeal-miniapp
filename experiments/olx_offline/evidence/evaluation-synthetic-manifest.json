@@ -1,0 +1,104 @@
+{
+  "kind": "synthetic",
+  "control_origin": {
+    "method": "synthetic_holdout",
+    "reference": "reference-fixture-v1"
+  },
+  "collector_run_ref": "collector-fixture-v1",
+  "window": {
+    "start": 1790942400,
+    "end": 1790946000
+  },
+  "collector_complete": false,
+  "control": [
+    {
+      "source": "olx",
+      "id": "0",
+      "recorded_at": 1790942400,
+      "profitable": "yes",
+      "publication_verified": false
+    },
+    {
+      "source": "olx",
+      "id": "1",
+      "recorded_at": 1790942400,
+      "profitable": "yes",
+      "publication_verified": false
+    },
+    {
+      "source": "olx",
+      "id": "2",
+      "recorded_at": 1790942400,
+      "profitable": "yes",
+      "publication_verified": false
+    },
+    {
+      "source": "olx",
+      "id": "3",
+      "recorded_at": 1790942400,
+      "profitable": "yes",
+      "publication_verified": false
+    },
+    {
+      "source": "olx",
+      "id": "4",
+      "recorded_at": 1790942400,
+      "profitable": "no",
+      "publication_verified": false
+    },
+    {
+      "source": "olx",
+      "id": "5",
+      "recorded_at": 1790942400,
+      "profitable": "no",
+      "publication_verified": false
+    }
+  ],
+  "results": [
+    {
+      "source": "olx",
+      "id": "0",
+      "detected_at": 1790942420,
+      "processed": true,
+      "valuation": "estimated",
+      "filter_match": "yes",
+      "recommended": true
+    },
+    {
+      "source": "olx",
+      "id": "1",
+      "detected_at": 1790942420,
+      "processed": true,
+      "valuation": "unknown",
+      "filter_match": "yes",
+      "recommended": false
+    },
+    {
+      "source": "olx",
+      "id": "2",
+      "detected_at": 1790942420,
+      "processed": false,
+      "valuation": "not_attempted",
+      "filter_match": "yes",
+      "recommended": false
+    },
+    {
+      "source": "olx",
+      "id": "5",
+      "detected_at": 1790942420,
+      "processed": true,
+      "valuation": "estimated",
+      "filter_match": "yes",
+      "recommended": false
+    },
+    {
+      "source": "olx",
+      "id": "4",
+      "detected_at": 1790942420,
+      "processed": true,
+      "valuation": "estimated",
+      "filter_match": "yes",
+      "recommended": true
+    }
+  ]
+}

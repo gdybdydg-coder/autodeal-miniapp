@@ -1,0 +1,15 @@
+{
+  "url": "https://bank.gov.ua/NBU_Exchange/exchange_site?start=20261004&end=20261004&valcode=usd&sort=exchangedate&order=desc&json",
+  "started_at": "2026-10-04T09:39:48.886880+00:00",
+  "fetched_at": "2026-10-04T09:39:55.211198+00:00",
+  "status": 403,
+  "final_url": "https://bank.gov.ua/NBU_Exchange/exchange_site?start=20261004&end=20261004&valcode=usd&sort=exchangedate&order=desc&json",
+  "bytes_read": 55,
+  "truncated": false,
+  "cap": 262144,
+  "body_sha256": "35e642f0e1bd426b9d8b0ee0284aefe801873dc13c18819fbeeaf2bf47136664",
+  "content_type": "application/json",
+  "date": "Sun, 04 Oct 2026 09:39:55 GMT",
+  "requests": 1,
+  "paid_requests": 0
+}

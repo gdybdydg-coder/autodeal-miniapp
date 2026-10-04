@@ -1,0 +1,54 @@
+{
+  "kind": "synthetic_only",
+  "observed_at_utc": "2026-10-04T09:47:49Z",
+  "command": "env -i PATH=/usr/local/bin:/usr/bin:/bin LANG=C.UTF-8 PYTHONDONTWRITEBYTECODE=1 python3 -m experiments.olx_offline.scenario",
+  "live_olx_requests": 0,
+  "telegram_sends": 0,
+  "paid_ria_operations": 0,
+  "fictional_FX_rate": "42 UAH per USD; not current NBU",
+  "runs": [
+    {
+      "users": 100,
+      "input_cards": 240,
+      "shared_fixture_pages": 12,
+      "queued": 18000,
+      "filtered": 6000,
+      "local_fake_accepted": 18000,
+      "uncertain": 0,
+      "held": 0,
+      "overflow": 0,
+      "restart_requeued": 0,
+      "total_seconds": 29.099052796998876,
+      "normalize_store_seconds": 0.2550598589987203,
+      "valuation_filter_queue_seconds": 4.839000166000915,
+      "fake_transport_seconds": 24.00499277199924,
+      "peak_python_bytes": 3710575,
+      "sqlite_bytes": 7696384
+    },
+    {
+      "users": 200,
+      "input_cards": 240,
+      "shared_fixture_pages": 12,
+      "queued": 36000,
+      "filtered": 12000,
+      "local_fake_accepted": 36000,
+      "uncertain": 0,
+      "held": 0,
+      "overflow": 0,
+      "restart_requeued": 0,
+      "total_seconds": 62.61553333499978,
+      "normalize_store_seconds": 0.19132200100102636,
+      "valuation_filter_queue_seconds": 9.216769892998855,
+      "fake_transport_seconds": 53.2074414409999,
+      "peak_python_bytes": 7192879,
+      "sqlite_bytes": 13647872
+    }
+  ],
+  "scope": "Historical pure prototype benchmark rerun after claim/price/market changes. Does not run actual backend paid-policy queries; separate backend integration has 200 fake paid recipients/one shared source fetch.",
+  "limitations": [
+    "Constant synthetic time; no Telegram networking/throttle/push",
+    "Temporary local SQLite and Python allocations; not Render capacity/SLA",
+    "No representative real-market peers or independent real labels",
+    "Source+ID pagination fixture completeness only, not OLX catalogue completeness"
+  ]
+}

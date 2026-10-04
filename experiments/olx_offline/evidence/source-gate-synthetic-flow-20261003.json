@@ -1,0 +1,109 @@
+{
+  "kind": "synthetic_only",
+  "quality": {
+    "label_basis": "synthetic latent asking-market scenarios",
+    "strict": {
+      "tp": 40,
+      "fp": 0,
+      "tn": 50,
+      "fn": 0,
+      "unknown": 10
+    },
+    "brand_year_baseline": {
+      "tp": 50,
+      "fp": 50,
+      "tn": 0,
+      "fn": 0
+    },
+    "unknown_positive": 10,
+    "real_accuracy_measured": false,
+    "independent_real_control_size": 0,
+    "recall_including_unknown_positive": {
+      "numerator": 40,
+      "denominator": 50,
+      "percent": 80
+    },
+    "limitation": "Synthetic labels only. Ten uncertain positive cases remain in recall denominator; live FP/FN not measured."
+  },
+  "runs": [
+    {
+      "users": 100,
+      "input_cards": 240,
+      "collect": {
+        "status": "complete",
+        "pages": 12,
+        "rows": 240,
+        "reason": null
+      },
+      "queue": {
+        "queued": 18000,
+        "filtered": 6000,
+        "uncertain": 0,
+        "denied": 0,
+        "overflow": 0
+      },
+      "fake_delivery": {
+        "accepted": 18000,
+        "denied": 0,
+        "uncertain": 0,
+        "held": 0
+      },
+      "restart_requeued": 0,
+      "seconds": {
+        "normalize_store": 0.20125591900068684,
+        "valuation_filter_queue": 4.518190663000496,
+        "fake_delivery": 9.024210124998717,
+        "total": 13.7436567069999
+      },
+      "peak_python_bytes": 3688129,
+      "sqlite_bytes": 5136384,
+      "live_requests": 0,
+      "paid_requests": 0,
+      "eligibility_reviewed": 240,
+      "usd_native": 120,
+      "uah_converted": 120,
+      "fx_basis": "fictional_test_rate_42_not_current_NBU"
+    },
+    {
+      "users": 200,
+      "input_cards": 240,
+      "collect": {
+        "status": "complete",
+        "pages": 12,
+        "rows": 240,
+        "reason": null
+      },
+      "queue": {
+        "queued": 36000,
+        "filtered": 12000,
+        "uncertain": 0,
+        "denied": 0,
+        "overflow": 0
+      },
+      "fake_delivery": {
+        "accepted": 36000,
+        "denied": 0,
+        "uncertain": 0,
+        "held": 0
+      },
+      "restart_requeued": 0,
+      "seconds": {
+        "normalize_store": 0.1762627700009034,
+        "valuation_filter_queue": 8.016878998998436,
+        "fake_delivery": 17.846767443001227,
+        "total": 26.039909212000566
+      },
+      "peak_python_bytes": 7178446,
+      "sqlite_bytes": 8396800,
+      "live_requests": 0,
+      "paid_requests": 0,
+      "eligibility_reviewed": 240,
+      "usd_native": 120,
+      "uah_converted": 120,
+      "fx_basis": "fictional_test_rate_42_not_current_NBU"
+    }
+  ],
+  "verification_date": "2026-10-03",
+  "pipeline_includes_source_date_negative_gate": true,
+  "live_source_date_gate_exercised": false
+}

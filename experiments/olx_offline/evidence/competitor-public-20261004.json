@@ -1,0 +1,106 @@
+{
+  "competitor": "@BullAutoRadarBot",
+  "profile_url": "https://telegram.me/BullAutoRadarBot",
+  "observed_at_utc": "2026-10-04T09:28:08.538430+00:00",
+  "profile_sha256": "b0ef2bd95b2f38ec5533c04dcf96394ab24eec8191793377e35daaa89af25592",
+  "observed": [
+    "Name BullAutoRadar and exact handle; public profile; no message demos or external official links"
+  ],
+  "advertised_description": "📡 Вигідні авто раніше за інших • Аналіз ринку • Сповіщення 24/7",
+  "advertised_not_measured": [
+    "Early profitable cars",
+    "Market analysis",
+    "24/7 notifications"
+  ],
+  "specific_features": [
+    {
+      "key": "olx_source",
+      "classification": "unknown",
+      "finding": "Не встановлено незалежним доступним прикладом.",
+      "needed_evidence": "Повідомлення з повним вихідним olx.ua URL / OLX ID."
+    },
+    {
+      "key": "filter_menu",
+      "classification": "unknown",
+      "finding": "Не встановлено незалежним доступним прикладом.",
+      "needed_evidence": "Скриншоти меню та налаштувань пошуку."
+    },
+    {
+      "key": "new_vs_deals",
+      "classification": "unknown",
+      "finding": "Не встановлено незалежним доступним прикладом.",
+      "needed_evidence": "Інструкція або повідомлення з визначенням режиму."
+    },
+    {
+      "key": "market_value",
+      "classification": "unknown",
+      "finding": "Не встановлено незалежним доступним прикладом.",
+      "needed_evidence": "Приклад із видимим ринковим орієнтиром та його поясненням."
+    },
+    {
+      "key": "discount_percent",
+      "classification": "unknown",
+      "finding": "Не встановлено незалежним доступним прикладом.",
+      "needed_evidence": "Повідомлення із ціною, ринковим орієнтиром і відсотком."
+    },
+    {
+      "key": "car_fields_photos",
+      "classification": "unknown",
+      "finding": "Не встановлено незалежним доступним прикладом.",
+      "needed_evidence": "Реальне автомобільне повідомлення із зображенням та текстом."
+    },
+    {
+      "key": "uah_fx",
+      "classification": "unknown",
+      "finding": "Не встановлено незалежним доступним прикладом.",
+      "needed_evidence": "Приклад гривневого OLX оголошення і відповідного повідомлення."
+    },
+    {
+      "key": "publication_events",
+      "classification": "unknown",
+      "finding": "Не встановлено незалежним доступним прикладом.",
+      "needed_evidence": "Експорт кількох повідомлень для одного OLX ID з часом."
+    },
+    {
+      "key": "customs_parts",
+      "classification": "unknown",
+      "finding": "Не встановлено незалежним доступним прикладом.",
+      "needed_evidence": "Повідомлення і повний опис відповідного автомобіля."
+    },
+    {
+      "key": "cross_source_duplicates",
+      "classification": "unknown",
+      "finding": "Не встановлено незалежним доступним прикладом.",
+      "needed_evidence": "Дві публікації того самого авто із сильними ідентифікаторами."
+    },
+    {
+      "key": "measured_latency",
+      "classification": "unknown",
+      "finding": "Не встановлено незалежним доступним прикладом.",
+      "needed_evidence": "Повідомлення із Telegram timestamp та незалежним точним часом доступності в OLX."
+    }
+  ],
+  "public_search_queries": [
+    "\"BullAutoRadarBot\"",
+    "\"Bull Auto Radar\" OLX",
+    "\"BullAutoRadar\" авто бот",
+    "\"BullAutoRadarBot\" OLX Україна",
+    "\"BullAutoRadarBot\" сайт OR instagram OR tiktok",
+    "\"Бик\" \"OLX\" \"бот\" автомобілі",
+    "\"Bull Auto\" \"Radar\" \"бот\"",
+    "\"BullAuto\" \"бот\"",
+    "\"BullAutoRadarBot\" site:t.me",
+    "\"BullAutoRadarBot\" -site:t.me",
+    "\"BullAutoRadar\"",
+    "\"Вигідні авто раніше за інших\"",
+    "\"BullAutoRadarBot\" \"OLX\"",
+    "\"BullAutoRadar\" \"Сповіщення\""
+  ],
+  "search_result": "No relevant indexed exact-bot demonstrations, instructions, linked official profiles or real automobile messages returned. Absence in search is not evidence that features do not exist. Other Bull/Radar bots were rejected as different accounts.",
+  "live_comparison": {
+    "available": false,
+    "reason": "No accessible concrete bot automobile message or timestamps."
+  },
+  "telegram_interaction": false,
+  "contact_or_purchase": false
+}

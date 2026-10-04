@@ -1,0 +1,57 @@
+{
+  "evidence_kind": "synthetic",
+  "provenance_independence": "declared_not_automatically_verified",
+  "window": {
+    "UTC": {
+      "start": "2026-10-02T12:00:00+00:00",
+      "end_exclusive": "2026-10-02T13:00:00+00:00"
+    },
+    "Europe/Kyiv": {
+      "start": "2026-10-02T15:00:00+03:00",
+      "end_exclusive": "2026-10-02T16:00:00+03:00"
+    }
+  },
+  "collector_complete": false,
+  "whole_olx_coverage_verified": false,
+  "coverage": {
+    "control": 6,
+    "detected_in_control": 5,
+    "missing_from_control": 1,
+    "control_recall": 0.8333333333333334,
+    "detected_outside_control": 0
+  },
+  "pipeline": {
+    "detected": 5,
+    "processed": 4,
+    "estimated": 3,
+    "valuation_unknown": 1,
+    "filter_match": 5,
+    "recommended": 2
+  },
+  "quality": {
+    "tp": 1,
+    "fp": 1,
+    "tn": 1,
+    "fn": 0,
+    "unknown": 1,
+    "not_evaluated": 1,
+    "missing_positive": 1,
+    "unlabeled_recommendations": 0,
+    "precision_labeled": 0.5,
+    "end_to_end_positive_recall": 0.25,
+    "positive_control_count": 4,
+    "positive_not_recommended_total": 3
+  },
+  "publication_to_detection_seconds": {
+    "sample": 0,
+    "p50": null,
+    "p95": null,
+    "unverified_publication": 5,
+    "invalid_time_order": 0
+  },
+  "limitations": [
+    "Sample recall is not total source coverage",
+    "Unknown and missing positives reduce end-to-end recall",
+    "Labels must be reviewed independently; asking prices are not sale prices"
+  ]
+}

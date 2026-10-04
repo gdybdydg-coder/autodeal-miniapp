@@ -1,0 +1,175 @@
+{
+  "kind": "reprocessing_saved_real_HTML_not_new_discovery",
+  "processed_at_utc": "2026-10-02T21:50:23.569058+00:00",
+  "source_observations_utc": [
+    "2026-10-02T18:56:17.201073+00:00",
+    "2026-10-02T19:11:15.765708+00:00"
+  ],
+  "counts": {
+    "saved_unique_ads": 52,
+    "full_description_reviewed": 1,
+    "excluded": 0,
+    "needs_review": 51,
+    "allowed_under_text_rules": 1,
+    "usd_ready": 1,
+    "uah_converted": 0,
+    "publication_verified": 0,
+    "full_price_verified": 0,
+    "assessed_with_sufficient_comparables": 0,
+    "confirmed_profitable": 0,
+    "profitability_unconfirmed": 52,
+    "independent_live_control": 0
+  },
+  "real_detail_example": {
+    "source": "olx",
+    "id": "934234445",
+    "url": "https://www.olx.ua/d/uk/obyavlenie/skoda-fabia-2-fl-2012-r-v-1-4-benzin-shkoda-fabiya-restayling-fabya-ID11dX3w.html",
+    "price": "5750",
+    "currency": "USD",
+    "usd_price": {
+      "status": "ready",
+      "reason": "already_usd",
+      "original_amount": "5750",
+      "original_currency": "USD",
+      "usd_amount": "5750",
+      "fx": null,
+      "conversion_precision": null
+    },
+    "eligibility_review": {
+      "status": "allowed",
+      "reasons": [
+        "customs_unknown",
+        "no_forbidden_offer_evidence"
+      ],
+      "evidence": [
+        {
+          "reason": "customs_unknown",
+          "field": "customs_status/description",
+          "snippet": ""
+        },
+        {
+          "reason": "no_forbidden_offer_evidence",
+          "field": "title/category/description",
+          "snippet": ""
+        }
+      ],
+      "used_fields": [
+        "title",
+        "category",
+        "description",
+        "description_available"
+      ],
+      "fingerprint": "a784f8bec8ec65dd23266b2f7bcd3436ce50faba1e72294b6168e34f47fa3a75",
+      "customs_status": "unknown",
+      "customs_independently_verified": false,
+      "description_complete": true,
+      "version": "olx-eligibility-v1"
+    },
+    "market": {
+      "methods": {
+        "robust_median": {
+          "status": "profitability_unconfirmed",
+          "reason": "full_price_unconfirmed",
+          "reasons": [
+            "full_price_unconfirmed"
+          ],
+          "sample": 0,
+          "currency": "USD",
+          "method": "robust_median",
+          "reference_usd": null,
+          "range_usd": null,
+          "discount_percent": null,
+          "reliability": "insufficient",
+          "real_world_accuracy_verified": false,
+          "exclusions": {},
+          "next_action": "Obtain or verify eligible independent comparable evidence."
+        },
+        "lower_quartile": {
+          "status": "profitability_unconfirmed",
+          "reason": "full_price_unconfirmed",
+          "reasons": [
+            "full_price_unconfirmed"
+          ],
+          "sample": 0,
+          "currency": "USD",
+          "method": "lower_quartile",
+          "reference_usd": null,
+          "range_usd": null,
+          "discount_percent": null,
+          "reliability": "insufficient",
+          "real_world_accuracy_verified": false,
+          "exclusions": {},
+          "next_action": "Obtain or verify eligible independent comparable evidence."
+        },
+        "weighted_similar": {
+          "status": "profitability_unconfirmed",
+          "reason": "full_price_unconfirmed",
+          "reasons": [
+            "full_price_unconfirmed"
+          ],
+          "sample": 0,
+          "currency": "USD",
+          "method": "weighted_similar",
+          "reference_usd": null,
+          "range_usd": null,
+          "discount_percent": null,
+          "reliability": "insufficient",
+          "real_world_accuracy_verified": false,
+          "exclusions": {},
+          "next_action": "Obtain or verify eligible independent comparable evidence."
+        }
+      },
+      "selected_method": "lower_quartile",
+      "selection_is_provisional": true,
+      "real_world_accuracy_verified": false,
+      "selection_reason": "Explicit conservative research baseline; no independent accuracy evidence yet."
+    }
+  },
+  "new_direct_probes": [
+    {
+      "url": "https://www.olx.ua/transport/legkovye-avtomobili/?page=2",
+      "started_utc": "2026-10-02T21:40:08.657943+00:00",
+      "attempts": 1,
+      "timeout_seconds": 20,
+      "byte_cap": 2097152,
+      "redirects_followed": 0,
+      "retries": 0,
+      "status": 302,
+      "bytes_read": 0,
+      "stopped_on_http_error": true,
+      "seconds": 0.344,
+      "finished_utc": "2026-10-02T21:40:09.001861+00:00"
+    },
+    {
+      "url": "https://www.olx.ua/d/uk/obyavlenie/chrysler-lhs-restaylng-2000-rk-donor-pd-rozbr-ID11fWDB.html",
+      "started_utc": "2026-10-02T21:45:20.572055+00:00",
+      "attempts": 1,
+      "timeout_seconds": 20,
+      "byte_cap": 1048576,
+      "redirects_followed": 0,
+      "retries": 0,
+      "status": 410,
+      "bytes_read": 0,
+      "stopped_on_http_error": true,
+      "redirect_location": null,
+      "seconds": 0.57,
+      "finished_utc": "2026-10-02T21:45:21.141602+00:00"
+    },
+    {
+      "url": "https://www.olx.ua/transport/legkovye-avtomobili/?page=2",
+      "started_utc": "2026-10-02T21:53:46.097141+00:00",
+      "attempts": 1,
+      "body_cap": 2097152,
+      "redirects_followed": 0,
+      "retries": 0,
+      "status": 302,
+      "bytes_read": 0,
+      "http_error": true,
+      "redirect_not_in_public_allowlist": true,
+      "seconds": 0.323,
+      "finished_utc": "2026-10-02T21:53:46.420544+00:00"
+    }
+  ],
+  "completeness_not_measured": true,
+  "regular_collection_permission_not_confirmed": true
+}

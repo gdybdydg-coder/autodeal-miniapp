@@ -1,0 +1,100 @@
+{
+  "kind": "synthetic_only",
+  "quality": {
+    "label_basis": "synthetic latent asking-market scenarios",
+    "strict": {
+      "tp": 40,
+      "fp": 0,
+      "tn": 50,
+      "fn": 0,
+      "unknown": 10
+    },
+    "brand_year_baseline": {
+      "tp": 50,
+      "fp": 50,
+      "tn": 0,
+      "fn": 0
+    },
+    "unknown_positive": 10,
+    "real_accuracy_measured": false,
+    "independent_real_control_size": 0
+  },
+  "runs": [
+    {
+      "users": 100,
+      "input_cards": 240,
+      "collect": {
+        "status": "complete",
+        "pages": 12,
+        "rows": 240,
+        "reason": null
+      },
+      "queue": {
+        "queued": 18000,
+        "filtered": 6000,
+        "uncertain": 0,
+        "denied": 0,
+        "overflow": 0
+      },
+      "fake_delivery": {
+        "accepted": 18000,
+        "denied": 0,
+        "uncertain": 0,
+        "held": 0
+      },
+      "restart_requeued": 0,
+      "seconds": {
+        "normalize_store": 0.17614308600605,
+        "valuation_filter_queue": 4.0638287070032675,
+        "fake_delivery": 8.936009132987238,
+        "total": 13.175980925996555
+      },
+      "peak_python_bytes": 3698996,
+      "sqlite_bytes": 5136384,
+      "live_requests": 0,
+      "paid_requests": 0,
+      "eligibility_reviewed": 240,
+      "usd_native": 120,
+      "uah_converted": 120,
+      "fx_basis": "fictional_test_rate_42_not_current_NBU"
+    },
+    {
+      "users": 200,
+      "input_cards": 240,
+      "collect": {
+        "status": "complete",
+        "pages": 12,
+        "rows": 240,
+        "reason": null
+      },
+      "queue": {
+        "queued": 36000,
+        "filtered": 12000,
+        "uncertain": 0,
+        "denied": 0,
+        "overflow": 0
+      },
+      "fake_delivery": {
+        "accepted": 36000,
+        "denied": 0,
+        "uncertain": 0,
+        "held": 0
+      },
+      "restart_requeued": 0,
+      "seconds": {
+        "normalize_store": 0.1780583889922127,
+        "valuation_filter_queue": 7.911134816007689,
+        "fake_delivery": 18.085264727997128,
+        "total": 26.17445793299703
+      },
+      "peak_python_bytes": 7195624,
+      "sqlite_bytes": 8396800,
+      "live_requests": 0,
+      "paid_requests": 0,
+      "eligibility_reviewed": 240,
+      "usd_native": 120,
+      "uah_converted": 120,
+      "fx_basis": "fictional_test_rate_42_not_current_NBU"
+    }
+  ]
+}

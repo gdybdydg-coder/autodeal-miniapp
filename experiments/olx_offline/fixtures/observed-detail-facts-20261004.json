@@ -1,0 +1,386 @@
+{
+  "kind": "three_independently_fetched_real_source_pages",
+  "fixtures_are_market_accuracy_sample": false,
+  "contact_data_exported": false,
+  "full_descriptions_reviewed_in_memory_only": true,
+  "items": [
+    {
+      "url": "https://www.olx.ua/d/uk/obyavlenie/prodam-aud-nerozmitnena-a-4-ID11iXwe.html",
+      "id": "935427804",
+      "fetched_at": "2026-10-04T09:30:09.907506+00:00",
+      "asking_price": {
+        "visible": {
+          "amount": "1499",
+          "currency": "USD"
+        },
+        "jsonld": {
+          "amount": "67301",
+          "currency": "UAH"
+        },
+        "relationship": "different_display_currencies",
+        "fx_rate": null
+      },
+      "asking_display": {
+        "status": "corroborated_display",
+        "reasons": [],
+        "amount": "1499",
+        "currency": "USD",
+        "basis": "complete_visible_detail_and_matching_public_state",
+        "original_seller_currency_verified": false,
+        "full_price_verified": false,
+        "description_reviewed_in_full": true,
+        "limits": [
+          "original_seller_currency_unverified",
+          "first_publication_unverified",
+          "asking_amount_is_not_a_completed_sale_price"
+        ],
+        "state_regular_price": {
+          "amount": "67301",
+          "currency": "UAH"
+        }
+      },
+      "eligibility": {
+        "status": "excluded",
+        "reasons": [
+          "uncleared_declared",
+          "uncleared_text"
+        ],
+        "evidence": [
+          {
+            "reason": "uncleared_declared",
+            "field": "customs_cleared",
+            "snippet": "false"
+          },
+          {
+            "reason": "uncleared_text",
+            "field": "title",
+            "snippet": "нерозмитнена"
+          }
+        ],
+        "used_fields": [
+          "title",
+          "category",
+          "customs_cleared",
+          "description",
+          "description_available"
+        ],
+        "fingerprint": "463de0fe332b9696948a054eb7920a5100fe832a9d90904e482a3d97d2e783b5",
+        "customs_status": "uncleared_declared",
+        "customs_independently_verified": false,
+        "description_complete": true,
+        "version": "olx-eligibility-v1"
+      },
+      "generation": null,
+      "source_dates": {
+        "origin": "public_html_prerendered_state",
+        "path": "ad.ad",
+        "identity_matches": true,
+        "values": {
+          "createdTime": {
+            "iso": "2026-09-20T18:21:42+03:00",
+            "utc": "2026-09-20T15:21:42+00:00",
+            "epoch": 1789917702
+          },
+          "lastRefreshTime": {
+            "iso": "2026-10-03T18:33:24+03:00",
+            "utc": "2026-10-03T15:33:24+00:00",
+            "epoch": 1791041604
+          },
+          "pushupTime": {
+            "iso": "2026-10-03T18:33:24+03:00",
+            "utc": "2026-10-03T15:33:24+00:00",
+            "epoch": 1791041604
+          },
+          "validToTime": {
+            "iso": "2026-10-20T18:22:19+03:00",
+            "utc": "2026-10-20T15:22:19+00:00",
+            "epoch": 1792509739
+          }
+        },
+        "issues": [],
+        "publication_semantics_verified": false,
+        "other_state_exported": false
+      },
+      "title": "Продам Ауді нерозмитнена  А 4",
+      "characteristics": {
+        "brand": "Audi",
+        "model": "A4",
+        "year": 1998,
+        "body": "sedan",
+        "engine_cc": 1800,
+        "mileage_km": 120000,
+        "fuel": "petrol",
+        "transmission": "manual",
+        "region": "Дніпропетровська область",
+        "locality": "Дніпро"
+      },
+      "photo_url_count": 5,
+      "summary": {
+        "bytes_parsed": 1566948,
+        "download_truncated": false,
+        "price_relationship": "different_display_currencies",
+        "photo_urls": 5,
+        "field_conflicts": [],
+        "source_date_identity_matches": true,
+        "source_date_fields": [
+          "createdTime",
+          "lastRefreshTime",
+          "pushupTime",
+          "validToTime"
+        ],
+        "full_price_verified": false,
+        "publication_verified": false,
+        "ready_for_delivery": false,
+        "seller_data_exported": false
+      }
+    },
+    {
+      "url": "https://www.olx.ua/d/uk/obyavlenie/prodam-bmv-520-2-0-benzin-ID11mmim.html",
+      "id": "936238090",
+      "fetched_at": "2026-10-04T09:30:19.243924+00:00",
+      "asking_price": {
+        "visible": {
+          "amount": "2350",
+          "currency": "USD"
+        },
+        "jsonld": {
+          "amount": "105508",
+          "currency": "UAH"
+        },
+        "relationship": "different_display_currencies",
+        "fx_rate": null
+      },
+      "asking_display": {
+        "status": "corroborated_display",
+        "reasons": [],
+        "amount": "2350",
+        "currency": "USD",
+        "basis": "complete_visible_detail_and_matching_public_state",
+        "original_seller_currency_verified": false,
+        "full_price_verified": false,
+        "description_reviewed_in_full": true,
+        "limits": [
+          "original_seller_currency_unverified",
+          "first_publication_unverified",
+          "asking_amount_is_not_a_completed_sale_price"
+        ],
+        "state_regular_price": {
+          "amount": "105508",
+          "currency": "UAH"
+        }
+      },
+      "eligibility": {
+        "status": "allowed",
+        "reasons": [
+          "customs_cleared_declared",
+          "no_forbidden_offer_evidence"
+        ],
+        "evidence": [
+          {
+            "reason": "customs_cleared_declared",
+            "field": "customs_cleared",
+            "snippet": "true"
+          },
+          {
+            "reason": "no_forbidden_offer_evidence",
+            "field": "title/category/description",
+            "snippet": ""
+          }
+        ],
+        "used_fields": [
+          "title",
+          "category",
+          "customs_cleared",
+          "description",
+          "description_available"
+        ],
+        "fingerprint": "cf5e4243c844c7da50ccd765336c27211bce5f6ddf6dd100d7744c942e2b2fdc",
+        "customs_status": "cleared_declared",
+        "customs_independently_verified": false,
+        "description_complete": true,
+        "version": "olx-eligibility-v1"
+      },
+      "generation": null,
+      "source_dates": {
+        "origin": "public_html_prerendered_state",
+        "path": "ad.ad",
+        "identity_matches": true,
+        "values": {
+          "createdTime": {
+            "iso": "2026-09-28T16:25:19+03:00",
+            "utc": "2026-09-28T13:25:19+00:00",
+            "epoch": 1790601919
+          },
+          "lastRefreshTime": {
+            "iso": "2026-10-04T09:00:03+03:00",
+            "utc": "2026-10-04T06:00:03+00:00",
+            "epoch": 1791093603
+          },
+          "validToTime": {
+            "iso": "2026-11-03T08:00:03+02:00",
+            "utc": "2026-11-03T06:00:03+00:00",
+            "epoch": 1793685603
+          }
+        },
+        "issues": [],
+        "publication_semantics_verified": false,
+        "other_state_exported": false
+      },
+      "title": "Продам Бмв 520 2,0 бензин",
+      "characteristics": {
+        "brand": "BMW",
+        "model": "5 серія",
+        "year": 1997,
+        "body": "sedan",
+        "engine_cc": 2000,
+        "mileage_km": 300000,
+        "fuel": "petrol",
+        "transmission": "manual",
+        "region": "Полтавська область",
+        "locality": "Кременчук"
+      },
+      "photo_url_count": 5,
+      "summary": {
+        "bytes_parsed": 1565978,
+        "download_truncated": false,
+        "price_relationship": "different_display_currencies",
+        "photo_urls": 5,
+        "field_conflicts": [],
+        "source_date_identity_matches": true,
+        "source_date_fields": [
+          "createdTime",
+          "lastRefreshTime",
+          "validToTime"
+        ],
+        "full_price_verified": false,
+        "publication_verified": false,
+        "ready_for_delivery": false,
+        "seller_data_exported": false
+      }
+    },
+    {
+      "url": "https://www.olx.ua/d/uk/obyavlenie/mazda-626-2-0-na-hodu-prodam-mazda-626-z-dvigunom-2-0-ID11oDHg.html",
+      "id": "936781638",
+      "fetched_at": "2026-10-04T09:33:18.750568+00:00",
+      "asking_price": {
+        "visible": {
+          "amount": "25500",
+          "currency": "UAH"
+        },
+        "jsonld": {
+          "amount": "25500",
+          "currency": "UAH"
+        },
+        "relationship": "agree",
+        "fx_rate": null
+      },
+      "asking_display": {
+        "status": "corroborated_display",
+        "reasons": [],
+        "amount": "25500",
+        "currency": "UAH",
+        "basis": "complete_visible_detail_and_matching_public_state",
+        "original_seller_currency_verified": false,
+        "full_price_verified": false,
+        "description_reviewed_in_full": true,
+        "limits": [
+          "original_seller_currency_unverified",
+          "first_publication_unverified",
+          "asking_amount_is_not_a_completed_sale_price"
+        ],
+        "state_regular_price": {
+          "amount": "25500",
+          "currency": "UAH"
+        }
+      },
+      "eligibility": {
+        "status": "allowed",
+        "reasons": [
+          "customs_cleared_declared",
+          "no_forbidden_offer_evidence"
+        ],
+        "evidence": [
+          {
+            "reason": "customs_cleared_declared",
+            "field": "customs_cleared",
+            "snippet": "true"
+          },
+          {
+            "reason": "no_forbidden_offer_evidence",
+            "field": "title/category/description",
+            "snippet": ""
+          }
+        ],
+        "used_fields": [
+          "title",
+          "category",
+          "customs_cleared",
+          "description",
+          "description_available"
+        ],
+        "fingerprint": "9d97423fc4c3ca929a977502f5d0c2dba1cc3970d6f72ffe50ec497b0f575b16",
+        "customs_status": "cleared_declared",
+        "customs_independently_verified": false,
+        "description_complete": true,
+        "version": "olx-eligibility-v1"
+      },
+      "generation": null,
+      "source_dates": {
+        "origin": "public_html_prerendered_state",
+        "path": "ad.ad",
+        "identity_matches": true,
+        "values": {
+          "createdTime": {
+            "iso": "2026-10-04T12:13:34+03:00",
+            "utc": "2026-10-04T09:13:34+00:00",
+            "epoch": 1791105214
+          },
+          "lastRefreshTime": {
+            "iso": "2026-10-04T12:14:35+03:00",
+            "utc": "2026-10-04T09:14:35+00:00",
+            "epoch": 1791105275
+          },
+          "validToTime": {
+            "iso": "2026-11-03T11:13:35+02:00",
+            "utc": "2026-11-03T09:13:35+00:00",
+            "epoch": 1793697215
+          }
+        },
+        "issues": [],
+        "publication_semantics_verified": false,
+        "other_state_exported": false
+      },
+      "title": "Mazda 626 2.0 — на ходу!  Продам Mazda 626 з двигуном 2.0.",
+      "characteristics": {
+        "brand": "Mazda",
+        "model": "626",
+        "year": 1987,
+        "body": "sedan",
+        "engine_cc": 2000,
+        "mileage_km": 1000000,
+        "fuel": "petrol",
+        "transmission": "manual",
+        "region": "Черкаська область",
+        "locality": "Городище"
+      },
+      "photo_url_count": 5,
+      "summary": {
+        "bytes_parsed": 1567012,
+        "download_truncated": false,
+        "price_relationship": "agree",
+        "photo_urls": 5,
+        "field_conflicts": [],
+        "source_date_identity_matches": true,
+        "source_date_fields": [
+          "createdTime",
+          "lastRefreshTime",
+          "validToTime"
+        ],
+        "full_price_verified": false,
+        "publication_verified": false,
+        "ready_for_delivery": false,
+        "seller_data_exported": false
+      }
+    }
+  ]
+}
