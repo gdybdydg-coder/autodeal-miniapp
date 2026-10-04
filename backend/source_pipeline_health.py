@@ -12,9 +12,12 @@ import time
 from sqlalchemy import exists, func, select
 from sqlalchemy.orm import Session
 
-from . import api_attempt_audit, paid_source_access
+from . import api_attempt_audit, paid_source_access, poll_schedule
+from .billing_models import Entitlement
+from .manual_payment_models import PaymentAudit, PaymentRequest
 from .models import (Delivery, DeliveryTiming, Filters, Listing, MonitorControl, MonitorFeed, MonitorJob,
-                     MonitorSeen, MonitorWatch, Search, SourceBudget, User)
+                     MonitorMembership, MonitorSeen, MonitorWatch, Search, SourceBudget, User)
+from .purchase_stats import excluded_user_ids
 from .ria_budget import BudgetLimits, total_cap
 from .ria_search import budget_state
 
@@ -73,6 +76,50 @@ def completed_decisions(db, now, current_seen):
             "truncated": truncated, "basis": "saved_decisions_current_filters_no_new_source_calls"}
 
 
+def access_audit(db, settings, now):
+    """Compare source eligibility with durable owner approval and search state.
+
+    Reads only: an inconsistency is evidence to investigate, never a grant or
+    an automatic repair. Expired approvals and operational revocations stay
+    distinct from a current approved purchase.
+    """
+    excluded = paid_source_access.exclusions(db.get_bind())
+    paid = paid_source_access.confirmed_clause(User.id, now, excluded=excluded)
+    raw_paid = paid_source_access.confirmed_clause(User.id, now)
+    entitled = exists(select(Entitlement.user_id).where(
+        Entitlement.user_id == User.id, Entitlement.expires_at > now))
+    approval = exists(select(PaymentAudit.id).join(PaymentRequest,
+        PaymentRequest.id == PaymentAudit.request_id).where(
+        PaymentRequest.user_id == User.id, PaymentAudit.action == "approved",
+        PaymentAudit.at <= now, PaymentAudit.after_expiry > now,
+        PaymentRequest.amount_minor > 0, PaymentRequest.currency == "UAH",
+        PaymentRequest.days > 0))
+    proof_with_access = approval & entitled & User.id.not_in(excluded)
+    configured_only = tuple(set(excluded) - set(excluded_user_ids(admin_uid=settings.admin_telegram_id)))
+    checks = {
+        "current_owner_approval_with_access_clients": proof_with_access,
+        "current_owner_approval_without_access_clients": approval & ~entitled & User.id.not_in(excluded),
+        "owner_approval_with_access_blocked_by_guard_clients": proof_with_access & ~paid,
+        "current_purchase_without_owner_audit_clients": paid & ~approval,
+        "current_paid_excluded_admin_clients": raw_paid & User.id.in_(excluded) & (User.id == settings.admin_telegram_id),
+        "current_paid_excluded_config_only_clients": raw_paid & User.id.in_(configured_only),
+        "current_paid_not_ready_clients": paid & User.ready.is_(False),
+        "current_paid_without_enabled_search_clients": paid & ~exists(select(Search.id).where(
+            Search.user_id == User.id, Search.enabled.is_(True))),
+        "active_entitlement_without_current_purchase_clients": entitled & ~raw_paid & User.id.not_in(excluded),
+    }
+    result = dict(zip(checks, db.execute(select(*(func.count().filter(condition)
+        for condition in checks.values())).select_from(User)).one()))
+    membership = exists(select(MonitorWatch.search_id).join(MonitorMembership,
+        MonitorMembership.search_id == MonitorWatch.search_id).where(
+        MonitorWatch.search_id == Search.id, MonitorWatch.epoch == MonitorMembership.epoch))
+    result["paid_ready_searches_without_current_membership"] = db.scalar(select(func.count(Search.id))
+        .join(User, User.id == Search.user_id).where(paid, User.ready.is_(True),
+            Search.enabled.is_(True), ~membership))
+    result["basis"] = "saved_owner_approval_audit_access_and_membership_no_source_calls"
+    return result
+
+
 def snapshot(db, settings, now):
     from .monitor import active_members, interest_query, poll_interval
     members = active_members(db)
@@ -85,8 +132,7 @@ def snapshot(db, settings, now):
     interval = poll_interval(len(groups), limits,
         provider_pricing_enabled=settings.ria_ai_price_enabled,
         active_window_enabled=settings.ria_active_window_enabled,
-        schedule_enabled=settings.ria_poll_schedule_enabled, now=now,
-        continuous_paid=paid_source_access.strict(db.get_bind()))
+        schedule_enabled=settings.ria_poll_schedule_enabled, now=now)
     paid = paid_source_access.confirmed_clause(User.id, now, excluded=paid_source_access.exclusions(db.get_bind()))
     access = paid if paid_source_access.strict(db.get_bind()) else True
     current_seen = (Search.enabled.is_(True), User.ready.is_(True),
@@ -117,10 +163,13 @@ def snapshot(db, settings, now):
         "cohort": "current_confirmed_paid_clients" if paid_source_access.strict(db.get_bind()) else "legacy_test_access",
         "current_paid_clients": db.scalar(select(func.count(User.id)).where(paid)) if paid_source_access.strict(db.get_bind()) else None,
         "ready_enabled_searches": len(members), "active_filter_groups": len(groups),
+        "source_access_audit": access_audit(db, settings, now) if paid_source_access.strict(db.get_bind()) else None,
         "primary": {
             "running": bool(settings.monitor_enabled and control and now - control.heartbeat < 180),
             "status": control.status if control else "unavailable",
             "interval_seconds": interval,
+            "schedule": poll_schedule.policy(len(groups), limits, now) if (
+                settings.ria_poll_schedule_enabled and settings.ria_ai_price_enabled) else {"enabled": False},
             "feed_states": dict(Counter(feed.status for feed in feeds)),
             "last_success_at": max((feed.checked_at for feed in feeds if feed.checked_at > 0), default=None),
             "oldest_cursor_at": oldest, "cursor_lag_seconds": max(0, round(now - oldest)) if oldest else None,

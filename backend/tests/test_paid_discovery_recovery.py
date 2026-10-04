@@ -19,7 +19,7 @@ from backend.tests.test_recent_publications import setup, offer, dispatch
 from backend.tests.test_ria_ai_price import enable
 
 
-def test_confirmed_paid_search_keeps_minute_poll_across_23_kyiv(p, monkeypatch):
+def test_confirmed_paid_search_extends_night_wait_and_resumes_once_after_restart(p, monkeypatch):
     for name, value in (("HOURLY", 900), ("DAILY", 3000), ("TOTAL", 90000)):
         monkeypatch.setenv("RIA_REQUESTS_" + name + "_CAP", str(value))
     p.clock[0] = datetime.fromisoformat("2026-10-03T19:59:50+00:00").timestamp()
@@ -39,10 +39,18 @@ def test_confirmed_paid_search_keeps_minute_poll_across_23_kyiv(p, monkeypatch):
         from backend.source_pipeline_health import snapshot
         status = snapshot(db, p.runner.settings, p.clock[0])
         feed = db.scalar(select(MonitorFeed))
-        timeline = (feed.checked_at, feed.next_poll, feed.context, p.clock[0])
-    assert len(searches(p)) == before + 1, (status, timeline)
+        next_poll = feed.next_poll
+        assert feed.next_poll - feed.checked_at == 3600
+    assert status["primary"]["interval_seconds"] == 3600
+    assert len(searches(p)) == before and not quotes and not p.sent
+    p.runner = Monitor(p.engine, p.runner.settings, p.runner.search_factory, p.runner.sender)
+    assert not p.runner.tick()
+    p.clock[0] = next_poll + .001
+    drain(p)
+    assert len(searches(p)) == before + 1
     assert quotes == ["124"]
     assert [(uid, car.source_id) for uid, car in p.sent] == [(111, "124")]
+    assert not p.runner.tick() and len(p.sent) == 1
 
 
 @pytest.mark.parametrize("retirement", ["expired", "legacy_expired", "disabled"])
@@ -108,9 +116,9 @@ def test_fresh_primary_confirmation_recovers_unclaimed_html_retirement(p, monkey
                                      "2026-03-29T01:30:00+00:00", "2026-10-25T01:30:00+00:00"])
 def test_paid_night_plan_keeps_timezone_and_reserved_hard_caps(groups, instant):
     caps = BudgetLimits(4500, 90000, 1102160)
-    report = poll_schedule.policy(groups, caps, datetime.fromisoformat(instant).timestamp(), continuous_paid=True)
+    report = poll_schedule.policy(groups, caps, datetime.fromisoformat(instant).timestamp())
     assert report["active_period"] == "night"
-    assert report["requested_interval_seconds"] == 60
+    assert report["requested_interval_seconds"] == 3600
     requested_per_day = 0
     for period, (_, start, end, _) in zip(report["periods"], poll_schedule.PERIODS):
         interval = period["interval_seconds"]
@@ -118,7 +126,7 @@ def test_paid_night_plan_keeps_timezone_and_reserved_hard_caps(groups, instant):
         requested_per_day += groups * ((end - start) % 24) * 3600 / interval
     assert requested_per_day <= caps.daily * .75
     if groups <= 3:
-        assert report["interval_seconds"] == 60 and not report["budget_limited"]
+        assert report["interval_seconds"] == 3600 and not report["budget_limited"]
 
 
 @pytest.mark.parametrize("claim", ["sent", "uncertain", "pending", "cancelled", "failed"])

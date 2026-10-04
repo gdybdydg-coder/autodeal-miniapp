@@ -34,16 +34,18 @@ def owner_settings(p, monkeypatch):
     return settings
 
 
-def confirm(p, settings, code):
+def confirm(p, settings, code, *, legacy=False):
     with Session(p.engine) as db:
         revision = db.get(PaymentRequest, code).revision
+    bank = {"account": "fixture-only", "operation": code, "actual_amount_minor": 25000} if legacy else {}
     preview = manual_payments.preview(p.engine, settings, settings.admin_telegram_id,
-        code, revision, p.clock[0], bank_verified=True)
+        code, revision, p.clock[0], bank_verified=True, **bank)
     return manual_payments.confirm(p.engine, settings, settings.admin_telegram_id,
         preview["confirmation"], p.clock[0])
 
 
-def test_first_owner_confirmation_rebases_saved_search_without_restart_or_old_backlog(p, monkeypatch):
+@pytest.mark.parametrize("legacy", [False, True])
+def test_first_owner_confirmation_rebases_saved_search_without_restart_or_old_backlog(p, monkeypatch, legacy):
     strict(p)
     settings = owner_settings(p, monkeypatch)
     approve(p, state="review", purchase_until=0, access_until=0)
@@ -56,7 +58,7 @@ def test_first_owner_confirmation_rebases_saved_search_without_restart_or_old_ba
     drain(p)
     assert not p.calls and not p.sent
     approved_at = int(p.clock[0])
-    confirm(p, settings, "fixture-111")
+    confirm(p, settings, "fixture-111", legacy=legacy)
     with Session(p.engine) as db:
         assert db.get(MonitorWatch, 1).epoch != epoch
         assert db.get(MonitorMembership, 1).started_at == approved_at
@@ -68,7 +70,8 @@ def test_first_owner_confirmation_rebases_saved_search_without_restart_or_old_ba
     assert quotes == ["125"]
 
 
-def test_paid_renewal_keeps_epoch_filters_and_existing_paid_days(p, monkeypatch):
+@pytest.mark.parametrize("legacy", [False, True])
+def test_paid_renewal_keeps_epoch_filters_and_existing_paid_days(p, monkeypatch, legacy):
     strict(p); approve(p)
     settings = owner_settings(p, monkeypatch)
     with Session(p.engine) as db:
@@ -78,7 +81,7 @@ def test_paid_renewal_keeps_epoch_filters_and_existing_paid_days(p, monkeypatch)
         db.add(PaymentRequest(id="renewal-fixture", user_id=111, state="review", amount_minor=25000,
             currency="UAH", days=30, created_at=p.clock[0], updated_at=p.clock[0]))
         db.commit()
-    result = confirm(p, settings, "renewal-fixture")
+    result = confirm(p, settings, "renewal-fixture", legacy=legacy)
     assert result["expires_at"] == before + 30 * 86400
     with Session(p.engine) as db:
         assert db.get(MonitorWatch, 1).epoch == epoch

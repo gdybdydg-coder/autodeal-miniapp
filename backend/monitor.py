@@ -95,7 +95,7 @@ def reset_watch(db, search_id, enabled, *, started_at=None):
 
 
 def poll_interval(groups, limits=None, *, provider_pricing_enabled=False, active_window_enabled=False,
-                  schedule_enabled=False, now=None, continuous_paid=False):
+                  schedule_enabled=False, now=None):
     """Pace distinct searches while reserving capacity for fresh valuations.
 
     Paid listing-specific pricing needs a detail read and a quote, rather than
@@ -106,7 +106,7 @@ def poll_interval(groups, limits=None, *, provider_pricing_enabled=False, active
     limits = limits or BudgetLimits.env()
     fast = provider_pricing_enabled and not active_window_enabled
     if provider_pricing_enabled and schedule_enabled:
-        schedule = poll_schedule.policy(groups, limits, now, continuous_paid=continuous_paid)
+        schedule = poll_schedule.policy(groups, limits, now)
         if schedule["enabled"]:
             return schedule["interval_seconds"]
     share = 3 if fast else 2
@@ -182,9 +182,8 @@ def runtime_status(engine, enabled, uid=None, *, active_window_enabled=False, pr
         members = active_members(db)
         groups = len({member.feed_id for _, _, member in members})
         interval = poll_interval(groups, provider_pricing_enabled=provider_pricing_enabled,
-                                 active_window_enabled=active_window_enabled, schedule_enabled=schedule_enabled,
-                                 continuous_paid=paid_source_access.strict(engine))
-        schedule = (poll_schedule.policy(groups, BudgetLimits.env(), continuous_paid=paid_source_access.strict(engine))
+                                 active_window_enabled=active_window_enabled, schedule_enabled=schedule_enabled)
+        schedule = (poll_schedule.policy(groups, BudgetLimits.env())
                     if schedule_enabled and provider_pricing_enabled
                     else {"enabled": False})
         own_groups = {member.feed_id for search, _, member in members
@@ -246,8 +245,7 @@ class Monitor:
             return
         if not (self.settings.ria_poll_schedule_enabled and self.settings.ria_ai_price_enabled):
             return
-        schedule = poll_schedule.policy(len(groups), BudgetLimits.env(),
-                                        continuous_paid=paid_source_access.strict(self.engine))
+        schedule = poll_schedule.policy(len(groups), BudgetLimits.env())
         if not schedule["enabled"]:
             return
         interval = schedule["interval_seconds"]
@@ -786,8 +784,7 @@ class Monitor:
         try:
             interval = poll_interval(groups, source.limits, provider_pricing_enabled=True,
                                      active_window_enabled=self.settings.ria_active_window_enabled,
-                                     schedule_enabled=self.settings.ria_poll_schedule_enabled,
-                                     continuous_paid=paid_source_access.strict(self.engine))
+                                     schedule_enabled=self.settings.ria_poll_schedule_enabled)
             with Session(self.engine) as db:
                 db.execute(update(MonitorControl).where(MonitorControl.id == "pilot",
                     MonitorControl.owner == self.owner).values(status=status, heartbeat=time.time()))
@@ -858,8 +855,7 @@ class Monitor:
         source = self.search_factory(self.engine, self.settings.auto_ria_api_key)
         interval = poll_interval(len(groups), source.limits, provider_pricing_enabled=True,
             active_window_enabled=self.settings.ria_active_window_enabled,
-            schedule_enabled=self.settings.ria_poll_schedule_enabled,
-            continuous_paid=paid_source_access.strict(self.engine))
+            schedule_enabled=self.settings.ria_poll_schedule_enabled)
         now = time.time()
         with Session(self.engine) as db:
             if not self.owned(db):
@@ -1019,8 +1015,7 @@ class Monitor:
                         self.discover(key, source, poll_interval(len(groups), source.limits,
                             provider_pricing_enabled=self.settings.ria_ai_price_enabled,
                             active_window_enabled=self.settings.ria_active_window_enabled,
-                            schedule_enabled=self.settings.ria_poll_schedule_enabled,
-                            continuous_paid=paid_source_access.strict(self.engine)))
+                            schedule_enabled=self.settings.ria_poll_schedule_enabled))
                     else:
                         self.evaluate(key, source)
                 except RiaError as exc:
