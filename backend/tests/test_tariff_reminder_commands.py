@@ -80,6 +80,34 @@ def test_admin_view_has_current_count_schedule_preview_and_controls(setup):
     assert setup.transport == []
 
 
+def test_admin_view_keeps_previous_day_summary_after_today_runs(setup):
+    setup.data["last_result"] = {"date_kyiv": "2026-10-04", "selected": 0,
+        "sent": 0, "excluded": 0, "errors": 0, "uncertain": 0}
+    setup.data["history"] = {"records": [
+        {"date_kyiv": "2026-10-03", "run_observed": True, "selected": 3,
+         "queued": 3, "telegram_accepted": 2, "errors": 0, "uncertain": 1},
+        {"date_kyiv": "2026-10-04", "run_observed": True, "selected": 0}]}
+    result = handle(setup, event(uid=ADMIN, text="/tariff_reminders"))
+    assert "Останній запуск 2026-10-04: обрано 0" in result["text"]
+    assert ("Попередній день 2026-10-03: обрано 3, поставлено в чергу 3, "
+            "Telegram: 2, помилки 0, невизначено 1") in result["text"]
+    assert len(result["text"]) < 4000
+    assert setup.transport == []
+
+
+@pytest.mark.parametrize("status,expected", [
+    ("before_first_planned_run", "запуск ще не був запланований."),
+    ("no_saved_campaign", "збереженого запуску немає; кількість відправлень невідома."),
+])
+def test_admin_previous_day_missing_history_is_not_reported_as_zero(setup, status, expected):
+    setup.data["history"] = {"records": [
+        {"date_kyiv": "2026-10-03", "run_observed": False, "status": status},
+        {"date_kyiv": "2026-10-04", "run_observed": True}]}
+    result = handle(setup, event(uid=ADMIN, text="/tariff_reminders"))
+    assert "Попередній день 2026-10-03: " + expected in result["text"]
+    assert "Telegram: 0" not in result["text"]
+
+
 @pytest.mark.parametrize("verb,enabled", [("on", True), ("off", False)])
 def test_admin_toggle_checks_actor_and_returns_updated_state(setup, verb, enabled):
     result = handle(setup, event(uid=ADMIN, callback=commands.PREFIX + "admin:" + verb))

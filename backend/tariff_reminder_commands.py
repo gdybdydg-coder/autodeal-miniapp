@@ -51,6 +51,20 @@ def _admin_card(uid, data):
         lines.append("«Надіслано» означає підтвердження Telegram API, а не прочитання.")
     else:
         lines.append("Запусків цієї кампанії ще не було.")
+    records = (data.get("history") or {}).get("records", [])
+    if len(records) >= 2:
+        previous = records[-2]  # Audit dates are ordered, with today last.
+        label = "Попередній день " + escape(str(previous.get("date_kyiv", "")))
+        if previous.get("run_observed"):
+            lines.append(label + ": обрано " + _number(previous.get("selected"))
+                         + ", поставлено в чергу " + _number(previous.get("queued"))
+                         + ", Telegram: " + _number(previous.get("telegram_accepted"))
+                         + ", помилки " + _number(previous.get("errors"))
+                         + ", невизначено " + _number(previous.get("uncertain")))
+        else:
+            lines.append(label + (": запуск ще не був запланований."
+                if previous.get("status") == "before_first_planned_run"
+                else ": збереженого запуску немає; кількість відправлень невідома."))
     text = data.get("text")
     if isinstance(text, str):
         lines.append("<b>Текст нагадування</b>\n" + text)
