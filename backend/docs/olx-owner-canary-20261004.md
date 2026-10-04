@@ -55,3 +55,24 @@ history. Rollback app/module wiring without touching RIA or payment tables.
 
 Release verification must identify the live commit, actual OLX pages/details and
 Telegram diagnostic receipt. /health and offline test totals are not sufficient.
+
+Owner-requested test advertisements, 04 October 13:30 Kyiv: the user explicitly
+confirmed sending test adverts. `OLX_OWNER_CANARY_TEST_ADS_ENABLED=true` enables
+one capped batch of two attempts, only for the same current confirmed-paid owner
+and pinned enabled searches. Two grounded regional detail URLs are refreshed
+before sending; previous discovery baseline does not suppress this explicit
+sample batch. Existing 80 MiB/40-GET/deadline caps remain unchanged.
+
+Require complete identity-matched details, allowed eligibility and corroborated
+displayed asking amount. Known contradictions to current named/numeric filters
+block the sample; requested regions must be observed in detail. No FX is assumed.
+Only this explicitly labeled sample batch may bypass unconfirmed full-price,
+original currency, publication and profitable-deal valuation proof. Saved filters
+and ordinary onlyDeals/threshold rules stay intact. Test captions state unknown
+newness and profitability and use original displayed currency; non-USD budgets
+remain visibly unresolved. Samples use first official photo when available and
+an OLX link. A separate atomic unique test ledger reserves each attempt before
+transport and rereads permissions/filter comparison immediately before dispatch.
+No retries/fallbacks for uncertain photo or text attempts; total cap two attempts
+including rejected/uncertain ones. Receipts require a positive integer message
+ID and a matching owner chat ID if supplied. `/olx_stop` and expiry still apply.

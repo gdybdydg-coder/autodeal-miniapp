@@ -178,3 +178,132 @@ def test_stop_before_initialization_prevents_future_auto_launch(live):
     canary.handle(live.engine, live.settings, event())
     assert tick(live)['status'] == 'paused_or_busy'
     assert not live.calls and not live.sent
+
+
+@pytest.fixture
+def sample(live, monkeypatch):
+    live.settings = replace(live.settings, olx_owner_canary_test_ads_enabled=True)
+    monkeypatch.setattr(canary, 'TEST_URLS', (URL,))
+    canary.initialize(live.engine, live.settings, NOW)
+    with Session(live.engine) as db:
+        state = dict(db.get(SourceProbe, canary.STATE).result)
+    car = canary.parse_detail_snapshot(page(), fetched_at=NOW, truncated=False)['listing']
+    return live, state, car
+
+
+def test_authorized_sample_keeps_observed_currency_and_no_profitability_claim(sample):
+    b, state, car = sample
+    car['title'] = '<b>Example & car</b>'
+    assert canary.send_test_ad(b.engine, b.settings, state, car, b.sender)
+    assert not canary.send_test_ad(b.engine, b.settings, state, car, b.sender)
+    method, payload = b.sent[0]
+    assert method == 'sendMessage' and payload['chat_id'] == 900
+    assert '25500 грн' in payload['text'] and 'Тестове оголошення' in payload['text']
+    assert 'не підтверджені' in payload['text'] and '&lt;b&gt;' in payload['text']
+    assert 'ринкова ціна' not in payload['text'] and 'знижка' not in payload['text']
+    assert payload['reply_markup']['inline_keyboard'][0][0]['url'] == URL
+    assert canary.send_test_ad(b.engine, replace(b.settings, olx_owner_canary_test_ads_enabled=False), state, car, b.sender) is False
+    assert len(b.sent) == 1
+
+
+@pytest.mark.parametrize('field, value', [('region', 'Полтавська область'), ('brand', 'BMW'),
+    ('model', 'X5'), ('year_min', 2000), ('mileage_km_max', 100), ('body', 'sedan'),
+    ('fuel', 'diesel'), ('transmission', 'automatic'), ('price_min', 1000)])
+def test_test_sample_known_filter_contradictions_block(sample, field, value):
+    b, state, car = sample
+    car.update(region='Чернівецька область', body='wagon', fuel='petrol', transmission='manual', mileage_km=100000)
+    car['price'], car['currency'] = '500', 'USD'
+    assert canary.sample_match(car, [{'filters': {field: value, 'currency': 'USD'}}]) is False
+
+
+def test_test_sample_missing_requested_region_is_held_and_no_fx_fabrication(sample):
+    b, state, car = sample
+    assert not canary.sample_match(car, [{'filters': {'region': ['Чернівецька'], 'currency': 'USD'}}])
+    car['region'] = 'Чернівецька область'
+    assert canary.sample_match(car, [{'filters': {'region': ['Чернівецька'], 'price_min': 1000, 'currency': 'USD'}}])
+    assert car['usd_price']['status'] != 'ready' and car['currency'] == 'UAH'
+
+
+@pytest.mark.parametrize('issue', ['uncleared', 'display_conflict', 'stopped', 'unpaid', 'expired', 'paused', 'off'])
+def test_sample_rechecks_current_owner_permissions_and_source_evidence(sample, issue):
+    b, state, car = sample
+    if issue == 'uncleared': car['eligibility_review']['status'] = 'excluded'
+    elif issue == 'display_conflict': car['observed_asking_display']['status'] = 'needs_review'
+    elif issue == 'off': b.settings = replace(b.settings, olx_owner_canary_test_ads_enabled=False)
+    else:
+        with Session(b.engine) as db:
+            if issue == 'stopped': db.get(User, 900).ready = False
+            if issue == 'unpaid': db.get(PaymentRequest, 'test-900').state = 'review'
+            if issue == 'expired': db.get(PaymentRequest, 'test-900').expires_at = NOW
+            if issue == 'paused': db.get(SourceProbe, canary.STATE).status = 'paused_by_owner'
+            db.commit()
+    assert not canary.send_test_ad(b.engine, b.settings, state, car, b.sender)
+    assert not b.sent
+
+
+@pytest.mark.parametrize('response', [{'uncertain': True}, {'ok': True, 'result': True},
+    {'ok': True, 'result': {'message_id': -1}}, {'ok': True, 'result': {'message_id': 555, 'chat': {'id': 100}}}])
+def test_sample_uncertain_or_wrong_receipt_never_replayed_or_falls_back(sample, response):
+    b, state, car = sample
+    car['photos'] = ['https://images.olxcdn.com/example.jpg']
+    def sender(*args): b.sent.append(args[1]); return response
+    assert not canary.send_test_ad(b.engine, b.settings, state, car, sender)
+    assert not canary.send_test_ad(b.engine, b.settings, state, car, sender)
+    assert b.sent == ['sendPhoto']
+
+
+def test_sample_batch_cap_two_preserves_customer_filter_and_payment(sample, monkeypatch):
+    b, state, car = sample
+    with Session(b.engine) as db:
+        before = (db.get(User, 900).ready, db.get(PaymentRequest, 'test-900').state)
+    for i in range(3):
+        car['id'] = str(100+i)
+        assert canary.send_test_ad(b.engine, b.settings, state, car, b.sender) == (i < 2)
+    assert len(b.sent) == 2
+    with Session(b.engine) as db:
+        assert before == (db.get(User, 900).ready, db.get(PaymentRequest, 'test-900').state)
+        assert db.get(SourceProbe, canary.TEST_BATCH).requests == 2
+
+
+def test_stop_immediately_after_durable_sample_reservation_blocks_sender(sample, monkeypatch):
+    b, state, car = sample
+    original = canary.permitted
+    calls = []
+    def permitted(*args):
+        calls.append(1)
+        if len(calls) == 2:
+            with Session(b.engine) as db:
+                db.get(User, 900).ready = False; db.commit()
+        return original(*args)
+    monkeypatch.setattr(canary, 'permitted', permitted)
+    assert not canary.send_test_ad(b.engine, b.settings, state, car, b.sender)
+    assert not b.sent
+
+
+def test_previously_seen_baseline_can_be_explicit_sample_once(sample):
+    b, state, car = sample
+    with Session(b.engine) as db:
+        row = db.get(SourceProbe, canary.STATE)
+        row.result = {**row.result, 'seen': ['123'], 'cycles': 1}
+        db.commit()
+    result = tick(b)
+    assert result['new_ids'] == 0 and result['car_sends'] == 1
+    b.clock[0] += 301
+    assert tick(b)['car_sends'] == 0
+
+
+def test_first_detail_timeout_does_not_discard_second_sample(sample, monkeypatch):
+    import httpx
+    b, state, car = sample
+    first = 'https://www.olx.ua/d/uk/obyavlenie/other-example.html'
+    monkeypatch.setattr(canary, 'TEST_URLS', (first, URL))
+    original = b.fetch
+    def fetch(url):
+        if url == first:
+            b.calls.append(url)
+            raise httpx.ReadTimeout('temporary upstream timeout')
+        return original(url)
+    result = canary.tick(b.engine, b.settings, fetch, b.sender)
+    assert result['status'] == 'technical_hold' and result['error_type'] == 'ReadTimeout'
+    assert result['details'] == result['car_sends'] == 1
+    assert b.calls == [canary.URL, first, URL]

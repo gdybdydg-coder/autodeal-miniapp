@@ -75,6 +75,7 @@ class Settings:
     owner_car_notifications_enabled: bool = True
     olx_owner_canary_enabled: bool = False
     olx_owner_canary_until: float = 0
+    olx_owner_canary_test_ads_enabled: bool = False
 
     @classmethod
     def env(cls):
@@ -118,6 +119,7 @@ class Settings:
             ria_failed_delivery_recovery_id=os.getenv("RIA_FAILED_DELIVERY_RECOVERY_ID", "").strip(),
             olx_owner_canary_enabled=os.getenv("OLX_OWNER_CANARY_ENABLED") == "true",
             olx_owner_canary_until=float(os.getenv("OLX_OWNER_CANARY_UNTIL", "0") or 0),
+            olx_owner_canary_test_ads_enabled=os.getenv("OLX_OWNER_CANARY_TEST_ADS_ENABLED") == "true",
         )
 
     @property

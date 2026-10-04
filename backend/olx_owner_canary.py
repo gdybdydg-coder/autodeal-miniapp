@@ -2,8 +2,8 @@
 
 This first live stage collects real public HTML, checks current searches and
 records reasons. Unproven publication/price/valuation never becomes a deal.
-Only an owner-requested diagnostic summary goes to Telegram. This is not a
-general OLX rollout or permission to replay baseline cars.
+Owner-requested diagnostics and up to two explicitly labeled test samples go
+to Telegram. This is not a general OLX rollout or an ordinary deal feed.
 """
 import asyncio
 import copy
@@ -11,6 +11,10 @@ import json
 import logging
 import time
 import uuid
+import hashlib
+from dataclasses import replace
+from decimal import Decimal
+from html import escape
 from datetime import datetime, timezone
 from urllib.parse import urlsplit
 from zoneinfo import ZoneInfo
@@ -27,9 +31,18 @@ from experiments.olx_offline.html_snapshot import parse_search_snapshot, clean_u
 from experiments.olx_offline.integration import filters_from_backend
 from experiments.olx_offline.pipeline import filtered
 from experiments.olx_offline.market import estimate_usd
+from experiments.olx_offline.prototype import Car, matches
 
 STATE = 'olx-owner-canary-20261004-v1'
 NOTICE = STATE + '-notice'
+TEST_BATCH = STATE + '-test-ads-v1'
+MAX_TEST_ADS = 2
+# Observed through public search on 04 October; refresh on the server before
+# any sample send. These are test samples, never proof of first publication.
+TEST_URLS = (
+    'https://www.olx.ua/d/uk/obyavlenie/hundai-matrix-2006-ID11fxH1.html',
+    'https://www.olx.ua/d/uk/obyavlenie/audi-a6-s5-1-8-gaz-benz-ID11k8dT.html',
+)
 INTERVAL = 300
 MAX_REQUESTS = 40
 MAX_BYTES = 80 * 1024 * 1024
@@ -74,8 +87,20 @@ def initialize(engine, settings, now):
     if not current:
         return False
     with Session(engine) as db:
+        # Serialize activation with the current worker's lease and byte budget.
+        # A read/copy/write alone could overwrite reservations during rollout.
+        db.execute(update(SourceProbe).where(SourceProbe.id == STATE).values(checked_at=SourceProbe.checked_at))
         row = db.get(SourceProbe, STATE)
         if row:
+            if settings.olx_owner_canary_test_ads_enabled and row.status == 'active' and db.get(SourceProbe, TEST_BATCH) is None:
+                db.add(SourceProbe(id=TEST_BATCH, status='active', checked_at=now, requests=0, result={'maximum_attempts': MAX_TEST_ADS}))
+                data = copy.deepcopy(row.result)
+                data['next_at'] = 0
+                row.result = data
+                try:
+                    db.commit()
+                except IntegrityError:
+                    db.rollback()
             return True
         db.add(SourceProbe(id=STATE, status='active', checked_at=now, requests=0,
             result={'started_at': now, 'until': settings.olx_owner_canary_until,
@@ -154,6 +179,115 @@ def permitted(engine, settings, state):
     return searches(engine, settings, pinned=state['search_ids'])
 
 
+def sample_match(car, rows):
+    """Diagnostic comparison of DISPLAYED price only, no FX/full-price claim.
+
+    Known filter contradictions still reject. Unknown optional attributes keep
+    the existing missing-field policy; a requested region must be observed.
+    Valuation/onlyDeals is waived only for the two explicitly requested samples.
+    """
+    fields = {key: car[key] for key in Car.__dataclass_fields__}
+    base = Car(**fields)
+    for row in rows:
+        f = copy.deepcopy(row['filters'])
+        region = lambda v: v.casefold().removesuffix(' область').strip()
+        if f.get('region'):
+            if not base.region or 'region' in car.get('field_conflicts', []):
+                continue
+            wanted = f['region'] if isinstance(f['region'], list) else [f['region']]
+            f['region'] = [region(v) for v in wanted]
+        local = replace(base, region=region(base.region) if base.region else None)
+        if matches(local, f) is False:
+            continue
+        wanted = f.get('body')
+        if wanted and car.get('body') is not None:
+            wanted = wanted if isinstance(wanted, list) else [wanted]
+            if car['body'].casefold() not in [v.casefold() for v in wanted]:
+                continue
+        return True
+    return False
+
+
+def sample_text(car):
+    observed = car['observed_asking_display']
+    currency = {'USD': '$', 'UAH': 'грн', 'EUR': '€'}[observed['currency']]
+    amount = format(Decimal(observed['amount']), 'f')
+    title = escape((car.get('title') or 'Автомобіль')[:180])
+    place = escape(' · '.join(v for v in (car.get('region'), car.get('locality')) if v)[:160])
+    budget = 'Відповідність доларовому бюджету не підтверджена.\n' if observed['currency'] != 'USD' else ''
+    return ('🧪 <b>Тестове оголошення OLX</b>\n'
+            f'🚘 <b>{title}</b>\n💰 Ціна на сторінці OLX: <b>{amount} {currency}</b>\n'
+            f'📍 {place or "Місце не вказане"}\n\n'
+            'Вигідність і новизна не підтверджені. Первісна валюта продавця та повна ціна потребують перевірки.\n'
+            + budget + 'Це тест доставки, а не підтверджена вигідна пропозиція.')
+
+
+def send_test_ad(engine, settings, state, car, sender):
+    if not settings.olx_owner_canary_test_ads_enabled:
+        return False
+    observed = car.get('observed_asking_display', {})
+    if (car.get('source') != 'olx' or car.get('url') not in TEST_URLS
+            or car.get('eligibility_review', {}).get('status') != 'allowed'
+            or observed.get('status') != 'corroborated_display'
+            or not sample_match(car, permitted(engine, settings, state))):
+        return False
+    now = time.time()
+    ledger = TEST_BATCH + '-' + hashlib.sha256((str(settings.admin_telegram_id)+':'+car['id']).encode()).hexdigest()[:20]
+    with Session(engine) as db:
+        if db.get(SourceProbe, ledger):
+            return False
+        db.add(SourceProbe(id=ledger, status='sending', checked_at=now, requests=1,
+                          result={'mode': 'owner_requested_test_sample', 'source_id': car['id']}))
+        try:
+            db.flush()
+            batch = db.get(SourceProbe, TEST_BATCH)
+            if batch is None:
+                db.add(SourceProbe(id=TEST_BATCH, status='active', checked_at=now, requests=0, result={'maximum_attempts': MAX_TEST_ADS}))
+                db.flush()
+            changed = db.execute(update(SourceProbe).where(SourceProbe.id == TEST_BATCH,
+                SourceProbe.requests < MAX_TEST_ADS).values(requests=SourceProbe.requests+1))
+            if not changed.rowcount:
+                db.rollback(); return False
+            db.commit()
+        except IntegrityError:
+            db.rollback(); return False
+    # No role exemption, no replay after timeout, no photo-to-text fallback.
+    current = permitted(engine, settings, state)
+    if not settings.olx_owner_canary_test_ads_enabled or not sample_match(car, current):
+        response = {'not_attempted': True}
+        method = None
+    else:
+        text = sample_text(car)
+        payload = {'chat_id': settings.admin_telegram_id, 'parse_mode': 'HTML',
+                   'reply_markup': {'inline_keyboard': [[{'text': '🚘 Відкрити на OLX', 'url': car['url']}]]}}
+        method = 'sendPhoto' if car.get('photos') else 'sendMessage'
+        if method == 'sendPhoto':
+            payload.update(photo=car['photos'][0], caption=text)
+        else:
+            payload.update(text=text, link_preview_options={'is_disabled': True})
+        try:
+            response = sender(settings.bot_token, method, payload)
+        except Exception:
+            response = {'uncertain': True}
+    response = response if isinstance(response, dict) else {'uncertain': True}
+    receipt = response.get('result') if isinstance(response.get('result'), dict) else {}
+    chat = receipt.get('chat', {})
+    accepted = (response.get('ok') is True and type(receipt.get('message_id')) is int
+                and receipt['message_id'] > 0 and isinstance(chat, dict)
+                and chat.get('id', settings.admin_telegram_id) == settings.admin_telegram_id)
+    status = ('accepted' if accepted else 'not_attempted' if response.get('not_attempted')
+              else 'rejected' if response.get('ok') is False else 'uncertain')
+    with Session(engine) as db:
+        row = db.get(SourceProbe, ledger)
+        row.status = status
+        row.result = {**row.result, 'telegram_api_accepted': accepted, 'method': method,
+                      'message_id': receipt.get('message_id') if accepted else None}
+        db.commit()
+    log.info('OLX owner test advertisement receipt %s', json.dumps({'source_id': car['id'],
+             'accepted': accepted, 'status': status, 'method': method}))
+    return accepted
+
+
 def tick(engine, settings, fetch=public_fetch, sender=telegram_setup.call, now=None):
     clock = time.time if now is None else lambda: now
     now = clock()
@@ -198,13 +332,28 @@ def tick(engine, settings, fetch=public_fetch, sender=telegram_setup.call, now=N
         state['seen'] = list(dict.fromkeys(state['seen'] + [car['id'] for car in page['listings']]))[-5000:]
         # The initial sample is a baseline, never old-ad messages. Two details
         # provide evidence of exclusions/fields; unknown value stays unresolved.
-        for card in fresh[:2]:
+        samples = [{'id': None, 'url': url} for url in TEST_URLS] if settings.olx_owner_canary_test_ads_enabled else fresh[:2]
+        with Session(engine) as db:
+            batch = db.get(SourceProbe, TEST_BATCH)
+            if settings.olx_owner_canary_test_ads_enabled and batch and batch.requests >= MAX_TEST_ADS:
+                samples = fresh[:2]
+        for card in samples:
             time.sleep(4) if fetch is public_fetch else None
-            body, truncated = get(card['url'])
-            parsed = parse_detail_snapshot(body, fetched_at=int(clock()), truncated=truncated)
-            car = parsed['listing']
-            if car['id'] != card['id'] or car['url'] != clean_url(card['url']):
-                raise ValueError('detail_identity_mismatch')
+            try:
+                body, truncated = get(card['url'])
+                parsed = parse_detail_snapshot(body, fetched_at=int(clock()), truncated=truncated)
+                car = parsed['listing']
+                if (card['id'] is not None and car['id'] != card['id']) or car['url'] != clean_url(card['url']):
+                    raise ValueError('detail_identity_mismatch')
+            except Exception as exc:
+                if result['status'] == 'source_blocked':
+                    raise
+                if result['status'] == 'observed':
+                    result['status'] = 'technical_hold'
+                result['error_type'] = type(exc).__name__
+                if isinstance(exc, ValueError) and str(exc) in {'current_paid_ready_search_required', 'current_access_or_budget_required'}:
+                    result['hold_reason'] = str(exc)
+                continue
             result['details'] += 1
             if parsed['summary']['download_truncated']:
                 result['filter_unresolved'] += 1; continue
@@ -218,7 +367,8 @@ def tick(engine, settings, fetch=public_fetch, sender=telegram_setup.call, now=N
             assessment = estimate_usd(car, [], int(now), comparable_sources=('olx',))
             if assessment['status'] != 'experimental_estimate':
                 result['valuation_unconfirmed'] += 1
-            # Do not send this car: public HTML does not establish original
+            result['car_sends'] += send_test_ad(engine, settings, state, car, sender)
+            # Do not send an ordinary deal: public HTML does not establish original
             # seller currency, first publication, and independent market peers.
             # Customer deal/threshold policy remains unchanged.
         result['hold_reason'] = 'publication_original_currency_and_market_unconfirmed'
@@ -235,6 +385,7 @@ def tick(engine, settings, fetch=public_fetch, sender=telegram_setup.call, now=N
         data = copy.deepcopy(row.result)
         data.update(seen=state['seen'], cycles=data['cycles']+1,
                     bytes=data['bytes']+result['bytes'], last=result,
+                    car_sends=data.get('car_sends', 0)+result['car_sends'],
                     lease='', lease_until=0)
         row.result, row.checked_at = data, now
         if result['status'] == 'source_blocked':
@@ -258,6 +409,7 @@ def status_text(row):
         f"Карток у останній видачі: {last.get('cards', 0)} · деталей: {last.get('details', 0)}\n"
         f"Дозволено за описом: {last.get('eligible', 0)} · відсіяно: {last.get('excluded', 0)}\n"
         f"Кандидатів за фільтром: {last.get('filter_candidates', 0)} · фільтр потребує даних: {last.get('filter_unresolved', 0)}\n"
+        f"Прийнятих тестових карток: {row.result.get('car_sends', 0)}\n"
         'Вигідність і точна новизна ще не підтверджені: ці авто не відправляємо як вигідні.\n'
         'Платних AUTO.RIA-запитів для OLX: 0.\n/olx_status — стан · /olx_stop — вимкнути лише OLX.')
 
