@@ -1,0 +1,803 @@
+{
+  "as_of": "2026-10-05T00:06:28+03:00",
+  "base_live_main": "afaf9cee348db64f0558e5d113b2895c48366421",
+  "phases": [
+    {
+      "phase": "olx-stage1-8-2323",
+      "calls": 30,
+      "bytes": 61030055,
+      "cap_calls": 30,
+      "cap_bytes": 100663296,
+      "closed": true
+    },
+    {
+      "phase": "supplement",
+      "calls": 9,
+      "bytes": 18524293,
+      "cap_calls": 12,
+      "cap_bytes": 33554432,
+      "closed": true
+    },
+    {
+      "phase": "petrol-control",
+      "calls": 20,
+      "bytes": 31523235,
+      "cap_calls": 20,
+      "cap_bytes": 41943040,
+      "closed": true
+    }
+  ],
+  "actual_requests": 59,
+  "actual_bytes": 111077583,
+  "calls": [
+    {
+      "phase": "olx-stage1-8-2323",
+      "url": "https://www.olx.ua/uk/transport/legkovye-avtomobili/skoda/q-octavia-a5/",
+      "kind": "search",
+      "started_at": 1791145558.5840425,
+      "finished_at": 1791145569.5520806,
+      "http": 200,
+      "curl_exit": 0,
+      "bytes": 3918998,
+      "sha256": "3e77a485d444cc5d713628116b93531717c24904a008c981e126bb30fc225515"
+    },
+    {
+      "phase": "olx-stage1-8-2323",
+      "url": "https://www.olx.ua/transport/legkovye-avtomobili/skoda/q-octavia-a5/?page=2",
+      "kind": "search",
+      "started_at": 1791145607.978552,
+      "finished_at": 1791145617.9194827,
+      "http": 200,
+      "curl_exit": 0,
+      "bytes": 3913094,
+      "sha256": "3ef82a828c02782454bb9e8eca023c03bffed5664c518cff0475d4c01a7e8540"
+    },
+    {
+      "phase": "olx-stage1-8-2323",
+      "url": "https://www.olx.ua/transport/legkovye-avtomobili/skoda/q-octavia-a5/?page=3",
+      "kind": "search",
+      "started_at": 1791145621.919634,
+      "finished_at": 1791145631.2602253,
+      "http": 200,
+      "curl_exit": 0,
+      "bytes": 3677372,
+      "sha256": "1a8b950ebf4dbcc8678c085f1a53e4c33cb4357509cab890197fd23134070a22"
+    },
+    {
+      "phase": "olx-stage1-8-2323",
+      "url": "https://www.olx.ua/transport/legkovye-avtomobili/skoda/q-octavia-a5/?page=4",
+      "kind": "search",
+      "started_at": 1791145635.2603793,
+      "finished_at": 1791145643.9156795,
+      "http": 200,
+      "curl_exit": 0,
+      "bytes": 3665554,
+      "sha256": "0b7b22f9b6170faf5ec677c6750214ae41e6592c39646b8e9c2f549c0db1a961"
+    },
+    {
+      "phase": "olx-stage1-8-2323",
+      "url": "https://www.olx.ua/transport/legkovye-avtomobili/skoda/q-octavia-a5/?page=5",
+      "kind": "search",
+      "started_at": 1791145647.9158583,
+      "finished_at": 1791145657.5831301,
+      "http": 200,
+      "curl_exit": 0,
+      "bytes": 3736010,
+      "sha256": "4be273e995a1eece4cfe75b805f4a8e65ad094f3b1144fbe0311302a81cd2956"
+    },
+    {
+      "phase": "olx-stage1-8-2323",
+      "url": "https://www.olx.ua/transport/legkovye-avtomobili/skoda/q-octavia-a5/?page=6",
+      "kind": "search",
+      "started_at": 1791145767.858288,
+      "finished_at": 1791145777.867678,
+      "http": 0,
+      "curl_exit": 28,
+      "bytes": 0,
+      "sha256": null
+    },
+    {
+      "phase": "olx-stage1-8-2323",
+      "url": "https://www.olx.ua/transport/legkovye-avtomobili/skoda/q-octavia-a5/?page=7",
+      "kind": "search",
+      "started_at": 1791145781.8681006,
+      "finished_at": 1791145792.5877836,
+      "http": 200,
+      "curl_exit": 0,
+      "bytes": 3725891,
+      "sha256": "a95fa298ac40d73497508c259555cd32fc342475cf104fe007759b07395afb61"
+    },
+    {
+      "phase": "olx-stage1-8-2323",
+      "url": "https://www.olx.ua/transport/legkovye-avtomobili/skoda/q-octavia-a5/?page=8",
+      "kind": "search",
+      "started_at": 1791145796.5879364,
+      "finished_at": 1791145806.5967388,
+      "http": 0,
+      "curl_exit": 28,
+      "bytes": 0,
+      "sha256": null
+    },
+    {
+      "phase": "olx-stage1-8-2323",
+      "url": "https://www.olx.ua/transport/legkovye-avtomobili/skoda/q-octavia-a5/?page=9",
+      "kind": "search",
+      "started_at": 1791145810.5969236,
+      "finished_at": 1791145818.917121,
+      "http": 200,
+      "curl_exit": 0,
+      "bytes": 3801611,
+      "sha256": "1f7a73dd55d0d3ab85e5294e8095521c09c11f5cd6ee6b413cb8c1aa33ec6842"
+    },
+    {
+      "phase": "olx-stage1-8-2323",
+      "url": "https://www.olx.ua/transport/legkovye-avtomobili/skoda/q-octavia-a5/?page=10",
+      "kind": "search",
+      "started_at": 1791145822.9173121,
+      "finished_at": 1791145831.573764,
+      "http": 200,
+      "curl_exit": 0,
+      "bytes": 3781139,
+      "sha256": "849a7fcfc06b568a2e5cf2f4c746ea20261ee823ef28695e469339f28dfbbb1e"
+    },
+    {
+      "phase": "olx-stage1-8-2323",
+      "url": "https://www.olx.ua/transport/legkovye-avtomobili/skoda/q-octavia-a5/?page=11",
+      "kind": "search",
+      "started_at": 1791145835.573932,
+      "finished_at": 1791145844.5941615,
+      "http": 200,
+      "curl_exit": 0,
+      "bytes": 3250661,
+      "sha256": "a27fcb8ec54f05f4ff8f890d94e04793f191bd9c93dfc676ff0201da91855784"
+    },
+    {
+      "phase": "olx-stage1-8-2323",
+      "url": "https://www.olx.ua/d/obyavlenie/prodam-skoda-octavia-a5-rest-1-6-tdi-ID11k8kS.html",
+      "kind": "detail",
+      "started_at": 1791146012.2434433,
+      "finished_at": 1791146022.2524297,
+      "http": 0,
+      "curl_exit": 28,
+      "bytes": 0,
+      "sha256": null
+    },
+    {
+      "phase": "olx-stage1-8-2323",
+      "url": "https://www.olx.ua/d/obyavlenie/skoda-oktavia-a5-restayl-ID11mcjd.html",
+      "kind": "detail",
+      "started_at": 1791146026.2525923,
+      "finished_at": 1791146036.2631586,
+      "http": 0,
+      "curl_exit": 28,
+      "bytes": 0,
+      "sha256": null
+    },
+    {
+      "phase": "olx-stage1-8-2323",
+      "url": "https://www.olx.ua/d/obyavlenie/avtomobl-skoda-oktavia-a5-IDYnEJA.html",
+      "kind": "detail",
+      "started_at": 1791146040.2633314,
+      "finished_at": 1791146048.095791,
+      "http": 200,
+      "curl_exit": 0,
+      "bytes": 1589111,
+      "sha256": "d0485f33ef05c5983d74ec112bcd8032ec52c44e806a6190388d5aae5266243c"
+    },
+    {
+      "phase": "olx-stage1-8-2323",
+      "url": "https://www.olx.ua/d/obyavlenie/skoda-octavia-a5-fl-1-6d-2010-ID11oNYT.html",
+      "kind": "detail",
+      "started_at": 1791146052.0959563,
+      "finished_at": 1791146062.571232,
+      "http": 200,
+      "curl_exit": 0,
+      "bytes": 1580246,
+      "sha256": "235214dd9541f23c936a0a5ead2e94fdca9a7b0ab126f781e8a10ff141b2b198"
+    },
+    {
+      "phase": "olx-stage1-8-2323",
+      "url": "https://www.olx.ua/d/obyavlenie/skoda-octavia-a5-1-6-tdi-ID11gtuO.html",
+      "kind": "detail",
+      "started_at": 1791146066.5714638,
+      "finished_at": 1791146075.427223,
+      "http": 200,
+      "curl_exit": 0,
+      "bytes": 1578171,
+      "sha256": "7a400a2b6103e2582d45f883e7a78a58ac29b7f24a21488e5835b462ae882096"
+    },
+    {
+      "phase": "olx-stage1-8-2323",
+      "url": "https://www.olx.ua/d/obyavlenie/octavia-a5-2010-1-6-ID11aNIx.html",
+      "kind": "detail",
+      "started_at": 1791146079.4274065,
+      "finished_at": 1791146087.4350781,
+      "http": 200,
+      "curl_exit": 0,
+      "bytes": 1579603,
+      "sha256": "85af361fbccb472f18f692609f5f81826dfb7a8ebc2e67ea371aaca2f0ac7991"
+    },
+    {
+      "phase": "olx-stage1-8-2323",
+      "url": "https://www.olx.ua/d/obyavlenie/skoda-octavia-2012-ii-pokolnnya-a5-fl-ID119eMU.html",
+      "kind": "detail",
+      "started_at": 1791146091.435298,
+      "finished_at": 1791146101.6317503,
+      "http": 200,
+      "curl_exit": 0,
+      "bytes": 1574465,
+      "sha256": "5ba2520415df989782ebcd93ce9753cb224639b8b516ce581caa1cc19a5a9074"
+    },
+    {
+      "phase": "olx-stage1-8-2323",
+      "url": "https://www.olx.ua/d/obyavlenie/prodam-shkodu-oktavia-a5-full-1-6-dizel-ID107LdL.html",
+      "kind": "detail",
+      "started_at": 1791146105.6321628,
+      "finished_at": 1791146112.9635177,
+      "http": 200,
+      "curl_exit": 0,
+      "bytes": 1570863,
+      "sha256": "11073b602384d84a6877f8077c100c29f076f465c5c0478dc59f6fc196882319"
+    },
+    {
+      "phase": "olx-stage1-8-2323",
+      "url": "https://www.olx.ua/d/obyavlenie/skoda-octavia-a5-1-6-tdi-ID11o7MK.html",
+      "kind": "detail",
+      "started_at": 1791146116.9636712,
+      "finished_at": 1791146126.063833,
+      "http": 200,
+      "curl_exit": 0,
+      "bytes": 1573316,
+      "sha256": "6d0c24896e4c6d03fe6a8c86c63ba9910f1834e63ccf774642af52ca575959c8"
+    },
+    {
+      "phase": "olx-stage1-8-2323",
+      "url": "https://www.olx.ua/d/obyavlenie/skoda-octavia-2011-ID11orPS.html",
+      "kind": "detail",
+      "started_at": 1791146130.0640047,
+      "finished_at": 1791146139.771189,
+      "http": 200,
+      "curl_exit": 0,
+      "bytes": 1565146,
+      "sha256": "867cb59029ef38b19f5a904e1661acd4f037f893cfca238343824ced28e068dc"
+    },
+    {
+      "phase": "olx-stage1-8-2323",
+      "url": "https://www.olx.ua/d/obyavlenie/prodam-avtomobl-skoda-a5-ID11mWb2.html",
+      "kind": "detail",
+      "started_at": 1791146143.7713587,
+      "finished_at": 1791146151.4156127,
+      "http": 200,
+      "curl_exit": 0,
+      "bytes": 1569620,
+      "sha256": "d537e3554500a9c6eaae78bfe37b79d965f5ae1df3c10561b3eed79992384561"
+    },
+    {
+      "phase": "olx-stage1-8-2323",
+      "url": "https://www.olx.ua/d/obyavlenie/skoda-octavia-a5-ID11gtEZ.html",
+      "kind": "detail",
+      "started_at": 1791146155.4158375,
+      "finished_at": 1791146165.425994,
+      "http": 0,
+      "curl_exit": 28,
+      "bytes": 0,
+      "sha256": null
+    },
+    {
+      "phase": "olx-stage1-8-2323",
+      "url": "https://www.olx.ua/d/obyavlenie/skoda-a5-2012-rk-dizel-dvigun-1-6-ID117k7t.html",
+      "kind": "detail",
+      "started_at": 1791146169.4261968,
+      "finished_at": 1791146179.3344223,
+      "http": 200,
+      "curl_exit": 0,
+      "bytes": 1577731,
+      "sha256": "0be1a472663d4cff7b128c4aecdec52ca6d4d3a989151ea1192e1d7d8eb41c3a"
+    },
+    {
+      "phase": "olx-stage1-8-2323",
+      "url": "https://www.olx.ua/d/obyavlenie/skoda-octavia-a5-2012-ID11n6od.html",
+      "kind": "detail",
+      "started_at": 1791146183.334594,
+      "finished_at": 1791146190.8273463,
+      "http": 200,
+      "curl_exit": 0,
+      "bytes": 1587068,
+      "sha256": "df0e7956b302e66581681a6a0da77e261cf06597bff15b6628d7d8991f63acbe"
+    },
+    {
+      "phase": "olx-stage1-8-2323",
+      "url": "https://www.olx.ua/d/obyavlenie/skoda-octavia-a5-fl-ID11m6jl.html",
+      "kind": "detail",
+      "started_at": 1791146194.8275278,
+      "finished_at": 1791146203.6566367,
+      "http": 200,
+      "curl_exit": 0,
+      "bytes": 1563600,
+      "sha256": "faae5d2d66087a40b3149cd134568e83f8ea580137e7566d091ad5c0afc47b92"
+    },
+    {
+      "phase": "olx-stage1-8-2323",
+      "url": "https://www.olx.ua/d/obyavlenie/prodam-avto-skoda-octavia-a5-1-6-tdi-garniy-stan-ID11mbHp.html",
+      "kind": "detail",
+      "started_at": 1791146207.6568255,
+      "finished_at": 1791146214.9514117,
+      "http": 200,
+      "curl_exit": 0,
+      "bytes": 1567295,
+      "sha256": "25bd2d5ab0efbba5ce10083965a9b9dec5077ec30d1b5647541ad9366b8fe299"
+    },
+    {
+      "phase": "olx-stage1-8-2323",
+      "url": "https://www.olx.ua/d/obyavlenie/prodam-skoda-octavia-a5-universal-1-6-turbo-dizel-ID11hZn0.html",
+      "kind": "detail",
+      "started_at": 1791146218.9515839,
+      "finished_at": 1791146227.957047,
+      "http": 200,
+      "curl_exit": 0,
+      "bytes": 1564528,
+      "sha256": "749989cef3130156999c1ce5ef9d42437f1795a3924719a9ffdd8b49927937fb"
+    },
+    {
+      "phase": "olx-stage1-8-2323",
+      "url": "https://www.olx.ua/d/uk/obyavlenie/skoda-octavia-a5-1-6-tdi-2012-ID11m6k3.html",
+      "kind": "detail",
+      "started_at": 1791146231.9572315,
+      "finished_at": 1791146240.019825,
+      "http": 200,
+      "curl_exit": 0,
+      "bytes": 1589002,
+      "sha256": "89d337e657fd72d494cdd25d19f90319459e1852db6bbca3e92285153363563d"
+    },
+    {
+      "phase": "olx-stage1-8-2323",
+      "url": "https://www.olx.ua/uk/transport/legkovye-avtomobili/skoda/q-octavia-a5/",
+      "kind": "search",
+      "started_at": 1791146277.223107,
+      "finished_at": 1791146288.6413927,
+      "http": 200,
+      "curl_exit": 0,
+      "bytes": 3929960,
+      "sha256": "a00538fe0926c54ea35eb940ca0824693951230b098ab386bda22abd5e61c51e"
+    },
+    {
+      "phase": "supplement",
+      "url": "https://www.olx.ua/transport/legkovye-avtomobili/skoda/q-octavia-a5/?page=6",
+      "kind": "search",
+      "started_at": 1791146473.3476536,
+      "finished_at": 1791146482.6621237,
+      "http": 200,
+      "curl_exit": 0,
+      "bytes": 3699710,
+      "sha256": "19826ee0712b28afbc5d3d33e406cdbf08a0722a5712c9e81e98257428b8cfb0"
+    },
+    {
+      "phase": "supplement",
+      "url": "https://www.olx.ua/transport/legkovye-avtomobili/skoda/q-octavia-a5/?page=8",
+      "kind": "search",
+      "started_at": 1791146486.6623504,
+      "finished_at": 1791146494.9080944,
+      "http": 200,
+      "curl_exit": 0,
+      "bytes": 3791419,
+      "sha256": "dc7e94baca4c6f185e6c9832d59ca54b76a2ea4ce11d80e97013457ba3b8301d"
+    },
+    {
+      "phase": "supplement",
+      "url": "https://www.olx.ua/d/obyavlenie/prodam-skoda-octavia-a5-rest-1-6-tdi-ID11k8kS.html",
+      "kind": "detail",
+      "started_at": 1791146587.5551507,
+      "finished_at": 1791146595.6280358,
+      "http": 200,
+      "curl_exit": 0,
+      "bytes": 1574941,
+      "sha256": "47dad4d1e120f58e8f3f7e2caf75415a334079a635064b4ab8901628a0a91df1"
+    },
+    {
+      "phase": "supplement",
+      "url": "https://www.olx.ua/d/obyavlenie/skoda-oktavia-a5-restayl-ID11mcjd.html",
+      "kind": "detail",
+      "started_at": 1791146599.6282506,
+      "finished_at": 1791146607.2990954,
+      "http": 200,
+      "curl_exit": 0,
+      "bytes": 1580582,
+      "sha256": "9452c4fddcf65e0dd8eb28c94ca3e8c4c5ab295c5d3c021c36e4143f2c177571"
+    },
+    {
+      "phase": "supplement",
+      "url": "https://www.olx.ua/d/obyavlenie/skoda-octavia-a5-ID11gtEZ.html",
+      "kind": "detail",
+      "started_at": 1791146611.2992857,
+      "finished_at": 1791146618.0150921,
+      "http": 200,
+      "curl_exit": 0,
+      "bytes": 1576275,
+      "sha256": "43ab01b716e3a2643f06f0366442ea9438371ee80dcd1e2a9645eba818862001"
+    },
+    {
+      "phase": "supplement",
+      "url": "https://www.olx.ua/d/obyavlenie/prodam-shkodu-a5-restalng-ID110ZLy.html",
+      "kind": "detail",
+      "started_at": 1791146622.0153117,
+      "finished_at": 1791146637.042832,
+      "http": 200,
+      "curl_exit": 0,
+      "bytes": 1576628,
+      "sha256": "a1e41f3432254c4b9f39f1055e111c04b11ec0a608b954c8715d2c165b593c82"
+    },
+    {
+      "phase": "supplement",
+      "url": "https://www.olx.ua/d/obyavlenie/skoda-octavia-a5-fl-ID10jvJX.html",
+      "kind": "detail",
+      "started_at": 1791146641.0430093,
+      "finished_at": 1791146649.8793867,
+      "http": 200,
+      "curl_exit": 0,
+      "bytes": 1580968,
+      "sha256": "98cf724fedd5b0f4eac555abe0230ebb97e9ef8bc330552941b87e99e16c1489"
+    },
+    {
+      "phase": "supplement",
+      "url": "https://www.olx.ua/d/obyavlenie/skoda-octavia-a5-2011-1-6-dizel-ID11hzC0.html",
+      "kind": "detail",
+      "started_at": 1791146653.879592,
+      "finished_at": 1791146662.7659037,
+      "http": 200,
+      "curl_exit": 0,
+      "bytes": 1579969,
+      "sha256": "2b5cf3c6d56d1a5a23ca751fec50c9a1ce945b979dd9beb0690509b4458cf322"
+    },
+    {
+      "phase": "supplement",
+      "url": "https://www.olx.ua/d/obyavlenie/prodam-skoda-a5-ID11owqJ.html",
+      "kind": "detail",
+      "started_at": 1791146666.7660775,
+      "finished_at": 1791146674.8175366,
+      "http": 200,
+      "curl_exit": 0,
+      "bytes": 1563801,
+      "sha256": "800a3535e4601411e7a221156588b5f8e5614fa0720842e85a651d2d73bc4017"
+    },
+    {
+      "phase": "petrol-control",
+      "url": "https://www.olx.ua/d/obyavlenie/prodam-shkodu-pslya-dtp-oktavia-a5-ID10QSoT.html",
+      "kind": "detail",
+      "started_at": 1791147559.8428729,
+      "finished_at": 1791147570.148246,
+      "http": 200,
+      "curl_exit": 0,
+      "bytes": 1564596,
+      "sha256": "c52b30b2fee1a5ec6aa874420631fc5da439a974688883e06fa504d0c6890552"
+    },
+    {
+      "phase": "petrol-control",
+      "url": "https://www.olx.ua/d/obyavlenie/skoda-octavia-a5-ID10SPBv.html",
+      "kind": "detail",
+      "started_at": 1791147574.1484048,
+      "finished_at": 1791147581.6338494,
+      "http": 200,
+      "curl_exit": 0,
+      "bytes": 1566478,
+      "sha256": "d6f73fbad8828c4664b878704ff2f22a5806216f29747640e6ba4c7953312ae7"
+    },
+    {
+      "phase": "petrol-control",
+      "url": "https://www.olx.ua/d/obyavlenie/prodam-skoda-oktavia-a5-ID113nEb.html",
+      "kind": "detail",
+      "started_at": 1791147585.634012,
+      "finished_at": 1791147594.8470948,
+      "http": 200,
+      "curl_exit": 0,
+      "bytes": 1554211,
+      "sha256": "c0ff252c17f47824563ba78100e7586180116832e85c2bf3e312e537d56fda88"
+    },
+    {
+      "phase": "petrol-control",
+      "url": "https://www.olx.ua/d/obyavlenie/skoda-octavia-a5-2010-1-8-tsi-ID113vPB.html",
+      "kind": "detail",
+      "started_at": 1791147598.8472996,
+      "finished_at": 1791147605.9144595,
+      "http": 200,
+      "curl_exit": 0,
+      "bytes": 1572658,
+      "sha256": "bb24e182cd101e2e51d952674faa81d41fbfed9e41fa6cebc2b5615d15041034"
+    },
+    {
+      "phase": "petrol-control",
+      "url": "https://www.olx.ua/d/obyavlenie/prodazh-skoda-octavia-a5-combi-ID114Ysw.html",
+      "kind": "detail",
+      "started_at": 1791147609.9146457,
+      "finished_at": 1791147617.9636526,
+      "http": 200,
+      "curl_exit": 0,
+      "bytes": 1598773,
+      "sha256": "3fd68ea955725eaa762c072a8e1876400a7b0cd8ad4ed5c6ff042add0441b1f9"
+    },
+    {
+      "phase": "petrol-control",
+      "url": "https://www.olx.ua/d/uk/obyavlenie/prodam-skoda-a5-v-otlichnom-sostoyanii-ID116OuY.html",
+      "kind": "detail",
+      "started_at": 1791147621.9638646,
+      "finished_at": 1791147629.866912,
+      "http": 200,
+      "curl_exit": 0,
+      "bytes": 1580173,
+      "sha256": "e6f21bea69e389ef21a2d18cc46b309012febb0b42a3ab9b9d89facf2a64e6e6"
+    },
+    {
+      "phase": "petrol-control",
+      "url": "https://www.olx.ua/d/obyavlenie/skoda-octavia-a5-2012r-1-8-benzin-obmn-pershiy-vnesok-vd-20-ID118HBP.html",
+      "kind": "detail",
+      "started_at": 1791147633.86706,
+      "finished_at": 1791147640.768758,
+      "http": 200,
+      "curl_exit": 0,
+      "bytes": 1597540,
+      "sha256": "fc4f3fc99d6f51464ed07cb63025bf3b8ff6cff5453300ac64a5e06a3d5c0049"
+    },
+    {
+      "phase": "petrol-control",
+      "url": "https://www.olx.ua/d/obyavlenie/skoda-oktavia-a5-1-8-ID11cc5K.html",
+      "kind": "detail",
+      "started_at": 1791147644.7689033,
+      "finished_at": 1791147652.298063,
+      "http": 200,
+      "curl_exit": 0,
+      "bytes": 1566953,
+      "sha256": "53ffa4bbb6f4e72436f1ada69b6bf9bd9b46dfd269371e8e276fef9a1b21f1d1"
+    },
+    {
+      "phase": "petrol-control",
+      "url": "https://www.olx.ua/d/obyavlenie/skoda-octavia-a5-ID11cnjf.html",
+      "kind": "detail",
+      "started_at": 1791147656.2982502,
+      "finished_at": 1791147663.4919178,
+      "http": 200,
+      "curl_exit": 0,
+      "bytes": 1573073,
+      "sha256": "91f6afe140a1d3af130568e0d6c1e7986c21a778401d43624f34d7fe3ea41236"
+    },
+    {
+      "phase": "petrol-control",
+      "url": "https://www.olx.ua/d/obyavlenie/skoda-octavia-a5-4x4-ID11eRsF.html",
+      "kind": "detail",
+      "started_at": 1791147667.4920714,
+      "finished_at": 1791147676.9805102,
+      "http": 200,
+      "curl_exit": 0,
+      "bytes": 1575647,
+      "sha256": "c4b4e701ca0724350cdf29307a681348ac03b3cc631a625765a2875fa98c5539"
+    },
+    {
+      "phase": "petrol-control",
+      "url": "https://www.olx.ua/d/obyavlenie/octavia-a5-fl-1-8tsi-chip-ID11ifk6.html",
+      "kind": "detail",
+      "started_at": 1791147680.9806716,
+      "finished_at": 1791147686.8346567,
+      "http": 200,
+      "curl_exit": 0,
+      "bytes": 1562881,
+      "sha256": "bcf515da47180597b0c70029d4e2a8f903d61446a416e48ce352cec0f5507fcf"
+    },
+    {
+      "phase": "petrol-control",
+      "url": "https://www.olx.ua/d/obyavlenie/skoda-octavia-2012-1-8tsi-mt-ID11iQiv.html",
+      "kind": "detail",
+      "started_at": 1791147690.8348186,
+      "finished_at": 1791147697.5911424,
+      "http": 200,
+      "curl_exit": 0,
+      "bytes": 1598691,
+      "sha256": "6bdcf436cb0ce76b282e9bd009c26fd1e4c9d936bbbe31a1027eb7e9179db98d"
+    },
+    {
+      "phase": "petrol-control",
+      "url": "https://www.olx.ua/d/obyavlenie/koda-octavia-a5-1-8-tsi-2011goda-ID11jGT0.html",
+      "kind": "detail",
+      "started_at": 1791147701.5913084,
+      "finished_at": 1791147709.439564,
+      "http": 200,
+      "curl_exit": 0,
+      "bytes": 1585940,
+      "sha256": "0227c39901f5a1541a0c00aa04fab8ca6a08b7f15369d7e9722c8d3be67127fc"
+    },
+    {
+      "phase": "petrol-control",
+      "url": "https://www.olx.ua/d/obyavlenie/skoda-octavia-a5-1-8tsi-ID11kJ8q.html",
+      "kind": "detail",
+      "started_at": 1791147713.4397244,
+      "finished_at": 1791147722.0113223,
+      "http": 200,
+      "curl_exit": 0,
+      "bytes": 1566618,
+      "sha256": "32eab39ae71fc3ae9d9e238d3d9463c66e46f6209114382af98c28952a638480"
+    },
+    {
+      "phase": "petrol-control",
+      "url": "https://www.olx.ua/d/obyavlenie/skoda-octavia-a5-ID11m13I.html",
+      "kind": "detail",
+      "started_at": 1791147726.011491,
+      "finished_at": 1791147733.6028028,
+      "http": 200,
+      "curl_exit": 0,
+      "bytes": 1572052,
+      "sha256": "60dff123b9469fc5ea4d29117db528cd23abef5596991253efac4a2606662f22"
+    },
+    {
+      "phase": "petrol-control",
+      "url": "https://www.olx.ua/d/obyavlenie/skoda-octavia-a5-ID11mB4E.html",
+      "kind": "detail",
+      "started_at": 1791147737.6029775,
+      "finished_at": 1791147744.8252716,
+      "http": 200,
+      "curl_exit": 0,
+      "bytes": 1578446,
+      "sha256": "31e8fd75d66a864bfdbde4610b4cc62ff320642b82136b0c20eac19fc20ef9c8"
+    },
+    {
+      "phase": "petrol-control",
+      "url": "https://www.olx.ua/d/obyavlenie/skoda-octavia-a5-fl-ID11o4sb.html",
+      "kind": "detail",
+      "started_at": 1791147748.8255138,
+      "finished_at": 1791147757.8594074,
+      "http": 200,
+      "curl_exit": 0,
+      "bytes": 1595948,
+      "sha256": "bd21e37ef28302f2c198dd727e9ed88e17949cce11e2b2a3cde5d74e60307a14"
+    },
+    {
+      "phase": "petrol-control",
+      "url": "https://www.olx.ua/d/obyavlenie/skoda-octavia-a5-ID11ofUQ.html",
+      "kind": "detail",
+      "started_at": 1791147761.8596315,
+      "finished_at": 1791147771.0492508,
+      "http": 200,
+      "curl_exit": 0,
+      "bytes": 1566609,
+      "sha256": "fe0d5b34be59d2fec53cf748b1d237e638ec80e474c2d94d70b9f30380f27d31"
+    },
+    {
+      "phase": "petrol-control",
+      "url": "https://www.olx.ua/d/obyavlenie/skoda-octavia-a5-1-8-turbo-ID11oxR5.html",
+      "kind": "detail",
+      "started_at": 1791147775.049478,
+      "finished_at": 1791147782.7025068,
+      "http": 200,
+      "curl_exit": 0,
+      "bytes": 1570139,
+      "sha256": "1f35e6d62ab3c929c11a04786b730809926c4d40bdf1e3413d86b77d1ede118e"
+    },
+    {
+      "phase": "petrol-control",
+      "url": "https://www.olx.ua/d/obyavlenie/skoda-octavia-a5-2011-god-1-8-tsi-ID11oDTj.html",
+      "kind": "detail",
+      "started_at": 1791147786.7026896,
+      "finished_at": 1791147793.8983233,
+      "http": 200,
+      "curl_exit": 0,
+      "bytes": 1575809,
+      "sha256": "7064c85e6354efbbcd635d990ff68cb0b5659bb8500cada9461621d4f1388519"
+    }
+  ],
+  "search_unique_ids": 413,
+  "search_page_observations": 12,
+  "catalogue_complete": false,
+  "page_shift": {
+    "first_observed_added_ids": [
+      "906697765",
+      "936800233"
+    ],
+    "not_present_in_repeat_ids": [
+      "929444221",
+      "935328240",
+      "936759183"
+    ],
+    "order_changed": true,
+    "overlap_count": 49,
+    "comparison_seconds": 719,
+    "both_pages_complete": true,
+    "catalogue_complete": false,
+    "new_publication_count": null,
+    "reason": "One moving relevance window cannot establish complete discovery or publication latency"
+  },
+  "market_and_replay": {
+    "cars": 42,
+    "coverage": {
+      "dataset_kind": "projected_real_olx_observations_20261004_05_fake_users_no_sale_labels",
+      "total": 42,
+      "estimated": 0,
+      "coverage": "0",
+      "independently_labeled_cases": 0,
+      "confusion": null,
+      "accuracy_verified": false
+    },
+    "max_sample": 6,
+    "reasons": {
+      "insufficient_comparables": 26,
+      "eligibility_not_allowed": 1,
+      "missing_generation": 2,
+      "condition_unconfirmed": 10,
+      "ordinary_sale_not_corroborated": 5,
+      "visible_sale_terms_missing_or_conflicting": 5,
+      "price_context_deposit": 1
+    },
+    "holdout": {
+      "split_seed": "olx-stage2323-v1",
+      "benchmark_kind": "withheld_asking_price_only",
+      "frozen_holdout_count": 3,
+      "loaded_holdout_count": 3,
+      "reference_count": 39,
+      "eligible_holdout_count": 2,
+      "estimated_holdout_count": 0,
+      "eligible_coverage": "0",
+      "unknown_holdout_count": 3,
+      "metrics": {
+        "median": {
+          "evaluated": 0,
+          "mean_absolute_usd": null,
+          "mean_absolute_percent": null
+        },
+        "trimmed_mean": {
+          "evaluated": 0,
+          "mean_absolute_usd": null,
+          "mean_absolute_percent": null
+        },
+        "weighted_median": {
+          "evaluated": 0,
+          "mean_absolute_usd": null,
+          "mean_absolute_percent": null
+        }
+      },
+      "sale_price_accuracy_verified": false,
+      "profitable_labels": 0,
+      "false_positive": null,
+      "false_negative": null,
+      "winner_selected": null,
+      "unknown_crossposts_may_remain": true
+    },
+    "local_previews": 72,
+    "unpaid_previews": 0,
+    "restart_previews": 0,
+    "telegram": 0
+  },
+  "frontier": {
+    "mode": "saved_actual_source_replay_no_network",
+    "before": {
+      "candidate_counts": {
+        "pending": 391,
+        "stored": 22
+      },
+      "observed_pages": 12,
+      "incomplete_page_count": 0,
+      "source_holds": [],
+      "whole_source_complete": false,
+      "real_telegram_calls": 0
+    },
+    "after": {
+      "candidate_counts": {
+        "pending": 371,
+        "stored": 42
+      },
+      "observed_pages": 12,
+      "incomplete_page_count": 0,
+      "source_holds": [],
+      "whole_source_complete": false,
+      "real_telegram_calls": 0
+    },
+    "new_detail_reads": 20,
+    "total_stored_details": 42,
+    "restart_new_claims": 0,
+    "real_telegram_calls": 0,
+    "network_calls": 0
+  },
+  "real_telegram_calls": 0,
+  "paid_ria_calls": 0,
+  "new_fx_calls": 0,
+  "production_mutations": 0,
+  "verification": {
+    "tests_passed": 371,
+    "subtests_passed": 150,
+    "dns_socket_fence": true
+  }
+}

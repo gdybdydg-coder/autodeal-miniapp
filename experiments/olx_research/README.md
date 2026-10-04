@@ -2,10 +2,14 @@
 
 **Not connected to the bot. No deployment or Telegram authorization.**
 Base and unchanged production: `afaf9cee348db64f0558e5d113b2895c48366421`.
-All new code lives under `experiments/olx_research`; existing backend, frontend,
+The continuation changes `experiments/olx_research` and fixes the isolated
+`experiments/olx_offline/detail_snapshot.py` parser. Existing backend, frontend,
 workflows, configuration and database schema are untouched.
 
-## Reuse and additions
+See [STAGES-1-8-20261004.md](STAGES-1-8-20261004.md) for the latest continuation.
+Numbers below describe the earlier 22:20 research checkpoint, not the current run.
+
+## Earlier checkpoint: reuse and additions
 
 Reuse the existing `olx_offline` detail/search parsers, eligibility, decimal amount
 parser, date policy primitives and percentile function. Existing NBU-only FX,

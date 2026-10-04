@@ -16,7 +16,7 @@ def enrich(data, parsed):
     sale_only={'ordinary_sale_not_corroborated','visible_sale_terms_missing_or_conflicting'}
     if old.get('reasons') and set(old['reasons']) <= sale_only:
         scripts=[n for n in nodes if n.tag=='script' and n.closed and n.attrs.get('id')=='olx-init-config']
-        visible=[n.text().partition(':')[2].strip() for n in nodes if n.tag=='p' and n.closed and n.text().partition(':')[0]=='Умови продажу']
+        visible=[n.text().partition(':')[2].strip() for n in nodes if n.tag=='p' and n.closed and n.text().partition(':')[0] in ('Умови продажу','Условия продажи')]
         try:
             if len(scripts)!=1 or not visible:raise ValueError()
             script=''.join(v for v in scripts[0].children if isinstance(v,str))
@@ -27,7 +27,8 @@ def enrich(data, parsed):
             ad=state['ad']['ad']
             if str(ad['id'])!=car['id'] or clean_url(ad['url'])!=car['url']:raise ValueError()
             terms=[r for r in ad['params'] if r.get('key')=='sale_terms']
-            wanted={'Звичайний продаж','Можливий обмін'}
+            if len(terms)!=1:raise ValueError('sale_terms_unavailable_or_ambiguous')
+            wanted={'Простая продажа','Возможен обмен'} if set(terms[0].get('value','').split(', '))=={'Простая продажа','Возможен обмен'} else {'Звичайний продаж','Можливий обмін'}
             if (len(terms)!=1 or set(terms[0]['normalizedValue'])!={'regular_sale','possible_exchange'}
                     or set(terms[0]['value'].split(', '))!=wanted
                     or any(set(v.split(', '))!=wanted for v in visible)):raise ValueError()
@@ -41,12 +42,13 @@ def enrich(data, parsed):
         for n in root.nodes():
             if n.tag!='p' or not n.closed:continue
             key,sep,value=n.text().partition(':')
+            key={'Техническое состояние':'Технічний стан','Лакокрасочное покрытие':'Лакофарбове покриття','Поколение':'Покоління'}.get(key,key)
             if sep and key in ('Тип кузова','Технічний стан','Лакофарбове покриття','Покоління'):
                 value=value.strip()
                 if key in fields and fields[key]!=value:conflicts.append(key)
                 fields[key]=value
     evidence={}
-    body={'Ліфтбек':'liftback','Позашляховик / Кросовер':'suv','Мінівен':'minivan','Купе':'coupe','Кабріолет':'convertible','Пікап':'pickup'}.get(fields.get('Тип кузова'))
+    body={'Ліфтбек':'liftback','Лифтбек':'liftback','Позашляховик / Кросовер':'suv','Внедорожник / Кроссовер':'suv','Мінівен':'minivan','Минивэн':'minivan','Купе':'coupe','Кабріолет':'convertible','Кабриолет':'convertible','Пікап':'pickup','Пикап':'pickup'}.get(fields.get('Тип кузова'))
     if body and not car.get('body') and 'Тип кузова' not in conflicts:
         car['body']=body;evidence['body']={'basis':'visible_source_attribute','label':fields['Тип кузова']}
     # One explicit, observed family vocabulary; no approximate year-to-generation mapping.
@@ -62,8 +64,8 @@ def enrich(data, parsed):
     tech=fields.get('Технічний стан',''); paint=fields.get('Лакофарбове покриття','')
     if tech and 'Технічний стан' not in conflicts and 'Лакофарбове покриття' not in conflicts:
         if re.search(r'не на ходу',tech,re.I):condition='not_running'
-        elif re.search(r'На ходу, технічно справна',tech,re.I):
-            condition='running_body_repair' if paint.startswith(('Потрібно відновлення','Не відремонтовані')) else 'seller_declared_running' if paint else None
+        elif re.search(r'На ходу, (?:технічно справна|технически исправна)',tech,re.I):
+            condition='running_body_repair' if paint.startswith(('Потрібно відновлення','Не відремонтовані','Требует восстановления','Не отремонтированные')) else 'seller_declared_running' if paint else None
         else:condition=None
         if condition:
             car['research_condition']=condition

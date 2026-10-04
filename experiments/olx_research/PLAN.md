@@ -40,3 +40,36 @@ OLX пауза щонайменше 4 с; 401/403/429 припиняють зв�
 | Ж | Ізольовано перевірено | Source+ID/user+listing, shared cache, restart0 duplicate previews, partial cursor guard; distributed coordinator ще не production-ready |
 | З | Виконано ізольовано | 20 local previews для2 fake paid,0 unpaid; restart0; Telegram0; це не live доставка |
 | И | Матеріали підготовлено | README/runbook, diff, FX policy, джерела та наступні рішення; owner test не дозволений поточним файлом |
+
+## Continuation authorized 04.10.2026 23:23 Kyiv
+
+Input: complete attached 20261004-202313 instruction. Stages1–8 authorized;
+stages9–10 and every production mutation remain forbidden. Baseline main/live
+afaf9ce, research07a7401; historical branches verified at37510df/dcb4af8/6e5506e.
+Initial repeat verification:346 tests+150subtests; no backend app or network.
+Reuse parsers/eligibility/FX unmodified unless a reproduced defect requires an
+isolated adapter. Improve sufficient-cohort/stability/holdout evaluation and
+persisted candidate continuation. New foreground source budget, separate from
+the earlier completed run:30GET/96MiB/20minutes,4second pauses, no redirect/retry
+or bypass; source401/403/429halts. Every actual request is durably recorded.
+Target first group: explicit Skoda OctaviaA5,1.9diesel/manual/wagon, matching
+year/mileage/condition; previously observed cohort motivates selection. Do not
+weaken matching thresholds to increase coverage. Control split must be fixed
+before reading prices or tuning methods; held-out asking price is only a
+predictive benchmark, never a sale-price truth. Raw pages stay outside git.
+
+## Контрольна точка 2026-10-05T00:06:28+03:00
+
+| Етап | Стан | Перевірений результат / межа |
+|---|---|---|
+| 1. Основа | Виконано | Live/main afaf9ce; окрема гілка та SQLite, без backend app/config/sender |
+| 2. Джерело | Частково | 413 ID, 42 деталі; пагінація і рух видачі перевірені. Регулярний дозволений канал, повнота й первинна новизна ще не доведені |
+| 3. Характеристики | Перевірено на вибірці | UA/RU виправлення; 1 нерозмитнене, 1 контекст першого внеску; невідомі дані явно збережені |
+| 4. FX | Ізольовано перевірено | НБУ→Privat NB→Mono reference→cache; 3 старі реальні UAH replay. Нова дата потребує придатного курсу |
+| 5. Аналоги | Не завершено | Дві цільові групи, максимум 6 сумісних аналогів при мінімумі 8; фізична незалежність невідома |
+| 6. Оцінка | Не завершено | Три методи, frozen holdout і stability код готові; реальне покриття 0/42, порівнюваних контрольних оцінок 0 |
+| 7. Локальний потік | Виконано в межах прототипу | 42 stored +371 pending; 72 локальні картки для 2 fake paid, 0 unpaid; restart без повторів; Telegram 0 |
+| 8. Матеріали | Підготовлено | Код, мінімальні збережені факти, журнал звернень, випадки, команди й залишкові задачі |
+| 9–10. Реальні відправлення | Не запускалися | Потрібні нові окремі погодження, та спочатку готовність джерела й оцінки |
+
+Фактичні totals:59 GET /111077583 bytes /42 details; нижчі цифри вище — попередні контрольні точки. Деталі: STAGES-1-8-20261004.md. Етапи5–6 залишаються незавершеними.

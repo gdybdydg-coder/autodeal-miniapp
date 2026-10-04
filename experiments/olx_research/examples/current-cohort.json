@@ -1,0 +1,3951 @@
+{
+  "mode": "isolated_research",
+  "dataset_kind": "projected_real_olx_observations_20261004_05_fake_users_no_sale_labels",
+  "now": 1791147793,
+  "users": [
+    {
+      "id": "FAKE-paid-1",
+      "confirmed_at": 1791143074,
+      "expires_at": 1791233074,
+      "ready": true,
+      "search_enabled": true,
+      "stopped": false,
+      "filters": {},
+      "min_discount": 15
+    },
+    {
+      "id": "FAKE-paid-2",
+      "confirmed_at": 1791143074,
+      "expires_at": 1791233074,
+      "ready": true,
+      "search_enabled": true,
+      "stopped": false,
+      "filters": {},
+      "min_discount": 15
+    },
+    {
+      "id": "FAKE-unpaid",
+      "confirmed_at": null,
+      "expires_at": 0,
+      "ready": true,
+      "search_enabled": true,
+      "stopped": false,
+      "filters": {}
+    }
+  ],
+  "listings": [
+    {
+      "source": "olx",
+      "id": "892218290",
+      "url": "https://www.olx.ua/d/obyavlenie/avtomobl-skoda-oktavia-a5-IDYnEJA.html",
+      "price": "7100",
+      "currency": "USD",
+      "brand": "Skoda",
+      "model": "Octavia",
+      "generation": "A5",
+      "year": 2010,
+      "mileage_km": 254000,
+      "engine_cc": 1600,
+      "body": "wagon",
+      "fuel": "diesel",
+      "transmission": "manual",
+      "region": "Винницкая область",
+      "research_condition": "seller_declared_running",
+      "category": "whole_passenger_car",
+      "checked_at": 1791146048,
+      "first_seen_at": 1791145818,
+      "observed_asking_display": {
+        "status": "corroborated_display",
+        "reasons": [],
+        "amount": "7100",
+        "currency": "USD",
+        "basis": "complete_visible_detail_and_matching_public_state",
+        "original_seller_currency_verified": false,
+        "full_price_verified": false,
+        "description_reviewed_in_full": true,
+        "limits": [
+          "original_seller_currency_unverified",
+          "first_publication_unverified",
+          "asking_amount_is_not_a_completed_sale_price"
+        ],
+        "state_regular_price": {
+          "amount": "318770",
+          "currency": "UAH"
+        }
+      },
+      "field_conflicts": [],
+      "research_field_conflicts": [],
+      "price_conflicts": [],
+      "source_date_observations": {
+        "origin": "public_html_prerendered_state",
+        "path": "ad.ad",
+        "identity_matches": true,
+        "values": {
+          "createdTime": {
+            "iso": "2025-06-29T16:21:23+03:00",
+            "utc": "2025-06-29T13:21:23+00:00",
+            "epoch": 1751203283
+          },
+          "lastRefreshTime": {
+            "iso": "2026-09-08T14:07:28+03:00",
+            "utc": "2026-09-08T11:07:28+00:00",
+            "epoch": 1788865648
+          },
+          "validToTime": {
+            "iso": "2026-10-09T14:51:28+03:00",
+            "utc": "2026-10-09T11:51:28+00:00",
+            "epoch": 1791546688
+          }
+        },
+        "issues": [],
+        "publication_semantics_verified": false,
+        "other_state_exported": false
+      },
+      "title": "Skoda Octavia A5 2010",
+      "display_title_is_generated": true,
+      "photos": [],
+      "publication_verified": false,
+      "price_review": {
+        "status": "needs_review",
+        "reasons": [
+          "full_price_unconfirmed"
+        ]
+      },
+      "eligibility_review": {
+        "status": "allowed",
+        "reasons": [
+          "customs_cleared_declared",
+          "no_forbidden_offer_evidence"
+        ],
+        "fingerprint": "1c95a99b3622dbb6a4c71bd879bf6af3d2c007b798dc7d3f8773b6cad4d14e36",
+        "customs_status": "cleared_declared",
+        "description_complete": true
+      }
+    },
+    {
+      "source": "olx",
+      "id": "936821171",
+      "url": "https://www.olx.ua/d/obyavlenie/skoda-octavia-a5-fl-1-6d-2010-ID11oNYT.html",
+      "price": "3750",
+      "currency": "USD",
+      "brand": "Skoda",
+      "model": "Octavia",
+      "generation": "A5",
+      "year": 2010,
+      "mileage_km": 264000,
+      "engine_cc": 1600,
+      "body": "liftback",
+      "fuel": "diesel",
+      "transmission": "manual",
+      "region": "Львовская область",
+      "research_condition": "seller_declared_running",
+      "category": "whole_passenger_car",
+      "checked_at": 1791146062,
+      "first_seen_at": 1791145631,
+      "observed_asking_display": {
+        "status": "corroborated_display",
+        "reasons": [],
+        "amount": "3750",
+        "currency": "USD",
+        "basis": "complete_visible_detail_and_matching_public_state",
+        "original_seller_currency_verified": false,
+        "full_price_verified": false,
+        "description_reviewed_in_full": true,
+        "limits": [
+          "original_seller_currency_unverified",
+          "first_publication_unverified",
+          "asking_amount_is_not_a_completed_sale_price"
+        ],
+        "state_regular_price": {
+          "amount": "168364",
+          "currency": "UAH"
+        }
+      },
+      "field_conflicts": [],
+      "research_field_conflicts": [],
+      "price_conflicts": [],
+      "source_date_observations": {
+        "origin": "public_html_prerendered_state",
+        "path": "ad.ad",
+        "identity_matches": true,
+        "values": {
+          "createdTime": {
+            "iso": "2026-10-04T17:50:27+03:00",
+            "utc": "2026-10-04T14:50:27+00:00",
+            "epoch": 1791125427
+          },
+          "lastRefreshTime": {
+            "iso": "2026-10-04T17:51:24+03:00",
+            "utc": "2026-10-04T14:51:24+00:00",
+            "epoch": 1791125484
+          },
+          "validToTime": {
+            "iso": "2026-11-03T16:51:24+02:00",
+            "utc": "2026-11-03T14:51:24+00:00",
+            "epoch": 1793717484
+          }
+        },
+        "issues": [],
+        "publication_semantics_verified": false,
+        "other_state_exported": false
+      },
+      "title": "Skoda Octavia A5 2010",
+      "display_title_is_generated": true,
+      "photos": [],
+      "publication_verified": false,
+      "price_review": {
+        "status": "needs_review",
+        "reasons": [
+          "full_price_unconfirmed"
+        ]
+      },
+      "eligibility_review": {
+        "status": "excluded",
+        "reasons": [
+          "uncleared_declared"
+        ],
+        "fingerprint": "b36b93c36e765ee21384e906f0bed4607499ee1a312dcd34d1a1624b1aaeea40",
+        "customs_status": "uncleared_declared",
+        "description_complete": true
+      }
+    },
+    {
+      "source": "olx",
+      "id": "934835802",
+      "url": "https://www.olx.ua/d/obyavlenie/skoda-octavia-a5-1-6-tdi-ID11gtuO.html",
+      "price": "6500",
+      "currency": "USD",
+      "brand": "Skoda",
+      "model": "Octavia",
+      "generation": "A5",
+      "year": 2012,
+      "mileage_km": 247000,
+      "engine_cc": 1600,
+      "body": "liftback",
+      "fuel": "diesel",
+      "transmission": "manual",
+      "region": "Харьковская область",
+      "research_condition": "seller_declared_running",
+      "category": "whole_passenger_car",
+      "checked_at": 1791146075,
+      "first_seen_at": 1791145631,
+      "observed_asking_display": {
+        "status": "corroborated_display",
+        "reasons": [],
+        "amount": "6500",
+        "currency": "USD",
+        "basis": "complete_visible_detail_and_matching_public_state",
+        "original_seller_currency_verified": false,
+        "full_price_verified": false,
+        "description_reviewed_in_full": true,
+        "limits": [
+          "original_seller_currency_unverified",
+          "first_publication_unverified",
+          "asking_amount_is_not_a_completed_sale_price"
+        ],
+        "state_regular_price": {
+          "amount": "291832",
+          "currency": "UAH"
+        }
+      },
+      "field_conflicts": [],
+      "research_field_conflicts": [],
+      "price_conflicts": [],
+      "source_date_observations": {
+        "origin": "public_html_prerendered_state",
+        "path": "ad.ad",
+        "identity_matches": true,
+        "values": {
+          "createdTime": {
+            "iso": "2026-09-14T20:18:41+03:00",
+            "utc": "2026-09-14T17:18:41+00:00",
+            "epoch": 1789406321
+          },
+          "lastRefreshTime": {
+            "iso": "2026-09-14T20:22:37+03:00",
+            "utc": "2026-09-14T17:22:37+00:00",
+            "epoch": 1789406557
+          },
+          "validToTime": {
+            "iso": "2026-10-14T20:18:41+03:00",
+            "utc": "2026-10-14T17:18:41+00:00",
+            "epoch": 1791998321
+          }
+        },
+        "issues": [],
+        "publication_semantics_verified": false,
+        "other_state_exported": false
+      },
+      "title": "Skoda Octavia A5 2012",
+      "display_title_is_generated": true,
+      "photos": [],
+      "publication_verified": false,
+      "price_review": {
+        "status": "needs_review",
+        "reasons": [
+          "full_price_unconfirmed"
+        ]
+      },
+      "eligibility_review": {
+        "status": "allowed",
+        "reasons": [
+          "customs_cleared_declared",
+          "no_forbidden_offer_evidence"
+        ],
+        "fingerprint": "d1fdb1d9bd5dbd1a1b7730fa50df740819d86461976dc4468bf784f328963682",
+        "customs_status": "cleared_declared",
+        "description_complete": true
+      }
+    },
+    {
+      "source": "olx",
+      "id": "933483565",
+      "url": "https://www.olx.ua/d/obyavlenie/octavia-a5-2010-1-6-ID11aNIx.html",
+      "price": "7500",
+      "currency": "USD",
+      "brand": "Skoda",
+      "model": "Octavia",
+      "generation": "A5",
+      "year": 2010,
+      "mileage_km": 264000,
+      "engine_cc": 1600,
+      "body": "wagon",
+      "fuel": "diesel",
+      "transmission": "manual",
+      "region": "Львовская область",
+      "research_condition": "seller_declared_running",
+      "category": "whole_passenger_car",
+      "checked_at": 1791146087,
+      "first_seen_at": 1791145831,
+      "observed_asking_display": {
+        "status": "corroborated_display",
+        "reasons": [],
+        "amount": "7500",
+        "currency": "USD",
+        "basis": "complete_visible_detail_and_matching_public_state",
+        "original_seller_currency_verified": false,
+        "full_price_verified": false,
+        "description_reviewed_in_full": true,
+        "limits": [
+          "original_seller_currency_unverified",
+          "first_publication_unverified",
+          "asking_amount_is_not_a_completed_sale_price"
+        ],
+        "state_regular_price": {
+          "amount": "336729",
+          "currency": "UAH"
+        }
+      },
+      "field_conflicts": [],
+      "research_field_conflicts": [],
+      "price_conflicts": [],
+      "source_date_observations": {
+        "origin": "public_html_prerendered_state",
+        "path": "ad.ad",
+        "identity_matches": true,
+        "values": {
+          "createdTime": {
+            "iso": "2026-09-01T14:15:10+03:00",
+            "utc": "2026-09-01T11:15:10+00:00",
+            "epoch": 1788261310
+          },
+          "lastRefreshTime": {
+            "iso": "2026-10-01T14:01:54+03:00",
+            "utc": "2026-10-01T11:01:54+00:00",
+            "epoch": 1790852514
+          },
+          "validToTime": {
+            "iso": "2026-10-31T13:15:11+02:00",
+            "utc": "2026-10-31T11:15:11+00:00",
+            "epoch": 1793445311
+          }
+        },
+        "issues": [],
+        "publication_semantics_verified": false,
+        "other_state_exported": false
+      },
+      "title": "Skoda Octavia A5 2010",
+      "display_title_is_generated": true,
+      "photos": [],
+      "publication_verified": false,
+      "price_review": {
+        "status": "needs_review",
+        "reasons": [
+          "full_price_unconfirmed"
+        ]
+      },
+      "eligibility_review": {
+        "status": "allowed",
+        "reasons": [
+          "customs_cleared_declared",
+          "no_forbidden_offer_evidence"
+        ],
+        "fingerprint": "d26d2b11dc6a0720616fd69ce42e0c9cde63188b13b48e8992fdfac481cefaec",
+        "customs_status": "cleared_declared",
+        "description_complete": true
+      }
+    },
+    {
+      "source": "olx",
+      "id": "933110968",
+      "url": "https://www.olx.ua/d/obyavlenie/skoda-octavia-2012-ii-pokolnnya-a5-fl-ID119eMU.html",
+      "price": "7500",
+      "currency": "USD",
+      "brand": "Skoda",
+      "model": "Octavia",
+      "generation": "A5",
+      "year": 2012,
+      "mileage_km": 281000,
+      "engine_cc": 1600,
+      "body": "liftback",
+      "fuel": "diesel",
+      "transmission": "manual",
+      "region": "Днепропетровская область",
+      "research_condition": "seller_declared_running",
+      "category": "whole_passenger_car",
+      "checked_at": 1791146101,
+      "first_seen_at": 1791145844,
+      "observed_asking_display": {
+        "status": "corroborated_display",
+        "reasons": [],
+        "amount": "7500",
+        "currency": "USD",
+        "basis": "complete_visible_detail_and_matching_public_state",
+        "original_seller_currency_verified": false,
+        "full_price_verified": false,
+        "description_reviewed_in_full": true,
+        "limits": [
+          "original_seller_currency_unverified",
+          "first_publication_unverified",
+          "asking_amount_is_not_a_completed_sale_price"
+        ],
+        "state_regular_price": {
+          "amount": "336729",
+          "currency": "UAH"
+        }
+      },
+      "field_conflicts": [],
+      "research_field_conflicts": [],
+      "price_conflicts": [],
+      "source_date_observations": {
+        "origin": "public_html_prerendered_state",
+        "path": "ad.ad",
+        "identity_matches": true,
+        "values": {
+          "createdTime": {
+            "iso": "2026-08-28T14:12:55+03:00",
+            "utc": "2026-08-28T11:12:55+00:00",
+            "epoch": 1787915575
+          },
+          "lastRefreshTime": {
+            "iso": "2026-09-27T13:58:54+03:00",
+            "utc": "2026-09-27T10:58:54+00:00",
+            "epoch": 1790506734
+          },
+          "validToTime": {
+            "iso": "2026-10-27T13:12:55+02:00",
+            "utc": "2026-10-27T11:12:55+00:00",
+            "epoch": 1793099575
+          }
+        },
+        "issues": [],
+        "publication_semantics_verified": false,
+        "other_state_exported": false
+      },
+      "title": "Skoda Octavia A5 2012",
+      "display_title_is_generated": true,
+      "photos": [],
+      "publication_verified": false,
+      "price_review": {
+        "status": "needs_review",
+        "reasons": [
+          "full_price_unconfirmed"
+        ]
+      },
+      "eligibility_review": {
+        "status": "allowed",
+        "reasons": [
+          "customs_cleared_declared",
+          "no_forbidden_offer_evidence"
+        ],
+        "fingerprint": "6855378196811d7a37b5960f0d97d627384652da1385a710d3d60ec5688bd777",
+        "customs_status": "cleared_declared",
+        "description_complete": true
+      }
+    },
+    {
+      "source": "olx",
+      "id": "917982649",
+      "url": "https://www.olx.ua/d/obyavlenie/prodam-shkodu-oktavia-a5-full-1-6-dizel-ID107LdL.html",
+      "price": "7800",
+      "currency": "USD",
+      "brand": "Skoda",
+      "model": "Octavia",
+      "generation": "A5",
+      "year": 2012,
+      "mileage_km": 260000,
+      "engine_cc": 1600,
+      "body": "wagon",
+      "fuel": "diesel",
+      "transmission": "manual",
+      "region": "Днепропетровская область",
+      "research_condition": "seller_declared_running",
+      "category": "whole_passenger_car",
+      "checked_at": 1791146112,
+      "first_seen_at": 1791145844,
+      "observed_asking_display": {
+        "status": "corroborated_display",
+        "reasons": [],
+        "amount": "7800",
+        "currency": "USD",
+        "basis": "complete_visible_detail_and_matching_public_state",
+        "original_seller_currency_verified": false,
+        "full_price_verified": false,
+        "description_reviewed_in_full": true,
+        "limits": [
+          "original_seller_currency_unverified",
+          "first_publication_unverified",
+          "asking_amount_is_not_a_completed_sale_price"
+        ],
+        "state_regular_price": {
+          "amount": "350198",
+          "currency": "UAH"
+        }
+      },
+      "field_conflicts": [],
+      "research_field_conflicts": [],
+      "price_conflicts": [],
+      "source_date_observations": {
+        "origin": "public_html_prerendered_state",
+        "path": "ad.ad",
+        "identity_matches": true,
+        "values": {
+          "createdTime": {
+            "iso": "2026-03-20T09:56:58+02:00",
+            "utc": "2026-03-20T07:56:58+00:00",
+            "epoch": 1773993418
+          },
+          "lastRefreshTime": {
+            "iso": "2026-09-15T20:59:20+03:00",
+            "utc": "2026-09-15T17:59:20+00:00",
+            "epoch": 1789495160
+          },
+          "validToTime": {
+            "iso": "2026-10-15T20:59:20+03:00",
+            "utc": "2026-10-15T17:59:20+00:00",
+            "epoch": 1792087160
+          }
+        },
+        "issues": [],
+        "publication_semantics_verified": false,
+        "other_state_exported": false
+      },
+      "title": "Skoda Octavia A5 2012",
+      "display_title_is_generated": true,
+      "photos": [],
+      "publication_verified": false,
+      "price_review": {
+        "status": "needs_review",
+        "reasons": [
+          "full_price_unconfirmed"
+        ]
+      },
+      "eligibility_review": {
+        "status": "allowed",
+        "reasons": [
+          "customs_cleared_declared",
+          "no_forbidden_offer_evidence"
+        ],
+        "fingerprint": "a210f05bf3d8899c75d8d8976770fd0f952dc0682e86d2d8d4c879ea18eb877d",
+        "customs_status": "cleared_declared",
+        "description_complete": true
+      }
+    },
+    {
+      "source": "olx",
+      "id": "936658970",
+      "url": "https://www.olx.ua/d/obyavlenie/skoda-octavia-a5-1-6-tdi-ID11o7MK.html",
+      "price": "6500",
+      "currency": "USD",
+      "brand": "Skoda",
+      "model": "Octavia",
+      "generation": "A5",
+      "year": 2010,
+      "mileage_km": 270000,
+      "engine_cc": 1600,
+      "body": "wagon",
+      "fuel": "diesel",
+      "transmission": "manual",
+      "region": "Хмельницкая область",
+      "research_condition": "seller_declared_running",
+      "category": "whole_passenger_car",
+      "checked_at": 1791146126,
+      "first_seen_at": 1791145617,
+      "observed_asking_display": {
+        "status": "corroborated_display",
+        "reasons": [],
+        "amount": "6500",
+        "currency": "USD",
+        "basis": "complete_visible_detail_and_matching_public_state",
+        "original_seller_currency_verified": false,
+        "full_price_verified": false,
+        "description_reviewed_in_full": true,
+        "limits": [
+          "original_seller_currency_unverified",
+          "first_publication_unverified",
+          "asking_amount_is_not_a_completed_sale_price"
+        ],
+        "state_regular_price": {
+          "amount": "291832",
+          "currency": "UAH"
+        }
+      },
+      "field_conflicts": [],
+      "research_field_conflicts": [],
+      "price_conflicts": [],
+      "source_date_observations": {
+        "origin": "public_html_prerendered_state",
+        "path": "ad.ad",
+        "identity_matches": true,
+        "values": {
+          "createdTime": {
+            "iso": "2026-10-02T21:41:36+03:00",
+            "utc": "2026-10-02T18:41:36+00:00",
+            "epoch": 1790966496
+          },
+          "lastRefreshTime": {
+            "iso": "2026-10-02T21:45:02+03:00",
+            "utc": "2026-10-02T18:45:02+00:00",
+            "epoch": 1790966702
+          },
+          "validToTime": {
+            "iso": "2026-11-01T20:41:36+02:00",
+            "utc": "2026-11-01T18:41:36+00:00",
+            "epoch": 1793558496
+          }
+        },
+        "issues": [],
+        "publication_semantics_verified": false,
+        "other_state_exported": false
+      },
+      "title": "Skoda Octavia A5 2010",
+      "display_title_is_generated": true,
+      "photos": [],
+      "publication_verified": false,
+      "price_review": {
+        "status": "needs_review",
+        "reasons": [
+          "full_price_unconfirmed"
+        ]
+      },
+      "eligibility_review": {
+        "status": "allowed",
+        "reasons": [
+          "customs_cleared_declared",
+          "no_forbidden_offer_evidence"
+        ],
+        "fingerprint": "8618af94dc2dd8b90dcba8461bb4adc3e911263af4c00b10d3c5b191ad54dc38",
+        "customs_status": "cleared_declared",
+        "description_complete": true
+      }
+    },
+    {
+      "source": "olx",
+      "id": "936736044",
+      "url": "https://www.olx.ua/d/obyavlenie/skoda-octavia-2011-ID11orPS.html",
+      "price": "6400",
+      "currency": "USD",
+      "brand": "Skoda",
+      "model": "Octavia",
+      "generation": null,
+      "year": 2011,
+      "mileage_km": 270000,
+      "engine_cc": 1600,
+      "body": "wagon",
+      "fuel": "diesel",
+      "transmission": "manual",
+      "region": "Ровенская область",
+      "research_condition": "running_body_repair",
+      "category": "whole_passenger_car",
+      "checked_at": 1791146139,
+      "first_seen_at": 1791145617,
+      "observed_asking_display": {
+        "status": "needs_review",
+        "reasons": [
+          "ordinary_sale_not_corroborated",
+          "visible_sale_terms_missing_or_conflicting"
+        ],
+        "amount": "6400",
+        "currency": "USD",
+        "basis": "complete_visible_detail_and_matching_public_state",
+        "original_seller_currency_verified": false,
+        "full_price_verified": false,
+        "description_reviewed_in_full": true,
+        "limits": [
+          "original_seller_currency_unverified",
+          "first_publication_unverified",
+          "asking_amount_is_not_a_completed_sale_price"
+        ],
+        "state_regular_price": {
+          "amount": "287342",
+          "currency": "UAH"
+        }
+      },
+      "research_asking_display": {
+        "status": "corroborated_display",
+        "reasons": [],
+        "amount": "6400",
+        "currency": "USD",
+        "basis": "regular_sale_with_optional_exchange_corroborated",
+        "original_seller_currency_verified": false,
+        "full_price_verified": false,
+        "description_reviewed_in_full": true,
+        "limits": [
+          "original_seller_currency_unverified",
+          "first_publication_unverified",
+          "asking_amount_is_not_a_completed_sale_price"
+        ],
+        "state_regular_price": {
+          "amount": "287342",
+          "currency": "UAH"
+        },
+        "previous_reasons": [
+          "ordinary_sale_not_corroborated",
+          "visible_sale_terms_missing_or_conflicting"
+        ]
+      },
+      "field_conflicts": [],
+      "research_field_conflicts": [],
+      "price_conflicts": [],
+      "source_date_observations": {
+        "origin": "public_html_prerendered_state",
+        "path": "ad.ad",
+        "identity_matches": true,
+        "values": {
+          "createdTime": {
+            "iso": "2026-10-03T18:57:04+03:00",
+            "utc": "2026-10-03T15:57:04+00:00",
+            "epoch": 1791043024
+          },
+          "lastRefreshTime": {
+            "iso": "2026-10-03T20:16:56+03:00",
+            "utc": "2026-10-03T17:16:56+00:00",
+            "epoch": 1791047816
+          },
+          "validToTime": {
+            "iso": "2026-11-02T19:16:55+02:00",
+            "utc": "2026-11-02T17:16:55+00:00",
+            "epoch": 1793639815
+          }
+        },
+        "issues": [],
+        "publication_semantics_verified": false,
+        "other_state_exported": false
+      },
+      "title": "Skoda Octavia  2011",
+      "display_title_is_generated": true,
+      "photos": [],
+      "publication_verified": false,
+      "price_review": {
+        "status": "needs_review",
+        "reasons": [
+          "full_price_unconfirmed"
+        ]
+      },
+      "eligibility_review": {
+        "status": "allowed",
+        "reasons": [
+          "customs_cleared_declared",
+          "no_forbidden_offer_evidence"
+        ],
+        "fingerprint": "8f1296ee991c4e88136bf0f19675e4630c200f9dae1d944155e14b11d682f099",
+        "customs_status": "cleared_declared",
+        "description_complete": true
+      }
+    },
+    {
+      "source": "olx",
+      "id": "936372176",
+      "url": "https://www.olx.ua/d/obyavlenie/prodam-avtomobl-skoda-a5-ID11mWb2.html",
+      "price": "8700",
+      "currency": "USD",
+      "brand": "Skoda",
+      "model": "Octavia",
+      "generation": "A5",
+      "year": 2012,
+      "mileage_km": 280000,
+      "engine_cc": 1600,
+      "body": "wagon",
+      "fuel": "diesel",
+      "transmission": "manual",
+      "region": "Полтавская область",
+      "category": "whole_passenger_car",
+      "checked_at": 1791146151,
+      "first_seen_at": 1791145792,
+      "observed_asking_display": {
+        "status": "corroborated_display",
+        "reasons": [],
+        "amount": "8700",
+        "currency": "USD",
+        "basis": "complete_visible_detail_and_matching_public_state",
+        "original_seller_currency_verified": false,
+        "full_price_verified": false,
+        "description_reviewed_in_full": true,
+        "limits": [
+          "original_seller_currency_unverified",
+          "first_publication_unverified",
+          "asking_amount_is_not_a_completed_sale_price"
+        ],
+        "state_regular_price": {
+          "amount": "390606",
+          "currency": "UAH"
+        }
+      },
+      "field_conflicts": [],
+      "research_field_conflicts": [],
+      "price_conflicts": [],
+      "source_date_observations": {
+        "origin": "public_html_prerendered_state",
+        "path": "ad.ad",
+        "identity_matches": true,
+        "values": {
+          "createdTime": {
+            "iso": "2026-09-29T21:47:42+03:00",
+            "utc": "2026-09-29T18:47:42+00:00",
+            "epoch": 1790707662
+          },
+          "lastRefreshTime": {
+            "iso": "2026-09-29T21:48:43+03:00",
+            "utc": "2026-09-29T18:48:43+00:00",
+            "epoch": 1790707723
+          },
+          "validToTime": {
+            "iso": "2026-10-29T20:47:43+02:00",
+            "utc": "2026-10-29T18:47:43+00:00",
+            "epoch": 1793299663
+          }
+        },
+        "issues": [],
+        "publication_semantics_verified": false,
+        "other_state_exported": false
+      },
+      "title": "Skoda Octavia A5 2012",
+      "display_title_is_generated": true,
+      "photos": [],
+      "publication_verified": false,
+      "price_review": {
+        "status": "needs_review",
+        "reasons": [
+          "full_price_unconfirmed"
+        ]
+      },
+      "eligibility_review": {
+        "status": "allowed",
+        "reasons": [
+          "customs_cleared_declared",
+          "no_forbidden_offer_evidence"
+        ],
+        "fingerprint": "043b1f9e713da0129f09191446f665a2a1df8618dcc16bfcc80ec7e8e7848b1e",
+        "customs_status": "cleared_declared",
+        "description_complete": true
+      }
+    },
+    {
+      "source": "olx",
+      "id": "932654807",
+      "url": "https://www.olx.ua/d/obyavlenie/skoda-a5-2012-rk-dizel-dvigun-1-6-ID117k7t.html",
+      "price": "7600",
+      "currency": "USD",
+      "brand": "Skoda",
+      "model": "Octavia",
+      "generation": "A5",
+      "year": 2012,
+      "mileage_km": 273000,
+      "engine_cc": 1600,
+      "body": "wagon",
+      "fuel": "diesel",
+      "transmission": "manual",
+      "region": "Ровенская область",
+      "category": "whole_passenger_car",
+      "checked_at": 1791146179,
+      "first_seen_at": 1791145643,
+      "observed_asking_display": {
+        "status": "corroborated_display",
+        "reasons": [],
+        "amount": "7600",
+        "currency": "USD",
+        "basis": "complete_visible_detail_and_matching_public_state",
+        "original_seller_currency_verified": false,
+        "full_price_verified": false,
+        "description_reviewed_in_full": true,
+        "limits": [
+          "original_seller_currency_unverified",
+          "first_publication_unverified",
+          "asking_amount_is_not_a_completed_sale_price"
+        ],
+        "state_regular_price": {
+          "amount": "341219",
+          "currency": "UAH"
+        }
+      },
+      "field_conflicts": [],
+      "research_field_conflicts": [],
+      "price_conflicts": [],
+      "source_date_observations": {
+        "origin": "public_html_prerendered_state",
+        "path": "ad.ad",
+        "identity_matches": true,
+        "values": {
+          "createdTime": {
+            "iso": "2026-08-23T22:20:16+03:00",
+            "utc": "2026-08-23T19:20:16+00:00",
+            "epoch": 1787512816
+          },
+          "lastRefreshTime": {
+            "iso": "2026-09-20T14:54:42+03:00",
+            "utc": "2026-09-20T11:54:42+00:00",
+            "epoch": 1789905282
+          },
+          "validToTime": {
+            "iso": "2026-10-22T22:20:16+03:00",
+            "utc": "2026-10-22T19:20:16+00:00",
+            "epoch": 1792696816
+          }
+        },
+        "issues": [],
+        "publication_semantics_verified": false,
+        "other_state_exported": false
+      },
+      "title": "Skoda Octavia A5 2012",
+      "display_title_is_generated": true,
+      "photos": [],
+      "publication_verified": false,
+      "price_review": {
+        "status": "needs_review",
+        "reasons": [
+          "full_price_unconfirmed"
+        ]
+      },
+      "eligibility_review": {
+        "status": "allowed",
+        "reasons": [
+          "customs_cleared_declared",
+          "no_forbidden_offer_evidence"
+        ],
+        "fingerprint": "177a65e93d8b4389cda13c6c3b661c6e72e5a675ed5f7e0f766873b138363e1a",
+        "customs_status": "cleared_declared",
+        "description_complete": true
+      }
+    },
+    {
+      "source": "olx",
+      "id": "936415277",
+      "url": "https://www.olx.ua/d/obyavlenie/skoda-octavia-a5-2012-ID11n6od.html",
+      "price": "6800",
+      "currency": "USD",
+      "brand": "Skoda",
+      "model": "Octavia",
+      "generation": "A5",
+      "year": 2012,
+      "mileage_km": 261000,
+      "engine_cc": 1600,
+      "body": "wagon",
+      "fuel": "diesel",
+      "transmission": "manual",
+      "region": "Черкасская область",
+      "research_condition": "seller_declared_running",
+      "category": "whole_passenger_car",
+      "checked_at": 1791146190,
+      "first_seen_at": 1791145643,
+      "observed_asking_display": {
+        "status": "corroborated_display",
+        "reasons": [],
+        "amount": "6800",
+        "currency": "USD",
+        "basis": "complete_visible_detail_and_matching_public_state",
+        "original_seller_currency_verified": false,
+        "full_price_verified": false,
+        "description_reviewed_in_full": true,
+        "limits": [
+          "original_seller_currency_unverified",
+          "first_publication_unverified",
+          "asking_amount_is_not_a_completed_sale_price"
+        ],
+        "state_regular_price": {
+          "amount": "305301",
+          "currency": "UAH"
+        }
+      },
+      "field_conflicts": [],
+      "research_field_conflicts": [],
+      "price_conflicts": [],
+      "source_date_observations": {
+        "origin": "public_html_prerendered_state",
+        "path": "ad.ad",
+        "identity_matches": true,
+        "values": {
+          "createdTime": {
+            "iso": "2026-09-30T13:15:35+03:00",
+            "utc": "2026-09-30T10:15:35+00:00",
+            "epoch": 1790763335
+          },
+          "lastRefreshTime": {
+            "iso": "2026-09-30T13:17:29+03:00",
+            "utc": "2026-09-30T10:17:29+00:00",
+            "epoch": 1790763449
+          },
+          "validToTime": {
+            "iso": "2026-10-30T12:17:29+02:00",
+            "utc": "2026-10-30T10:17:29+00:00",
+            "epoch": 1793355449
+          }
+        },
+        "issues": [],
+        "publication_semantics_verified": false,
+        "other_state_exported": false
+      },
+      "title": "Skoda Octavia A5 2012",
+      "display_title_is_generated": true,
+      "photos": [],
+      "publication_verified": false,
+      "price_review": {
+        "status": "needs_review",
+        "reasons": [
+          "full_price_unconfirmed"
+        ]
+      },
+      "eligibility_review": {
+        "status": "allowed",
+        "reasons": [
+          "customs_cleared_declared",
+          "no_forbidden_offer_evidence"
+        ],
+        "fingerprint": "e172343b0124722064b7358b7d1d1f09cba51e618e182ab7a3ac7ad0a50b164d",
+        "customs_status": "cleared_declared",
+        "description_complete": true
+      }
+    },
+    {
+      "source": "olx",
+      "id": "936176647",
+      "url": "https://www.olx.ua/d/obyavlenie/skoda-octavia-a5-fl-ID11m6jl.html",
+      "price": "6600",
+      "currency": "USD",
+      "brand": "Skoda",
+      "model": "Octavia",
+      "generation": "A5",
+      "year": 2010,
+      "mileage_km": 274000,
+      "engine_cc": 1600,
+      "body": "wagon",
+      "fuel": "diesel",
+      "transmission": "manual",
+      "region": "Черниговская область",
+      "research_condition": "seller_declared_running",
+      "category": "whole_passenger_car",
+      "checked_at": 1791146203,
+      "first_seen_at": 1791145643,
+      "observed_asking_display": {
+        "status": "corroborated_display",
+        "reasons": [],
+        "amount": "6600",
+        "currency": "USD",
+        "basis": "complete_visible_detail_and_matching_public_state",
+        "original_seller_currency_verified": false,
+        "full_price_verified": false,
+        "description_reviewed_in_full": true,
+        "limits": [
+          "original_seller_currency_unverified",
+          "first_publication_unverified",
+          "asking_amount_is_not_a_completed_sale_price"
+        ],
+        "state_regular_price": {
+          "amount": "296322",
+          "currency": "UAH"
+        }
+      },
+      "field_conflicts": [],
+      "research_field_conflicts": [],
+      "price_conflicts": [],
+      "source_date_observations": {
+        "origin": "public_html_prerendered_state",
+        "path": "ad.ad",
+        "identity_matches": true,
+        "values": {
+          "createdTime": {
+            "iso": "2026-09-27T22:48:07+03:00",
+            "utc": "2026-09-27T19:48:07+00:00",
+            "epoch": 1790538487
+          },
+          "lastRefreshTime": {
+            "iso": "2026-09-27T23:00:55+03:00",
+            "utc": "2026-09-27T20:00:55+00:00",
+            "epoch": 1790539255
+          },
+          "validToTime": {
+            "iso": "2026-10-27T22:00:54+02:00",
+            "utc": "2026-10-27T20:00:54+00:00",
+            "epoch": 1793131254
+          }
+        },
+        "issues": [],
+        "publication_semantics_verified": false,
+        "other_state_exported": false
+      },
+      "title": "Skoda Octavia A5 2010",
+      "display_title_is_generated": true,
+      "photos": [],
+      "publication_verified": false,
+      "price_review": {
+        "status": "needs_review",
+        "reasons": [
+          "full_price_unconfirmed"
+        ]
+      },
+      "eligibility_review": {
+        "status": "allowed",
+        "reasons": [
+          "customs_cleared_declared",
+          "no_forbidden_offer_evidence"
+        ],
+        "fingerprint": "f94b2c0760ce90ebf07c84f6f3cf4284834d29b11ad34a2f454853908f7c739b",
+        "customs_status": "cleared_declared",
+        "description_complete": true
+      }
+    },
+    {
+      "source": "olx",
+      "id": "936197359",
+      "url": "https://www.olx.ua/d/obyavlenie/prodam-avto-skoda-octavia-a5-1-6-tdi-garniy-stan-ID11mbHp.html",
+      "price": "7300",
+      "currency": "USD",
+      "brand": "Skoda",
+      "model": "Octavia",
+      "generation": "A5",
+      "year": 2010,
+      "mileage_km": 238000,
+      "engine_cc": 1600,
+      "body": "wagon",
+      "fuel": "diesel",
+      "transmission": "manual",
+      "region": "Одесская область",
+      "research_condition": "seller_declared_running",
+      "category": "whole_passenger_car",
+      "checked_at": 1791146214,
+      "first_seen_at": 1791145643,
+      "observed_asking_display": {
+        "status": "corroborated_display",
+        "reasons": [],
+        "amount": "7300",
+        "currency": "USD",
+        "basis": "complete_visible_detail_and_matching_public_state",
+        "original_seller_currency_verified": false,
+        "full_price_verified": false,
+        "description_reviewed_in_full": true,
+        "limits": [
+          "original_seller_currency_unverified",
+          "first_publication_unverified",
+          "asking_amount_is_not_a_completed_sale_price"
+        ],
+        "state_regular_price": {
+          "amount": "327750",
+          "currency": "UAH"
+        }
+      },
+      "field_conflicts": [],
+      "research_field_conflicts": [],
+      "price_conflicts": [],
+      "source_date_observations": {
+        "origin": "public_html_prerendered_state",
+        "path": "ad.ad",
+        "identity_matches": true,
+        "values": {
+          "createdTime": {
+            "iso": "2026-09-28T10:52:24+03:00",
+            "utc": "2026-09-28T07:52:24+00:00",
+            "epoch": 1790581944
+          },
+          "lastRefreshTime": {
+            "iso": "2026-09-28T10:53:25+03:00",
+            "utc": "2026-09-28T07:53:25+00:00",
+            "epoch": 1790582005
+          },
+          "validToTime": {
+            "iso": "2026-10-28T09:52:25+02:00",
+            "utc": "2026-10-28T07:52:25+00:00",
+            "epoch": 1793173945
+          }
+        },
+        "issues": [],
+        "publication_semantics_verified": false,
+        "other_state_exported": false
+      },
+      "title": "Skoda Octavia A5 2010",
+      "display_title_is_generated": true,
+      "photos": [],
+      "publication_verified": false,
+      "price_review": {
+        "status": "needs_review",
+        "reasons": [
+          "full_price_unconfirmed"
+        ]
+      },
+      "eligibility_review": {
+        "status": "allowed",
+        "reasons": [
+          "customs_cleared_declared",
+          "no_forbidden_offer_evidence"
+        ],
+        "fingerprint": "d9b07563463a121422845584f323d236f1e9d914c23da585f1035f34b535d95b",
+        "customs_status": "cleared_declared",
+        "description_complete": true
+      }
+    },
+    {
+      "source": "olx",
+      "id": "935196654",
+      "url": "https://www.olx.ua/d/obyavlenie/prodam-skoda-octavia-a5-universal-1-6-turbo-dizel-ID11hZn0.html",
+      "price": "6700",
+      "currency": "USD",
+      "brand": "Skoda",
+      "model": "Octavia",
+      "generation": "A5",
+      "year": 2010,
+      "mileage_km": 270000,
+      "engine_cc": 1600,
+      "body": "wagon",
+      "fuel": "diesel",
+      "transmission": "manual",
+      "region": "Хмельницкая область",
+      "research_condition": "running_body_repair",
+      "category": "whole_passenger_car",
+      "checked_at": 1791146227,
+      "first_seen_at": 1791145643,
+      "observed_asking_display": {
+        "status": "corroborated_display",
+        "reasons": [],
+        "amount": "6700",
+        "currency": "USD",
+        "basis": "complete_visible_detail_and_matching_public_state",
+        "original_seller_currency_verified": false,
+        "full_price_verified": false,
+        "description_reviewed_in_full": true,
+        "limits": [
+          "original_seller_currency_unverified",
+          "first_publication_unverified",
+          "asking_amount_is_not_a_completed_sale_price"
+        ],
+        "state_regular_price": {
+          "amount": "300811",
+          "currency": "UAH"
+        }
+      },
+      "field_conflicts": [],
+      "research_field_conflicts": [],
+      "price_conflicts": [],
+      "source_date_observations": {
+        "origin": "public_html_prerendered_state",
+        "path": "ad.ad",
+        "identity_matches": true,
+        "values": {
+          "createdTime": {
+            "iso": "2026-09-18T11:31:34+03:00",
+            "utc": "2026-09-18T08:31:34+00:00",
+            "epoch": 1789720294
+          },
+          "lastRefreshTime": {
+            "iso": "2026-09-18T11:32:36+03:00",
+            "utc": "2026-09-18T08:32:36+00:00",
+            "epoch": 1789720356
+          },
+          "validToTime": {
+            "iso": "2026-10-18T11:31:35+03:00",
+            "utc": "2026-10-18T08:31:35+00:00",
+            "epoch": 1792312295
+          }
+        },
+        "issues": [],
+        "publication_semantics_verified": false,
+        "other_state_exported": false
+      },
+      "title": "Skoda Octavia A5 2010",
+      "display_title_is_generated": true,
+      "photos": [],
+      "publication_verified": false,
+      "price_review": {
+        "status": "needs_review",
+        "reasons": [
+          "full_price_unconfirmed"
+        ]
+      },
+      "eligibility_review": {
+        "status": "allowed",
+        "reasons": [
+          "customs_cleared_declared",
+          "no_forbidden_offer_evidence"
+        ],
+        "fingerprint": "cc9393c60fff3b22f097e9693b977ce395b8a44294d5f3d5322ce8ff28256daa",
+        "customs_status": "cleared_declared",
+        "description_complete": true
+      }
+    },
+    {
+      "source": "olx",
+      "id": "936176691",
+      "url": "https://www.olx.ua/d/uk/obyavlenie/skoda-octavia-a5-1-6-tdi-2012-ID11m6k3.html",
+      "price": "6999",
+      "currency": "USD",
+      "brand": "Skoda",
+      "model": "Octavia",
+      "generation": "A5",
+      "year": 2012,
+      "mileage_km": 255000,
+      "engine_cc": 1600,
+      "body": "hatchback",
+      "fuel": "diesel",
+      "transmission": "manual",
+      "region": "Хмельницька область",
+      "category": "whole_passenger_car",
+      "checked_at": 1791146240,
+      "first_seen_at": 1791145569,
+      "observed_asking_display": {
+        "status": "corroborated_display",
+        "reasons": [],
+        "amount": "6999",
+        "currency": "USD",
+        "basis": "complete_visible_detail_and_matching_public_state",
+        "original_seller_currency_verified": false,
+        "full_price_verified": false,
+        "description_reviewed_in_full": true,
+        "limits": [
+          "original_seller_currency_unverified",
+          "first_publication_unverified",
+          "asking_amount_is_not_a_completed_sale_price"
+        ],
+        "state_regular_price": {
+          "amount": "314236",
+          "currency": "UAH"
+        }
+      },
+      "field_conflicts": [],
+      "research_field_conflicts": [],
+      "price_conflicts": [],
+      "source_date_observations": {
+        "origin": "public_html_prerendered_state",
+        "path": "ad.ad",
+        "identity_matches": true,
+        "values": {
+          "createdTime": {
+            "iso": "2026-09-27T22:48:43+03:00",
+            "utc": "2026-09-27T19:48:43+00:00",
+            "epoch": 1790538523
+          },
+          "lastRefreshTime": {
+            "iso": "2026-10-04T22:54:16+03:00",
+            "utc": "2026-10-04T19:54:16+00:00",
+            "epoch": 1791143656
+          },
+          "pushupTime": {
+            "iso": "2026-10-04T22:54:16+03:00",
+            "utc": "2026-10-04T19:54:16+00:00",
+            "epoch": 1791143656
+          },
+          "validToTime": {
+            "iso": "2026-10-27T21:54:14+02:00",
+            "utc": "2026-10-27T19:54:14+00:00",
+            "epoch": 1793130854
+          }
+        },
+        "issues": [],
+        "publication_semantics_verified": false,
+        "other_state_exported": false
+      },
+      "title": "Skoda Octavia A5 2012",
+      "display_title_is_generated": true,
+      "photos": [],
+      "publication_verified": false,
+      "price_review": {
+        "status": "needs_review",
+        "reasons": [
+          "full_price_unconfirmed"
+        ]
+      },
+      "eligibility_review": {
+        "status": "allowed",
+        "reasons": [
+          "customs_cleared_declared",
+          "no_forbidden_offer_evidence"
+        ],
+        "fingerprint": "48193f2d4458ff3ec1264d743d61c857a26e73571f727a835fa94c63efb1ffb9",
+        "customs_status": "cleared_declared",
+        "description_complete": true
+      }
+    },
+    {
+      "source": "olx",
+      "id": "935707774",
+      "url": "https://www.olx.ua/d/obyavlenie/prodam-skoda-octavia-a5-rest-1-6-tdi-ID11k8kS.html",
+      "price": "7200",
+      "currency": "USD",
+      "brand": "Skoda",
+      "model": "Octavia",
+      "generation": "A5",
+      "year": 2012,
+      "mileage_km": 240000,
+      "engine_cc": 1600,
+      "body": "wagon",
+      "fuel": "diesel",
+      "transmission": "manual",
+      "region": "Полтавская область",
+      "research_condition": "seller_declared_running",
+      "category": "whole_passenger_car",
+      "checked_at": 1791146595,
+      "first_seen_at": 1791145657,
+      "observed_asking_display": {
+        "status": "needs_review",
+        "reasons": [
+          "ordinary_sale_not_corroborated",
+          "visible_sale_terms_missing_or_conflicting"
+        ],
+        "amount": "7200",
+        "currency": "USD",
+        "basis": "complete_visible_detail_and_matching_public_state",
+        "original_seller_currency_verified": false,
+        "full_price_verified": false,
+        "description_reviewed_in_full": true,
+        "limits": [
+          "original_seller_currency_unverified",
+          "first_publication_unverified",
+          "asking_amount_is_not_a_completed_sale_price"
+        ],
+        "state_regular_price": {
+          "amount": "323260",
+          "currency": "UAH"
+        }
+      },
+      "research_asking_display": {
+        "status": "corroborated_display",
+        "reasons": [],
+        "amount": "7200",
+        "currency": "USD",
+        "basis": "regular_sale_with_optional_exchange_corroborated",
+        "original_seller_currency_verified": false,
+        "full_price_verified": false,
+        "description_reviewed_in_full": true,
+        "limits": [
+          "original_seller_currency_unverified",
+          "first_publication_unverified",
+          "asking_amount_is_not_a_completed_sale_price"
+        ],
+        "state_regular_price": {
+          "amount": "323260",
+          "currency": "UAH"
+        },
+        "previous_reasons": [
+          "ordinary_sale_not_corroborated",
+          "visible_sale_terms_missing_or_conflicting"
+        ]
+      },
+      "field_conflicts": [],
+      "research_field_conflicts": [],
+      "price_conflicts": [],
+      "source_date_observations": {
+        "origin": "public_html_prerendered_state",
+        "path": "ad.ad",
+        "identity_matches": true,
+        "values": {
+          "createdTime": {
+            "iso": "2026-09-23T12:29:31+03:00",
+            "utc": "2026-09-23T09:29:31+00:00",
+            "epoch": 1790155771
+          },
+          "lastRefreshTime": {
+            "iso": "2026-09-23T12:30:58+03:00",
+            "utc": "2026-09-23T09:30:58+00:00",
+            "epoch": 1790155858
+          },
+          "validToTime": {
+            "iso": "2026-10-23T12:30:58+03:00",
+            "utc": "2026-10-23T09:30:58+00:00",
+            "epoch": 1792747858
+          }
+        },
+        "issues": [],
+        "publication_semantics_verified": false,
+        "other_state_exported": false
+      },
+      "title": "Skoda Octavia A5 2012",
+      "display_title_is_generated": true,
+      "photos": [],
+      "publication_verified": false,
+      "price_review": {
+        "status": "needs_review",
+        "reasons": [
+          "full_price_unconfirmed"
+        ]
+      },
+      "eligibility_review": {
+        "status": "allowed",
+        "reasons": [
+          "customs_cleared_declared",
+          "no_forbidden_offer_evidence"
+        ],
+        "fingerprint": "aacaad6f0732579d6c65871ea47d4b2b2b1e5804fcea5e5a934cdbacf9bb3721",
+        "customs_status": "cleared_declared",
+        "description_complete": true
+      }
+    },
+    {
+      "source": "olx",
+      "id": "936199703",
+      "url": "https://www.olx.ua/d/obyavlenie/skoda-oktavia-a5-restayl-ID11mcjd.html",
+      "price": "7000",
+      "currency": "USD",
+      "brand": "Skoda",
+      "model": "Octavia",
+      "generation": "A5",
+      "year": 2011,
+      "mileage_km": 266000,
+      "engine_cc": 1600,
+      "body": "liftback",
+      "fuel": "diesel",
+      "transmission": "manual",
+      "region": "Черкасская область",
+      "research_condition": "seller_declared_running",
+      "category": "whole_passenger_car",
+      "checked_at": 1791146607,
+      "first_seen_at": 1791145657,
+      "observed_asking_display": {
+        "status": "needs_review",
+        "reasons": [
+          "ordinary_sale_not_corroborated",
+          "visible_sale_terms_missing_or_conflicting"
+        ],
+        "amount": "7000",
+        "currency": "USD",
+        "basis": "complete_visible_detail_and_matching_public_state",
+        "original_seller_currency_verified": false,
+        "full_price_verified": false,
+        "description_reviewed_in_full": true,
+        "limits": [
+          "original_seller_currency_unverified",
+          "first_publication_unverified",
+          "asking_amount_is_not_a_completed_sale_price"
+        ],
+        "state_regular_price": {
+          "amount": "314281",
+          "currency": "UAH"
+        }
+      },
+      "research_asking_display": {
+        "status": "corroborated_display",
+        "reasons": [],
+        "amount": "7000",
+        "currency": "USD",
+        "basis": "regular_sale_with_optional_exchange_corroborated",
+        "original_seller_currency_verified": false,
+        "full_price_verified": false,
+        "description_reviewed_in_full": true,
+        "limits": [
+          "original_seller_currency_unverified",
+          "first_publication_unverified",
+          "asking_amount_is_not_a_completed_sale_price"
+        ],
+        "state_regular_price": {
+          "amount": "314281",
+          "currency": "UAH"
+        },
+        "previous_reasons": [
+          "ordinary_sale_not_corroborated",
+          "visible_sale_terms_missing_or_conflicting"
+        ]
+      },
+      "field_conflicts": [],
+      "research_field_conflicts": [],
+      "price_conflicts": [],
+      "source_date_observations": {
+        "origin": "public_html_prerendered_state",
+        "path": "ad.ad",
+        "identity_matches": true,
+        "values": {
+          "createdTime": {
+            "iso": "2026-09-28T11:13:52+03:00",
+            "utc": "2026-09-28T08:13:52+00:00",
+            "epoch": 1790583232
+          },
+          "lastRefreshTime": {
+            "iso": "2026-10-01T09:05:07+03:00",
+            "utc": "2026-10-01T06:05:07+00:00",
+            "epoch": 1790834707
+          },
+          "pushupTime": {
+            "iso": "2026-10-01T09:05:07+03:00",
+            "utc": "2026-10-01T06:05:07+00:00",
+            "epoch": 1790834707
+          },
+          "validToTime": {
+            "iso": "2026-10-28T10:13:53+02:00",
+            "utc": "2026-10-28T08:13:53+00:00",
+            "epoch": 1793175233
+          }
+        },
+        "issues": [],
+        "publication_semantics_verified": false,
+        "other_state_exported": false
+      },
+      "title": "Skoda Octavia A5 2011",
+      "display_title_is_generated": true,
+      "photos": [],
+      "publication_verified": false,
+      "price_review": {
+        "status": "needs_review",
+        "reasons": [
+          "full_price_unconfirmed"
+        ]
+      },
+      "eligibility_review": {
+        "status": "allowed",
+        "reasons": [
+          "customs_cleared_declared",
+          "no_forbidden_offer_evidence"
+        ],
+        "fingerprint": "ac007ce06aef0e54007d130ad9229926ab1e522c0956e46e10bbb5edbde3e6ef",
+        "customs_status": "cleared_declared",
+        "description_complete": true
+      }
+    },
+    {
+      "source": "olx",
+      "id": "934836433",
+      "url": "https://www.olx.ua/d/obyavlenie/skoda-octavia-a5-ID11gtEZ.html",
+      "price": "7700",
+      "currency": "USD",
+      "brand": "Skoda",
+      "model": "Octavia",
+      "generation": "A5",
+      "year": 2010,
+      "mileage_km": 257000,
+      "engine_cc": 1600,
+      "body": "liftback",
+      "fuel": "diesel",
+      "transmission": "manual",
+      "region": "Ивано-Франковская область",
+      "research_condition": "seller_declared_running",
+      "category": "whole_passenger_car",
+      "checked_at": 1791146618,
+      "first_seen_at": 1791145792,
+      "observed_asking_display": {
+        "status": "corroborated_display",
+        "reasons": [],
+        "amount": "7700",
+        "currency": "USD",
+        "basis": "complete_visible_detail_and_matching_public_state",
+        "original_seller_currency_verified": false,
+        "full_price_verified": false,
+        "description_reviewed_in_full": true,
+        "limits": [
+          "original_seller_currency_unverified",
+          "first_publication_unverified",
+          "asking_amount_is_not_a_completed_sale_price"
+        ],
+        "state_regular_price": {
+          "amount": "345709",
+          "currency": "UAH"
+        }
+      },
+      "field_conflicts": [],
+      "research_field_conflicts": [],
+      "price_conflicts": [],
+      "source_date_observations": {
+        "origin": "public_html_prerendered_state",
+        "path": "ad.ad",
+        "identity_matches": true,
+        "values": {
+          "createdTime": {
+            "iso": "2026-09-14T20:24:48+03:00",
+            "utc": "2026-09-14T17:24:48+00:00",
+            "epoch": 1789406688
+          },
+          "lastRefreshTime": {
+            "iso": "2026-09-14T20:25:49+03:00",
+            "utc": "2026-09-14T17:25:49+00:00",
+            "epoch": 1789406749
+          },
+          "validToTime": {
+            "iso": "2026-10-14T20:24:49+03:00",
+            "utc": "2026-10-14T17:24:49+00:00",
+            "epoch": 1791998689
+          }
+        },
+        "issues": [],
+        "publication_semantics_verified": false,
+        "other_state_exported": false
+      },
+      "title": "Skoda Octavia A5 2010",
+      "display_title_is_generated": true,
+      "photos": [],
+      "publication_verified": false,
+      "price_review": {
+        "status": "needs_review",
+        "reasons": [
+          "full_price_unconfirmed"
+        ]
+      },
+      "eligibility_review": {
+        "status": "allowed",
+        "reasons": [
+          "customs_cleared_declared",
+          "no_forbidden_offer_evidence"
+        ],
+        "fingerprint": "aede76f431e0a51172e9e69dd8113d97a4df363464f3d795052b45e301328153",
+        "customs_status": "cleared_declared",
+        "description_complete": true
+      }
+    },
+    {
+      "source": "olx",
+      "id": "931146600",
+      "url": "https://www.olx.ua/d/obyavlenie/prodam-shkodu-a5-restalng-ID110ZLy.html",
+      "price": "6400",
+      "currency": "USD",
+      "brand": "Skoda",
+      "model": "Octavia",
+      "generation": "A5",
+      "year": 2010,
+      "mileage_km": 272000,
+      "engine_cc": 1600,
+      "body": "wagon",
+      "fuel": "diesel",
+      "transmission": "manual",
+      "region": "Львовская область",
+      "research_condition": "seller_declared_running",
+      "category": "whole_passenger_car",
+      "checked_at": 1791146637,
+      "first_seen_at": 1791146494,
+      "observed_asking_display": {
+        "status": "corroborated_display",
+        "reasons": [],
+        "amount": "6400",
+        "currency": "USD",
+        "basis": "complete_visible_detail_and_matching_public_state",
+        "original_seller_currency_verified": false,
+        "full_price_verified": false,
+        "description_reviewed_in_full": true,
+        "limits": [
+          "original_seller_currency_unverified",
+          "first_publication_unverified",
+          "asking_amount_is_not_a_completed_sale_price"
+        ],
+        "state_regular_price": {
+          "amount": "287342",
+          "currency": "UAH"
+        }
+      },
+      "field_conflicts": [],
+      "research_field_conflicts": [],
+      "price_conflicts": [],
+      "source_date_observations": {
+        "origin": "public_html_prerendered_state",
+        "path": "ad.ad",
+        "identity_matches": true,
+        "values": {
+          "createdTime": {
+            "iso": "2026-08-07T20:09:55+03:00",
+            "utc": "2026-08-07T17:09:55+00:00",
+            "epoch": 1786122595
+          },
+          "lastRefreshTime": {
+            "iso": "2026-09-07T10:55:05+03:00",
+            "utc": "2026-09-07T07:55:05+00:00",
+            "epoch": 1788767705
+          },
+          "validToTime": {
+            "iso": "2026-10-07T10:55:05+03:00",
+            "utc": "2026-10-07T07:55:05+00:00",
+            "epoch": 1791359705
+          }
+        },
+        "issues": [],
+        "publication_semantics_verified": false,
+        "other_state_exported": false
+      },
+      "title": "Skoda Octavia A5 2010",
+      "display_title_is_generated": true,
+      "photos": [],
+      "publication_verified": false,
+      "price_review": {
+        "status": "needs_review",
+        "reasons": [
+          "full_price_unconfirmed"
+        ]
+      },
+      "eligibility_review": {
+        "status": "allowed",
+        "reasons": [
+          "customs_cleared_declared",
+          "no_forbidden_offer_evidence"
+        ],
+        "fingerprint": "758902deba179fcc5efbbd315053a82aab473b8f3423c1d7682d05c6180fb857",
+        "customs_status": "cleared_declared",
+        "description_complete": true
+      }
+    },
+    {
+      "source": "olx",
+      "id": "920786921",
+      "url": "https://www.olx.ua/d/obyavlenie/skoda-octavia-a5-fl-ID10jvJX.html",
+      "price": "7299",
+      "currency": "USD",
+      "brand": "Skoda",
+      "model": "Octavia",
+      "generation": "A5",
+      "year": 2010,
+      "mileage_km": 242000,
+      "engine_cc": 1600,
+      "body": "wagon",
+      "fuel": "diesel",
+      "transmission": "manual",
+      "region": "Волынская область",
+      "research_condition": "seller_declared_running",
+      "category": "whole_passenger_car",
+      "checked_at": 1791146649,
+      "first_seen_at": 1791146494,
+      "observed_asking_display": {
+        "status": "corroborated_display",
+        "reasons": [],
+        "amount": "7299",
+        "currency": "USD",
+        "basis": "complete_visible_detail_and_matching_public_state",
+        "original_seller_currency_verified": false,
+        "full_price_verified": false,
+        "description_reviewed_in_full": true,
+        "limits": [
+          "original_seller_currency_unverified",
+          "first_publication_unverified",
+          "asking_amount_is_not_a_completed_sale_price"
+        ],
+        "state_regular_price": {
+          "amount": "327705",
+          "currency": "UAH"
+        }
+      },
+      "field_conflicts": [],
+      "research_field_conflicts": [],
+      "price_conflicts": [],
+      "source_date_observations": {
+        "origin": "public_html_prerendered_state",
+        "path": "ad.ad",
+        "identity_matches": true,
+        "values": {
+          "createdTime": {
+            "iso": "2026-04-17T16:24:28+03:00",
+            "utc": "2026-04-17T13:24:28+00:00",
+            "epoch": 1776432268
+          },
+          "lastRefreshTime": {
+            "iso": "2026-09-27T13:43:37+03:00",
+            "utc": "2026-09-27T10:43:37+00:00",
+            "epoch": 1790505817
+          },
+          "validToTime": {
+            "iso": "2026-10-27T12:43:36+02:00",
+            "utc": "2026-10-27T10:43:36+00:00",
+            "epoch": 1793097816
+          }
+        },
+        "issues": [],
+        "publication_semantics_verified": false,
+        "other_state_exported": false
+      },
+      "title": "Skoda Octavia A5 2010",
+      "display_title_is_generated": true,
+      "photos": [],
+      "publication_verified": false,
+      "price_review": {
+        "status": "needs_review",
+        "reasons": [
+          "full_price_unconfirmed"
+        ]
+      },
+      "eligibility_review": {
+        "status": "allowed",
+        "reasons": [
+          "customs_cleared_declared",
+          "no_forbidden_offer_evidence"
+        ],
+        "fingerprint": "514b12932d699186c344b63f5894e74de7e74c95fbfcc44d215b674b77659699",
+        "customs_status": "cleared_declared",
+        "description_complete": true
+      }
+    },
+    {
+      "source": "olx",
+      "id": "935097640",
+      "url": "https://www.olx.ua/d/obyavlenie/skoda-octavia-a5-2011-1-6-dizel-ID11hzC0.html",
+      "price": "8400",
+      "currency": "USD",
+      "brand": "Skoda",
+      "model": "Octavia",
+      "generation": "A5",
+      "year": 2011,
+      "mileage_km": 228000,
+      "engine_cc": 1600,
+      "body": "liftback",
+      "fuel": "diesel",
+      "transmission": "manual",
+      "region": "Черниговская область",
+      "research_condition": "seller_declared_running",
+      "category": "whole_passenger_car",
+      "checked_at": 1791146662,
+      "first_seen_at": 1791145657,
+      "observed_asking_display": {
+        "status": "needs_review",
+        "reasons": [
+          "ordinary_sale_not_corroborated",
+          "visible_sale_terms_missing_or_conflicting"
+        ],
+        "amount": "8400",
+        "currency": "USD",
+        "basis": "complete_visible_detail_and_matching_public_state",
+        "original_seller_currency_verified": false,
+        "full_price_verified": false,
+        "description_reviewed_in_full": true,
+        "limits": [
+          "original_seller_currency_unverified",
+          "first_publication_unverified",
+          "asking_amount_is_not_a_completed_sale_price"
+        ],
+        "state_regular_price": {
+          "amount": "377137",
+          "currency": "UAH"
+        }
+      },
+      "field_conflicts": [],
+      "research_field_conflicts": [],
+      "price_conflicts": [],
+      "source_date_observations": {
+        "origin": "public_html_prerendered_state",
+        "path": "ad.ad",
+        "identity_matches": true,
+        "values": {
+          "createdTime": {
+            "iso": "2026-09-17T11:34:36+03:00",
+            "utc": "2026-09-17T08:34:36+00:00",
+            "epoch": 1789634076
+          },
+          "lastRefreshTime": {
+            "iso": "2026-09-17T11:37:50+03:00",
+            "utc": "2026-09-17T08:37:50+00:00",
+            "epoch": 1789634270
+          },
+          "validToTime": {
+            "iso": "2026-10-17T11:35:15+03:00",
+            "utc": "2026-10-17T08:35:15+00:00",
+            "epoch": 1792226115
+          }
+        },
+        "issues": [],
+        "publication_semantics_verified": false,
+        "other_state_exported": false
+      },
+      "title": "Skoda Octavia A5 2011",
+      "display_title_is_generated": true,
+      "photos": [],
+      "publication_verified": false,
+      "price_review": {
+        "status": "needs_review",
+        "reasons": [
+          "full_price_unconfirmed"
+        ]
+      },
+      "eligibility_review": {
+        "status": "allowed",
+        "reasons": [
+          "customs_cleared_declared",
+          "no_forbidden_offer_evidence"
+        ],
+        "fingerprint": "f8d897e7a6575844fdb41486edc561394adb15bfcbbab46c208a588af9242310",
+        "customs_status": "cleared_declared",
+        "description_complete": true
+      }
+    },
+    {
+      "source": "olx",
+      "id": "936749861",
+      "url": "https://www.olx.ua/d/obyavlenie/prodam-skoda-a5-ID11owqJ.html",
+      "price": "5900",
+      "currency": "USD",
+      "brand": "Skoda",
+      "model": "Octavia",
+      "generation": "A5",
+      "year": 2011,
+      "mileage_km": 300000,
+      "engine_cc": 1600,
+      "body": "liftback",
+      "fuel": "diesel",
+      "transmission": "manual",
+      "region": "Хмельницкая область",
+      "research_condition": "seller_declared_running",
+      "category": "whole_passenger_car",
+      "checked_at": 1791146674,
+      "first_seen_at": 1791145643,
+      "observed_asking_display": {
+        "status": "needs_review",
+        "reasons": [
+          "ordinary_sale_not_corroborated",
+          "visible_sale_terms_missing_or_conflicting"
+        ],
+        "amount": "5900",
+        "currency": "USD",
+        "basis": "complete_visible_detail_and_matching_public_state",
+        "original_seller_currency_verified": false,
+        "full_price_verified": false,
+        "description_reviewed_in_full": true,
+        "limits": [
+          "original_seller_currency_unverified",
+          "first_publication_unverified",
+          "asking_amount_is_not_a_completed_sale_price"
+        ],
+        "state_regular_price": {
+          "amount": "264893",
+          "currency": "UAH"
+        }
+      },
+      "research_asking_display": {
+        "status": "corroborated_display",
+        "reasons": [],
+        "amount": "5900",
+        "currency": "USD",
+        "basis": "regular_sale_with_optional_exchange_corroborated",
+        "original_seller_currency_verified": false,
+        "full_price_verified": false,
+        "description_reviewed_in_full": true,
+        "limits": [
+          "original_seller_currency_unverified",
+          "first_publication_unverified",
+          "asking_amount_is_not_a_completed_sale_price"
+        ],
+        "state_regular_price": {
+          "amount": "264893",
+          "currency": "UAH"
+        },
+        "previous_reasons": [
+          "ordinary_sale_not_corroborated",
+          "visible_sale_terms_missing_or_conflicting"
+        ]
+      },
+      "field_conflicts": [],
+      "research_field_conflicts": [],
+      "price_conflicts": [],
+      "source_date_observations": {
+        "origin": "public_html_prerendered_state",
+        "path": "ad.ad",
+        "identity_matches": true,
+        "values": {
+          "createdTime": {
+            "iso": "2026-10-03T21:36:19+03:00",
+            "utc": "2026-10-03T18:36:19+00:00",
+            "epoch": 1791052579
+          },
+          "lastRefreshTime": {
+            "iso": "2026-10-03T21:37:20+03:00",
+            "utc": "2026-10-03T18:37:20+00:00",
+            "epoch": 1791052640
+          },
+          "validToTime": {
+            "iso": "2026-11-02T20:37:20+02:00",
+            "utc": "2026-11-02T18:37:20+00:00",
+            "epoch": 1793644640
+          }
+        },
+        "issues": [],
+        "publication_semantics_verified": false,
+        "other_state_exported": false
+      },
+      "title": "Skoda Octavia A5 2011",
+      "display_title_is_generated": true,
+      "photos": [],
+      "publication_verified": false,
+      "price_review": {
+        "status": "needs_review",
+        "reasons": [
+          "full_price_unconfirmed"
+        ]
+      },
+      "eligibility_review": {
+        "status": "allowed",
+        "reasons": [
+          "customs_cleared_declared",
+          "no_forbidden_offer_evidence"
+        ],
+        "fingerprint": "234e8682a10a29872ebbecbdf65b369013a7b8bf20949eab825ce6506ad762d5",
+        "customs_status": "cleared_declared",
+        "description_complete": true
+      }
+    },
+    {
+      "checked_at": 1791147570,
+      "transmission": "manual",
+      "source_date_observations": {
+        "origin": "public_html_prerendered_state",
+        "path": "ad.ad",
+        "identity_matches": true,
+        "values": {
+          "createdTime": {
+            "iso": "2026-07-12T14:07:48+03:00",
+            "utc": "2026-07-12T11:07:48+00:00",
+            "epoch": 1783854468
+          },
+          "lastRefreshTime": {
+            "iso": "2026-09-14T11:51:07+03:00",
+            "utc": "2026-09-14T08:51:07+00:00",
+            "epoch": 1789375867
+          },
+          "validToTime": {
+            "iso": "2026-10-14T11:51:07+03:00",
+            "utc": "2026-10-14T08:51:07+00:00",
+            "epoch": 1791967867
+          }
+        },
+        "issues": [],
+        "publication_semantics_verified": false,
+        "other_state_exported": false
+      },
+      "observed_asking_display": {
+        "status": "corroborated_display",
+        "reasons": [],
+        "amount": "2850",
+        "currency": "USD",
+        "basis": "complete_visible_detail_and_matching_public_state",
+        "original_seller_currency_verified": false,
+        "full_price_verified": false,
+        "description_reviewed_in_full": true,
+        "limits": [
+          "original_seller_currency_unverified",
+          "first_publication_unverified",
+          "asking_amount_is_not_a_completed_sale_price"
+        ],
+        "state_regular_price": {
+          "amount": "127951",
+          "currency": "UAH"
+        }
+      },
+      "url": "https://www.olx.ua/d/obyavlenie/prodam-shkodu-pslya-dtp-oktavia-a5-ID10QSoT.html",
+      "currency": "USD",
+      "mileage_km": 200000,
+      "engine_cc": 1800,
+      "region": "Полтавская область",
+      "generation": "A5",
+      "research_condition": "not_running",
+      "year": 2011,
+      "body": "wagon",
+      "fuel": "petrol",
+      "model": "Octavia",
+      "field_conflicts": [],
+      "source": "olx",
+      "publication_verified": false,
+      "price": "2850",
+      "price_conflicts": [],
+      "id": "928735007",
+      "category": "whole_passenger_car",
+      "research_field_conflicts": [],
+      "brand": "Skoda",
+      "title": "Skoda Octavia A5 2011",
+      "display_title_is_generated": true,
+      "photos": [],
+      "first_seen_at": 1791145643,
+      "eligibility_review": {
+        "status": "allowed",
+        "reasons": [
+          "customs_cleared_declared",
+          "no_forbidden_offer_evidence"
+        ],
+        "fingerprint": "e0cdb1aaae30f1d25644681628070744624568f2862c7576494854bfecea3c22",
+        "customs_status": "cleared_declared",
+        "description_complete": true
+      },
+      "price_review": {
+        "status": "needs_review",
+        "reasons": [
+          "full_price_unconfirmed"
+        ]
+      }
+    },
+    {
+      "checked_at": 1791147581,
+      "transmission": "manual",
+      "source_date_observations": {
+        "origin": "public_html_prerendered_state",
+        "path": "ad.ad",
+        "identity_matches": true,
+        "values": {
+          "createdTime": {
+            "iso": "2026-07-17T13:44:58+03:00",
+            "utc": "2026-07-17T10:44:58+00:00",
+            "epoch": 1784285098
+          },
+          "lastRefreshTime": {
+            "iso": "2026-09-18T05:34:19+03:00",
+            "utc": "2026-09-18T02:34:19+00:00",
+            "epoch": 1789698859
+          },
+          "validToTime": {
+            "iso": "2026-10-18T05:34:19+03:00",
+            "utc": "2026-10-18T02:34:19+00:00",
+            "epoch": 1792290859
+          }
+        },
+        "issues": [],
+        "publication_semantics_verified": false,
+        "other_state_exported": false
+      },
+      "observed_asking_display": {
+        "status": "corroborated_display",
+        "reasons": [],
+        "amount": "2600",
+        "currency": "USD",
+        "basis": "complete_visible_detail_and_matching_public_state",
+        "original_seller_currency_verified": false,
+        "full_price_verified": false,
+        "description_reviewed_in_full": true,
+        "limits": [
+          "original_seller_currency_unverified",
+          "first_publication_unverified",
+          "asking_amount_is_not_a_completed_sale_price"
+        ],
+        "state_regular_price": {
+          "amount": "116727",
+          "currency": "UAH"
+        }
+      },
+      "url": "https://www.olx.ua/d/obyavlenie/skoda-octavia-a5-ID10SPBv.html",
+      "currency": "USD",
+      "mileage_km": 176000,
+      "engine_cc": 1800,
+      "region": "Киевская область",
+      "generation": "A5",
+      "year": 2012,
+      "body": "hatchback",
+      "fuel": "petrol",
+      "model": "Octavia",
+      "field_conflicts": [],
+      "source": "olx",
+      "publication_verified": false,
+      "price": "2600",
+      "price_conflicts": [],
+      "id": "929200914",
+      "category": "whole_passenger_car",
+      "research_field_conflicts": [],
+      "brand": "Skoda",
+      "title": "Skoda Octavia A5 2012",
+      "display_title_is_generated": true,
+      "photos": [],
+      "first_seen_at": 1791145617,
+      "eligibility_review": {
+        "status": "allowed",
+        "reasons": [
+          "customs_cleared_declared",
+          "no_forbidden_offer_evidence"
+        ],
+        "fingerprint": "d7d1113cd21cbefd47bdf0d61539c748faa7824d86c7a6f2f09dc5e5cf061044",
+        "customs_status": "cleared_declared",
+        "description_complete": true
+      },
+      "price_review": {
+        "status": "needs_review",
+        "reasons": [
+          "full_price_unconfirmed"
+        ]
+      }
+    },
+    {
+      "checked_at": 1791147594,
+      "transmission": "manual",
+      "source_date_observations": {
+        "origin": "public_html_prerendered_state",
+        "path": "ad.ad",
+        "identity_matches": true,
+        "values": {
+          "createdTime": {
+            "iso": "2026-08-13T22:25:24+03:00",
+            "utc": "2026-08-13T19:25:24+00:00",
+            "epoch": 1786649124
+          },
+          "lastRefreshTime": {
+            "iso": "2026-09-11T20:28:17+03:00",
+            "utc": "2026-09-11T17:28:17+00:00",
+            "epoch": 1789147697
+          },
+          "validToTime": {
+            "iso": "2026-10-12T22:25:24+03:00",
+            "utc": "2026-10-12T19:25:24+00:00",
+            "epoch": 1791833124
+          }
+        },
+        "issues": [],
+        "publication_semantics_verified": false,
+        "other_state_exported": false
+      },
+      "observed_asking_display": {
+        "status": "corroborated_display",
+        "reasons": [],
+        "amount": "9500",
+        "currency": "USD",
+        "basis": "complete_visible_detail_and_matching_public_state",
+        "original_seller_currency_verified": false,
+        "full_price_verified": false,
+        "description_reviewed_in_full": true,
+        "limits": [
+          "original_seller_currency_unverified",
+          "first_publication_unverified",
+          "asking_amount_is_not_a_completed_sale_price"
+        ],
+        "state_regular_price": {
+          "amount": "426505",
+          "currency": "UAH"
+        }
+      },
+      "url": "https://www.olx.ua/d/obyavlenie/prodam-skoda-oktavia-a5-ID113nEb.html",
+      "currency": "USD",
+      "mileage_km": 152000,
+      "engine_cc": 1800,
+      "region": "Николаевская область",
+      "generation": "A5",
+      "year": 2011,
+      "body": "sedan",
+      "fuel": "petrol",
+      "model": "Octavia",
+      "field_conflicts": [],
+      "source": "olx",
+      "publication_verified": false,
+      "price": "9500",
+      "price_conflicts": [],
+      "id": "931715055",
+      "category": "whole_passenger_car",
+      "research_field_conflicts": [],
+      "brand": "Skoda",
+      "title": "Skoda Octavia A5 2011",
+      "display_title_is_generated": true,
+      "photos": [],
+      "first_seen_at": 1791145831,
+      "eligibility_review": {
+        "status": "allowed",
+        "reasons": [
+          "customs_cleared_declared",
+          "no_forbidden_offer_evidence"
+        ],
+        "fingerprint": "7050dc903e501b270be82f98171651634dc8fae726dd77a131acf08d3e1236e6",
+        "customs_status": "cleared_declared",
+        "description_complete": true
+      },
+      "price_review": {
+        "status": "needs_review",
+        "reasons": [
+          "full_price_unconfirmed"
+        ]
+      }
+    },
+    {
+      "checked_at": 1791147605,
+      "transmission": "manual",
+      "source_date_observations": {
+        "origin": "public_html_prerendered_state",
+        "path": "ad.ad",
+        "identity_matches": true,
+        "values": {
+          "createdTime": {
+            "iso": "2026-08-14T13:00:44+03:00",
+            "utc": "2026-08-14T10:00:44+00:00",
+            "epoch": 1786701644
+          },
+          "lastRefreshTime": {
+            "iso": "2026-09-20T12:45:18+03:00",
+            "utc": "2026-09-20T09:45:18+00:00",
+            "epoch": 1789897518
+          },
+          "validToTime": {
+            "iso": "2026-10-20T12:44:17+03:00",
+            "utc": "2026-10-20T09:44:17+00:00",
+            "epoch": 1792489457
+          }
+        },
+        "issues": [],
+        "publication_semantics_verified": false,
+        "other_state_exported": false
+      },
+      "observed_asking_display": {
+        "status": "corroborated_display",
+        "reasons": [],
+        "amount": "6000",
+        "currency": "USD",
+        "basis": "complete_visible_detail_and_matching_public_state",
+        "original_seller_currency_verified": false,
+        "full_price_verified": false,
+        "description_reviewed_in_full": true,
+        "limits": [
+          "original_seller_currency_unverified",
+          "first_publication_unverified",
+          "asking_amount_is_not_a_completed_sale_price"
+        ],
+        "state_regular_price": {
+          "amount": "269371",
+          "currency": "UAH"
+        }
+      },
+      "url": "https://www.olx.ua/d/obyavlenie/skoda-octavia-a5-2010-1-8-tsi-ID113vPB.html",
+      "currency": "USD",
+      "mileage_km": 185000,
+      "engine_cc": 1800,
+      "region": "Одесская область",
+      "generation": "A5",
+      "research_condition": "seller_declared_running",
+      "year": 2010,
+      "body": "wagon",
+      "fuel": "petrol",
+      "model": "Octavia",
+      "field_conflicts": [],
+      "source": "olx",
+      "publication_verified": false,
+      "price": "6000",
+      "price_conflicts": [],
+      "id": "931750359",
+      "category": "whole_passenger_car",
+      "research_field_conflicts": [],
+      "brand": "Skoda",
+      "title": "Skoda Octavia A5 2010",
+      "display_title_is_generated": true,
+      "photos": [],
+      "first_seen_at": 1791145643,
+      "eligibility_review": {
+        "status": "allowed",
+        "reasons": [
+          "customs_cleared_declared",
+          "no_forbidden_offer_evidence"
+        ],
+        "fingerprint": "b2a6c5396d106ee889b9dd07e50c88f6d1d90561b8fba31cccc74f0f7cdf0b23",
+        "customs_status": "cleared_declared",
+        "description_complete": true
+      },
+      "price_review": {
+        "status": "needs_review",
+        "reasons": [
+          "full_price_unconfirmed"
+        ]
+      }
+    },
+    {
+      "checked_at": 1791147617,
+      "transmission": "manual",
+      "source_date_observations": {
+        "origin": "public_html_prerendered_state",
+        "path": "ad.ad",
+        "identity_matches": true,
+        "values": {
+          "createdTime": {
+            "iso": "2026-08-18T01:27:07+03:00",
+            "utc": "2026-08-17T22:27:07+00:00",
+            "epoch": 1787005627
+          },
+          "lastRefreshTime": {
+            "iso": "2026-09-17T01:13:47+03:00",
+            "utc": "2026-09-16T22:13:47+00:00",
+            "epoch": 1789596827
+          },
+          "validToTime": {
+            "iso": "2026-10-17T01:27:09+03:00",
+            "utc": "2026-10-16T22:27:09+00:00",
+            "epoch": 1792189629
+          }
+        },
+        "issues": [],
+        "publication_semantics_verified": false,
+        "other_state_exported": false
+      },
+      "observed_asking_display": {
+        "status": "corroborated_display",
+        "reasons": [],
+        "amount": "7900",
+        "currency": "USD",
+        "basis": "complete_visible_detail_and_matching_public_state",
+        "original_seller_currency_verified": false,
+        "full_price_verified": false,
+        "description_reviewed_in_full": true,
+        "limits": [
+          "original_seller_currency_unverified",
+          "first_publication_unverified",
+          "asking_amount_is_not_a_completed_sale_price"
+        ],
+        "state_regular_price": {
+          "amount": "354672",
+          "currency": "UAH"
+        }
+      },
+      "url": "https://www.olx.ua/d/obyavlenie/prodazh-skoda-octavia-a5-combi-ID114Ysw.html",
+      "currency": "USD",
+      "mileage_km": 190000,
+      "engine_cc": 1800,
+      "region": "Ивано-Франковская область",
+      "generation": "A5",
+      "research_condition": "running_body_repair",
+      "year": 2012,
+      "body": "wagon",
+      "fuel": "petrol",
+      "model": "Octavia",
+      "field_conflicts": [],
+      "source": "olx",
+      "publication_verified": false,
+      "price": "7900",
+      "price_conflicts": [],
+      "id": "932094887",
+      "category": "whole_passenger_car",
+      "research_field_conflicts": [],
+      "brand": "Skoda",
+      "title": "Skoda Octavia A5 2012",
+      "display_title_is_generated": true,
+      "photos": [],
+      "first_seen_at": 1791146494,
+      "eligibility_review": {
+        "status": "allowed",
+        "reasons": [
+          "customs_cleared_declared",
+          "no_forbidden_offer_evidence"
+        ],
+        "fingerprint": "a048ddc6a02f231f430c8ce2d073f43caf858cf6664d0df0caff5184400f9b8b",
+        "customs_status": "cleared_declared",
+        "description_complete": true
+      },
+      "price_review": {
+        "status": "needs_review",
+        "reasons": [
+          "full_price_unconfirmed"
+        ]
+      }
+    },
+    {
+      "checked_at": 1791147629,
+      "transmission": "manual",
+      "source_date_observations": {
+        "origin": "public_html_prerendered_state",
+        "path": "ad.ad",
+        "identity_matches": true,
+        "values": {
+          "createdTime": {
+            "iso": "2026-08-22T16:41:21+03:00",
+            "utc": "2026-08-22T13:41:21+00:00",
+            "epoch": 1787406081
+          },
+          "lastRefreshTime": {
+            "iso": "2026-09-21T17:58:12+03:00",
+            "utc": "2026-09-21T14:58:12+00:00",
+            "epoch": 1790002692
+          },
+          "validToTime": {
+            "iso": "2026-10-21T17:57:11+03:00",
+            "utc": "2026-10-21T14:57:11+00:00",
+            "epoch": 1792594631
+          }
+        },
+        "issues": [],
+        "publication_semantics_verified": false,
+        "other_state_exported": false
+      },
+      "observed_asking_display": {
+        "status": "needs_review",
+        "reasons": [
+          "ordinary_sale_not_corroborated",
+          "visible_sale_terms_missing_or_conflicting"
+        ],
+        "amount": "5900",
+        "currency": "USD",
+        "basis": "complete_visible_detail_and_matching_public_state",
+        "original_seller_currency_verified": false,
+        "full_price_verified": false,
+        "description_reviewed_in_full": true,
+        "limits": [
+          "original_seller_currency_unverified",
+          "first_publication_unverified",
+          "asking_amount_is_not_a_completed_sale_price"
+        ],
+        "state_regular_price": {
+          "amount": "264882",
+          "currency": "UAH"
+        }
+      },
+      "url": "https://www.olx.ua/d/uk/obyavlenie/prodam-skoda-a5-v-otlichnom-sostoyanii-ID116OuY.html",
+      "research_asking_display": {
+        "status": "corroborated_display",
+        "reasons": [],
+        "amount": "5900",
+        "currency": "USD",
+        "basis": "regular_sale_with_optional_exchange_corroborated",
+        "original_seller_currency_verified": false,
+        "full_price_verified": false,
+        "description_reviewed_in_full": true,
+        "limits": [
+          "original_seller_currency_unverified",
+          "first_publication_unverified",
+          "asking_amount_is_not_a_completed_sale_price"
+        ],
+        "state_regular_price": {
+          "amount": "264882",
+          "currency": "UAH"
+        },
+        "previous_reasons": [
+          "ordinary_sale_not_corroborated",
+          "visible_sale_terms_missing_or_conflicting"
+        ]
+      },
+      "currency": "USD",
+      "mileage_km": 210000,
+      "engine_cc": 1800,
+      "region": "Харківська область",
+      "generation": "A5",
+      "research_condition": "seller_declared_running",
+      "year": 2011,
+      "body": "liftback",
+      "fuel": "petrol",
+      "model": "Octavia",
+      "field_conflicts": [],
+      "source": "olx",
+      "publication_verified": false,
+      "price": "5900",
+      "price_conflicts": [],
+      "id": "932533256",
+      "category": "whole_passenger_car",
+      "research_field_conflicts": [],
+      "brand": "Skoda",
+      "title": "Skoda Octavia A5 2011",
+      "display_title_is_generated": true,
+      "photos": [],
+      "first_seen_at": 1791145569,
+      "eligibility_review": {
+        "status": "allowed",
+        "reasons": [
+          "customs_cleared_declared",
+          "no_forbidden_offer_evidence"
+        ],
+        "fingerprint": "25efcc23a2d7b864467dbc764e518c2b8a8ca96ec2a3c42e7eb308baa53c61d2",
+        "customs_status": "cleared_declared",
+        "description_complete": true
+      },
+      "price_review": {
+        "status": "needs_review",
+        "reasons": [
+          "full_price_unconfirmed"
+        ]
+      }
+    },
+    {
+      "checked_at": 1791147640,
+      "transmission": "manual",
+      "source_date_observations": {
+        "origin": "public_html_prerendered_state",
+        "path": "ad.ad",
+        "identity_matches": true,
+        "values": {
+          "createdTime": {
+            "iso": "2026-08-27T10:26:22+03:00",
+            "utc": "2026-08-27T07:26:22+00:00",
+            "epoch": 1787815582
+          },
+          "lastRefreshTime": {
+            "iso": "2026-09-23T11:42:56+03:00",
+            "utc": "2026-09-23T08:42:56+00:00",
+            "epoch": 1790152976
+          },
+          "validToTime": {
+            "iso": "2026-10-26T09:26:46+02:00",
+            "utc": "2026-10-26T07:26:46+00:00",
+            "epoch": 1792999606
+          }
+        },
+        "issues": [],
+        "publication_semantics_verified": false,
+        "other_state_exported": false
+      },
+      "observed_asking_display": {
+        "status": "needs_review",
+        "reasons": [
+          "ordinary_sale_not_corroborated",
+          "price_context_deposit",
+          "visible_sale_terms_missing_or_conflicting"
+        ],
+        "amount": "7900",
+        "currency": "USD",
+        "basis": "complete_visible_detail_and_matching_public_state",
+        "original_seller_currency_verified": false,
+        "full_price_verified": false,
+        "description_reviewed_in_full": true,
+        "limits": [
+          "original_seller_currency_unverified",
+          "first_publication_unverified",
+          "asking_amount_is_not_a_completed_sale_price"
+        ],
+        "state_regular_price": {
+          "amount": "354672",
+          "currency": "UAH"
+        }
+      },
+      "url": "https://www.olx.ua/d/obyavlenie/skoda-octavia-a5-2012r-1-8-benzin-obmn-pershiy-vnesok-vd-20-ID118HBP.html",
+      "currency": "USD",
+      "mileage_km": 157000,
+      "engine_cc": 1800,
+      "region": "Днепропетровская область",
+      "generation": "A5",
+      "research_condition": "seller_declared_running",
+      "year": 2012,
+      "body": "liftback",
+      "fuel": "petrol",
+      "model": "Octavia",
+      "field_conflicts": [],
+      "source": "olx",
+      "publication_verified": false,
+      "price": "7900",
+      "price_conflicts": [],
+      "id": "932983429",
+      "category": "whole_passenger_car",
+      "research_field_conflicts": [],
+      "brand": "Skoda",
+      "title": "Skoda Octavia A5 2012",
+      "display_title_is_generated": true,
+      "photos": [],
+      "first_seen_at": 1791146494,
+      "eligibility_review": {
+        "status": "allowed",
+        "reasons": [
+          "customs_cleared_declared",
+          "no_forbidden_offer_evidence"
+        ],
+        "fingerprint": "30cf423addfdd9cad34bca9ca16c263a9e5c8899961f20ceba282ae4e3d8491a",
+        "customs_status": "cleared_declared",
+        "description_complete": true
+      },
+      "price_review": {
+        "status": "needs_review",
+        "reasons": [
+          "full_price_unconfirmed",
+          "price_context_deposit"
+        ]
+      }
+    },
+    {
+      "checked_at": 1791147652,
+      "transmission": "manual",
+      "source_date_observations": {
+        "origin": "public_html_prerendered_state",
+        "path": "ad.ad",
+        "identity_matches": true,
+        "values": {
+          "createdTime": {
+            "iso": "2026-09-04T19:13:29+03:00",
+            "utc": "2026-09-04T16:13:29+00:00",
+            "epoch": 1788538409
+          },
+          "lastRefreshTime": {
+            "iso": "2026-10-04T18:59:39+03:00",
+            "utc": "2026-10-04T15:59:39+00:00",
+            "epoch": 1791129579
+          },
+          "validToTime": {
+            "iso": "2026-11-03T18:13:29+02:00",
+            "utc": "2026-11-03T16:13:29+00:00",
+            "epoch": 1793722409
+          }
+        },
+        "issues": [],
+        "publication_semantics_verified": false,
+        "other_state_exported": false
+      },
+      "observed_asking_display": {
+        "status": "corroborated_display",
+        "reasons": [],
+        "amount": "7800",
+        "currency": "USD",
+        "basis": "complete_visible_detail_and_matching_public_state",
+        "original_seller_currency_verified": false,
+        "full_price_verified": false,
+        "description_reviewed_in_full": true,
+        "limits": [
+          "original_seller_currency_unverified",
+          "first_publication_unverified",
+          "asking_amount_is_not_a_completed_sale_price"
+        ],
+        "state_regular_price": {
+          "amount": "350183",
+          "currency": "UAH"
+        }
+      },
+      "url": "https://www.olx.ua/d/obyavlenie/skoda-oktavia-a5-1-8-ID11cc5K.html",
+      "currency": "USD",
+      "mileage_km": 180000,
+      "engine_cc": 1800,
+      "region": "Днепропетровская область",
+      "generation": "A5",
+      "research_condition": "seller_declared_running",
+      "year": 2011,
+      "body": "hatchback",
+      "fuel": "petrol",
+      "model": "Octavia",
+      "field_conflicts": [],
+      "source": "olx",
+      "publication_verified": false,
+      "price": "7800",
+      "price_conflicts": [],
+      "id": "933815588",
+      "category": "whole_passenger_car",
+      "research_field_conflicts": [],
+      "brand": "Skoda",
+      "title": "Skoda Octavia A5 2011",
+      "display_title_is_generated": true,
+      "photos": [],
+      "first_seen_at": 1791145643,
+      "eligibility_review": {
+        "status": "allowed",
+        "reasons": [
+          "customs_cleared_declared",
+          "no_forbidden_offer_evidence"
+        ],
+        "fingerprint": "f1756be2f1af97ded66dce52078fee3fb32dbcd1de5f19ca3d881cc6c68abb2c",
+        "customs_status": "cleared_declared",
+        "description_complete": true
+      },
+      "price_review": {
+        "status": "needs_review",
+        "reasons": [
+          "full_price_unconfirmed"
+        ]
+      }
+    },
+    {
+      "checked_at": 1791147663,
+      "transmission": "manual",
+      "source_date_observations": {
+        "origin": "public_html_prerendered_state",
+        "path": "ad.ad",
+        "identity_matches": true,
+        "values": {
+          "createdTime": {
+            "iso": "2026-09-05T12:06:50+03:00",
+            "utc": "2026-09-05T09:06:50+00:00",
+            "epoch": 1788599210
+          },
+          "lastRefreshTime": {
+            "iso": "2026-09-05T12:10:52+03:00",
+            "utc": "2026-09-05T09:10:52+00:00",
+            "epoch": 1788599452
+          },
+          "validToTime": {
+            "iso": "2026-10-05T12:07:44+03:00",
+            "utc": "2026-10-05T09:07:44+00:00",
+            "epoch": 1791191264
+          }
+        },
+        "issues": [],
+        "publication_semantics_verified": false,
+        "other_state_exported": false
+      },
+      "observed_asking_display": {
+        "status": "needs_review",
+        "reasons": [
+          "ordinary_sale_not_corroborated",
+          "visible_sale_terms_missing_or_conflicting"
+        ],
+        "amount": "7100",
+        "currency": "USD",
+        "basis": "complete_visible_detail_and_matching_public_state",
+        "original_seller_currency_verified": false,
+        "full_price_verified": false,
+        "description_reviewed_in_full": true,
+        "limits": [
+          "original_seller_currency_unverified",
+          "first_publication_unverified",
+          "asking_amount_is_not_a_completed_sale_price"
+        ],
+        "state_regular_price": {
+          "amount": "318756",
+          "currency": "UAH"
+        }
+      },
+      "url": "https://www.olx.ua/d/obyavlenie/skoda-octavia-a5-ID11cnjf.html",
+      "currency": "USD",
+      "mileage_km": 200000,
+      "engine_cc": 1800,
+      "region": "Днепропетровская область",
+      "generation": "A5",
+      "research_condition": "seller_declared_running",
+      "year": 2012,
+      "body": "liftback",
+      "fuel": "petrol",
+      "model": "Octavia",
+      "field_conflicts": [],
+      "source": "olx",
+      "publication_verified": false,
+      "price": "7100",
+      "price_conflicts": [],
+      "id": "933858709",
+      "category": "whole_passenger_car",
+      "research_field_conflicts": [],
+      "brand": "Skoda",
+      "title": "Skoda Octavia A5 2012",
+      "display_title_is_generated": true,
+      "photos": [],
+      "first_seen_at": 1791146482,
+      "eligibility_review": {
+        "status": "allowed",
+        "reasons": [
+          "customs_cleared_declared",
+          "no_forbidden_offer_evidence"
+        ],
+        "fingerprint": "ffd3048478ebc76b5e50fe3f706b538573c1055620cebce674e357a8d74357c1",
+        "customs_status": "cleared_declared",
+        "description_complete": true
+      },
+      "price_review": {
+        "status": "needs_review",
+        "reasons": [
+          "full_price_unconfirmed"
+        ]
+      }
+    },
+    {
+      "checked_at": 1791147676,
+      "transmission": "manual",
+      "source_date_observations": {
+        "origin": "public_html_prerendered_state",
+        "path": "ad.ad",
+        "identity_matches": true,
+        "values": {
+          "createdTime": {
+            "iso": "2026-09-11T07:48:04+03:00",
+            "utc": "2026-09-11T04:48:04+00:00",
+            "epoch": 1789102084
+          },
+          "lastRefreshTime": {
+            "iso": "2026-09-11T07:49:05+03:00",
+            "utc": "2026-09-11T04:49:05+00:00",
+            "epoch": 1789102145
+          },
+          "validToTime": {
+            "iso": "2026-10-11T07:48:05+03:00",
+            "utc": "2026-10-11T04:48:05+00:00",
+            "epoch": 1791694085
+          }
+        },
+        "issues": [],
+        "publication_semantics_verified": false,
+        "other_state_exported": false
+      },
+      "observed_asking_display": {
+        "status": "corroborated_display",
+        "reasons": [],
+        "amount": "7700",
+        "currency": "USD",
+        "basis": "complete_visible_detail_and_matching_public_state",
+        "original_seller_currency_verified": false,
+        "full_price_verified": false,
+        "description_reviewed_in_full": true,
+        "limits": [
+          "original_seller_currency_unverified",
+          "first_publication_unverified",
+          "asking_amount_is_not_a_completed_sale_price"
+        ],
+        "state_regular_price": {
+          "amount": "345693",
+          "currency": "UAH"
+        }
+      },
+      "url": "https://www.olx.ua/d/obyavlenie/skoda-octavia-a5-4x4-ID11eRsF.html",
+      "currency": "USD",
+      "mileage_km": 153000,
+      "engine_cc": 1800,
+      "region": "Киевская область",
+      "generation": "A5",
+      "research_condition": "seller_declared_running",
+      "year": 2012,
+      "body": "wagon",
+      "fuel": "petrol",
+      "model": "Octavia",
+      "field_conflicts": [],
+      "source": "olx",
+      "publication_verified": false,
+      "price": "7700",
+      "price_conflicts": [],
+      "id": "934451269",
+      "category": "whole_passenger_car",
+      "research_field_conflicts": [],
+      "brand": "Skoda",
+      "title": "Skoda Octavia A5 2012",
+      "display_title_is_generated": true,
+      "photos": [],
+      "first_seen_at": 1791146494,
+      "eligibility_review": {
+        "status": "allowed",
+        "reasons": [
+          "customs_cleared_declared",
+          "no_forbidden_offer_evidence"
+        ],
+        "fingerprint": "5283779fe8699fd6f70355f7a5fbd73624a277673218c50082348e5bbe83cbf4",
+        "customs_status": "cleared_declared",
+        "description_complete": true
+      },
+      "price_review": {
+        "status": "needs_review",
+        "reasons": [
+          "full_price_unconfirmed"
+        ]
+      }
+    },
+    {
+      "checked_at": 1791147686,
+      "transmission": "manual",
+      "source_date_observations": {
+        "origin": "public_html_prerendered_state",
+        "path": "ad.ad",
+        "identity_matches": true,
+        "values": {
+          "createdTime": {
+            "iso": "2026-09-18T20:48:04+03:00",
+            "utc": "2026-09-18T17:48:04+00:00",
+            "epoch": 1789753684
+          },
+          "lastRefreshTime": {
+            "iso": "2026-09-18T20:50:24+03:00",
+            "utc": "2026-09-18T17:50:24+00:00",
+            "epoch": 1789753824
+          },
+          "validToTime": {
+            "iso": "2026-10-18T20:48:05+03:00",
+            "utc": "2026-10-18T17:48:05+00:00",
+            "epoch": 1792345685
+          }
+        },
+        "issues": [],
+        "publication_semantics_verified": false,
+        "other_state_exported": false
+      },
+      "observed_asking_display": {
+        "status": "needs_review",
+        "reasons": [
+          "ordinary_sale_not_corroborated",
+          "visible_sale_terms_missing_or_conflicting"
+        ],
+        "amount": "8600",
+        "currency": "USD",
+        "basis": "complete_visible_detail_and_matching_public_state",
+        "original_seller_currency_verified": false,
+        "full_price_verified": false,
+        "description_reviewed_in_full": true,
+        "limits": [
+          "original_seller_currency_unverified",
+          "first_publication_unverified",
+          "asking_amount_is_not_a_completed_sale_price"
+        ],
+        "state_regular_price": {
+          "amount": "386099",
+          "currency": "UAH"
+        }
+      },
+      "url": "https://www.olx.ua/d/obyavlenie/octavia-a5-fl-1-8tsi-chip-ID11ifk6.html",
+      "currency": "USD",
+      "mileage_km": 172000,
+      "engine_cc": 1800,
+      "region": "Киевская область",
+      "generation": "A5",
+      "research_condition": "seller_declared_running",
+      "year": 2011,
+      "body": "liftback",
+      "fuel": "petrol",
+      "model": "Octavia",
+      "field_conflicts": [],
+      "source": "olx",
+      "publication_verified": false,
+      "price": "8600",
+      "price_conflicts": [],
+      "id": "935257978",
+      "category": "whole_passenger_car",
+      "research_field_conflicts": [],
+      "brand": "Skoda",
+      "title": "Skoda Octavia A5 2011",
+      "display_title_is_generated": true,
+      "photos": [],
+      "first_seen_at": 1791145792,
+      "eligibility_review": {
+        "status": "allowed",
+        "reasons": [
+          "customs_cleared_declared",
+          "no_forbidden_offer_evidence"
+        ],
+        "fingerprint": "2b7d9432fb78550f59920bc701f36c8bc860a1a9e8b912ed651faafd099bff4b",
+        "customs_status": "cleared_declared",
+        "description_complete": true
+      },
+      "price_review": {
+        "status": "needs_review",
+        "reasons": [
+          "full_price_unconfirmed"
+        ]
+      }
+    },
+    {
+      "checked_at": 1791147697,
+      "transmission": "manual",
+      "source_date_observations": {
+        "origin": "public_html_prerendered_state",
+        "path": "ad.ad",
+        "identity_matches": true,
+        "values": {
+          "createdTime": {
+            "iso": "2026-09-20T14:20:54+03:00",
+            "utc": "2026-09-20T11:20:54+00:00",
+            "epoch": 1789903254
+          },
+          "lastRefreshTime": {
+            "iso": "2026-09-20T14:24:17+03:00",
+            "utc": "2026-09-20T11:24:17+00:00",
+            "epoch": 1789903457
+          },
+          "validToTime": {
+            "iso": "2026-10-20T14:20:54+03:00",
+            "utc": "2026-10-20T11:20:54+00:00",
+            "epoch": 1792495254
+          }
+        },
+        "issues": [],
+        "publication_semantics_verified": false,
+        "other_state_exported": false
+      },
+      "observed_asking_display": {
+        "status": "corroborated_display",
+        "reasons": [],
+        "amount": "7790",
+        "currency": "USD",
+        "basis": "complete_visible_detail_and_matching_public_state",
+        "original_seller_currency_verified": false,
+        "full_price_verified": false,
+        "description_reviewed_in_full": true,
+        "limits": [
+          "original_seller_currency_unverified",
+          "first_publication_unverified",
+          "asking_amount_is_not_a_completed_sale_price"
+        ],
+        "state_regular_price": {
+          "amount": "349734",
+          "currency": "UAH"
+        }
+      },
+      "url": "https://www.olx.ua/d/obyavlenie/skoda-octavia-2012-1-8tsi-mt-ID11iQiv.html",
+      "currency": "USD",
+      "mileage_km": 152000,
+      "engine_cc": 1800,
+      "region": "Харьковская область",
+      "generation": null,
+      "year": 2012,
+      "body": "liftback",
+      "fuel": "petrol",
+      "model": "Octavia",
+      "field_conflicts": [],
+      "source": "olx",
+      "publication_verified": false,
+      "price": "7790",
+      "price_conflicts": [],
+      "id": "935400108",
+      "category": "whole_passenger_car",
+      "research_field_conflicts": [],
+      "brand": "Skoda",
+      "title": "Skoda Octavia 2012",
+      "display_title_is_generated": true,
+      "photos": [],
+      "first_seen_at": 1791145844,
+      "eligibility_review": {
+        "status": "allowed",
+        "reasons": [
+          "customs_cleared_declared",
+          "no_forbidden_offer_evidence"
+        ],
+        "fingerprint": "983d80aa904e17a7ab13334347c7b6d28fa9288d62537937865a7471751463f5",
+        "customs_status": "cleared_declared",
+        "description_complete": true
+      },
+      "price_review": {
+        "status": "needs_review",
+        "reasons": [
+          "full_price_unconfirmed"
+        ]
+      }
+    },
+    {
+      "checked_at": 1791147709,
+      "transmission": "manual",
+      "source_date_observations": {
+        "origin": "public_html_prerendered_state",
+        "path": "ad.ad",
+        "identity_matches": true,
+        "values": {
+          "createdTime": {
+            "iso": "2026-09-22T13:06:26+03:00",
+            "utc": "2026-09-22T10:06:26+00:00",
+            "epoch": 1790071586
+          },
+          "lastRefreshTime": {
+            "iso": "2026-09-22T13:07:27+03:00",
+            "utc": "2026-09-22T10:07:27+00:00",
+            "epoch": 1790071647
+          },
+          "validToTime": {
+            "iso": "2026-10-22T13:06:27+03:00",
+            "utc": "2026-10-22T10:06:27+00:00",
+            "epoch": 1792663587
+          }
+        },
+        "issues": [],
+        "publication_semantics_verified": false,
+        "other_state_exported": false
+      },
+      "observed_asking_display": {
+        "status": "corroborated_display",
+        "reasons": [],
+        "amount": "7800",
+        "currency": "USD",
+        "basis": "complete_visible_detail_and_matching_public_state",
+        "original_seller_currency_verified": false,
+        "full_price_verified": false,
+        "description_reviewed_in_full": true,
+        "limits": [
+          "original_seller_currency_unverified",
+          "first_publication_unverified",
+          "asking_amount_is_not_a_completed_sale_price"
+        ],
+        "state_regular_price": {
+          "amount": "350183",
+          "currency": "UAH"
+        }
+      },
+      "url": "https://www.olx.ua/d/obyavlenie/koda-octavia-a5-1-8-tsi-2011goda-ID11jGT0.html",
+      "currency": "USD",
+      "mileage_km": 195000,
+      "engine_cc": 1800,
+      "region": "Одесская область",
+      "generation": "A5",
+      "research_condition": "seller_declared_running",
+      "year": 2011,
+      "body": "liftback",
+      "fuel": "petrol",
+      "model": "Octavia",
+      "field_conflicts": [],
+      "source": "olx",
+      "publication_verified": false,
+      "price": "7800",
+      "price_conflicts": [],
+      "id": "935602258",
+      "category": "whole_passenger_car",
+      "research_field_conflicts": [],
+      "brand": "Skoda",
+      "title": "Skoda Octavia A5 2011",
+      "display_title_is_generated": true,
+      "photos": [],
+      "first_seen_at": 1791145631,
+      "eligibility_review": {
+        "status": "allowed",
+        "reasons": [
+          "customs_cleared_declared",
+          "no_forbidden_offer_evidence"
+        ],
+        "fingerprint": "b615c9f8af43a759034bc7f9a9dc7898a799407e61cc6d93c62288e15b1d7e31",
+        "customs_status": "cleared_declared",
+        "description_complete": true
+      },
+      "price_review": {
+        "status": "needs_review",
+        "reasons": [
+          "full_price_unconfirmed"
+        ]
+      }
+    },
+    {
+      "checked_at": 1791147722,
+      "transmission": "manual",
+      "source_date_observations": {
+        "origin": "public_html_prerendered_state",
+        "path": "ad.ad",
+        "identity_matches": true,
+        "values": {
+          "createdTime": {
+            "iso": "2026-09-24T16:44:10+03:00",
+            "utc": "2026-09-24T13:44:10+00:00",
+            "epoch": 1790257450
+          },
+          "lastRefreshTime": {
+            "iso": "2026-09-24T16:47:37+03:00",
+            "utc": "2026-09-24T13:47:37+00:00",
+            "epoch": 1790257657
+          },
+          "validToTime": {
+            "iso": "2026-10-24T16:45:28+03:00",
+            "utc": "2026-10-24T13:45:28+00:00",
+            "epoch": 1792849528
+          }
+        },
+        "issues": [],
+        "publication_semantics_verified": false,
+        "other_state_exported": false
+      },
+      "observed_asking_display": {
+        "status": "corroborated_display",
+        "reasons": [],
+        "amount": "7700",
+        "currency": "USD",
+        "basis": "complete_visible_detail_and_matching_public_state",
+        "original_seller_currency_verified": false,
+        "full_price_verified": false,
+        "description_reviewed_in_full": true,
+        "limits": [
+          "original_seller_currency_unverified",
+          "first_publication_unverified",
+          "asking_amount_is_not_a_completed_sale_price"
+        ],
+        "state_regular_price": {
+          "amount": "345693",
+          "currency": "UAH"
+        }
+      },
+      "url": "https://www.olx.ua/d/obyavlenie/skoda-octavia-a5-1-8tsi-ID11kJ8q.html",
+      "currency": "USD",
+      "mileage_km": 200000,
+      "engine_cc": 1800,
+      "region": "Днепропетровская область",
+      "generation": "A5",
+      "year": 2011,
+      "body": "wagon",
+      "fuel": "petrol",
+      "model": "Octavia",
+      "field_conflicts": [],
+      "source": "olx",
+      "publication_verified": false,
+      "price": "7700",
+      "price_conflicts": [],
+      "id": "935849230",
+      "category": "whole_passenger_car",
+      "research_field_conflicts": [],
+      "brand": "Skoda",
+      "title": "Skoda Octavia A5 2011",
+      "display_title_is_generated": true,
+      "photos": [],
+      "first_seen_at": 1791145818,
+      "eligibility_review": {
+        "status": "allowed",
+        "reasons": [
+          "customs_cleared_declared",
+          "no_forbidden_offer_evidence"
+        ],
+        "fingerprint": "bf7e9351ea8cbc80a97459b11aaa7e9627e2c9a563094ec4065b94c223139052",
+        "customs_status": "cleared_declared",
+        "description_complete": true
+      },
+      "price_review": {
+        "status": "needs_review",
+        "reasons": [
+          "full_price_unconfirmed"
+        ]
+      }
+    },
+    {
+      "checked_at": 1791147733,
+      "transmission": "manual",
+      "source_date_observations": {
+        "origin": "public_html_prerendered_state",
+        "path": "ad.ad",
+        "identity_matches": true,
+        "values": {
+          "createdTime": {
+            "iso": "2026-09-27T19:10:14+03:00",
+            "utc": "2026-09-27T16:10:14+00:00",
+            "epoch": 1790525414
+          },
+          "lastRefreshTime": {
+            "iso": "2026-09-27T19:11:20+03:00",
+            "utc": "2026-09-27T16:11:20+00:00",
+            "epoch": 1790525480
+          },
+          "validToTime": {
+            "iso": "2026-10-27T18:10:14+02:00",
+            "utc": "2026-10-27T16:10:14+00:00",
+            "epoch": 1793117414
+          }
+        },
+        "issues": [],
+        "publication_semantics_verified": false,
+        "other_state_exported": false
+      },
+      "observed_asking_display": {
+        "status": "corroborated_display",
+        "reasons": [],
+        "amount": "7900",
+        "currency": "USD",
+        "basis": "complete_visible_detail_and_matching_public_state",
+        "original_seller_currency_verified": false,
+        "full_price_verified": false,
+        "description_reviewed_in_full": true,
+        "limits": [
+          "original_seller_currency_unverified",
+          "first_publication_unverified",
+          "asking_amount_is_not_a_completed_sale_price"
+        ],
+        "state_regular_price": {
+          "amount": "354672",
+          "currency": "UAH"
+        }
+      },
+      "url": "https://www.olx.ua/d/obyavlenie/skoda-octavia-a5-ID11m13I.html",
+      "currency": "USD",
+      "mileage_km": 194000,
+      "engine_cc": 1800,
+      "region": "Киевская область",
+      "generation": "A5",
+      "year": 2010,
+      "body": "liftback",
+      "fuel": "petrol",
+      "model": "Octavia",
+      "field_conflicts": [],
+      "source": "olx",
+      "publication_verified": false,
+      "price": "7900",
+      "price_conflicts": [],
+      "id": "936156458",
+      "category": "whole_passenger_car",
+      "research_field_conflicts": [],
+      "brand": "Skoda",
+      "title": "Skoda Octavia A5 2010",
+      "display_title_is_generated": true,
+      "photos": [],
+      "first_seen_at": 1791145831,
+      "eligibility_review": {
+        "status": "allowed",
+        "reasons": [
+          "customs_cleared_declared",
+          "no_forbidden_offer_evidence"
+        ],
+        "fingerprint": "e7f31b4914a9d8b87fddf2274365708aba760550dd492d3b73d174982c659385",
+        "customs_status": "cleared_declared",
+        "description_complete": true
+      },
+      "price_review": {
+        "status": "needs_review",
+        "reasons": [
+          "full_price_unconfirmed"
+        ]
+      }
+    },
+    {
+      "checked_at": 1791147744,
+      "transmission": "manual",
+      "source_date_observations": {
+        "origin": "public_html_prerendered_state",
+        "path": "ad.ad",
+        "identity_matches": true,
+        "values": {
+          "createdTime": {
+            "iso": "2026-09-29T10:31:01+03:00",
+            "utc": "2026-09-29T07:31:01+00:00",
+            "epoch": 1790667061
+          },
+          "lastRefreshTime": {
+            "iso": "2026-09-29T10:32:46+03:00",
+            "utc": "2026-09-29T07:32:46+00:00",
+            "epoch": 1790667166
+          },
+          "validToTime": {
+            "iso": "2026-10-29T09:32:46+02:00",
+            "utc": "2026-10-29T07:32:46+00:00",
+            "epoch": 1793259166
+          }
+        },
+        "issues": [],
+        "publication_semantics_verified": false,
+        "other_state_exported": false
+      },
+      "observed_asking_display": {
+        "status": "needs_review",
+        "reasons": [
+          "ordinary_sale_not_corroborated",
+          "visible_sale_terms_missing_or_conflicting"
+        ],
+        "amount": "7499",
+        "currency": "USD",
+        "basis": "complete_visible_detail_and_matching_public_state",
+        "original_seller_currency_verified": false,
+        "full_price_verified": false,
+        "description_reviewed_in_full": true,
+        "limits": [
+          "original_seller_currency_unverified",
+          "first_publication_unverified",
+          "asking_amount_is_not_a_completed_sale_price"
+        ],
+        "state_regular_price": {
+          "amount": "336669",
+          "currency": "UAH"
+        }
+      },
+      "url": "https://www.olx.ua/d/obyavlenie/skoda-octavia-a5-ID11mB4E.html",
+      "currency": "USD",
+      "mileage_km": 204000,
+      "engine_cc": 1800,
+      "region": "Днепропетровская область",
+      "generation": "A5",
+      "year": 2012,
+      "body": "liftback",
+      "fuel": "petrol",
+      "model": "Octavia",
+      "field_conflicts": [],
+      "source": "olx",
+      "publication_verified": false,
+      "price": "7499",
+      "price_conflicts": [],
+      "id": "936294900",
+      "category": "whole_passenger_car",
+      "research_field_conflicts": [],
+      "brand": "Skoda",
+      "title": "Skoda Octavia A5 2012",
+      "display_title_is_generated": true,
+      "photos": [],
+      "first_seen_at": 1791145657,
+      "eligibility_review": {
+        "status": "allowed",
+        "reasons": [
+          "customs_cleared_declared",
+          "no_forbidden_offer_evidence"
+        ],
+        "fingerprint": "b530eac1d7c7233263ce2da8d2ff30978bf4273c76a6a8be5f80c111654ce367",
+        "customs_status": "cleared_declared",
+        "description_complete": true
+      },
+      "price_review": {
+        "status": "needs_review",
+        "reasons": [
+          "full_price_unconfirmed"
+        ]
+      }
+    },
+    {
+      "checked_at": 1791147757,
+      "transmission": "manual",
+      "source_date_observations": {
+        "origin": "public_html_prerendered_state",
+        "path": "ad.ad",
+        "identity_matches": true,
+        "values": {
+          "createdTime": {
+            "iso": "2026-10-02T18:59:22+03:00",
+            "utc": "2026-10-02T15:59:22+00:00",
+            "epoch": 1790956762
+          },
+          "lastRefreshTime": {
+            "iso": "2026-10-02T19:08:23+03:00",
+            "utc": "2026-10-02T16:08:23+00:00",
+            "epoch": 1790957303
+          },
+          "validToTime": {
+            "iso": "2026-11-01T17:59:23+02:00",
+            "utc": "2026-11-01T15:59:23+00:00",
+            "epoch": 1793548763
+          }
+        },
+        "issues": [],
+        "publication_semantics_verified": false,
+        "other_state_exported": false
+      },
+      "observed_asking_display": {
+        "status": "needs_review",
+        "reasons": [
+          "ordinary_sale_not_corroborated",
+          "visible_sale_terms_missing_or_conflicting"
+        ],
+        "amount": "8000",
+        "currency": "USD",
+        "basis": "complete_visible_detail_and_matching_public_state",
+        "original_seller_currency_verified": false,
+        "full_price_verified": false,
+        "description_reviewed_in_full": true,
+        "limits": [
+          "original_seller_currency_unverified",
+          "first_publication_unverified",
+          "asking_amount_is_not_a_completed_sale_price"
+        ],
+        "state_regular_price": {
+          "amount": "359162",
+          "currency": "UAH"
+        }
+      },
+      "url": "https://www.olx.ua/d/obyavlenie/skoda-octavia-a5-fl-ID11o4sb.html",
+      "research_asking_display": {
+        "status": "corroborated_display",
+        "reasons": [],
+        "amount": "8000",
+        "currency": "USD",
+        "basis": "regular_sale_with_optional_exchange_corroborated",
+        "original_seller_currency_verified": false,
+        "full_price_verified": false,
+        "description_reviewed_in_full": true,
+        "limits": [
+          "original_seller_currency_unverified",
+          "first_publication_unverified",
+          "asking_amount_is_not_a_completed_sale_price"
+        ],
+        "state_regular_price": {
+          "amount": "359162",
+          "currency": "UAH"
+        },
+        "previous_reasons": [
+          "ordinary_sale_not_corroborated",
+          "visible_sale_terms_missing_or_conflicting"
+        ]
+      },
+      "currency": "USD",
+      "mileage_km": 183000,
+      "engine_cc": 1800,
+      "region": "Волынская область",
+      "generation": "A5",
+      "research_condition": "seller_declared_running",
+      "year": 2012,
+      "body": "liftback",
+      "fuel": "petrol",
+      "model": "Octavia",
+      "field_conflicts": [],
+      "source": "olx",
+      "publication_verified": false,
+      "price": "8000",
+      "price_conflicts": [],
+      "id": "936646163",
+      "category": "whole_passenger_car",
+      "research_field_conflicts": [],
+      "brand": "Skoda",
+      "title": "Skoda Octavia A5 2012",
+      "display_title_is_generated": true,
+      "photos": [],
+      "first_seen_at": 1791145818,
+      "eligibility_review": {
+        "status": "allowed",
+        "reasons": [
+          "customs_cleared_declared",
+          "no_forbidden_offer_evidence"
+        ],
+        "fingerprint": "906cff1dc7f0f427b62667ab920b3a4dc8f1ddd5f8602ed0921655914588bfb2",
+        "customs_status": "cleared_declared",
+        "description_complete": true
+      },
+      "price_review": {
+        "status": "needs_review",
+        "reasons": [
+          "full_price_unconfirmed"
+        ]
+      }
+    },
+    {
+      "checked_at": 1791147771,
+      "transmission": "manual",
+      "source_date_observations": {
+        "origin": "public_html_prerendered_state",
+        "path": "ad.ad",
+        "identity_matches": true,
+        "values": {
+          "createdTime": {
+            "iso": "2026-10-03T12:13:34+03:00",
+            "utc": "2026-10-03T09:13:34+00:00",
+            "epoch": 1791018814
+          },
+          "lastRefreshTime": {
+            "iso": "2026-10-03T12:19:53+03:00",
+            "utc": "2026-10-03T09:19:53+00:00",
+            "epoch": 1791019193
+          },
+          "validToTime": {
+            "iso": "2026-11-02T11:17:13+02:00",
+            "utc": "2026-11-02T09:17:13+00:00",
+            "epoch": 1793611033
+          }
+        },
+        "issues": [],
+        "publication_semantics_verified": false,
+        "other_state_exported": false
+      },
+      "observed_asking_display": {
+        "status": "corroborated_display",
+        "reasons": [],
+        "amount": "8700",
+        "currency": "USD",
+        "basis": "complete_visible_detail_and_matching_public_state",
+        "original_seller_currency_verified": false,
+        "full_price_verified": false,
+        "description_reviewed_in_full": true,
+        "limits": [
+          "original_seller_currency_unverified",
+          "first_publication_unverified",
+          "asking_amount_is_not_a_completed_sale_price"
+        ],
+        "state_regular_price": {
+          "amount": "390589",
+          "currency": "UAH"
+        }
+      },
+      "url": "https://www.olx.ua/d/obyavlenie/skoda-octavia-a5-ID11ofUQ.html",
+      "currency": "USD",
+      "mileage_km": 170000,
+      "engine_cc": 1800,
+      "region": "Николаевская область",
+      "generation": "A5",
+      "research_condition": "seller_declared_running",
+      "year": 2011,
+      "body": "sedan",
+      "fuel": "petrol",
+      "model": "Octavia",
+      "field_conflicts": [],
+      "source": "olx",
+      "publication_verified": false,
+      "price": "8700",
+      "price_conflicts": [],
+      "id": "936690224",
+      "category": "whole_passenger_car",
+      "research_field_conflicts": [],
+      "brand": "Skoda",
+      "title": "Skoda Octavia A5 2011",
+      "display_title_is_generated": true,
+      "photos": [],
+      "first_seen_at": 1791146482,
+      "eligibility_review": {
+        "status": "allowed",
+        "reasons": [
+          "customs_cleared_declared",
+          "no_forbidden_offer_evidence"
+        ],
+        "fingerprint": "7792883c85a9bc9d93399cc615999969c5571d1785fbc6ffecbca2ea57e98699",
+        "customs_status": "cleared_declared",
+        "description_complete": true
+      },
+      "price_review": {
+        "status": "needs_review",
+        "reasons": [
+          "full_price_unconfirmed"
+        ]
+      }
+    },
+    {
+      "checked_at": 1791147782,
+      "transmission": "manual",
+      "source_date_observations": {
+        "origin": "public_html_prerendered_state",
+        "path": "ad.ad",
+        "identity_matches": true,
+        "values": {
+          "createdTime": {
+            "iso": "2026-10-04T00:15:20+03:00",
+            "utc": "2026-10-03T21:15:20+00:00",
+            "epoch": 1791062120
+          },
+          "lastRefreshTime": {
+            "iso": "2026-10-04T00:16:21+03:00",
+            "utc": "2026-10-03T21:16:21+00:00",
+            "epoch": 1791062181
+          },
+          "validToTime": {
+            "iso": "2026-11-02T23:15:21+02:00",
+            "utc": "2026-11-02T21:15:21+00:00",
+            "epoch": 1793654121
+          }
+        },
+        "issues": [],
+        "publication_semantics_verified": false,
+        "other_state_exported": false
+      },
+      "observed_asking_display": {
+        "status": "corroborated_display",
+        "reasons": [],
+        "amount": "7999",
+        "currency": "USD",
+        "basis": "complete_visible_detail_and_matching_public_state",
+        "original_seller_currency_verified": false,
+        "full_price_verified": false,
+        "description_reviewed_in_full": true,
+        "limits": [
+          "original_seller_currency_unverified",
+          "first_publication_unverified",
+          "asking_amount_is_not_a_completed_sale_price"
+        ],
+        "state_regular_price": {
+          "amount": "359117",
+          "currency": "UAH"
+        }
+      },
+      "url": "https://www.olx.ua/d/obyavlenie/skoda-octavia-a5-1-8-turbo-ID11oxR5.html",
+      "currency": "USD",
+      "mileage_km": 179000,
+      "engine_cc": 1800,
+      "region": "Одесская область",
+      "generation": "A5",
+      "year": 2012,
+      "body": "wagon",
+      "fuel": "petrol",
+      "model": "Octavia",
+      "field_conflicts": [],
+      "source": "olx",
+      "publication_verified": false,
+      "price": "7999",
+      "price_conflicts": [],
+      "id": "936759183",
+      "category": "whole_passenger_car",
+      "research_field_conflicts": [],
+      "brand": "Skoda",
+      "title": "Skoda Octavia A5 2012",
+      "display_title_is_generated": true,
+      "photos": [],
+      "first_seen_at": 1791145569,
+      "eligibility_review": {
+        "status": "allowed",
+        "reasons": [
+          "customs_cleared_declared",
+          "no_forbidden_offer_evidence"
+        ],
+        "fingerprint": "c74f3503adc0afea1857a0d58303846a5af4666f3a900f6d85d160c1d11ff985",
+        "customs_status": "cleared_declared",
+        "description_complete": true
+      },
+      "price_review": {
+        "status": "needs_review",
+        "reasons": [
+          "full_price_unconfirmed"
+        ]
+      }
+    },
+    {
+      "checked_at": 1791147793,
+      "transmission": "manual",
+      "source_date_observations": {
+        "origin": "public_html_prerendered_state",
+        "path": "ad.ad",
+        "identity_matches": true,
+        "values": {
+          "createdTime": {
+            "iso": "2026-10-04T12:20:23+03:00",
+            "utc": "2026-10-04T09:20:23+00:00",
+            "epoch": 1791105623
+          },
+          "lastRefreshTime": {
+            "iso": "2026-10-04T12:21:24+03:00",
+            "utc": "2026-10-04T09:21:24+00:00",
+            "epoch": 1791105684
+          },
+          "validToTime": {
+            "iso": "2026-11-03T11:20:24+02:00",
+            "utc": "2026-11-03T09:20:24+00:00",
+            "epoch": 1793697624
+          }
+        },
+        "issues": [],
+        "publication_semantics_verified": false,
+        "other_state_exported": false
+      },
+      "observed_asking_display": {
+        "status": "corroborated_display",
+        "reasons": [],
+        "amount": "7900",
+        "currency": "USD",
+        "basis": "complete_visible_detail_and_matching_public_state",
+        "original_seller_currency_verified": false,
+        "full_price_verified": false,
+        "description_reviewed_in_full": true,
+        "limits": [
+          "original_seller_currency_unverified",
+          "first_publication_unverified",
+          "asking_amount_is_not_a_completed_sale_price"
+        ],
+        "state_regular_price": {
+          "amount": "354672",
+          "currency": "UAH"
+        }
+      },
+      "url": "https://www.olx.ua/d/obyavlenie/skoda-octavia-a5-2011-god-1-8-tsi-ID11oDTj.html",
+      "currency": "USD",
+      "mileage_km": 190000,
+      "engine_cc": 1800,
+      "region": "Харьковская область",
+      "generation": "A5",
+      "research_condition": "seller_declared_running",
+      "year": 2011,
+      "body": "liftback",
+      "fuel": "petrol",
+      "model": "Octavia",
+      "field_conflicts": [],
+      "source": "olx",
+      "publication_verified": false,
+      "price": "7900",
+      "price_conflicts": [],
+      "id": "936782385",
+      "category": "whole_passenger_car",
+      "research_field_conflicts": [],
+      "brand": "Skoda",
+      "title": "Skoda Octavia A5 2011",
+      "display_title_is_generated": true,
+      "photos": [],
+      "first_seen_at": 1791145831,
+      "eligibility_review": {
+        "status": "allowed",
+        "reasons": [
+          "customs_cleared_declared",
+          "no_forbidden_offer_evidence"
+        ],
+        "fingerprint": "3d3824597cc2f2d52133cb62b1844dfc9b35c06531f409da876d69dab3bec439",
+        "customs_status": "cleared_declared",
+        "description_complete": true
+      },
+      "price_review": {
+        "status": "needs_review",
+        "reasons": [
+          "full_price_unconfirmed"
+        ]
+      }
+    }
+  ],
+  "split": {
+    "892218290": "reference",
+    "936821171": "reference",
+    "934835802": "reference",
+    "933483565": "reference",
+    "933110968": "reference",
+    "917982649": "reference",
+    "936658970": "reference",
+    "936736044": "reference",
+    "936372176": "holdout",
+    "932654807": "reference",
+    "936415277": "reference",
+    "936176647": "reference",
+    "936197359": "holdout",
+    "935196654": "reference",
+    "936176691": "reference",
+    "935707774": "reference",
+    "936199703": "reference",
+    "934836433": "reference",
+    "931146600": "reference",
+    "920786921": "reference",
+    "935097640": "reference",
+    "936749861": "reference",
+    "928735007": "reference",
+    "929200914": "reference",
+    "931715055": "reference",
+    "931750359": "reference",
+    "932094887": "reference",
+    "932533256": "reference",
+    "932983429": "reference",
+    "933815588": "holdout",
+    "933858709": "reference",
+    "934451269": "reference",
+    "935257978": "reference",
+    "935400108": "reference",
+    "935602258": "reference",
+    "935849230": "reference",
+    "936156458": "reference",
+    "936294900": "reference",
+    "936646163": "reference",
+    "936690224": "reference",
+    "936759183": "reference",
+    "936782385": "reference"
+  },
+  "quote": null
+}
