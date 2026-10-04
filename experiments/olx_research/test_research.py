@@ -1,4 +1,5 @@
 import copy,json
+from pathlib import Path
 from datetime import datetime,timedelta
 from decimal import Decimal
 import pytest
@@ -14,6 +15,13 @@ def body(provider='privat_nbu'):
     if provider=='nbu':return json.dumps([{'cc':'USD','r030':840,'units':1,'exchangedate':'04.10.2026','calcdate':'02.10.2026','rate_per_unit':'44.8333','rate':'44.8333'}]).encode()
     if provider=='privat_nbu':return json.dumps({'date':'04.10.2026','bank':'PB','baseCurrency':980,'baseCurrencyLit':'UAH','exchangeRate':[{'baseCurrency':'UAH','currency':'USD','saleRateNB':'44.8333','purchaseRateNB':'44.8333','saleRate':'45.2','purchaseRate':'44.6'}]}).encode()
     return json.dumps([{'currencyCodeA':840,'currencyCodeB':980,'date':int(NOW.replace(hour=0,minute=1).timestamp()),'rateBuy':'44.8','rateSell':'45.1998'}]).encode()
+
+
+def nbu_all_body(*,day='04.10.2026'):
+    return json.dumps([
+        {'r030':840,'txt':'Долар США','rate':'44.8333','cc':'USD','exchangedate':day},
+        {'r030':978,'txt':'Євро','rate':'52.5000','cc':'EUR','exchangedate':day},
+    ]).encode()
 
 def car(id='target',price='6000',**extra):
     c=dict(source='olx',id=id,price=price,currency='USD',title='Skoda Octavia A5',brand='Skoda',model='Octavia',generation='A5',year=2008,body='wagon',fuel='diesel',transmission='manual',engine_cc=1900,drive_type='front',power_hp=105,mileage_km=300000,region='Хмельницька область',research_condition='seller_declared_running',category='whole_passenger_car',checked_at=EPOCH,publication_verified=True,published_at=EPOCH-10,eligibility_review={'status':'allowed'},price_review={'reasons':['full_price_unconfirmed']},observed_asking_display={'status':'corroborated_display','amount':price,'currency':'USD','description_reviewed_in_full':True,'reasons':[]},field_conflicts=[],price_conflicts=[],photos=[],url='https://www.olx.ua/d/uk/obyavlenie/test-IDexample.html')
@@ -51,7 +59,68 @@ def test_official_not_cash_and_single_quote_decimal():
     assert abs(Decimal(p['usd_amount'])*q.rate-25500)<Decimal('1e-20')
     assert normalize(p,q,NOW)['usd_amount']==p['usd_amount']
     assert normalize({'price':'5000','currency':'USD'},None,NOW)['usd_amount']=='5000'
-    assert normalize({'price':'5000','currency':'EUR'},q,NOW)['status']=='pending'
+    assert normalize({'price':'5000','currency':'EUR'},q,NOW)['reason']=='eur_fx_missing'
+    assert normalize({'price':'5000','currency':'EUR'},None,NOW)['reason']=='eur_fx_missing'
+
+
+def test_same_date_official_eur_cross_rate_and_restore():
+    q=parse_quote('nbu_all',nbu_all_body(),NOW)
+    assert q.validate(NOW) is None and q.eur_rate==Decimal('52.5000')
+    p=normalize({'price':'3500','currency':'EUR'},q,NOW)
+    assert p['status']=='ready' and p['reason']=='converted_eur'
+    with localcontext() as ctx:
+        ctx.prec=DECIMAL_PRECISION
+        assert Decimal(p['usd_amount'])==Decimal('3500')*Decimal('52.5000')/Decimal('44.8333')
+    assert p['fx_conversion']['method']=='same_date_official_uah_cross'
+    restored=Quote.restore(q.payload())
+    assert restored.eur_rate==q.eur_rate and restored.basis==q.basis
+
+
+@pytest.mark.parametrize('broken',[
+    [{'r030':840,'rate':'44.8333','cc':'USD','exchangedate':'04.10.2026'}],
+    [{'r030':840,'rate':'44.8333','cc':'USD','exchangedate':'04.10.2026'},
+     {'r030':978,'rate':'52.5','cc':'EUR','exchangedate':'03.10.2026'}],
+    [{'r030':840,'rate':'44.8333','cc':'USD','exchangedate':'04.10.2026'},
+     {'r030':978,'rate':'NaN','cc':'EUR','exchangedate':'04.10.2026'}],
+])
+def test_eur_pair_requires_exact_unique_same_date_official_rows(broken):
+    with pytest.raises((ValueError,ArithmeticError)):
+        parse_quote('nbu_all',json.dumps(broken),NOW)
+
+
+def test_saved_real_eur_examples_convert_without_bypassing_offer_review():
+    raw=json.loads(Path('experiments/olx_research/examples/current-cohort.json').read_text())
+    cars={c['id']:c for c in raw['listings']}
+    q=parse_quote('nbu_all',nbu_all_body(),NOW)
+    first=normalize(cars['932274776'],q,NOW)
+    second=normalize(cars['931454683'],q,NOW)
+    assert first['status']==second['status']=='ready'
+    assert first['input_amount']=='3500' and second['input_amount']=='1000'
+    assert 'eligibility_not_allowed' not in asking_price_reasons(cars['932274776'])
+    assert 'eligibility_not_allowed' in asking_price_reasons(cars['931454683'])
+
+
+def test_eur_pair_selection_is_one_bounded_shared_cached_get(tmp_path):
+    calls=[]
+    def transport(url):
+        calls.append(url);return 200,nbu_all_body()
+    book=RateBook(tmp_path/'eur-pair.db')
+    q,trace=book.select_eur_pair(NOW,transport)
+    assert q.eur_rate==Decimal('52.5000') and len(calls)==1
+    assert trace[-1]['status']=='selected'
+    again,_=book.select_eur_pair(NOW+timedelta(seconds=20),transport)
+    assert again.basis==q.basis and len(calls)==1
+    book.close()
+
+
+def test_failed_eur_pair_does_not_relabel_usd_quote_or_retry_in_cooldown(tmp_path):
+    calls=[]
+    book=RateBook(tmp_path/'eur-fail.db')
+    q,trace=book.select_eur_pair(NOW,lambda url:(calls.append(url) or (403,b'blocked')))
+    assert q is None and trace[-1]['event']=='dependent_eur_work_pending'
+    q,_=book.select_eur_pair(NOW+timedelta(seconds=20),lambda url:(calls.append(url) or (200,nbu_all_body())))
+    assert q is None and len(calls)==1
+    book.close()
 
 def test_nbu_fallback_and_shared_restart_cache(tmp_path):
     calls=[]

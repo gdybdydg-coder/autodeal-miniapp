@@ -1,0 +1,27 @@
+{
+  "mode": "isolated_fx_research",
+  "plan": "examples/night0200-fx-plan.json",
+  "request": {
+    "url": "https://bank.gov.ua/NBUStatService/v1/statdirectory/exchangeNew?json&date=20261005",
+    "http": 403,
+    "bytes": 55,
+    "sha256": "35e642f0e1bd426b9d8b0ee0284aefe801873dc13c18819fbeeaf2bf47136664",
+    "calls": 1,
+    "retries": 0,
+    "body_saved_private": true
+  },
+  "result": {
+    "official_pair_obtained": false,
+    "source_hold": "nbu_http_403",
+    "fallback_calls": 0,
+    "real_eur_conversions": 0,
+    "target_listing_ids": [
+      "932274776",
+      "931454683"
+    ],
+    "target_status": "eur_fx_missing",
+    "production_changed": false,
+    "actual_telegram_calls": 0,
+    "paid_ria_calls": 0
+  }
+}

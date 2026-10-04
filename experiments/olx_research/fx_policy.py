@@ -14,11 +14,16 @@ from experiments.olx_offline.fx import (KYIV, amount, instant, nbu_url,
     parse_nbu_quote, DECIMAL_PRECISION)
 
 MONO_URL = 'https://api.monobank.ua/bank/currency'
+NBU_ALL_ENDPOINT = 'https://bank.gov.ua/NBUStatService/v1/statdirectory/exchangeNew'
 POLICY = 'olx-research-fx-v1'
 
 
 def privat_url(day):
     return 'https://api.privatbank.ua/p24api/exchange_rates?json&date=' + day.strftime('%d.%m.%Y')
+
+
+def nbu_all_url(day):
+    return NBU_ALL_ENDPOINT + '?json&date=' + day.strftime('%Y%m%d')
 
 
 def _json(body):
@@ -37,6 +42,7 @@ class Quote:
     published_at: datetime | None = None
     buy: Decimal | None = None
     sell: Decimal | None = None
+    eur_rate: Decimal | None = None
 
     def validate(self, now):
         current = instant(now)
@@ -45,7 +51,8 @@ class Quote:
                 or not Decimal('10') <= self.rate <= Decimal('200')):
             return 'fx_rate_anomaly'
         if self.kind == 'nbu_official':
-            if self.source not in (nbu_url(self.effective_date), privat_url(self.effective_date)):
+            if self.source not in (nbu_url(self.effective_date), privat_url(self.effective_date),
+                                   nbu_all_url(self.effective_date)):
                 return 'fx_source_invalid'
             if self.buy is not None or self.sell is not None:
                 return 'fx_official_with_spread'
@@ -62,6 +69,11 @@ class Quote:
                 return 'fx_date_conflict'
         else:
             return 'fx_type_unsupported'
+        if self.eur_rate is not None:
+            if (self.kind != 'nbu_official' or self.source != nbu_all_url(self.effective_date)
+                    or not isinstance(self.eur_rate,Decimal) or not self.eur_rate.is_finite()
+                    or not Decimal('10') <= self.eur_rate <= Decimal('300')):
+                return 'eur_fx_invalid'
         # No implicit carry into Monday, holidays or an arbitrary next weekday.
         weekend = today.weekday() in (5, 6)
         days = (today-self.effective_date).days
@@ -87,6 +99,8 @@ class Quote:
                 'published_at':instant(self.published_at).isoformat() if self.published_at else None,
                 'buy':str(self.buy) if self.buy is not None else None,
                 'sell':str(self.sell) if self.sell is not None else None,
+                'eur_rate':str(self.eur_rate) if self.eur_rate is not None else None,
+                'eur_units':'UAH per 1 EUR' if self.eur_rate is not None else None,
                 'units':'UAH per 1 USD', 'policy':POLICY,
                 'transaction_channel':'not_established' if self.kind=='bank_derived_midpoint' else 'official_reference_not_transaction_rate'}
 
@@ -102,7 +116,8 @@ class Quote:
         return cls(Decimal(p['rate']),p['source'],p['kind'],date.fromisoformat(p['effective_date']),
                    instant(p['fetched_at']),instant(p['published_at']) if p.get('published_at') else None,
                    Decimal(p['buy']) if p.get('buy') is not None else None,
-                   Decimal(p['sell']) if p.get('sell') is not None else None)
+                   Decimal(p['sell']) if p.get('sell') is not None else None,
+                   Decimal(p['eur_rate']) if p.get('eur_rate') is not None else None)
 
 
 def parse_quote(provider, body, now):
@@ -110,6 +125,17 @@ def parse_quote(provider, body, now):
     if provider=='nbu':
         q=parse_nbu_quote(body,requested_date=today,fetched_at=at)
         result=Quote(q.uah_per_usd,q.source,'nbu_official',q.effective_date,at)
+    elif provider=='nbu_all':
+        p=_json(body)
+        if not isinstance(p,list):raise ValueError('fx_rows')
+        rates={}
+        for code,number in (('USD',840),('EUR',978)):
+            rows=[r for r in p if isinstance(r,dict) and r.get('cc')==code and r.get('r030')==number]
+            if len(rows)!=1 or rows[0].get('exchangedate')!=today.strftime('%d.%m.%Y'):
+                raise ValueError('fx_pair_or_date')
+            rates[code]=amount(rows[0].get('rate'),canonical=True)
+        result=Quote(rates['USD'],nbu_all_url(today),'nbu_official',today,at,
+                     eur_rate=rates['EUR'])
     elif provider=='privat_nbu':
         p=_json(body)
         if (not isinstance(p,dict) or p.get('bank')!='PB' or p.get('baseCurrency')!=980
@@ -186,6 +212,38 @@ class RateBook:
         self.db.commit()
         return selected,trace
 
+    def select_eur_pair(self,now,transport):
+        """Select one same-date official USD+EUR pair or keep EUR work pending.
+
+        This uses a separate cache row from the USD fallback chain. A USD-only
+        quote can never satisfy an EUR conversion, and a failed all-currency
+        request is not followed by an invented cross-rate.
+        """
+        at=instant(now);seconds=at.timestamp();trace=[];cached=None
+        row=self.db.execute('SELECT selected_at,payload,trace FROM research_fx WHERE id=2').fetchone()
+        if row:
+            try:cached=Quote.restore(json.loads(row[1])) if row[1] else None
+            except (TypeError,ValueError,KeyError):cached=None
+            if 0<=seconds-row[0]<300:
+                cached=cached if cached and cached.eur_rate is not None and cached.validate(at) is None else None
+                return cached,[{'event':'eur_pair_cooldown_cache','selected_at':row[0]}]+json.loads(row[2])
+        selected=None;url=nbu_all_url(at.astimezone(KYIV).date())
+        try:
+            code,body=transport(url)
+            if code!=200:raise ValueError('http_'+str(code))
+            selected=parse_quote('nbu_all',body,at)
+            trace.append({'provider':'nbu_all','status':'selected','kind':selected.kind,'source':url})
+        except (ValueError,TypeError,KeyError,ArithmeticError,TimeoutError,OSError) as exc:
+            trace.append({'provider':'nbu_all','status':'unavailable',
+                          'reason':str(exc)[:100] if isinstance(exc,ValueError) else type(exc).__name__})
+        if selected is None and cached and cached.eur_rate is not None and cached.validate(at) is None:
+            selected=cached;trace.append({'event':'fallback_saved_eur_pair'})
+        if selected is None:trace.append({'event':'dependent_eur_work_pending'})
+        keep=selected or cached
+        self.db.execute('INSERT OR REPLACE INTO research_fx VALUES(2,?,?,?)',
+                        (seconds,json.dumps(keep.payload()) if keep else None,json.dumps(trace)))
+        self.db.commit();return selected,trace
+
 
 def normalize(raw,quote,now,*,amount_basis='source_display'):
     """Preserve observed input and unknown seller-origin currency distinctly."""
@@ -199,11 +257,22 @@ def normalize(raw,quote,now,*,amount_basis='source_display'):
     except (ValueError,ArithmeticError):p['reason']='amount_invalid';return p
     p['input_amount']=str(original)
     if currency=='USD':p.update(status='ready',reason='already_usd',usd_amount=str(original));return p
-    if currency!='UAH':p['reason']='currency_unsupported';return p
+    if currency not in ('UAH','EUR'):p['reason']='currency_unsupported';return p
     reason=quote.validate(now) if isinstance(quote,Quote) else 'fx_missing'
-    if reason:p['reason']=reason;return p
+    if reason:
+        p['reason']='eur_fx_missing' if currency=='EUR' and reason=='fx_missing' else reason
+        return p
     with localcontext() as ctx:
         ctx.prec=DECIMAL_PRECISION
+        if currency=='EUR':
+            if quote.eur_rate is None:
+                p['reason']='eur_fx_missing';return p
+            cross=quote.eur_rate/quote.rate
+            p.update(status='ready',reason='converted_eur',usd_amount=str(original*quote.eur_rate/quote.rate),
+                     fx=quote.payload(),fx_basis=quote.basis,
+                     fx_conversion={'pair':'EUR/USD','rate':str(cross),
+                                    'method':'same_date_official_uah_cross'})
+            return p
         p.update(status='ready',reason='converted_uah',usd_amount=str(original/quote.rate),fx=quote.payload(),fx_basis=quote.basis)
         if quote.kind=='bank_derived_midpoint':
             p['usd_range_from_fx']={'low':str(original/quote.sell),'high':str(original/quote.buy)}

@@ -3,11 +3,7 @@
   "night": "2026-10-05-Europe-Kyiv",
   "status": "active",
   "deadline": "2026-10-05T08:00:00+03:00",
-  "lease": {
-    "owner": "night-20261005-0200",
-    "started_at": "2026-10-04T22:58:00Z",
-    "expires_at": "2026-10-04T23:38:00Z"
-  },
+  "lease": null,
   "budget": {
     "olx_get_cap": 60,
     "olx_bytes_cap": 167772160,
@@ -16,7 +12,15 @@
     "fx_get_cap": 6,
     "fx_reserved_calls": 1
   },
-  "source_holds": [],
+  "source_holds": [
+    {
+      "source": "bank.gov.ua",
+      "scope": "fx_nbu",
+      "reason": "http_403",
+      "observed_at": "2026-10-04T23:00:19Z",
+      "plan": "examples/night0200-fx-plan.json"
+    }
+  ],
   "reservations": [
     {
       "owner": "night-20261005-0100",
@@ -57,7 +61,8 @@
       "urls": [
         "https://bank.gov.ua/NBUStatService/v1/statdirectory/exchangeNew?json&date=20261005"
       ],
-      "reserved_at": "2026-10-04T22:59:30Z"
+      "reserved_at": "2026-10-04T22:59:30Z",
+      "result": "examples/night0200-fx-evidence.json"
     }
   ],
   "runs": [
@@ -81,7 +86,18 @@
       "subtests_passed": 150,
       "summary": "20 new details;62 total;0/62 estimates;fixed known modification mismatch and split provenance;106 local previews,unpaid0,restart0,Telegram0",
       "checkpoint": "NIGHT-0100-20261005.md"
+    },
+    {
+      "owner": "night-20261005-0200",
+      "completed_at": "2026-10-04T23:06:48Z",
+      "olx_calls": 0,
+      "fx_calls": 1,
+      "fx_bytes": 55,
+      "tests_passed": 398,
+      "subtests_passed": 150,
+      "summary": "NBU all-currency returned403 and source-held; strict same-date EUR/USD cross-rate code prepared; real EUR conversions0; UI reason+JS syntax regression fixed; market0/62",
+      "checkpoint": "NIGHT-0200-20261005.md"
     }
   ],
-  "next_step": "Read NIGHT-0100-20261005.md. Avoid repeating general cohort collection: complete power9/20,still0/62estimates. Investigate better evidenced compatible cohort; independently add verified EUR currency-pair support for observed932274776/931454683 with tests, no USD-quote misuse, no eligibility bypass. 40OLXGET/120MiB and6FXGET remain; reserve before I/O."
+  "next_step": "Read NIGHT-0200-20261005.md. Do not call bank.gov.ua again tonight: persistent FX source hold after HTTP403. Real EUR conversions remain0. Avoid repeating general OLX cohort collection; use remaining saved351 candidates only for a new characteristic-density hypothesis, or improve offline evidence/valuation. 40OLXGET/120MiB and5FXGET remain; reserve exact URLs before any allowed I/O."
 }
