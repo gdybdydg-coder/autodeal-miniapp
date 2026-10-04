@@ -1,0 +1,16 @@
+{
+  "mode": "isolated_fx_research",
+  "created_at": "2026-10-04T22:59:30Z",
+  "hypothesis": "One official NBU all-currency response for the explicit Kyiv date can provide UAH-per-USD and UAH-per-EUR rates with one shared effective date, allowing a derived EUR-to-USD cross-rate without treating a USD quote as an EUR quote.",
+  "provider": "National Bank of Ukraine",
+  "request_url": "https://bank.gov.ua/NBUStatService/v1/statdirectory/exchangeNew?json&date=20261005",
+  "maximum_calls": 1,
+  "maximum_bytes": 262144,
+  "timeout_seconds": 20,
+  "target_listing_ids": [
+    "932274776",
+    "931454683"
+  ],
+  "selection_before_response": true,
+  "source_documentation": "https://bank.gov.ua/admin_uploads/article/Instr_API_KURS_VAL_Full_eng.pdf"
+}

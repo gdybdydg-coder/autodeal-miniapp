@@ -14,7 +14,7 @@
     "olx_reserved_calls": 20,
     "olx_reserved_bytes": 41943040,
     "fx_get_cap": 6,
-    "fx_reserved_calls": 0
+    "fx_reserved_calls": 1
   },
   "source_holds": [],
   "reservations": [
@@ -47,6 +47,17 @@
       ],
       "reserved_at": "2026-10-04T22:03:19.068353+00:00",
       "result": "examples/night0100-evidence.json"
+    },
+    {
+      "owner": "night-20261005-0200",
+      "plan": "examples/night0200-fx-plan.json",
+      "kind": "fx",
+      "calls": 1,
+      "bytes": 262144,
+      "urls": [
+        "https://bank.gov.ua/NBUStatService/v1/statdirectory/exchangeNew?json&date=20261005"
+      ],
+      "reserved_at": "2026-10-04T22:59:30Z"
     }
   ],
   "runs": [
