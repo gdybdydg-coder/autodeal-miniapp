@@ -55,6 +55,20 @@ class DetailsTests(unittest.TestCase):
         self.assertIsNone(d.fuel); self.assertIsNone(d.transmission)
         self.assertIn('fuel', d.missing)
 
+    def test_observed_transport_category_is_not_a_body_style(self):
+        # Observed on three public pages, 4 October 2026. Values sanitized;
+        # a passenger/truck category is not sedan/van body-style evidence.
+        for value in ('Легкові', 'Вантажівки'):
+            with self.subTest(value=value):
+                v = deepcopy(BASE); v['bodyType'] = value
+                d = self.parse(v)
+                self.assertIsNone(d.body)
+                self.assertIn('body', d.missing)
+                self.assertIn('body_type_is_transport_category', d.issues)
+                self.assertNotIn('body', dict(d.provenance))
+                self.assertEqual(d.price, Decimal('5300.50'))
+                self.assertFalse(d.ready_for_delivery)
+
     def test_damage_is_recorded_not_blocked(self):
         v = deepcopy(BASE); v['itemCondition'] = 'https://schema.org/DamagedCondition'
         d = self.parse(v)

@@ -177,6 +177,11 @@ def parse_public_details(html: str, expected_id: str) -> PublicDetails:
             val = _text(v.get(source))
             if source in v and val is None:
                 issues.add("invalid_" + field)
+            if field == "body" and val and val.casefold() in {"легкові", "вантажівки"}:
+                # Real public JSON-LD currently puts transport categories here.
+                # Retain unknown body style; do not create a false filter match.
+                issues.add("body_type_is_transport_category")
+                val = None
             add(field, val)
         engine = v.get("vehicleEngine")
         if isinstance(engine, dict) and "fuelType" in engine:
