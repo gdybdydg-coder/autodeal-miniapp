@@ -5,16 +5,17 @@ import json
 from dataclasses import replace
 
 import pytest
-from sqlalchemy import select
+from sqlalchemy import event, select
 from sqlalchemy.orm import Session
 
 from backend import paid_source_access, ria_ai_price as ai, ria_source_comparison as comparison
 from backend.auto_ria import RiaError
 from backend.billing_models import Entitlement
 from backend.manual_payment_models import ManualBase, PaymentRequest
-from backend.models import (Delivery, Listing, MonitorJob, MonitorMatch, MonitorMembership,
+from backend.models import (Delivery, Filters, Listing, MonitorJob, MonitorMatch, MonitorMembership,
     MonitorSeen, MonitorWatch, Search, SourceBudget, SourceCache, SourceProbe, User, ValuationPeer)
 from backend.ria_search import parse_car
+from backend.monitor import source_filters
 from backend.tests.test_monitor import p
 from backend.tests.test_paid_sources_production import approve
 from backend.tests.test_ria_search import raw
@@ -269,6 +270,81 @@ def test_busy_claim_has_no_paid_reservations_and_never_retries(incident):
     assert report["status"] == "busy" and report["requests"] == 0
     assert not p.source_calls and not p.quote_calls
     assert run(p) == report and len(p.sources) == 1
+
+
+@pytest.mark.parametrize("field,expected_failure", [("category", "category_allowed"),
+    ("region", "filters_match"), ("price", "filters_match")])
+def test_fresh_rejected_inputs_are_captured_before_guard_with_specific_boundaries(incident, field, expected_failure):
+    p = incident
+    approve(p)
+    with Session(p.engine) as db:
+        search = db.get(Search, 1)
+        filters = Filters.model_validate({**search.filters, "price": {"to": 12000}})
+        search.filters, search.fingerprint = filters.canonical(), filters.fingerprint()
+        db.get(MonitorMembership, 1).feed_id = source_filters(search.filters).fingerprint()
+        db.commit()
+    if field == "category": p.data["autoData"]["categoryId"] = 4
+    elif field == "region": p.data["stateData"]["stateId"] = 5
+    else: p.data["USD"] = 13000
+    before = protected_tables(p)
+    report = run(p)
+    assert report["status"] == "no_eligible_subscription" and report["requests"] == 1
+    assert not p.quote_calls and protected_tables(p) == before
+    result = report["result"]
+    assert result["vehicle_dimensions"]["category_id"] == (4 if field == "category" else 1)
+    assert result["vehicle_dimensions"]["region_id"] == (5 if field == "region" else 4)
+    assert result["listing_price_usd"] == (13000 if field == "price" else 10000)
+    explanation = result["eligibility_explanation"]
+    assert explanation["failed_boundaries"] == [expected_failure]
+    assert explanation["ready"] and explanation["current_confirmed_purchase"]
+    assert explanation["consistent_membership_present"]
+    assert explanation["filter_failures"] == ([] if field == "category" else [{
+        "field": "region_id" if field == "region" else "price_usd",
+        "boundary": "permitted_values" if field == "region" else "maximum"}])
+    assert "PRIVATE" not in json.dumps(result)
+    assert run(p) == report
+
+
+@pytest.mark.parametrize("cache_present", [False, True])
+def test_repeat_old_missing_inputs_reads_cache_only_even_expired_without_any_db_writes(incident, cache_present):
+    p = incident
+    approve(p)
+    old_result = {"native_parity_verified": False, "observations": {},
+        "detail_availability": {"auto_data_present": True, "requested_id_matches": True,
+            "isSold": False, "active": True, "statusId": 0}}
+    with Session(p.engine) as db:
+        db.add(SourceProbe(id=comparison.VERSION + "-" + SID, status="no_eligible_subscription",
+            checked_at=p.clock[0]-120, requests=1, result=old_result))
+        if cache_present:
+            key = [comparison.DETAIL_PATH, {"auto_id": SID, "comparison_policy": comparison.VERSION}]
+            digest = hashlib.sha256(json.dumps(key, sort_keys=True).encode()).hexdigest()
+            db.add(SourceCache(id=digest, expires_at=p.clock[0]-60,
+                payload={**p.candidate, "category_id": 4, "VIN": "PRIVATE_CACHE"}))
+        db.commit()
+    before = protected_tables(p)
+    calls = []
+    def only_reads(connection, cursor, statement, parameters, context, executemany):
+        calls.append(statement)
+        assert statement.lstrip().upper().startswith("SELECT"), "repeat attempted a database write"
+    event.listen(p.engine, "before_cursor_execute", only_reads)
+    try:
+        report = run(p)
+        assert probe(p) == ("no_eligible_subscription", 1, old_result)
+        assert protected_tables(p) == before
+    finally:
+        event.remove(p.engine, "before_cursor_execute", only_reads)
+    assert calls and not p.sources and not p.source_calls and not p.quote_calls
+    assert report["requests"] == 1 and report["result"]["native_parity_verified"] is False
+    recovery = report["result"]["detail_recovery"]
+    assert recovery["provider_requests"] == 0 and recovery["valuation_admission"] is False
+    if cache_present:
+        assert recovery["status"] == "retained_diagnostic_cache" and recovery["cache_expired"] is True
+        assert report["result"]["vehicle_dimensions"]["category_id"] == 4
+        assert report["result"]["eligibility_explanation"]["failed_boundaries"] == ["category_allowed"]
+        assert report["result"]["eligibility_explanation"]["scope"] == "current_state"
+    else:
+        assert recovery["status"] == "not_found" and "vehicle_dimensions" not in report["result"]
+    assert "PRIVATE" not in json.dumps(report)
 
 
 @pytest.mark.parametrize("change", [{"engine_cc": None}, {"mileage": 0}, {"body_id": None},
