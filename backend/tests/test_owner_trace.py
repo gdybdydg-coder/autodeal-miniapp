@@ -6,7 +6,7 @@ from sqlalchemy import event, select
 from sqlalchemy.orm import Session
 
 from backend import owner_trace
-from backend.models import Delivery, DeliveryTiming, Search, SourceBudget
+from backend.models import Delivery, DeliveryTiming, Search, SourceBudget, MonitorJob
 from backend.tests.test_monitor import p, drain, wake
 
 
@@ -117,3 +117,40 @@ def test_report_omits_seller_data_and_does_not_reveal_unrelated_search_names(p, 
     owner_trace.log_once(p.engine, replace(p.settings, admin_telegram_id=111, ria_owner_trace_listing_id="124"))
     assert "Owner listing trace" in caplog.text
     assert all(key not in caplog.text for key in ("VIN", "api_key", "phone", "test-token", "fingerprint", "epoch"))
+
+
+def test_retained_provider_price_proof_is_exact_bounded_and_has_no_new_source_calls(p):
+    drain(p)
+    p.ads['124'] = p.clock[0] + 1
+    wake(p)
+    drain(p)
+    with Session(p.engine) as db:
+        job = db.get(MonitorJob, '124')
+        saved = dict(job.result)
+        rating = dict(saved['rating'])
+        rating.update(market=6327.95, discount=21,
+            valuation_evidence={'version': 'autoria-lower-bound-v1', 'source_range': {
+                'source_id': '124', 'basis': 'auto_ria_ai_market_range', 'currency': 'USD',
+                'lower_usd': 6661, 'upper_usd': 7363, 'observed_at': p.clock[0],
+                'provider': {'average_usd': 7012, 'range_fraction': .05, 'quantity': 42,
+                             'period_hours': 168, 'api_key': 'PRIVATE_KEY'},
+                'similarCars': ['PRIVATE_SELLER'], 'VIN': 'PRIVATE_VIN'}})
+        saved['rating'] = rating
+        job.result = saved
+        db.commit()
+    calls, sent = len(p.calls), len(p.sent)
+    writes = []
+    def capture(conn, cursor, sql, parameters, context, executemany):
+        if sql.lstrip().upper().startswith(('INSERT', 'UPDATE', 'DELETE')): writes.append(sql)
+    event.listen(p.engine, 'before_cursor_execute', capture)
+    try:
+        with Session(p.engine) as db:
+            report = owner_trace.snapshot(db, 111, '124')
+            proof = report['job']['pricing_evidence']
+            assert proof['source_range']['lower_usd'] == 6661
+            assert proof['provider'] == {'average_usd': 7012, 'range_fraction': .05, 'quantity': 42, 'period_hours': 168}
+            assert 'PRIVATE_' not in json.dumps(report)
+            assert report['stored_card']['brand'] == 'Volkswagen'
+    finally:
+        event.remove(p.engine, 'before_cursor_execute', capture)
+    assert not writes and (len(p.calls), len(p.sent)) == (calls, sent)

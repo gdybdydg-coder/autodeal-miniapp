@@ -64,8 +64,27 @@ def snapshot(db, uid, source_id):
             "car": {key: candidate.get(key) for key in
                     ("brand", "model", "year", "price_usd", "region", "fuel", "transmission")},
             "market": rating.get("market"), "valuation": rating.get("valuation")}
+        # Private, read-only retained price proof; no provider refresh or raw
+        # responses/similarCars/contact/VIN data. Preserve exact inputs so an
+        # owner screenshot can be compared with the actual send-time decision.
+        proof = rating.get('valuation_evidence')
+        quote = proof.get('source_range') if isinstance(proof, dict) else None
+        if isinstance(quote, dict):
+            provider = quote.get('provider')
+            result['job']['pricing_evidence'] = {
+                'evaluated_at': evidence.get('evaluated_at'),
+                'discount_percent': rating.get('discount'),
+                'version': proof.get('version'),
+                'source_range': {key: quote.get(key) for key in (
+                    'source_id', 'basis', 'currency', 'lower_usd', 'upper_usd', 'observed_at')},
+                'provider': {key: provider.get(key) for key in (
+                    'average_usd', 'range_fraction', 'quantity', 'period_hours')}
+                    if isinstance(provider, dict) else None,
+            }
     listing = db.scalar(select(Listing).where(Listing.source == "auto_ria", Listing.source_id == source_id))
     if listing:
+        result['stored_card'] = {key: listing.car.get(key) for key in (
+            'brand', 'model', 'year', 'mileage', 'price', 'market', 'observed_at')}
         photo = listing.car.get('photo')
         parts = urlsplit(photo) if isinstance(photo, str) else urlsplit('')
         approved_host = (parts.hostname or '').endswith('.riastatic.com')
