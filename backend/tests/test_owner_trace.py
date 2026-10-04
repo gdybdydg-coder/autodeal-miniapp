@@ -136,6 +136,8 @@ def test_retained_provider_price_proof_is_exact_bounded_and_has_no_new_source_ca
                              'period_hours': 168, 'api_key': 'PRIVATE_KEY'},
                 'similarCars': ['PRIVATE_SELLER'], 'VIN': 'PRIVATE_VIN'}})
         saved['rating'] = rating
+        saved['candidate'] = {**saved['candidate'], 'category_id': 7, 'body_id': 26,
+            'engine_cc': 1900, 'mileage': 345000, 'VIN': 'PRIVATE_VIN', 'seller_id': 'PRIVATE_SELLER'}
         job.result = saved
         db.commit()
     calls, sent = len(p.calls), len(p.sent)
@@ -151,6 +153,10 @@ def test_retained_provider_price_proof_is_exact_bounded_and_has_no_new_source_ca
             assert proof['provider'] == {'average_usd': 7012, 'range_fraction': .05, 'quantity': 42, 'period_hours': 168}
             assert 'PRIVATE_' not in json.dumps(report)
             assert report['stored_card']['brand'] == 'Volkswagen'
+            assert report['job']['vehicle_dimensions']['category_id'] == 7
+            assert report['job']['vehicle_dimensions']['body_id'] == 26
+            assert report['job']['vehicle_dimensions']['engine_cc'] == 1900
+            assert report['job']['vehicle_dimensions']['mileage'] == 345000
     finally:
         event.remove(p.engine, 'before_cursor_execute', capture)
     assert not writes and (len(p.calls), len(p.sent)) == (calls, sent)

@@ -69,6 +69,9 @@ def snapshot(db, uid, source_id):
                     ("brand", "model", "year", "price_usd", "region", "fuel", "transmission")},
             "market": rating.get("market"), "valuation": rating.get("valuation")}
         result["job"]["valuation_reasons"] = rating.get("valuation_reasons", [])
+        result["job"]["vehicle_dimensions"] = {key: candidate.get(key) for key in (
+            "category_id", "brand_id", "model_id", "generation_id", "modification_id",
+            "body_id", "fuel_id", "gear_id", "engine_cc", "year", "mileage")}
         # Private, read-only retained price proof; no provider refresh or raw
         # responses/similarCars/contact/VIN data. Preserve exact inputs so an
         # owner screenshot can be compared with the actual send-time decision.
