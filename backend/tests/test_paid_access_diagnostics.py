@@ -50,7 +50,6 @@ def test_both_owner_confirmation_formats_match_current_source_access_without_io(
     ("stop", "current_paid_not_ready_clients"),
     ("disabled_search", "current_paid_without_enabled_search_clients"),
     ("configured_exclusion", "current_paid_excluded_config_only_clients"),
-    ("admin_exclusion", "current_paid_excluded_admin_clients"),
 ])
 def test_private_audit_distinguishes_mismatches_revocations_stop_and_explicit_exclusions(p, monkeypatch, change, key):
     strict(p)
@@ -89,3 +88,56 @@ def test_reused_session_does_not_cache_another_sessions_payment_revocation(p):
             writer.commit()
         assert not paid_source_access.allowed(reader, 111, p.clock[0])
     assert not p.calls and not p.sent
+
+
+def test_private_admin_audit_reports_ordinary_paid_access_without_granting_or_io(p, monkeypatch):
+    from dataclasses import replace
+    strict(p)
+    settings = owner_settings(p, monkeypatch)
+    approve(p, state="review", purchase_until=0, access_until=0)
+    confirm(p, settings, "fixture-111")
+    settings = replace(settings, admin_telegram_id=111, stats_excluded_user_ids="111")
+    paid_source_access.configure(p.engine, settings)
+    with Session(p.engine) as db:
+        before = db.get(SourceBudget, "auto_ria").total
+        result = snapshot(db, settings, p.clock[0])
+        assert not db.new and not db.dirty and not db.deleted
+        assert db.get(SourceBudget, "auto_ria").total == before
+    account = result["paid_cohort_details"]["accounts"][0]
+    assert account["account"] == "administrator"
+    assert account["source_access_allowed"] and account["owner_approval_recorded"]
+    assert account["planned_searches"] == account["searches_enabled"] == 1
+    assert account["purchase_confirmed_at"] < account["purchase_expires_at"]
+    assert result["source_access_audit"]["current_paid_excluded_admin_clients"] == 0
+    encoded = json.dumps(result)
+    assert "fixture-111" not in encoded and "user_id" not in encoded
+    assert "Volkswagen" not in encoded and not p.calls and not p.sent
+
+
+def test_private_delivery_trace_uses_saved_event_time_and_excludes_old_admin_copies(p, monkeypatch):
+    from backend.models import Delivery, DeliveryTiming, SourceProbe
+    from backend.tests.test_monitor import drain, wake
+    strict(p)
+    settings = owner_settings(p, monkeypatch)
+    approve(p, state="review", purchase_until=0, access_until=0)
+    confirm(p, settings, "fixture-111")
+    drain(p)
+    p.ads["124"] = p.clock[0] + 1
+    wake(p); drain(p)
+    with Session(p.engine) as db:
+        delivery = db.scalar(select(Delivery))
+        timing = db.get(DeliveryTiming, delivery.id)
+        result = snapshot(db, settings, p.clock[0])
+        trace = result["paid_cohort_details"]["accounts"][0]["recent_ordinary_deliveries"][0]
+        assert trace["source_id"] == "124" and trace["state"] == "sent"
+        assert trace["owner_approval_covers_acceptance"] is True
+        assert trace["saved_access_event_covers_acceptance"] is True
+        assert trace["discovered_at"] <= trace["evaluated_at"] <= trace["queued_at"] <= trace["accepted_at"]
+        db.add(SourceProbe(id="owner-car-copy-v1-" + str(delivery.id), status="sent",
+            checked_at=p.clock[0], result={"private_snapshot": "do_not_log"}))
+        db.commit()
+        assert not snapshot(db, settings, p.clock[0])["paid_cohort_details"]["accounts"][0]["recent_ordinary_deliveries"]
+        assert snapshot(db, settings, p.clock[0])["delivery"]["last_client_accepted_at"] is None
+        db.get(SourceProbe, "owner-car-copy-v1-" + str(delivery.id)).status = "ordinary_reclaimed"
+        db.commit()
+        assert snapshot(db, settings, p.clock[0])["delivery"]["last_client_accepted_at"] == timing.accepted_at

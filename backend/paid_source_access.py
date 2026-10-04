@@ -22,14 +22,26 @@ OPTION = "autodeal_confirmed_paid_sources_only"
 EXCLUSIONS = "autodeal_paid_sources_excluded_accounts"
 
 
+def source_excluded_user_ids(settings=None):
+    # Statistics exclude the owner because their denominator is customers.
+    # That role must not veto the owner's genuine purchase. Pilot previews and
+    # Stars trials live in separate tables and still cannot satisfy the same
+    # confirmed-purchase predicate required of every ordinary customer.
+    excluded = set(excluded_user_ids(settings))
+    owner = getattr(settings, "admin_telegram_id", 0)
+    if owner:
+        excluded.discard(owner)
+    return tuple(sorted(excluded))
+
+
 def configure(engine, settings):
     engine.update_execution_options(**{
-        OPTION: True, EXCLUSIONS: excluded_user_ids(settings),
+        OPTION: True, EXCLUSIONS: source_excluded_user_ids(settings),
     })
 
 
 def exclusions(bind):
-    return bind.get_execution_options().get(EXCLUSIONS, excluded_user_ids())
+    return bind.get_execution_options().get(EXCLUSIONS, source_excluded_user_ids())
 
 
 def query_options(bind):

@@ -7,16 +7,17 @@ Telegram acceptance is never described as reading or whole-market coverage.
 from collections import Counter
 import json
 import logging
+import os
 import time
 
-from sqlalchemy import exists, func, select
+from sqlalchemy import String, cast, exists, func, select
 from sqlalchemy.orm import Session
 
 from . import api_attempt_audit, paid_source_access, poll_schedule
-from .billing_models import Entitlement
+from .billing_models import AccessEvent, Entitlement
 from .manual_payment_models import PaymentAudit, PaymentRequest
-from .models import (Delivery, DeliveryTiming, Filters, Listing, MonitorControl, MonitorFeed, MonitorJob,
-                     MonitorMembership, MonitorSeen, MonitorWatch, Search, SourceBudget, User)
+from .models import (BotReply, Delivery, DeliveryTiming, Filters, Listing, MonitorControl, MonitorFeed, MonitorJob,
+                     MonitorMembership, MonitorSeen, MonitorWatch, Search, SourceBudget, SourceProbe, User)
 from .purchase_stats import excluded_user_ids
 from .ria_budget import BudgetLimits, total_cap
 from .ria_search import budget_state
@@ -41,7 +42,7 @@ def completed_decisions(db, now, current_seen):
     claims = {(uid, sid): state for uid, sid, state in db.execute(select(Delivery.user_id, Listing.source_id, Delivery.state)
         .join(Listing, Listing.id == Delivery.listing_id).where(Listing.source == "auto_ria", Listing.source_id.in_(ids),
             Delivery.user_id.in_({search.user_id for _, search in rows})))}
-    reasons = Counter()
+    reasons, examples = Counter(), []
     for seen, search in rows:
         job = jobs.get(seen.source_id)
         evidence = job.result if job and isinstance(job.result, dict) else {}
@@ -72,8 +73,86 @@ def completed_decisions(db, now, current_seen):
         else:
             reason = "eligible_without_delivery_record"
         reasons[reason] += 1
+        if len(examples) < 6 and not any(item["reason"] == reason for item in examples):
+            examples.append({"source_id": seen.source_id, "reason": reason,
+                             "discovered_at": seen.first_seen})
     return {"distinct_cars": len(ids), "search_car_pairs": len(rows), "reasons": dict(reasons),
-            "truncated": truncated, "basis": "saved_decisions_current_filters_no_new_source_calls"}
+            "examples": examples, "truncated": truncated,
+            "basis": "saved_decisions_current_filters_no_new_source_calls"}
+
+
+def historical_copy_clause():
+    """Keep accepted old copies distinct from ordinary paid-client deliveries."""
+    return exists(select(SourceProbe.id).where(
+        SourceProbe.id == "owner-car-copy-v1-" + cast(Delivery.id, String),
+        SourceProbe.status != "ordinary_reclaimed"))
+
+
+def paid_cohort_details(db, settings, now, members):
+    """Bounded private per-account evidence, without identities or filter values.
+
+    Labels apply only to this snapshot. Historical acceptance is compared with
+    saved approval/access events at that time, never today's entitlement alone.
+    Reading a durable acknowledgement does not prove a phone notification.
+    """
+    users = list(db.scalars(select(User).where(
+        paid_source_access.confirmed_clause(User.id, now)).order_by(User.id).limit(51)))
+    result, client_number = [], 0
+    for user in users[:50]:
+        admin = user.id == settings.admin_telegram_id
+        if not admin:
+            client_number += 1
+        purchase = db.scalar(select(PaymentRequest).where(
+            PaymentRequest.user_id == user.id, PaymentRequest.state == "approved",
+            PaymentRequest.amount_minor > 0, PaymentRequest.currency == "UAH", PaymentRequest.days > 0,
+            PaymentRequest.updated_at <= now, PaymentRequest.expires_at > now)
+            .order_by(PaymentRequest.updated_at.desc()).limit(1))
+        approval = db.scalar(select(PaymentAudit).where(
+            PaymentAudit.request_id == purchase.id, PaymentAudit.action == "approved",
+            PaymentAudit.at <= now, PaymentAudit.after_expiry > now)
+            .order_by(PaymentAudit.at.desc()).limit(1))
+        entitlement = db.get(Entitlement, user.id)
+        searches = list(db.scalars(select(Search).where(Search.user_id == user.id)))
+        command = db.scalar(select(BotReply.command).where(BotReply.user_id == user.id)
+            .order_by(BotReply.command_at.desc(), BotReply.update_id.desc()).limit(1))
+        normal = ~historical_copy_clause()
+        states = dict(db.execute(select(Delivery.state, func.count()).where(
+            Delivery.user_id == user.id, normal).group_by(Delivery.state)).all())
+        traces = []
+        rows = db.execute(select(Delivery, DeliveryTiming, Listing).join(
+            DeliveryTiming, DeliveryTiming.delivery_id == Delivery.id).join(
+            Listing, Listing.id == Delivery.listing_id).where(Delivery.user_id == user.id, normal)
+            .order_by(DeliveryTiming.queued_at.desc(), Delivery.id.desc()).limit(3))
+        for delivery, timing, listing in rows:
+            accepted = timing.accepted_at
+            event = db.scalar(select(AccessEvent).where(AccessEvent.user_id == user.id,
+                AccessEvent.at <= accepted).order_by(AccessEvent.at.desc(), AccessEvent.id.desc())
+                .limit(1)) if accepted else None
+            approved_at_acceptance = bool(accepted and db.scalar(select(exists(
+                select(PaymentAudit.id).join(PaymentRequest, PaymentRequest.id == PaymentAudit.request_id)
+                .where(PaymentRequest.user_id == user.id, PaymentAudit.action == "approved",
+                    PaymentAudit.at <= accepted, PaymentAudit.after_expiry > accepted,
+                    PaymentRequest.amount_minor > 0, PaymentRequest.currency == "UAH", PaymentRequest.days > 0)))))
+            traces.append({"source_id": listing.source_id, "state": delivery.state,
+                "discovered_at": timing.discovered_at, "evaluated_at": timing.evaluated_at,
+                "queued_at": timing.queued_at, "send_started_at": timing.send_started_at,
+                "accepted_at": accepted, "owner_approval_covers_acceptance": approved_at_acceptance,
+                "saved_access_event_covers_acceptance": (event.expires_at > accepted if event else None)})
+        result.append({"account": "administrator" if admin else f"client_{client_number}",
+            "access_basis": "approved_manual_purchase_and_current_entitlement",
+            "purchase_confirmed_at": purchase.updated_at, "purchase_expires_at": purchase.expires_at,
+            "operational_expires_at": entitlement.expires_at,
+            "owner_approval_recorded": approval is not None,
+            "approval_actor_is_configured_owner": bool(approval and approval.actor == settings.admin_telegram_id),
+            "source_access_allowed": paid_source_access.allowed(db, user.id, now),
+            "ready": user.ready, "latest_saved_command": command if command in {"/start", "/stop"} else None,
+            "searches_total": len(searches), "searches_enabled": sum(search.enabled for search in searches),
+            "planned_searches": sum(search.user_id == user.id for search, _, _ in members),
+            "earliest_active_search_start": min((member.started_at for search, _, member in members
+                if search.user_id == user.id), default=None),
+            "ordinary_delivery_states": states, "recent_ordinary_deliveries": traces})
+    return {"accounts": result, "truncated": len(users) > 50,
+            "basis": "saved_payment_search_and_delivery_records_no_outbound_io"}
 
 
 def access_audit(db, settings, now):
@@ -122,6 +201,7 @@ def access_audit(db, settings, now):
 
 def snapshot(db, settings, now):
     from .monitor import active_members, interest_query, poll_interval
+    from . import html_shadow, recent_publications
     members = active_members(db)
     groups = {member.feed_id for _, _, member in members}
     feeds = list(db.scalars(select(MonitorFeed).where(MonitorFeed.id.in_(groups))))
@@ -148,22 +228,52 @@ def snapshot(db, settings, now):
         .group_by(Delivery.state))
     last_client = db.scalar(select(func.max(DeliveryTiming.accepted_at)).select_from(Delivery)
         .join(DeliveryTiming, DeliveryTiming.delivery_id == Delivery.id).join(User, User.id == Delivery.user_id)
-        .where(access, Delivery.state == "sent"))
+        .where(access, Delivery.state == "sent", ~historical_copy_clause()))
     last_owner = db.scalar(select(func.max(DeliveryTiming.accepted_at)).select_from(Delivery)
         .join(DeliveryTiming, DeliveryTiming.delivery_id == Delivery.id)
-        .where(Delivery.user_id == settings.admin_telegram_id, Delivery.state == "sent")) if settings.admin_telegram_id else None
+        .where(Delivery.user_id == settings.admin_telegram_id, Delivery.state == "sent",
+               ~historical_copy_clause())) if settings.admin_telegram_id else None
     attempts = api_attempt_audit.summary(db, now - 3600, now)
     errors = dict(db.execute(select(api_attempt_audit.RiaApiAttempt.error_code, func.count()).where(
         api_attempt_audit.RiaApiAttempt.reserved_at >= now - 3600,
         api_attempt_audit.RiaApiAttempt.reserved_at < now,
         api_attempt_audit.RiaApiAttempt.error_code.is_not(None)).group_by(
             api_attempt_audit.RiaApiAttempt.error_code)).all())
+    recent = db.get(SourceProbe, recent_publications.PROBE_ID)
+    shadow_key = html_shadow.key(settings)
+    shadow = db.get(SourceProbe, shadow_key) if shadow_key else None
+    pending_copies = db.scalar(select(func.count(Delivery.id)).join(
+        DeliveryTiming, DeliveryTiming.delivery_id == Delivery.id).where(historical_copy_clause(),
+            Delivery.state.in_(("owner_pending", "pending")), Delivery.message_id.is_(None),
+            DeliveryTiming.send_started_at.is_(None), DeliveryTiming.accepted_at.is_(None)))
     return {
         "observed_at": now, "window_seconds": 3600,
         "cohort": "current_confirmed_paid_clients" if paid_source_access.strict(db.get_bind()) else "legacy_test_access",
         "current_paid_clients": db.scalar(select(func.count(User.id)).where(paid)) if paid_source_access.strict(db.get_bind()) else None,
         "ready_enabled_searches": len(members), "active_filter_groups": len(groups),
         "source_access_audit": access_audit(db, settings, now) if paid_source_access.strict(db.get_bind()) else None,
+        "paid_cohort_details": paid_cohort_details(db, settings, now, members) if paid_source_access.strict(db.get_bind()) else None,
+        "process_configuration": {
+            "release": os.getenv("RENDER_GIT_COMMIT"), "monitor_enabled": settings.monitor_enabled,
+            "delivery_enabled": settings.live, "strict_paid_sources": paid_source_access.strict(db.get_bind()),
+            "shared_distribution_enabled": settings.ria_shared_distribution_enabled,
+            "recent_publications_enabled": settings.ria_recent_publications_enabled,
+            "html_shadow_configured": bool(settings.ria_html_shadow_run_id),
+            "full_scan_enabled": settings.full_scan_enabled,
+            "active_window_enabled": settings.ria_active_window_enabled,
+            "provider_valuation_enabled": settings.ria_ai_price_enabled,
+            "manual_payment_notices_enabled": settings.manual_payment_notices_enabled,
+            "automobile_admin_copies_enabled": False,
+        },
+        "supplemental_processors": {
+            "recent_publications": {"enabled": recent_publications.enabled(settings),
+                "status": recent.status if recent else "not_initialized",
+                "checked_at": recent.checked_at if recent else None,
+                "last_success_at": recent.result.get("last_success_at") if recent else None},
+            "html_shadow": {"configured": bool(shadow_key),
+                "status": shadow.status if shadow else "not_initialized",
+                "checked_at": shadow.checked_at if shadow else None},
+        },
         "primary": {
             "running": bool(settings.monitor_enabled and control and now - control.heartbeat < 180),
             "status": control.status if control else "unavailable",
@@ -193,6 +303,7 @@ def snapshot(db, settings, now):
         },
         "delivery": {"states_queued_last_hour": dict(db.execute(deliveries).all()),
                      "last_client_accepted_at": last_client, "last_owner_accepted_at": last_owner,
+                     "unattempted_admin_copies_remaining": pending_copies,
                      "receipt_basis": "telegram_api_acceptance"},
     }
 

@@ -199,6 +199,8 @@ def create_app(settings: Settings, engine=None, *, paid_source_only=False):
         await asyncio.to_thread(paid_source_access.log_snapshot, engine)
         from . import owner_car_notifications
         await asyncio.to_thread(owner_car_notifications.initialize, engine, settings)
+        from . import paid_owner_restoration
+        await asyncio.to_thread(paid_owner_restoration.initialize, engine, settings)
         from . import source_pipeline_health
         await asyncio.to_thread(source_pipeline_health.log_snapshot, engine, settings)
         stop = asyncio.Event()

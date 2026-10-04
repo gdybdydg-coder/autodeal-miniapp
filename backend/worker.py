@@ -3,8 +3,6 @@ from . import billing, paid_source_access
 import json
 import logging
 import time
-from datetime import datetime
-from zoneinfo import ZoneInfo
 
 import httpx
 from sqlalchemy import exists, func, select, update
@@ -130,12 +128,16 @@ def recent_listing(listing, now):
 
 def enqueue(engine, now=None, *, allow_active_window=True, allow_recent_publications=True,
             require_provider_range=False, require_confirmed_deal=False):
+    from .owner_car_notifications import reclaim, reusable_clause, retire_if_due
     now = time.time() if now is None else now
+    retire_if_due(engine, None)
     with Session(engine) as db:
         # Drive fan-out from current, enabled monitor interests instead of
         # rescanning the entire listings table once per connected user.
-        pending_pair = ~exists(select(Delivery.id).where(
+        pending_pair = (~exists(select(Delivery.id).where(
             Delivery.user_id == User.id, Delivery.listing_id == Listing.id))
+            | exists(select(Delivery.id).where(Delivery.user_id == User.id,
+                Delivery.listing_id == Listing.id, *reusable_clause())))
         pairs = db.execute(select(User.id, Listing.id).select_from(MonitorMatch)
             .join(Search, Search.id == MonitorMatch.search_id)
             .join(MonitorWatch, MonitorWatch.search_id == Search.id)
@@ -167,6 +169,15 @@ def enqueue(engine, now=None, *, allow_active_window=True, allow_recent_publicat
             # must not be queued or revived by enabling confirmed-only mode.
             if require_confirmed_deal and unpriced_listing(listing):
                 continue
+            existing = db.scalar(select(Delivery).where(
+                Delivery.user_id == uid, Delivery.listing_id == listing_id))
+            if existing is not None:
+                # Only a fresh current match may reclaim a never-attempted copy
+                # reservation. This cannot refresh or replay old copy history.
+                if eligible(db, uid, listing, now, require_provider_range=require_provider_range,
+                            require_confirmed_deal=require_confirmed_deal):
+                    reclaim(db, existing, now)
+                continue
             refreshable = (listing.source == "auto_ria"
                 and not fresh(Car.model_validate(listing.car), now, db, require_provider_range=require_provider_range)
                 and db.scalar(matching_searches(uid, listing.id).limit(1)) is not None)
@@ -194,9 +205,6 @@ class TelegramSender:
 
     @staticmethod
     def card(car, *, historical_at=None):
-        owner_copy = (car.pipeline or {}).get("owner_copy")
-        if isinstance(owner_copy, dict):
-            historical_at = owner_copy.get("rendered_at", owner_copy["observed_at"])
         price = f"${car.price:,.0f}".replace(",", " ")
         details = []
         if car.fuel:
@@ -257,9 +265,6 @@ class TelegramSender:
                 pricing.append("Витрати на ремонт не враховані" if provider_range else
                                "Орієнтир аналогів без позначених пошкоджень; витрати на ремонт не враховані")
         sections = [f"🚘 {car.brand} {car.model} · {car.year}"]
-        if isinstance(owner_copy, dict):
-            stamp = datetime.fromtimestamp(owner_copy["observed_at"], ZoneInfo("Europe/Kyiv"))
-            sections.insert(0, f"👁 Копія клієнтського сповіщення\nДані на {stamp:%d.%m %H:%M}")
         if (car.pipeline or {}).get("discovery_kind") == "active_window":
             sections.append("🕘 Активне оголошення з додаткової перевірки")
         if details:
@@ -287,11 +292,13 @@ class TelegramSender:
             try:
                 allowed = before_transport()
             except Exception:
-                return {"ok": False, "_access_unavailable": True,
-                        "_delivery_attempts": attempts}
+                denial = {"ok": False, "_access_unavailable": True}
+                return {**denial, "_delivery_attempts": [*attempts,
+                        delivery_diagnostic.summary(denial, method)]}
             if not allowed:
-                return {"ok": False, "_access_blocked": True,
-                        "_delivery_attempts": attempts}
+                denial = {"ok": False, "_access_blocked": True}
+                return {**denial, "_delivery_attempts": [*attempts,
+                        delivery_diagnostic.summary(denial, method)]}
             return None
         try:
             with httpx.Client(timeout=15, follow_redirects=False) as client:
@@ -352,7 +359,7 @@ class TelegramSender:
 
 
 def deliver_one(engine, settings: Settings, sender, now=None, *, enforce_chat_interval=True):
-    from .owner_car_notifications import QUEUE_STATE, payload as owner_copy_payload
+    from .owner_car_notifications import ordinary_delivery_clause
     if not settings.live:
         return "disabled"
     # Explicit timestamps belong to isolated deterministic callers. Production
@@ -361,7 +368,8 @@ def deliver_one(engine, settings: Settings, sender, now=None, *, enforce_chat_in
     now = clock()
     with Session(engine) as db:
         row = db.scalar(select(Delivery).where(
-            Delivery.state.in_(("pending", QUEUE_STATE)), Delivery.retry_at <= now).order_by(Delivery.id)
+            Delivery.state == "pending", Delivery.retry_at <= now,
+            ordinary_delivery_clause()).order_by(Delivery.id)
             .with_for_update(skip_locked=True).limit(1))
         if row is None:
             return "empty"
@@ -379,7 +387,6 @@ def deliver_one(engine, settings: Settings, sender, now=None, *, enforce_chat_in
         user = db.scalar(select(User).where(User.id == row.user_id).with_for_update())
         now = clock()  # A row-lock wait can outlast the paid period.
         listing = db.get(Listing, row.listing_id)
-        owner_copy = owner_copy_payload(db, settings, row)
         last_send = db.scalar(select(func.max(DeliveryTiming.send_started_at))
             .join(Delivery, Delivery.id == DeliveryTiming.delivery_id)
             .where(Delivery.user_id == row.user_id, Delivery.id != delivery_id)) if user else None
@@ -388,14 +395,29 @@ def deliver_one(engine, settings: Settings, sender, now=None, *, enforce_chat_in
         recent, expired = recent_listing(listing, now)
         retired |= expired or (recent and not getattr(settings, "ria_recent_publications_enabled", False))
         unconfirmed = settings.ria_confirmed_deals_only and unpriced_listing(listing)
-        if not owner_copy and not retired and not unconfirmed and user and user.ready and listing and listing.source == "auto_ria" and not fresh(
+        if not retired and not unconfirmed and user and user.ready and listing and listing.source == "auto_ria" and not fresh(
                 Car.model_validate(listing.car), now, db, require_provider_range=settings.ria_ai_price_enabled):
             refresh = list(db.scalars(matching_searches(user.id, listing.id)))
-        if user and not owner_copy and not paid_source_access.allowed(db, user.id, now):
+        try:
+            paid = not user or paid_source_access.allowed(db, user.id, now)
+        except Exception:
+            # PostgreSQL read errors can abort the transaction. Roll back before
+            # returning the claim to the queue and recording its technical cause.
+            car = Car.model_validate(listing.car)
+            db.rollback()
+            row = db.scalar(select(Delivery).where(Delivery.id == delivery_id,
+                Delivery.state == "sending").with_for_update())
+            if row is None:
+                return "busy"
+            row.state, row.retry_at = "pending", clock() + 60
+            delivery_diagnostic.record(db, row, car, {"_access_unavailable": True}, delivery_log)
+            db.commit()
+            return row.state
+        if user and not paid:
             row.state = "cancelled"
             db.execute(update(Delivery).where(Delivery.user_id == user.id,
                 Delivery.state == "pending").values(state="cancelled"))
-        elif not owner_copy and (retired or unconfirmed):
+        elif retired or unconfirmed:
             row.state = "cancelled"
             if unconfirmed:
                 delivery_log.info("Unconfirmed notification suppressed source_id=%s", listing.source_id)
@@ -423,13 +445,13 @@ def deliver_one(engine, settings: Settings, sender, now=None, *, enforce_chat_in
         elif enforce_chat_interval and user and user.ready and last_send and now < last_send + 1.05:
             # Telegram limits each private chat separately; do not keep a user
             # row locked while waiting or jeopardize other recipients' slots.
-            row.state, row.retry_at = QUEUE_STATE if owner_copy else "pending", last_send + 1.05
-        elif not user or not user.ready or not listing or (not owner_copy and not eligible(
+            row.state, row.retry_at = "pending", last_send + 1.05
+        elif not user or not user.ready or not listing or not eligible(
                 db, row.user_id, listing, now, require_provider_range=settings.ria_ai_price_enabled,
-                require_confirmed_deal=settings.ria_confirmed_deals_only)):
+                require_confirmed_deal=settings.ria_confirmed_deals_only):
             row.state = "cancelled"
         else:
-            car = owner_copy or Car.model_validate(listing.car)
+            car = Car.model_validate(listing.car)
             timing = db.get(DeliveryTiming, delivery_id)
             if timing is None:
                 timing = DeliveryTiming(delivery_id=delivery_id, queued_at=now)
@@ -444,16 +466,15 @@ def deliver_one(engine, settings: Settings, sender, now=None, *, enforce_chat_in
                     db.execute(update(Delivery).where(Delivery.user_id == row.user_id,
                         Delivery.state == "pending").values(state="cancelled"))
                     return False
-                if not owner_copy:
-                    if not paid_source_access.allowed(db, row.user_id, checked_at):
-                        db.execute(update(Delivery).where(Delivery.user_id == row.user_id,
-                            Delivery.state == "pending").values(state="cancelled"))
-                        return False
-                    if recent_listing(listing, checked_at)[1] or not eligible(
-                            db, row.user_id, listing, checked_at,
-                            require_provider_range=settings.ria_ai_price_enabled,
-                            require_confirmed_deal=settings.ria_confirmed_deals_only):
-                        return False
+                if not paid_source_access.allowed(db, row.user_id, checked_at):
+                    db.execute(update(Delivery).where(Delivery.user_id == row.user_id,
+                        Delivery.state == "pending").values(state="cancelled"))
+                    return False
+                if recent_listing(listing, checked_at)[1] or not eligible(
+                        db, row.user_id, listing, checked_at,
+                        require_provider_range=settings.ria_ai_price_enabled,
+                        require_confirmed_deal=settings.ria_confirmed_deals_only):
+                    return False
                 if not transport_started:
                     timing.send_started_at = checked_at
                     transport_started = True
@@ -466,7 +487,7 @@ def deliver_one(engine, settings: Settings, sender, now=None, *, enforce_chat_in
                 else:
                     result = {"ok": False, "_access_blocked": True}
             except Exception:
-                result = {"uncertain": True}
+                result = {"uncertain": True} if transport_started else {"_access_unavailable": True}
             if not isinstance(result, dict):
                 result = {"uncertain": True}
             message = result.get("result")
@@ -477,9 +498,7 @@ def deliver_one(engine, settings: Settings, sender, now=None, *, enforce_chat_in
                 timing.accepted_at = time.time()
                 stamp = message.get("date")
                 timing.telegram_date = stamp if type(stamp) is int and stamp > 0 else None
-                if owner_copy:
-                    delivery_log.info("Owner car copy accepted source_id=%s basis=confirmed_client_receipt", car.source_id)
-                elif car.source == "auto_ria" and car.market is not None:
+                if car.source == "auto_ria" and car.market is not None:
                     proof = car.valuation_evidence or {}
                     if proof.get("version") == ria_market_range.VERSION:
                         quote = proof["source_range"]
@@ -501,11 +520,16 @@ def deliver_one(engine, settings: Settings, sender, now=None, *, enforce_chat_in
                 row.state = "cancelled"
             elif result.get("_access_unavailable"):
                 # A known pre-transport read failure is not Telegram acceptance.
-                row.state, row.retry_at = QUEUE_STATE if owner_copy else "pending", time.time() + 60
+                db.rollback()
+                row = db.scalar(select(Delivery).where(Delivery.id == delivery_id,
+                    Delivery.state == "sending").with_for_update())
+                if row is None:
+                    return "busy"
+                row.state, row.retry_at = "pending", clock() + 60
             elif result.get("error_code") == 429:
                 retry = result.get("parameters", {}).get("retry_after", 60)
                 row.retry_at = now + max(1, min(int(retry), 86400))
-                row.state = QUEUE_STATE if owner_copy else "pending"
+                row.state = "pending"
             elif result.get("error_code") == 403:
                 row.state = "failed"
                 user.ready = False
@@ -528,6 +552,9 @@ def main():
         return
     engine = create_engine(settings.database_url, pool_pre_ping=True)
     paid_source_access.configure(engine, settings)
+    from . import owner_car_notifications, paid_owner_restoration
+    owner_car_notifications.initialize(engine, settings)
+    paid_owner_restoration.initialize(engine, settings)
     enqueue(engine, allow_active_window=settings.ria_active_window_enabled,
             require_provider_range=settings.ria_ai_price_enabled,
             require_confirmed_deal=settings.ria_confirmed_deals_only)
