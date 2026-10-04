@@ -59,9 +59,23 @@ Telegram diagnostic receipt. /health and offline test totals are not sufficient.
 Owner-requested test advertisements, 04 October 13:30 Kyiv: the user explicitly
 confirmed sending test adverts. `OLX_OWNER_CANARY_TEST_ADS_ENABLED=true` enables
 one capped batch of two attempts, only for the same current confirmed-paid owner
-and pinned enabled searches. Two grounded regional detail URLs are refreshed
-before sending; previous discovery baseline does not suppress this explicit
-sample batch. Existing 80 MiB/40-GET/deadline caps remain unchanged.
+and pinned enabled searches. Previous discovery baseline does not suppress this
+explicit sample batch. Existing 80 MiB/40-GET/deadline caps remain unchanged.
+
+Live follow-up: both detail URLs found in a search-engine cache returned HTTP410
+on the server, so no sample was sent. Replaced those dead seeds with current live
+category cards: prefer organic cards, read at most two complete identity-matched
+details. For a saved Чернівецька or Хмельницька region, use the corresponding exact
+official city category URL observed through public search; it only prioritizes
+the sample. Detail breadcrumbs still have to prove the requested oblast. No
+cached detail URL or reported cache price authorizes a send. The ephemeral
+allowlist binds sample sending to URLs selected from the current source page.
+The explicitly requested two-ad batch has a maximum four additional public GET
+reservations (16 MiB), to replace the failed cached samples. This allowance is
+available only while fewer than two test attempts are reserved; ordinary
+observation retains 80 MiB and cannot use it. Combined reservation cap96 MiB,
+maximum24 GET at4 MiB each, with the existing40-GET/deadline/paid-access gates.
+This is a bounded free OLX transport allowance, no change to AUTO.RIA quotas.
 
 Require complete identity-matched details, allowed eligibility and corroborated
 displayed asking amount. Known contradictions to current named/numeric filters

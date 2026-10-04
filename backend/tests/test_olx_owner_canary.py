@@ -183,10 +183,10 @@ def test_stop_before_initialization_prevents_future_auto_launch(live):
 @pytest.fixture
 def sample(live, monkeypatch):
     live.settings = replace(live.settings, olx_owner_canary_test_ads_enabled=True)
-    monkeypatch.setattr(canary, 'TEST_URLS', (URL,))
     canary.initialize(live.engine, live.settings, NOW)
     with Session(live.engine) as db:
         state = dict(db.get(SourceProbe, canary.STATE).result)
+        state['test_urls'] = [URL]
     car = canary.parse_detail_snapshot(page(), fetched_at=NOW, truncated=False)['listing']
     return live, state, car
 
@@ -296,14 +296,44 @@ def test_first_detail_timeout_does_not_discard_second_sample(sample, monkeypatch
     import httpx
     b, state, car = sample
     first = 'https://www.olx.ua/d/uk/obyavlenie/other-example.html'
-    monkeypatch.setattr(canary, 'TEST_URLS', (first, URL))
+    two_cards = (f'<html><div data-testid="l-card" id="124"><a data-testid="card-title-link" href="{first}">Other</a></div>').encode() + SEARCH.removeprefix(b'<html>')
     original = b.fetch
     def fetch(url):
         if url == first:
             b.calls.append(url)
             raise httpx.ReadTimeout('temporary upstream timeout')
+        if url == canary.URL:
+            b.calls.append(url)
+            # Put the failed detail first without inventing publication proof.
+            return 200, two_cards, False
         return original(url)
     result = canary.tick(b.engine, b.settings, fetch, b.sender)
     assert result['status'] == 'technical_hold' and result['error_type'] == 'ReadTimeout'
     assert result['details'] == result['car_sends'] == 1
     assert b.calls == [canary.URL, first, URL]
+
+
+def test_grounded_category_choice_uses_current_named_region_only():
+    assert canary.test_search_url([{'filters': {'region': ['Чернівецька область']}}]) == canary.TEST_SEARCHES['чернівецька']
+    assert canary.test_search_url([{'filters': {'region': ['Хмельницька']}}]) == canary.TEST_SEARCHES['хмельницька']
+    assert canary.test_search_url([{'filters': {'region': ['Полтавська']}}]) == canary.URL
+
+
+def test_only_requested_sample_has_four_bounded_extra_public_reservations(sample, monkeypatch):
+    b, state, car = sample
+    monkeypatch.setattr(canary, 'MAX_BYTES', canary.MAX_HTML)
+    token, _ = canary.claim(b.engine, b.settings, NOW)
+    for _ in range(1+canary.TEST_EXTRA_REQUESTS):
+        assert canary.reserve(b.engine, token, b.settings, NOW)
+    assert not canary.reserve(b.engine, token, b.settings, NOW)
+
+
+def test_sample_extra_allowance_ends_after_two_attempts(sample, monkeypatch):
+    b, state, car = sample
+    monkeypatch.setattr(canary, 'MAX_BYTES', canary.MAX_HTML)
+    token, _ = canary.claim(b.engine, b.settings, NOW)
+    assert canary.reserve(b.engine, token, b.settings, NOW)
+    with Session(b.engine) as db:
+        db.merge(SourceProbe(id=canary.TEST_BATCH, status='active', checked_at=NOW, requests=2, result={}))
+        db.commit()
+    assert not canary.reserve(b.engine, token, b.settings, NOW)

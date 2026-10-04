@@ -37,16 +37,17 @@ STATE = 'olx-owner-canary-20261004-v1'
 NOTICE = STATE + '-notice'
 TEST_BATCH = STATE + '-test-ads-v1'
 MAX_TEST_ADS = 2
-# Observed through public search on 04 October; refresh on the server before
-# any sample send. These are test samples, never proof of first publication.
-TEST_URLS = (
-    'https://www.olx.ua/d/uk/obyavlenie/hundai-matrix-2006-ID11fxH1.html',
-    'https://www.olx.ua/d/uk/obyavlenie/audi-a6-s5-1-8-gaz-benz-ID11k8dT.html',
-)
+# Official category URLs observed through public search on 04 October. A search
+# city is only prioritization; the detail must establish the requested oblast.
+TEST_SEARCHES = {
+    'чернівецька': 'https://www.olx.ua/uk/transport/legkovye-avtomobili/chernovtsy/',
+    'хмельницька': 'https://www.olx.ua/uk/transport/legkovye-avtomobili/khmelnitskiy/',
+}
 INTERVAL = 300
 MAX_REQUESTS = 40
 MAX_BYTES = 80 * 1024 * 1024
 MAX_HTML = 4 * 1024 * 1024
+TEST_EXTRA_REQUESTS = 4
 URL = 'https://www.olx.ua/uk/transport/legkovye-avtomobili/?currency=UAH&search%5Border%5D=created_at%3Adesc'
 log = logging.getLogger('uvicorn.error')
 
@@ -138,7 +139,10 @@ def reserve(engine, token, settings, now):
         row = db.get(SourceProbe, STATE, with_for_update=True)
         if not row or row.status != 'active' or row.result.get('lease') != token or row.result['lease_until'] <= now:
             return False
-        if not enabled(settings, now) or row.requests >= MAX_REQUESTS or row.result.get('budget_bytes', 0) + MAX_HTML > MAX_BYTES:
+        batch = db.get(SourceProbe, TEST_BATCH)
+        sample_allowance = (TEST_EXTRA_REQUESTS * MAX_HTML if settings.olx_owner_canary_test_ads_enabled
+                            and (not batch or batch.requests < MAX_TEST_ADS) else 0)
+        if not enabled(settings, now) or row.requests >= MAX_REQUESTS or row.result.get('budget_bytes', 0) + MAX_HTML > MAX_BYTES + sample_allowance:
             row.status = 'finished'; db.commit(); return False
         row.requests += 1
         data = copy.deepcopy(row.result)
@@ -153,7 +157,7 @@ def public_fetch(url):
     if (parts.scheme != 'https' or parts.hostname != 'www.olx.ua' or parts.username or parts.password
             or parts.port not in (None, 443) or parts.fragment):
         raise ValueError('Only official public OLX pages')
-    if not (url == URL or parts.path.startswith('/d/uk/obyavlenie/') and parts.path.endswith('.html') and not parts.query):
+    if not (url == URL or url in TEST_SEARCHES.values() or parts.path.startswith('/d/uk/obyavlenie/') and parts.path.endswith('.html') and not parts.query):
         raise ValueError('Unobserved source path')
     deadline = time.monotonic() + 20
     with httpx.Client(timeout=httpx.Timeout(5, connect=5), follow_redirects=False,
@@ -208,6 +212,16 @@ def sample_match(car, rows):
     return False
 
 
+def test_search_url(rows):
+    for key, url in TEST_SEARCHES.items():
+        for row in rows:
+            values = row['filters'].get('region', [])
+            values = values if isinstance(values, list) else [values]
+            if any(v.casefold().removesuffix(' область').strip() == key for v in values):
+                return url
+    return URL
+
+
 def sample_text(car):
     observed = car['observed_asking_display']
     currency = {'USD': '$', 'UAH': 'грн', 'EUR': '€'}[observed['currency']]
@@ -226,7 +240,7 @@ def send_test_ad(engine, settings, state, car, sender):
     if not settings.olx_owner_canary_test_ads_enabled:
         return False
     observed = car.get('observed_asking_display', {})
-    if (car.get('source') != 'olx' or car.get('url') not in TEST_URLS
+    if (car.get('source') != 'olx' or car.get('url') not in state.get('test_urls', [])
             or car.get('eligibility_review', {}).get('status') != 'allowed'
             or observed.get('status') != 'corroborated_display'
             or not sample_match(car, permitted(engine, settings, state))):
@@ -320,7 +334,11 @@ def tick(engine, settings, fetch=public_fetch, sender=telegram_setup.call, now=N
     try:
         if not permitted(engine, settings, state):
             raise ValueError('current_paid_ready_search_required')
-        body, truncated = get(URL)
+        with Session(engine) as db:
+            batch = db.get(SourceProbe, TEST_BATCH)
+            sample_mode = settings.olx_owner_canary_test_ads_enabled and (not batch or batch.requests < MAX_TEST_ADS)
+        request_url = test_search_url(permitted(engine, settings, state)) if sample_mode else URL
+        body, truncated = get(request_url)
         page = parse_search_snapshot(body, fetched_at=int(clock()), truncated=truncated)
         result['pages'] = 1
         result['page_truncated'] = page['summary']['download_truncated']
@@ -332,11 +350,11 @@ def tick(engine, settings, fetch=public_fetch, sender=telegram_setup.call, now=N
         state['seen'] = list(dict.fromkeys(state['seen'] + [car['id'] for car in page['listings']]))[-5000:]
         # The initial sample is a baseline, never old-ad messages. Two details
         # provide evidence of exclusions/fields; unknown value stays unresolved.
-        samples = [{'id': None, 'url': url} for url in TEST_URLS] if settings.olx_owner_canary_test_ads_enabled else fresh[:2]
-        with Session(engine) as db:
-            batch = db.get(SourceProbe, TEST_BATCH)
-            if settings.olx_owner_canary_test_ads_enabled and batch and batch.requests >= MAX_TEST_ADS:
-                samples = fresh[:2]
+        reviewed = state.get('sample_reviewed', [])
+        samples = sorted((car for car in page['listings'] if car['id'] not in reviewed), key=lambda car: car.get('observed_search_reason') != 'organic')[:2] if sample_mode else fresh[:2]
+        state['test_urls'] = [car['url'] for car in samples] if sample_mode else []
+        if sample_mode:
+            state['sample_reviewed'] = list(dict.fromkeys(reviewed + [car['id'] for car in samples]))[-100:]
         for card in samples:
             time.sleep(4) if fetch is public_fetch else None
             try:
@@ -384,10 +402,13 @@ def tick(engine, settings, fetch=public_fetch, sender=telegram_setup.call, now=N
             return {'status': 'lease_lost'}
         data = copy.deepcopy(row.result)
         data.update(seen=state['seen'], cycles=data['cycles']+1,
+                    sample_reviewed=state.get('sample_reviewed', []),
                     bytes=data['bytes']+result['bytes'], last=result,
                     car_sends=data.get('car_sends', 0)+result['car_sends'],
                     lease='', lease_until=0)
         row.result, row.checked_at = data, now
+        result['requests_reserved_total'] = row.requests
+        result['bytes_reserved_total'] = data.get('budget_bytes', 0)
         if result['status'] == 'source_blocked':
             row.status = 'source_blocked'
         db.commit()
