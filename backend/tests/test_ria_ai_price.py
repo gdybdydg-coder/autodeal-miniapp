@@ -41,16 +41,8 @@ def enable(p, monkeypatch, response=None, error=None, action=None):
             raise RiaError(error)
         return ai.parse_quote(wire(15000) if response is None else response, sid)
     monkeypatch.setattr(ai, "fetch_quote", fetch)
-    # Explicit synthetic native adapter for transport/threshold regression tests.
-    # Production RiaSearch.market_range has NO such adapter and withholds quotes.
-    # These paired fixture numbers are not evidence of live API/native parity.
-    def native_fixture(self, sid, uid):
-        observation = self.api_market_range_observation(sid, uid)
-        if observation is None:
-            return None
-        return {**{key: observation[key] for key in market_range.QUOTE_FIELDS},
-                "basis": market_range.BASIS}
-    monkeypatch.setattr(RiaSearch, "market_range", native_fixture)
+    # Exercise the restored production adapter; mock only the HTTP transport.
+    # API observations remain API evidence, never synthetic native proof.
     monkeypatch.setattr("backend.ria_search.RiaSearch.notification_comparisons",
                         lambda *a: pytest.fail("new notifications must not request comparables"))
     return calls
@@ -70,7 +62,7 @@ def test_live_shape_uses_both_provider_fields_and_discards_private_response():
     # Provider width and owner's discount are independent, not a fixed 10% cut.
     wider = ai.parse_quote(wire(10000, .1), "124", now=1800000000)
     assert wider["lower_usd"] == 9000
-    assert not market_range.range_valid(wider, "124", 1800000000)
+    assert market_range.range_valid(wider, "124", 1800000000)
     wider["lower_usd"] += 1
     assert not market_range.range_valid(wider, "124", 1800000000)
 

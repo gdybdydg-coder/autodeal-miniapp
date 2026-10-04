@@ -60,7 +60,8 @@ def fresh(car, now, db=None, *, require_provider_range=False):
             if proof.get("pricing_policy") != ria_market_range.VERSION:
                 return False
         elif (proof.get("version") != ria_market_range.VERSION
-              or not ria_market_range.range_valid(proof.get("source_range"), car.source_id, now)):
+              or not ria_market_range.range_valid(proof.get("source_range"), car.source_id, now)
+              or not (proof.get("source_range") or {}).get("provider")):
             return False
     return (-30 <= now - car.observed_at <= (300 if car.source == "auto_ria" else 86400)
             and (car.source != "auto_ria" or price_only_evidence_valid(car, now)
@@ -207,8 +208,9 @@ class TelegramSender:
     def card(car, *, historical_at=None):
         proof = car.valuation_evidence or {}
         if (car.source == "auto_ria" and car.market is not None
-                and (proof.get("version") == "autoria-lower-bound-v1"
-                     or proof.get("basis") == "auto_ria_ai_market_range"
+                and proof.get("version") != ria_market_range.VERSION
+                and (proof.get("version") in {"autoria-lower-bound-v1", "autoria-native-lower-bound-v2"}
+                     or proof.get("basis") in {"auto_ria_ai_market_range", "auto_ria_native_listing_market_range"}
                      or isinstance(proof.get("source_range"), dict)
                      and proof["source_range"].get("basis") == "auto_ria_ai_market_range")):
             raise ValueError("invalid_provider_range_evidence")

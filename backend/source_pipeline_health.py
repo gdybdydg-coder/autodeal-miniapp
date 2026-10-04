@@ -13,7 +13,7 @@ import time
 from sqlalchemy import String, cast, exists, func, select, text
 from sqlalchemy.orm import Session
 
-from . import api_attempt_audit, paid_source_access, poll_schedule
+from . import api_attempt_audit, paid_source_access, poll_schedule, ria_market_range
 from .billing_models import AccessEvent, Entitlement
 from .manual_payment_models import PaymentAudit, PaymentRequest
 from .models import (BotReply, Delivery, DeliveryTiming, Filters, Listing, MonitorControl, MonitorFeed, MonitorJob,
@@ -264,7 +264,7 @@ def snapshot(db, settings, now):
             "full_scan_enabled": settings.full_scan_enabled,
             "active_window_enabled": settings.ria_active_window_enabled,
             "provider_valuation_enabled": settings.ria_ai_price_enabled,
-            "valuation_selection_status": "withheld_native_range_unverified" if settings.ria_ai_price_enabled else "legacy_comparisons",
+            "valuation_selection_status": ria_market_range.policy()["valuation_status"] if settings.ria_ai_price_enabled else "legacy_comparisons",
             "manual_payment_notices_enabled": settings.manual_payment_notices_enabled,
             "automobile_admin_copies_enabled": False,
         },

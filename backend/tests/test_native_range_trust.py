@@ -26,18 +26,23 @@ def test_saved_trafic_api_observation_is_not_native_market():
     observation = ai.parse_quote(wire(7012), "40517476", now=candidate["observed_at"])
     assert (observation["lower_usd"], observation["upper_usd"]) == (6661, 7362)
     result = native.estimate(candidate, observation)
-    assert result["market"] is None and result["assessment"] == "unknown"
-    assert result["valuation_reasons"] == ["native_market_range_unverified"]
+    # Explicit rollback restores the API model, not equality with native UI.
+    assert result["market"] == 6327.95 and result["assessment"] == "deal"
+    assert result["valuation_evidence"]["basis"] == ai.API_BASIS
     correct = native.estimate(candidate, verified)
     assert correct["market"] == 4471.65 and correct["assessment"] == "not_deal"
     # Matching source ID, radius arithmetic or changing a label is insufficient.
-    observation["basis"] = native.BASIS
+    observation["basis"] = "auto_ria_native_listing_market_range"
     assert not native.range_valid(observation, candidate["id"], candidate["observed_at"])
 
 
-def test_production_adapter_withholds_before_paid_valuation_and_has_no_delivery(p, monkeypatch):
+def test_missing_api_quote_withholds_delivery_without_peer_fallback(p, monkeypatch):
     strict(p)
-    monkeypatch.setattr(ai, "fetch_quote", lambda *a, **k: pytest.fail("paid valuation"))
+    calls = []
+    def unavailable(key, uid, sid):
+        calls.append(sid)
+        return None
+    monkeypatch.setattr(ai, "fetch_quote", unavailable)
     monkeypatch.setattr("backend.ria_search.RiaSearch.notification_comparisons",
                         lambda *a: pytest.fail("peer fallback"))
     drain(p)
@@ -47,11 +52,12 @@ def test_production_adapter_withholds_before_paid_valuation_and_has_no_delivery(
         result = db.get(MonitorJob, "124")
         assert result.state == "unvalued"
         assert result.result["rating"]["market"] is None
-        assert "native_market_range_unverified" in result.result["rating"]["valuation_reasons"]
+        assert "provider_market_range_unavailable" in result.result["rating"]["valuation_reasons"]
         assert db.scalar(select(MonitorMatch)) is None
         assert db.scalar(select(Delivery)) is None
         used = db.get(SourceBudget, "auto_ria").total
     assert not p.sent
+    assert calls == ["124"]
     wake(p, 301)
     drain(p)
     with Session(p.engine) as db:
@@ -60,12 +66,11 @@ def test_production_adapter_withholds_before_paid_valuation_and_has_no_delivery(
     assert not p.sent
 
 
-def test_independent_native_fixture_rejects_trafic_and_allows_real_threshold(p, monkeypatch):
+def test_api_fixture_uses_lower_adjustment_and_saved_threshold(p, monkeypatch):
     strict(p)
     def native_transport(self, sid, uid):
-        # Synthetic independent explicit bounds, not produced by AI parsing.
-        return {"source_id": sid, "basis": native.BASIS, "currency": "USD",
-                "lower_usd": 4707, "upper_usd": 5202, "observed_at": p.clock[0]}
+        # Synthetic API response; not evidence that the two live sources agree.
+        return ai.parse_quote(wire(4955), sid, now=p.clock[0])
     monkeypatch.setattr("backend.ria_search.RiaSearch.market_range", native_transport)
     p.prices["124"], p.prices["125"] = 4999, 3500
     drain(p)
@@ -90,12 +95,13 @@ def test_previous_api_card_cannot_reach_telegram_even_with_fresh_data(monkeypatc
         TelegramSender("test-only")(111, legacy)
 
 
-def test_policy_exposes_hold_and_does_not_claim_native_access():
+def test_policy_exposes_restored_api_model_without_claiming_native_access():
     policy = native.policy(confirmed_deals_only=True)
-    assert policy["valuation_status"] == "withheld_native_range_unverified"
+    assert policy["valuation_status"] == "api_range_selection_native_parity_unverified"
     assert policy["native_range_transport_available"] is False
-    assert policy["api_range_accepted_for_deal_selection"] is False
-    assert policy["provider_calls_per_uncached_listing"] == 0
+    assert policy["api_range_accepted_for_deal_selection"] is True
+    assert policy["native_app_range_identity_verified"] is False
+    assert policy["provider_calls_per_uncached_listing"] == 1
     assert policy["adjustment_percent"] == 5
 
 

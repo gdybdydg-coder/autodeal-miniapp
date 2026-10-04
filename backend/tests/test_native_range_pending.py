@@ -1,4 +1,4 @@
-"""Rollout must retire unsent API-priced cards without a quote retry loop."""
+"""Old unsent cards require current-policy evidence; terminal claims stay final."""
 import copy
 
 import pytest
@@ -14,7 +14,7 @@ from backend.tests.test_ria_ai_price import discover_new, enable, wire
 from backend.worker import deliver_one, enqueue
 
 
-def test_unsent_v1_card_is_rechecked_then_cancelled_without_paid_quote_or_replay(p, monkeypatch):
+def test_unsent_v1_card_is_rechecked_using_fresh_current_api_evidence_without_replay(p, monkeypatch):
     production_range = RiaSearch.market_range
     enable(p, monkeypatch)
     strict(p)
@@ -44,7 +44,9 @@ def test_unsent_v1_card_is_rechecked_then_cancelled_without_paid_quote_or_replay
     wake(p, 6)
     drain(p)
     with Session(p.engine) as db:
-        assert db.scalar(select(Delivery)).state == "cancelled"
-        assert db.get(MonitorJob, "124").state == "unvalued"
-        assert db.scalar(select(MonitorMatch)) is None
-    assert p.sent == []
+        assert db.scalar(select(Delivery)).state == "sent"
+        assert db.get(MonitorJob, "124").result["rating"]["valuation_version"] == "autoria-api-lower-bound-v3"
+    assert len(p.sent) == 1
+    wake(p, 301)
+    drain(p)
+    assert len(p.sent) == 1

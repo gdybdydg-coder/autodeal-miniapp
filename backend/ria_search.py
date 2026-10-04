@@ -424,13 +424,12 @@ class RiaSearch:
         return payload
 
     def market_range(self, source_id, user_id):
-        """Never substitute the discrepant AI band for a native listing range.
+        """Owner-requested return to the previous guarded paid API model.
 
-        The public UI route denies access and the documented paid AI method has
-        no verified native-range contract. Stop before reserving/calling that
-        method; discovery and fresh detail requests retain their paid guards.
+        Same shared reservation, cache and current paid-search authorization.
+        Its evidence stays API-specific; this does not establish native parity.
         """
-        raise RiaError("ai_native_range_unverified")
+        return self.api_market_range_observation(source_id, user_id)
 
     def api_market_range_observation(self, source_id, user_id):
         """One bounded paid valuation, counted in the unchanged shared budget."""

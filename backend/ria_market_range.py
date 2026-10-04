@@ -1,8 +1,8 @@
-"""Explicit listing market range, followed by the owner's 5% adjustment.
+"""Restored API valuation model, followed by the owner's 5% adjustment.
 
-The paid AI method's derived band is not the native listing range. It cannot
-authorize a deal. A native-range transport is not currently available; the
-production adapter reports that absence instead of substituting an API band.
+The owner requested the previous working API selection after the native-only
+hold stopped delivery. The API band is not the native listing range: retain
+that distinction in evidence, policy and cards. Never invent missing bounds.
 """
 import copy
 import re
@@ -11,8 +11,8 @@ from decimal import Decimal
 
 from .valuation import FIELDS, is_deal, notification_condition_allowed, number, repair_notices
 
-VERSION = "autoria-native-lower-bound-v2"
-BASIS = "auto_ria_native_listing_market_range"
+VERSION = "autoria-api-lower-bound-v3"
+BASIS = "auto_ria_ai_market_range"
 FACTOR = Decimal("0.95")
 MAX_AGE = 300
 EVIDENCE_FIELDS = (*FIELDS, "condition_exclusions")
@@ -21,9 +21,10 @@ QUOTE_FIELDS = {"source_id", "basis", "currency", "lower_usd", "upper_usd", "obs
 
 def range_valid(quote, source_id, now):
     """Require an explicit range for this listing, never median/avgPrice/p25."""
-    # API-derived mean/radius boundaries are observation data, not native proof.
-    # No flag, tolerance or matching mean can promote that payload to this basis.
-    if not isinstance(quote, dict) or set(quote) != QUOTE_FIELDS:
+    from .ria_ai_price import boundaries
+    if not isinstance(quote, dict) or set(quote) not in (QUOTE_FIELDS, QUOTE_FIELDS | {"provider"}):
+        return False
+    if "provider" in quote and boundaries(quote["provider"]) != (quote["lower_usd"], quote["upper_usd"]):
         return False
     return bool(isinstance(source_id, str) and re.fullmatch(r"[1-9][0-9]{0,11}", source_id)
         and quote["source_id"] == source_id and quote["basis"] == BASIS
@@ -39,12 +40,12 @@ def policy(*, confirmed_deals_only=False):
     return {"version": VERSION, "basis": BASIS,
             "pricing_method": "provider_lower_bound_minus_5_percent",
             "adjustment_percent": 5, "threshold_scope": "subscription",
-            "native_range_required": True, "native_range_transport_available": False,
-            "valuation_status": "withheld_native_range_unverified",
-            "provider_calls_per_uncached_listing": 0,
+            "native_range_required": False, "native_range_transport_available": False,
+            "valuation_status": "api_range_selection_native_parity_unverified",
+            "period_parameter": 168, "provider_calls_per_uncached_listing": 1,
             "notification_comparable_requests": 0,
             "missing_range": "suppress_notification" if confirmed_deals_only else "informational_without_market_price",
-            "api_range_accepted_for_deal_selection": False,
+            "api_range_accepted_for_deal_selection": True,
             "native_app_range_identity_verified": False}
 
 
@@ -53,7 +54,7 @@ def estimate(candidate, quote, *, now=None):
     result = {"market": None, "discount": None, "comparables": 0,
               "valuation": "unavailable", "assessment": "unknown",
               "valuation_version": VERSION, "valuation_evidence": None,
-              "valuation_reasons": ["native_market_range_unverified"]}
+              "valuation_reasons": ["provider_market_range_unavailable"]}
     if not isinstance(candidate, dict) or not range_valid(quote, candidate.get("id"), now):
         return result
     if (not notification_condition_allowed(candidate)
@@ -110,4 +111,5 @@ def pricing_lines(car, *, historical_at=None):
     label = f"{abs(percent):.1f}".rstrip("0").rstrip(".").replace(".", ",")
     difference = (f"🔥 Вигода: {label}%" if percent >= 0
                   else f"📈 Вище ринкової ціни: {label}%")
-    return [f"📊 Ринкова ціна: ≈ {money(car.market)}", difference]
+    return [f"📊 Ринкова ціна: ≈ {money(car.market)}", difference,
+            "ℹ️ Оцінка API AUTO.RIA; може відрізнятися від оцінки в оголошенні"]
