@@ -1,0 +1,26 @@
+{
+  "main_commit": "473534ad433b2ae4d1bad8eab033a84b06a5aed5",
+  "research_commit": "32dc444819db99fc6d4caa490604021013f0473d",
+  "default_off_deploy": "dep-db1nvo97lnhs73dq8kdg",
+  "default_off_live_at": "2026-10-05T10:47:05.22188Z",
+  "probe_enabled_env_deploy": "dep-db1o0lrtqb8s73e09kng",
+  "source_flag_changed": "OLX_RIA_PROBE_ENABLED=true",
+  "owner_feed_enabled": false,
+  "changed_existing_backend_files": [
+    "backend/app.py"
+  ],
+  "unchanged_existing_backend_files": 221,
+  "lifecycle_additions": 5,
+  "tests_passed": 218,
+  "test_seconds": 37.41,
+  "paid_budget": {
+    "maximum_ria_calls": 30,
+    "maximum_ai": 6
+  },
+  "olx_reserved_before_io": {
+    "requests": 2,
+    "bytes": 4194304
+  },
+  "actual_probe_results_pending": true,
+  "telegram_receipts": []
+}

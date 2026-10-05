@@ -122,3 +122,52 @@ def test_reservations_remain_spent_and_total_and_ai_caps_hold(live):
 def test_documented_generation_shape_preserves_generation_not_model_id():
     data=[{'id':652,'name':'Octavia','generations':[{'generationId':123,'name':'II/A5'}]}]
     assert probe.catalog_rows(data)==[(123,'II/A5')]
+
+
+def test_olx_receipt_survives_later_card_parse_failure(live,monkeypatch):
+    def fetch(settings,path,body,params):return 200,catalogs(path),20
+    def bad_parse(*args,**kwargs):raise ValueError('parse_failed')
+    monkeypatch.setattr(probe,'parse_detail_snapshot',bad_parse)
+    result=probe.run_once(live.engine,live.settings,live.plan,fetch=fetch,
+                          olx_fetch=lambda u:(200,b'complete-but-unparseable',False))
+    assert result['error']=='parse_failed'
+    with Session(live.engine) as db:
+        receipt=db.get(SourceProbe,probe.STATE).result['olx_calls'][0]
+        assert receipt['status']=='http_200' and receipt['bytes']==24
+
+
+def test_reviewed_gas_correction_reuses_spent_ledger_and_never_defaults_fuel(live,monkeypatch):
+    car=dict(source='olx',id='936768428',url=live.plan['candidates'][0]['url'],
+        body='wagon',fuel='gas_petrol',transmission='manual',year=2005,mileage_km=254000,
+        engine_cc=1600,power_hp=102,price='5100',currency='USD',checked_at=live.clock[0],
+        research_condition='seller_declared_running',generation='A5',drive_type='front')
+    monkeypatch.setattr(probe,'parse_detail_snapshot',lambda *a,**k:{'listing':deepcopy(car)})
+    monkeypatch.setattr(probe,'enrich',lambda raw,p:p)
+    calls=[]
+    def fetch(settings,path,body,params):
+        calls.append(path)
+        if body:
+            assert 'fuelId' not in body['params']
+            assert body['params']['generationId']=='3133' and body['params']['driveId']=='2'
+            return 200,{'statisticData':[{'type':'avgPrice','price':{'USD':6000}}]},40
+        return 200,catalogs(path),40
+    first=probe.run_once(live.engine,live.settings,live.plan,fetch=fetch,olx_fetch=lambda u:(200,b'x',False))
+    assert first['ria_calls']==7 and first['ai_calls']==0
+    assert first['error']=='dictionary_mapping_ambiguous_or_missing'
+    live.plan['phase']=2
+    paths={'brands':'auto/categories/1/marks','models':'auto/categories/1/marks/70/models',
+        'body':'auto/categories/1/bodystyles','fuel':'auto/type','gear':'auto/categories/1/gearboxes',
+        'drive':'auto/categories/1/driverTypes','generation':'generations/by/models/652/generations'}
+    live.plan['dictionary_evidence']={k:{'path':p,'checked_at':live.clock[0],
+        'receipt_log_id':'synthetic-receipt','items':probe.catalog_rows(catalogs(p))} for k,p in paths.items()}
+    live.plan['dictionary_evidence']['generation']['items']=[(3133,'II покоління/A5')]
+    live.plan['dictionary_evidence']['drive']['items']=[(2,'Передній')]
+    second=probe.run_once(live.engine,live.settings,live.plan,fetch=fetch,olx_fetch=lambda u:(200,b'x',False))
+    assert second['ria_calls']==8 and second['ai_calls']==1 and second['olx_gets']==2
+    assert second['technical_ready'] is False and len(calls)==8
+    with Session(live.engine) as db:
+        r=db.get(SourceProbe,probe.STATE)
+        assert r.result['phase']==2
+        assert 'fuel_subtype_mapping' in r.result['observations'][0]['missing_criteria']
+    probe.run_once(live.engine,live.settings,live.plan,fetch=fetch)
+    assert len(calls)==8

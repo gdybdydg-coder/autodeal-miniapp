@@ -2,7 +2,7 @@
   "version": 1,
   "authorization": "2026-10-05 explicit owner-only valued OLX request; clients unauthorized",
   "night_state_resumed": false,
-  "status": "authorized_server_parameter_probe_reserved",
+  "status": "phase2_corrected_probe_reserved",
   "hypothesis": "Saved densest complete group is Octavia A5 1.6 diesel manual wagon/front/105 hp, 2010 around 264-274k km, max4 peers. Prior general A5 search and MPI collection missed the explicitly observed focused 1.6 TDI query. Discover by characteristics, not price; holdout frozen before refreshed full prices.",
   "owner_search": {
     "id": 4,
@@ -28,8 +28,8 @@
     "olx_bytes": 167772160,
     "fx_gets": 6
   },
-  "reserved_olx_gets": 25,
-  "reserved_olx_bytes": 67108864,
+  "reserved_olx_gets": 26,
+  "reserved_olx_bytes": 69206016,
   "reserved_fx_gets": 1,
   "source_holds": [
     {
@@ -194,6 +194,12 @@
       "id": "933340614",
       "url": "https://www.olx.ua/d/uk/obyavlenie/skoda-octavia-a5-2007-r-v-ID11acvS.html",
       "cap": 2097152
+    },
+    {
+      "kind": "phase2_fuel_mapping_correction_refresh",
+      "id": "936768428",
+      "url": "https://www.olx.ua/d/uk/obyavlenie/skoda-octavia-a5-ID11oAgc.html",
+      "cap": 2097152
     }
   ],
   "timeout_seconds": 20,
@@ -243,7 +249,15 @@
     "maximum_calls": 30,
     "maximum_ai": 6,
     "persistent_state": "olx-ria-probe-20261005-1332-v1",
-    "actual_calls": null,
-    "provider_charged_units": null
+    "actual_calls": 7,
+    "provider_charged_units": null,
+    "actual_ai_calls": 0,
+    "phase1_result": {
+      "status": "technical_hold",
+      "error": "dictionary_mapping_ambiguous_or_missing",
+      "olx_gets": 1,
+      "actual_olx_bytes": null,
+      "note": "Gas/petrol is not an exact propane/methane dictionary value; no AI call made. Initial deployed recorder did not retain bytes before mapping failure. Preserve unknown, use reservation cap; fix reproduced offline."
+    }
   }
 }
