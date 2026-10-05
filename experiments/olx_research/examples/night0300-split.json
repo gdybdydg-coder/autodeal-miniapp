@@ -1,0 +1,16 @@
+{
+  "seed": "olx-night0300-v1",
+  "frozen_at": "2026-10-05T00:17:00Z",
+  "basis": "sha256(seed:id), frozen before detail parsing/evaluation; search prices already existed",
+  "split": {
+    "936688938": "reference",
+    "933246541": "reference",
+    "932143005": "reference",
+    "927670638": "holdout",
+    "936181092": "reference",
+    "935738586": "holdout",
+    "935685825": "reference",
+    "935633775": "reference",
+    "934655269": "reference"
+  }
+}

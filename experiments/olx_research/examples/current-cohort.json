@@ -1,7 +1,7 @@
 {
   "mode": "isolated_research",
   "dataset_kind": "projected_real_olx_observations_20261004_05_fake_users_no_sale_labels",
-  "now": 1791151627,
+  "now": 1791159446,
   "users": [
     {
       "id": "FAKE-paid-1",
@@ -7331,6 +7331,1063 @@
         }
       },
       "display_title_is_generated": true
+    },
+    {
+      "title": "Skoda Octavia A5 2006",
+      "attribute_review": {
+        "version": "visible-state-v1",
+        "issues": [
+          "power_hp_missing_or_ambiguous",
+          "modification_value_or_units_unconfirmed",
+          "vin_missing_or_ambiguous"
+        ],
+        "evidence": {
+          "drive_type": {
+            "basis": "matching_visible_and_public_state",
+            "source_key": "drive_type"
+          },
+          "doors": {
+            "basis": "matching_visible_and_public_state",
+            "source_key": "doors_num"
+          }
+        }
+      },
+      "fuel": "petrol",
+      "region": "Полтавская область",
+      "source": "olx",
+      "vehicle_identity_verified": false,
+      "transmission": "manual",
+      "price_conflicts": [],
+      "currency": "USD",
+      "source_date_observations": {
+        "origin": "public_html_prerendered_state",
+        "path": "ad.ad",
+        "identity_matches": true,
+        "values": {
+          "createdTime": {
+            "iso": "2026-10-03T12:01:51+03:00",
+            "utc": "2026-10-03T09:01:51+00:00",
+            "epoch": 1791018111
+          },
+          "lastRefreshTime": {
+            "iso": "2026-10-03T12:05:08+03:00",
+            "utc": "2026-10-03T09:05:08+00:00",
+            "epoch": 1791018308
+          },
+          "validToTime": {
+            "iso": "2026-11-02T11:02:59+02:00",
+            "utc": "2026-11-02T09:02:59+00:00",
+            "epoch": 1793610179
+          }
+        },
+        "issues": [],
+        "publication_semantics_verified": false,
+        "other_state_exported": false
+      },
+      "engine_cc": 1600,
+      "price_review": {
+        "status": "needs_review",
+        "reasons": [
+          "full_price_unconfirmed"
+        ]
+      },
+      "drive_type": "front",
+      "brand": "Skoda",
+      "url": "https://www.olx.ua/d/obyavlenie/skoda-octavia-a5-1-6-mpi-ID11ofA6.html",
+      "mileage_km": 283000,
+      "field_conflicts": [],
+      "checked_at": 1791159376,
+      "photos": [],
+      "research_field_conflicts": [],
+      "power_hp": null,
+      "generation": "A5",
+      "category": "whole_passenger_car",
+      "publication_verified": false,
+      "observed_asking_display": {
+        "status": "corroborated_display",
+        "reasons": [],
+        "amount": "4999",
+        "currency": "USD",
+        "basis": "complete_visible_detail_and_matching_public_state",
+        "original_seller_currency_verified": false,
+        "full_price_verified": false,
+        "description_reviewed_in_full": true,
+        "limits": [
+          "original_seller_currency_unverified",
+          "first_publication_unverified",
+          "asking_amount_is_not_a_completed_sale_price"
+        ],
+        "state_regular_price": {
+          "amount": "224448",
+          "currency": "UAH"
+        }
+      },
+      "eligibility_review": {
+        "status": "allowed",
+        "reasons": [
+          "customs_cleared_declared",
+          "no_forbidden_offer_evidence"
+        ],
+        "fingerprint": "d26b00e5ddfca7900c01b2315e6fe380e4a67065ac39814f0feda60326d57976",
+        "customs_status": "cleared_declared",
+        "description_complete": true
+      },
+      "vehicle_key": null,
+      "modification": null,
+      "first_seen_at": 1791145617,
+      "year": 2006,
+      "id": "936688938",
+      "price": "4999",
+      "body": "wagon",
+      "research_condition": "seller_declared_running",
+      "doors": 5,
+      "model": "Octavia",
+      "display_title_is_generated": true
+    },
+    {
+      "title": "Skoda Octavia A5 2005",
+      "attribute_review": {
+        "version": "visible-state-v1",
+        "issues": [
+          "power_hp_missing_or_ambiguous",
+          "modification_missing_or_ambiguous",
+          "doors_missing_or_ambiguous",
+          "vin_missing_or_ambiguous"
+        ],
+        "evidence": {
+          "drive_type": {
+            "basis": "matching_visible_and_public_state",
+            "source_key": "drive_type"
+          }
+        }
+      },
+      "fuel": "petrol",
+      "region": "Сумская область",
+      "source": "olx",
+      "vehicle_identity_verified": false,
+      "transmission": "manual",
+      "price_conflicts": [],
+      "currency": "USD",
+      "source_date_observations": {
+        "origin": "public_html_prerendered_state",
+        "path": "ad.ad",
+        "identity_matches": true,
+        "values": {
+          "createdTime": {
+            "iso": "2026-08-29T21:19:11+03:00",
+            "utc": "2026-08-29T18:19:11+00:00",
+            "epoch": 1788027551
+          },
+          "lastRefreshTime": {
+            "iso": "2026-10-04T15:11:11+03:00",
+            "utc": "2026-10-04T12:11:11+00:00",
+            "epoch": 1791115871
+          },
+          "validToTime": {
+            "iso": "2026-11-03T14:11:10+02:00",
+            "utc": "2026-11-03T12:11:10+00:00",
+            "epoch": 1793707870
+          }
+        },
+        "issues": [],
+        "publication_semantics_verified": false,
+        "other_state_exported": false
+      },
+      "engine_cc": 1600,
+      "price_review": {
+        "status": "needs_review",
+        "reasons": [
+          "full_price_unconfirmed"
+        ]
+      },
+      "drive_type": "front",
+      "brand": "Skoda",
+      "url": "https://www.olx.ua/d/obyavlenie/prodam-skoda-octavia-a5-1-6-mpi-ID119O3z.html",
+      "mileage_km": 271000,
+      "field_conflicts": [],
+      "checked_at": 1791159384,
+      "photos": [],
+      "research_field_conflicts": [],
+      "power_hp": null,
+      "generation": "A5",
+      "category": "whole_passenger_car",
+      "publication_verified": false,
+      "observed_asking_display": {
+        "status": "corroborated_display",
+        "reasons": [],
+        "amount": "5699",
+        "currency": "USD",
+        "basis": "complete_visible_detail_and_matching_public_state",
+        "original_seller_currency_verified": false,
+        "full_price_verified": false,
+        "description_reviewed_in_full": true,
+        "limits": [
+          "original_seller_currency_unverified",
+          "first_publication_unverified",
+          "asking_amount_is_not_a_completed_sale_price"
+        ],
+        "state_regular_price": {
+          "amount": "255877",
+          "currency": "UAH"
+        }
+      },
+      "eligibility_review": {
+        "status": "allowed",
+        "reasons": [
+          "customs_cleared_declared",
+          "no_forbidden_offer_evidence"
+        ],
+        "fingerprint": "5aed9fd9f581ad517bc7f8dc62dd16062ae0ba58b63f66c92a1cb5cfadffca73",
+        "customs_status": "cleared_declared",
+        "description_complete": true
+      },
+      "vehicle_key": null,
+      "modification": null,
+      "first_seen_at": 1791146494,
+      "year": 2005,
+      "id": "933246541",
+      "price": "5699",
+      "body": "liftback",
+      "research_condition": "seller_declared_running",
+      "doors": null,
+      "model": "Octavia",
+      "display_title_is_generated": true
+    },
+    {
+      "title": "Skoda Octavia A5 2004",
+      "attribute_review": {
+        "version": "visible-state-v1",
+        "issues": [
+          "power_hp_missing_or_ambiguous",
+          "modification_missing_or_ambiguous"
+        ],
+        "evidence": {
+          "drive_type": {
+            "basis": "matching_visible_and_public_state",
+            "source_key": "drive_type"
+          },
+          "doors": {
+            "basis": "matching_visible_and_public_state",
+            "source_key": "doors_num"
+          },
+          "vehicle_key": {
+            "basis": "matching_visible_and_public_state_vin_claim",
+            "physical_identity_verified": false,
+            "format_verified": true
+          }
+        }
+      },
+      "fuel": "petrol",
+      "region": "Днепропетровская область",
+      "source": "olx",
+      "vehicle_identity_verified": false,
+      "transmission": "manual",
+      "price_conflicts": [],
+      "currency": "USD",
+      "source_date_observations": {
+        "origin": "public_html_prerendered_state",
+        "path": "ad.ad",
+        "identity_matches": true,
+        "values": {
+          "createdTime": {
+            "iso": "2026-08-18T15:19:03+03:00",
+            "utc": "2026-08-18T12:19:03+00:00",
+            "epoch": 1787055543
+          },
+          "lastRefreshTime": {
+            "iso": "2026-09-22T08:10:03+03:00",
+            "utc": "2026-09-22T05:10:03+00:00",
+            "epoch": 1790053803
+          },
+          "validToTime": {
+            "iso": "2026-10-22T08:10:02+03:00",
+            "utc": "2026-10-22T05:10:02+00:00",
+            "epoch": 1792645802
+          }
+        },
+        "issues": [],
+        "publication_semantics_verified": false,
+        "other_state_exported": false
+      },
+      "engine_cc": 1600,
+      "price_review": {
+        "status": "needs_review",
+        "reasons": [
+          "full_price_unconfirmed"
+        ]
+      },
+      "drive_type": "front",
+      "brand": "Skoda",
+      "url": "https://www.olx.ua/d/obyavlenie/skoda-oktavia-a5-ii-pokolnnya-1-6-mpi-benzin-vdmnniy-stan-vd-vlasnika-ID115aYB.html",
+      "mileage_km": 241000,
+      "field_conflicts": [],
+      "checked_at": 1791159393,
+      "photos": [],
+      "research_field_conflicts": [],
+      "power_hp": null,
+      "generation": "A5",
+      "category": "whole_passenger_car",
+      "publication_verified": false,
+      "observed_asking_display": {
+        "status": "corroborated_display",
+        "reasons": [],
+        "amount": "5850",
+        "currency": "USD",
+        "basis": "complete_visible_detail_and_matching_public_state",
+        "original_seller_currency_verified": false,
+        "full_price_verified": false,
+        "description_reviewed_in_full": true,
+        "limits": [
+          "original_seller_currency_unverified",
+          "first_publication_unverified",
+          "asking_amount_is_not_a_completed_sale_price"
+        ],
+        "state_regular_price": {
+          "amount": "262657",
+          "currency": "UAH"
+        }
+      },
+      "eligibility_review": {
+        "status": "allowed",
+        "reasons": [
+          "customs_cleared_declared",
+          "no_forbidden_offer_evidence"
+        ],
+        "fingerprint": "ca3551969c2d61fc70611a4fcd483edbdd17472fd0ce1e0489b36e0aa2ce570c",
+        "customs_status": "cleared_declared",
+        "description_complete": true
+      },
+      "vehicle_key": "vin-sha256:f9644fd4cbae0845a5e22498682b25f8722ae2f22a106953cf1b661be9ed9b43",
+      "modification": null,
+      "first_seen_at": 1791145818,
+      "year": 2004,
+      "id": "932143005",
+      "price": "5850",
+      "body": "hatchback",
+      "research_condition": "seller_declared_running",
+      "doors": 5,
+      "model": "Octavia",
+      "display_title_is_generated": true
+    },
+    {
+      "title": "Skoda Octavia A5 2006",
+      "attribute_review": {
+        "version": "visible-state-v1",
+        "issues": [
+          "modification_missing_or_ambiguous"
+        ],
+        "evidence": {
+          "drive_type": {
+            "basis": "matching_visible_and_public_state",
+            "source_key": "drive_type"
+          },
+          "power_hp": {
+            "basis": "matching_visible_and_public_state",
+            "source_key": "power"
+          },
+          "doors": {
+            "basis": "matching_visible_and_public_state",
+            "source_key": "doors_num"
+          },
+          "vehicle_key": {
+            "basis": "matching_visible_and_public_state_vin_claim",
+            "physical_identity_verified": false,
+            "format_verified": true
+          }
+        }
+      },
+      "fuel": "petrol",
+      "region": "Днепропетровская область",
+      "source": "olx",
+      "vehicle_identity_verified": false,
+      "transmission": "manual",
+      "price_conflicts": [],
+      "currency": "USD",
+      "source_date_observations": {
+        "origin": "public_html_prerendered_state",
+        "path": "ad.ad",
+        "identity_matches": true,
+        "values": {
+          "createdTime": {
+            "iso": "2026-06-30T17:54:59+03:00",
+            "utc": "2026-06-30T14:54:59+00:00",
+            "epoch": 1782831299
+          },
+          "lastRefreshTime": {
+            "iso": "2026-10-01T08:50:16+03:00",
+            "utc": "2026-10-01T05:50:16+00:00",
+            "epoch": 1790833816
+          },
+          "pushupTime": {
+            "iso": "2026-10-01T08:50:16+03:00",
+            "utc": "2026-10-01T05:50:16+00:00",
+            "epoch": 1790833816
+          },
+          "validToTime": {
+            "iso": "2026-10-25T18:54:19+02:00",
+            "utc": "2026-10-25T16:54:19+00:00",
+            "epoch": 1792947259
+          }
+        },
+        "issues": [],
+        "publication_semantics_verified": false,
+        "other_state_exported": false
+      },
+      "engine_cc": 1600,
+      "price_review": {
+        "status": "needs_review",
+        "reasons": [
+          "full_price_unconfirmed"
+        ]
+      },
+      "drive_type": "front",
+      "brand": "Skoda",
+      "url": "https://www.olx.ua/d/obyavlenie/skoda-octavia-a5-1-6mpi-ID10MpwE.html",
+      "mileage_km": 252000,
+      "field_conflicts": [],
+      "checked_at": 1791159402,
+      "photos": [],
+      "research_field_conflicts": [],
+      "power_hp": 102,
+      "generation": "A5",
+      "category": "whole_passenger_car",
+      "publication_verified": false,
+      "observed_asking_display": {
+        "status": "corroborated_display",
+        "reasons": [],
+        "amount": "5400",
+        "currency": "USD",
+        "basis": "complete_visible_detail_and_matching_public_state",
+        "original_seller_currency_verified": false,
+        "full_price_verified": false,
+        "description_reviewed_in_full": true,
+        "limits": [
+          "original_seller_currency_unverified",
+          "first_publication_unverified",
+          "asking_amount_is_not_a_completed_sale_price"
+        ],
+        "state_regular_price": {
+          "amount": "242452",
+          "currency": "UAH"
+        }
+      },
+      "eligibility_review": {
+        "status": "allowed",
+        "reasons": [
+          "customs_cleared_declared",
+          "no_forbidden_offer_evidence"
+        ],
+        "fingerprint": "cc58f67f95bc476d1167bfbf961946b00a12a5e8bcb59a2cfbeb738d211389f3",
+        "customs_status": "cleared_declared",
+        "description_complete": true
+      },
+      "vehicle_key": "vin-sha256:af40c4ddddcaecdf36c40bd253a8872ececed28bd8ee1439884e11002370df7b",
+      "modification": null,
+      "first_seen_at": 1791146482,
+      "year": 2006,
+      "id": "927670638",
+      "price": "5400",
+      "body": "liftback",
+      "research_condition": "seller_declared_running",
+      "doors": 5,
+      "model": "Octavia",
+      "display_title_is_generated": true
+    },
+    {
+      "title": "Skoda Octavia A5 2004",
+      "attribute_review": {
+        "version": "visible-state-v1",
+        "issues": [
+          "modification_value_or_units_unconfirmed"
+        ],
+        "evidence": {
+          "drive_type": {
+            "basis": "matching_visible_and_public_state",
+            "source_key": "drive_type"
+          },
+          "power_hp": {
+            "basis": "matching_visible_and_public_state",
+            "source_key": "power"
+          },
+          "doors": {
+            "basis": "matching_visible_and_public_state",
+            "source_key": "doors_num"
+          },
+          "vehicle_key": {
+            "basis": "matching_visible_and_public_state_vin_claim",
+            "physical_identity_verified": false,
+            "format_verified": true
+          }
+        }
+      },
+      "fuel": "petrol",
+      "region": "Кировоградская область",
+      "source": "olx",
+      "vehicle_identity_verified": false,
+      "transmission": "manual",
+      "price_conflicts": [],
+      "currency": "USD",
+      "source_date_observations": {
+        "origin": "public_html_prerendered_state",
+        "path": "ad.ad",
+        "identity_matches": true,
+        "values": {
+          "createdTime": {
+            "iso": "2026-09-28T00:17:14+03:00",
+            "utc": "2026-09-27T21:17:14+00:00",
+            "epoch": 1790543834
+          },
+          "lastRefreshTime": {
+            "iso": "2026-09-28T00:18:15+03:00",
+            "utc": "2026-09-27T21:18:15+00:00",
+            "epoch": 1790543895
+          },
+          "validToTime": {
+            "iso": "2026-10-27T23:17:15+02:00",
+            "utc": "2026-10-27T21:17:15+00:00",
+            "epoch": 1793135835
+          }
+        },
+        "issues": [],
+        "publication_semantics_verified": false,
+        "other_state_exported": false
+      },
+      "research_asking_display": {
+        "status": "corroborated_display",
+        "reasons": [],
+        "amount": "5000",
+        "currency": "USD",
+        "basis": "regular_sale_with_optional_exchange_corroborated",
+        "original_seller_currency_verified": false,
+        "full_price_verified": false,
+        "description_reviewed_in_full": true,
+        "limits": [
+          "original_seller_currency_unverified",
+          "first_publication_unverified",
+          "asking_amount_is_not_a_completed_sale_price"
+        ],
+        "state_regular_price": {
+          "amount": "224493",
+          "currency": "UAH"
+        },
+        "previous_reasons": [
+          "ordinary_sale_not_corroborated",
+          "visible_sale_terms_missing_or_conflicting"
+        ]
+      },
+      "engine_cc": 1600,
+      "price_review": {
+        "status": "needs_review",
+        "reasons": [
+          "full_price_unconfirmed"
+        ]
+      },
+      "drive_type": "front",
+      "brand": "Skoda",
+      "url": "https://www.olx.ua/d/obyavlenie/prodam-skoda-octavia-a5-ID11m7t2.html",
+      "mileage_km": 273000,
+      "field_conflicts": [],
+      "checked_at": 1791159410,
+      "photos": [],
+      "research_field_conflicts": [],
+      "power_hp": 105,
+      "generation": "A5",
+      "category": "whole_passenger_car",
+      "publication_verified": false,
+      "observed_asking_display": {
+        "status": "needs_review",
+        "reasons": [
+          "ordinary_sale_not_corroborated",
+          "visible_sale_terms_missing_or_conflicting"
+        ],
+        "amount": "5000",
+        "currency": "USD",
+        "basis": "complete_visible_detail_and_matching_public_state",
+        "original_seller_currency_verified": false,
+        "full_price_verified": false,
+        "description_reviewed_in_full": true,
+        "limits": [
+          "original_seller_currency_unverified",
+          "first_publication_unverified",
+          "asking_amount_is_not_a_completed_sale_price"
+        ],
+        "state_regular_price": {
+          "amount": "224493",
+          "currency": "UAH"
+        }
+      },
+      "eligibility_review": {
+        "status": "allowed",
+        "reasons": [
+          "customs_cleared_declared",
+          "no_forbidden_offer_evidence"
+        ],
+        "fingerprint": "cf345bbeda7b1c491a46620a88af6c23126f91f5471db072b397c65011fca8ba",
+        "customs_status": "cleared_declared",
+        "description_complete": true
+      },
+      "vehicle_key": "vin-sha256:a28a96945fbcb5fccdf2d3482f02045c94263074e31a384590ffb3243b6564a1",
+      "modification": null,
+      "first_seen_at": 1791145792,
+      "year": 2004,
+      "id": "936181092",
+      "price": "5000",
+      "body": "liftback",
+      "research_condition": "seller_declared_running",
+      "doors": 4,
+      "model": "Octavia",
+      "display_title_is_generated": true
+    },
+    {
+      "title": "Skoda Octavia A5 2006",
+      "attribute_review": {
+        "version": "visible-state-v1",
+        "issues": [
+          "modification_missing_or_ambiguous",
+          "doors_missing_or_ambiguous",
+          "vin_missing_or_ambiguous"
+        ],
+        "evidence": {
+          "drive_type": {
+            "basis": "matching_visible_and_public_state",
+            "source_key": "drive_type"
+          },
+          "power_hp": {
+            "basis": "matching_visible_and_public_state",
+            "source_key": "power"
+          }
+        }
+      },
+      "fuel": "petrol",
+      "region": "Киевская область",
+      "source": "olx",
+      "vehicle_identity_verified": false,
+      "transmission": "manual",
+      "price_conflicts": [],
+      "currency": "USD",
+      "source_date_observations": {
+        "origin": "public_html_prerendered_state",
+        "path": "ad.ad",
+        "identity_matches": true,
+        "values": {
+          "createdTime": {
+            "iso": "2026-09-23T16:17:54+03:00",
+            "utc": "2026-09-23T13:17:54+00:00",
+            "epoch": 1790169474
+          },
+          "lastRefreshTime": {
+            "iso": "2026-09-23T16:26:28+03:00",
+            "utc": "2026-09-23T13:26:28+00:00",
+            "epoch": 1790169988
+          },
+          "validToTime": {
+            "iso": "2026-10-23T16:17:55+03:00",
+            "utc": "2026-10-23T13:17:55+00:00",
+            "epoch": 1792761475
+          }
+        },
+        "issues": [],
+        "publication_semantics_verified": false,
+        "other_state_exported": false
+      },
+      "engine_cc": 1600,
+      "price_review": {
+        "status": "needs_review",
+        "reasons": [
+          "full_price_unconfirmed"
+        ]
+      },
+      "drive_type": "front",
+      "brand": "Skoda",
+      "url": "https://www.olx.ua/d/obyavlenie/skoda-octavia-a5-ID11kglQ.html",
+      "mileage_km": 263000,
+      "field_conflicts": [],
+      "checked_at": 1791159419,
+      "photos": [],
+      "research_field_conflicts": [],
+      "power_hp": 102,
+      "generation": "A5",
+      "category": "whole_passenger_car",
+      "publication_verified": false,
+      "observed_asking_display": {
+        "status": "corroborated_display",
+        "reasons": [],
+        "amount": "6500",
+        "currency": "USD",
+        "basis": "complete_visible_detail_and_matching_public_state",
+        "original_seller_currency_verified": false,
+        "full_price_verified": false,
+        "description_reviewed_in_full": true,
+        "limits": [
+          "original_seller_currency_unverified",
+          "first_publication_unverified",
+          "asking_amount_is_not_a_completed_sale_price"
+        ],
+        "state_regular_price": {
+          "amount": "291841",
+          "currency": "UAH"
+        }
+      },
+      "eligibility_review": {
+        "status": "allowed",
+        "reasons": [
+          "customs_cleared_declared",
+          "no_forbidden_offer_evidence"
+        ],
+        "fingerprint": "76040716627c7fb66a6de7e1028cd14e4559bdaf8cb81c112be8130414c92c2a",
+        "customs_status": "cleared_declared",
+        "description_complete": true
+      },
+      "vehicle_key": null,
+      "modification": null,
+      "first_seen_at": 1791146494,
+      "year": 2006,
+      "id": "935738586",
+      "price": "6500",
+      "body": "liftback",
+      "research_condition": "seller_declared_running",
+      "doors": null,
+      "model": "Octavia",
+      "display_title_is_generated": true
+    },
+    {
+      "title": "Skoda Octavia A5 2005",
+      "attribute_review": {
+        "version": "visible-state-v1",
+        "issues": [
+          "modification_missing_or_ambiguous",
+          "vin_missing_or_ambiguous"
+        ],
+        "evidence": {
+          "drive_type": {
+            "basis": "matching_visible_and_public_state",
+            "source_key": "drive_type"
+          },
+          "power_hp": {
+            "basis": "matching_visible_and_public_state",
+            "source_key": "power"
+          },
+          "doors": {
+            "basis": "matching_visible_and_public_state",
+            "source_key": "doors_num"
+          }
+        }
+      },
+      "fuel": "petrol",
+      "region": "Днепропетровская область",
+      "source": "olx",
+      "vehicle_identity_verified": false,
+      "transmission": "manual",
+      "price_conflicts": [],
+      "currency": "USD",
+      "source_date_observations": {
+        "origin": "public_html_prerendered_state",
+        "path": "ad.ad",
+        "identity_matches": true,
+        "values": {
+          "createdTime": {
+            "iso": "2026-09-23T09:32:37+03:00",
+            "utc": "2026-09-23T06:32:37+00:00",
+            "epoch": 1790145157
+          },
+          "lastRefreshTime": {
+            "iso": "2026-09-23T09:33:38+03:00",
+            "utc": "2026-09-23T06:33:38+00:00",
+            "epoch": 1790145218
+          },
+          "validToTime": {
+            "iso": "2026-10-23T09:32:37+03:00",
+            "utc": "2026-10-23T06:32:37+00:00",
+            "epoch": 1792737157
+          }
+        },
+        "issues": [],
+        "publication_semantics_verified": false,
+        "other_state_exported": false
+      },
+      "engine_cc": 1600,
+      "price_review": {
+        "status": "needs_review",
+        "reasons": [
+          "full_price_unconfirmed"
+        ]
+      },
+      "drive_type": "front",
+      "brand": "Skoda",
+      "url": "https://www.olx.ua/d/obyavlenie/skoda-octavia-a5-ID11k2CR.html",
+      "mileage_km": 261000,
+      "field_conflicts": [],
+      "checked_at": 1791159429,
+      "photos": [],
+      "research_field_conflicts": [],
+      "power_hp": 110,
+      "generation": "A5",
+      "category": "whole_passenger_car",
+      "publication_verified": false,
+      "observed_asking_display": {
+        "status": "corroborated_display",
+        "reasons": [],
+        "amount": "5700",
+        "currency": "USD",
+        "basis": "complete_visible_detail_and_matching_public_state",
+        "original_seller_currency_verified": false,
+        "full_price_verified": false,
+        "description_reviewed_in_full": true,
+        "limits": [
+          "original_seller_currency_unverified",
+          "first_publication_unverified",
+          "asking_amount_is_not_a_completed_sale_price"
+        ],
+        "state_regular_price": {
+          "amount": "255922",
+          "currency": "UAH"
+        }
+      },
+      "eligibility_review": {
+        "status": "allowed",
+        "reasons": [
+          "customs_cleared_declared",
+          "no_forbidden_offer_evidence"
+        ],
+        "fingerprint": "4df6c2ff5511e9d756f7763716ddd8f61006bba4d07404990e7c98536c5eab68",
+        "customs_status": "cleared_declared",
+        "description_complete": true
+      },
+      "vehicle_key": null,
+      "modification": null,
+      "first_seen_at": 1791145657,
+      "year": 2005,
+      "id": "935685825",
+      "price": "5700",
+      "body": "sedan",
+      "research_condition": "seller_declared_running",
+      "doors": 4,
+      "model": "Octavia",
+      "display_title_is_generated": true
+    },
+    {
+      "title": "Skoda Octavia A5 2005",
+      "attribute_review": {
+        "version": "visible-state-v1",
+        "issues": [
+          "power_hp_missing_or_ambiguous",
+          "modification_missing_or_ambiguous",
+          "vin_missing_or_ambiguous"
+        ],
+        "evidence": {
+          "drive_type": {
+            "basis": "matching_visible_and_public_state",
+            "source_key": "drive_type"
+          },
+          "doors": {
+            "basis": "matching_visible_and_public_state",
+            "source_key": "doors_num"
+          }
+        }
+      },
+      "fuel": "petrol",
+      "region": "Хмельницкая область",
+      "source": "olx",
+      "vehicle_identity_verified": false,
+      "transmission": "manual",
+      "price_conflicts": [],
+      "currency": "USD",
+      "source_date_observations": {
+        "origin": "public_html_prerendered_state",
+        "path": "ad.ad",
+        "identity_matches": true,
+        "values": {
+          "createdTime": {
+            "iso": "2026-09-22T16:53:27+03:00",
+            "utc": "2026-09-22T13:53:27+00:00",
+            "epoch": 1790085207
+          },
+          "lastRefreshTime": {
+            "iso": "2026-09-22T16:54:28+03:00",
+            "utc": "2026-09-22T13:54:28+00:00",
+            "epoch": 1790085268
+          },
+          "validToTime": {
+            "iso": "2026-10-22T16:53:27+03:00",
+            "utc": "2026-10-22T13:53:27+00:00",
+            "epoch": 1792677207
+          }
+        },
+        "issues": [],
+        "publication_semantics_verified": false,
+        "other_state_exported": false
+      },
+      "engine_cc": 1600,
+      "price_review": {
+        "status": "needs_review",
+        "reasons": [
+          "full_price_unconfirmed"
+        ]
+      },
+      "drive_type": "front",
+      "brand": "Skoda",
+      "url": "https://www.olx.ua/d/obyavlenie/skoda-octavia-a5-ID11jP5l.html",
+      "mileage_km": 300000,
+      "field_conflicts": [],
+      "checked_at": 1791159437,
+      "photos": [],
+      "research_field_conflicts": [],
+      "power_hp": null,
+      "generation": "A5",
+      "category": "whole_passenger_car",
+      "publication_verified": false,
+      "observed_asking_display": {
+        "status": "corroborated_display",
+        "reasons": [],
+        "amount": "4700",
+        "currency": "USD",
+        "basis": "complete_visible_detail_and_matching_public_state",
+        "original_seller_currency_verified": false,
+        "full_price_verified": false,
+        "description_reviewed_in_full": true,
+        "limits": [
+          "original_seller_currency_unverified",
+          "first_publication_unverified",
+          "asking_amount_is_not_a_completed_sale_price"
+        ],
+        "state_regular_price": {
+          "amount": "211023",
+          "currency": "UAH"
+        }
+      },
+      "eligibility_review": {
+        "status": "allowed",
+        "reasons": [
+          "customs_cleared_declared",
+          "no_forbidden_offer_evidence"
+        ],
+        "fingerprint": "fa8b59d24e6d155a459fc677d6051321fbdec66f443b86013183d33ca160ccd9",
+        "customs_status": "cleared_declared",
+        "description_complete": true
+      },
+      "vehicle_key": null,
+      "modification": null,
+      "first_seen_at": 1791145631,
+      "year": 2005,
+      "id": "935633775",
+      "price": "4700",
+      "body": "wagon",
+      "research_condition": "seller_declared_running",
+      "doors": 5,
+      "model": "Octavia",
+      "display_title_is_generated": true
+    },
+    {
+      "title": "Skoda Octavia A5 2005",
+      "attribute_review": {
+        "version": "visible-state-v1",
+        "issues": [
+          "power_hp_missing_or_ambiguous",
+          "modification_missing_or_ambiguous",
+          "vin_missing_or_ambiguous"
+        ],
+        "evidence": {
+          "drive_type": {
+            "basis": "matching_visible_and_public_state",
+            "source_key": "drive_type"
+          },
+          "doors": {
+            "basis": "matching_visible_and_public_state",
+            "source_key": "doors_num"
+          }
+        }
+      },
+      "fuel": "petrol",
+      "region": "Полтавская область",
+      "source": "olx",
+      "vehicle_identity_verified": false,
+      "transmission": "manual",
+      "price_conflicts": [],
+      "currency": "USD",
+      "source_date_observations": {
+        "origin": "public_html_prerendered_state",
+        "path": "ad.ad",
+        "identity_matches": true,
+        "values": {
+          "createdTime": {
+            "iso": "2026-09-13T11:34:19+03:00",
+            "utc": "2026-09-13T08:34:19+00:00",
+            "epoch": 1789288459
+          },
+          "lastRefreshTime": {
+            "iso": "2026-09-13T11:35:20+03:00",
+            "utc": "2026-09-13T08:35:20+00:00",
+            "epoch": 1789288520
+          },
+          "validToTime": {
+            "iso": "2026-10-13T11:34:20+03:00",
+            "utc": "2026-10-13T08:34:20+00:00",
+            "epoch": 1791880460
+          }
+        },
+        "issues": [],
+        "publication_semantics_verified": false,
+        "other_state_exported": false
+      },
+      "engine_cc": 1600,
+      "price_review": {
+        "status": "needs_review",
+        "reasons": [
+          "full_price_unconfirmed"
+        ]
+      },
+      "drive_type": "front",
+      "brand": "Skoda",
+      "url": "https://www.olx.ua/d/obyavlenie/skoda-octavia-a5-1-6-benzin-mehanka-ID11fIvZ.html",
+      "mileage_km": 266000,
+      "field_conflicts": [],
+      "checked_at": 1791159446,
+      "photos": [],
+      "research_field_conflicts": [],
+      "power_hp": null,
+      "generation": "A5",
+      "category": "whole_passenger_car",
+      "publication_verified": false,
+      "observed_asking_display": {
+        "status": "corroborated_display",
+        "reasons": [],
+        "amount": "4400",
+        "currency": "USD",
+        "basis": "complete_visible_detail_and_matching_public_state",
+        "original_seller_currency_verified": false,
+        "full_price_verified": false,
+        "description_reviewed_in_full": true,
+        "limits": [
+          "original_seller_currency_unverified",
+          "first_publication_unverified",
+          "asking_amount_is_not_a_completed_sale_price"
+        ],
+        "state_regular_price": {
+          "amount": "197554",
+          "currency": "UAH"
+        }
+      },
+      "eligibility_review": {
+        "status": "allowed",
+        "reasons": [
+          "customs_cleared_declared",
+          "no_forbidden_offer_evidence"
+        ],
+        "fingerprint": "55ae50347985b0abc9c7e2ea54d6915bc4d4f8a152cfabe815176578a76d952f",
+        "customs_status": "cleared_declared",
+        "description_complete": true
+      },
+      "vehicle_key": null,
+      "modification": null,
+      "first_seen_at": 1791145617,
+      "year": 2005,
+      "id": "934655269",
+      "price": "4400",
+      "body": "liftback",
+      "research_condition": "seller_declared_running",
+      "doors": 4,
+      "model": "Octavia",
+      "display_title_is_generated": true
     }
   ],
   "split": {
@@ -7395,7 +8452,16 @@
     "931454683": "reference",
     "935942186": "reference",
     "930356909": "reference",
-    "926300831": "reference"
+    "926300831": "reference",
+    "936688938": "reference",
+    "933246541": "reference",
+    "932143005": "reference",
+    "927670638": "holdout",
+    "936181092": "reference",
+    "935738586": "holdout",
+    "935685825": "reference",
+    "935633775": "reference",
+    "934655269": "reference"
   },
   "quote": null,
   "split_provenance": [
@@ -7429,6 +8495,23 @@
         "935942186",
         "930356909",
         "926300831"
+      ]
+    },
+    {
+      "seed": "olx-night0300-v1",
+      "frozen_at": "2026-10-05T00:17:00Z",
+      "basis": "sha256(seed:id), frozen before detail parsing/evaluation; search prices already existed",
+      "plan": "examples/night0300-plan.json",
+      "ids": [
+        "936688938",
+        "933246541",
+        "932143005",
+        "927670638",
+        "936181092",
+        "935738586",
+        "935685825",
+        "935633775",
+        "934655269"
       ]
     }
   ]

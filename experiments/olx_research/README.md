@@ -1,4 +1,4 @@
-Latest night checkpoint: [02:00 EUR iteration](NIGHT-0200-20261005.md). Strict same-date EUR/USD support is prepared, but the official NBU request returned 403 and real EUR conversions remain pending. 398 tests +150 subtests; market coverage remains 0/62.
+Latest night checkpoint: [03:00 density-ranked detail batch](NIGHT-0300-20261005.md). Nine new pages were verified, but body/power fragmentation kept market coverage at 0/71 and the maximum compatible sample at 4/8. 404 tests +150 subtests; production and Telegram remain untouched.
 
 # OLX: isolated review, 2026-10-04
 

@@ -1,51 +1,148 @@
 {
-  "checked_at": "2026-10-05T00:42:49.210934+03:00",
-  "kind": "saved_real_reparse_no_new_OLX_or_FX",
-  "olx_calls": 0,
+  "checked_at": "2026-10-05T00:20:51.232484+00:00",
+  "kind": "saved_real_plus_density_ranked_live_detail_batch_no_production",
+  "olx_calls": 9,
+  "olx_bytes": 14184190,
   "fx_calls": 0,
   "real_telegram_calls": 0,
   "attributes": {
-    "details": 42,
-    "drive_known": 42,
-    "power_known": 20,
-    "known_vehicle_keys": 9,
+    "details": 71,
+    "drive_known": 71,
+    "power_known": 33,
+    "modification_known": 2,
+    "known_vehicle_keys": 16,
+    "bodies": {
+      "wagon": 31,
+      "liftback": 28,
+      "hatchback": 8,
+      "sedan": 4
+    },
     "drives": {
-      "front": 38,
+      "front": 66,
       "full": 3,
-      "back": 1
+      "back": 2
     }
   },
-  "power_conflict_ids": [
-    "935257978"
-  ],
-  "tests_passed": 387,
+  "new_batch": {
+    "complete_drive": 9,
+    "complete_power": 4,
+    "complete_body": 9,
+    "complete_condition": 9,
+    "complete_modification": 0,
+    "screened_ready": 4,
+    "bodies": {
+      "wagon": 2,
+      "liftback": 5,
+      "hatchback": 1,
+      "sedan": 1
+    },
+    "powers": {
+      "None": 5,
+      "102": 2,
+      "105": 1,
+      "110": 1
+    },
+    "conditions": {
+      "seller_declared_running": 9
+    }
+  },
+  "tests_passed": 404,
   "subtests_passed": 150,
-  "local_previews": 72,
+  "local_previews": 124,
   "restart_new_previews": 0,
   "unpaid_previews": 0,
   "estimated": 0,
-  "total": 42,
+  "total": 71,
   "maximum_comparables": 4,
   "valuation_reasons": {
-    "missing_power_hp": 22,
-    "eligibility_not_allowed": 1,
-    "insufficient_comparables": 13,
+    "missing_power_hp": 38,
+    "eligibility_not_allowed": 2,
+    "insufficient_comparables": 25,
     "missing_generation": 2,
-    "condition_unconfirmed": 10,
-    "ordinary_sale_not_corroborated": 5,
-    "visible_sale_terms_missing_or_conflicting": 5,
-    "price_context_deposit": 1
+    "condition_unconfirmed": 12,
+    "ordinary_sale_not_corroborated": 6,
+    "visible_sale_terms_missing_or_conflicting": 6,
+    "price_context_deposit": 1,
+    "eur_fx_missing": 2
   },
   "holdout": {
-    "split_seed": "olx-stage2323-v1",
+    "split_seed": null,
+    "split_provenance": [
+      {
+        "seed": "olx-stage2323-v1",
+        "plan": "STAGES-1-8-20261004.md",
+        "membership": "existing42saved"
+      },
+      {
+        "seed": "olx-night0100-v1",
+        "frozen_at": "2026-10-04T22:03:19.068353+00:00",
+        "plan": "examples/night0100-plan.json",
+        "ids": [
+          "931628438",
+          "931531106",
+          "936475095",
+          "936768428",
+          "935278577",
+          "935248576",
+          "936650343",
+          "935880570",
+          "933374014",
+          "936742559",
+          "933340614",
+          "918032755",
+          "932274776",
+          "932672631",
+          "934959971",
+          "936062035",
+          "931454683",
+          "935942186",
+          "930356909",
+          "926300831"
+        ]
+      },
+      {
+        "seed": "olx-night0300-v1",
+        "frozen_at": "2026-10-05T00:17:00Z",
+        "basis": "sha256(seed:id), frozen before detail parsing/evaluation; search prices already existed",
+        "plan": "examples/night0300-plan.json",
+        "ids": [
+          "936688938",
+          "933246541",
+          "932143005",
+          "927670638",
+          "936181092",
+          "935738586",
+          "935685825",
+          "935633775",
+          "934655269"
+        ]
+      }
+    ],
     "benchmark_kind": "withheld_asking_price_only",
-    "frozen_holdout_count": 3,
-    "loaded_holdout_count": 3,
-    "reference_count": 39,
-    "eligible_holdout_count": 0,
+    "frozen_holdout_count": 9,
+    "loaded_holdout_count": 9,
+    "reference_count": 62,
+    "eligible_holdout_count": 5,
     "estimated_holdout_count": 0,
-    "eligible_coverage": null,
-    "unknown_holdout_count": 3,
+    "eligible_coverage": "0",
+    "unknown_holdout_count": 9,
+    "metrics": {
+      "median": {
+        "evaluated": 0,
+        "mean_absolute_usd": null,
+        "mean_absolute_percent": null
+      },
+      "trimmed_mean": {
+        "evaluated": 0,
+        "mean_absolute_usd": null,
+        "mean_absolute_percent": null
+      },
+      "weighted_median": {
+        "evaluated": 0,
+        "mean_absolute_usd": null,
+        "mean_absolute_percent": null
+      }
+    },
     "sale_price_accuracy_verified": false,
     "profitable_labels": 0,
     "false_positive": null,
@@ -54,11 +151,11 @@
     "unknown_crossposts_may_remain": true
   },
   "html_preview": {
-    "cases": 42,
-    "embedded_data_and_js_syntax_verified": true,
-    "browser_render_verified": false,
-    "reason": "Chromium absent; installation archive invalid; no screenshot success claimed"
+    "cases": 71,
+    "embedded_json_valid": true,
+    "javascript_syntax_valid": true,
+    "browser_render_verified": false
   },
-  "pending_manifest_count": 371,
+  "pending_manifest_count": 342,
   "production_changed": false
 }

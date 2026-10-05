@@ -67,12 +67,16 @@ def test_missing_explicit_a5_cannot_fill_batch_when_search_model_is_unverified()
     assert result["planned_calls"] == 0
 
 
-def test_saved_real_manifest_has_a_price_independent_plannable_window():
+def test_saved_real_batch_is_consumed_and_not_planned_twice():
     path = Path("experiments/olx_research/examples/pending-candidates.json")
     rows = json.loads(path.read_text())["candidates"]
+    frozen = json.loads(Path("experiments/olx_research/examples/night0300-plan.json").read_text())
+    assert frozen["selection"]["planned_calls"] == frozen["request_cap"] == 9
+    assert frozen["selection"]["price_used_for_selection"] is False
+    remaining_ids = {row["id"] for row in rows}
+    assert not remaining_ids.intersection(row["id"] for row in frozen["selection"]["candidates"])
     result = plan_detail_batch(rows)
     assert result["required_sample"] == 8
     assert result["price_used_for_selection"] is False
-    assert result["planned_calls"] >= 8
-    assert result["exact_modification_hint_count"] >= 1
-    assert all(set(c) == {"source", "id", "url", "selection_hints"} for c in result["candidates"])
+    assert result["status"] == "insufficient_hint_density"
+    assert result["planned_calls"] == 0 and result["candidates"] == []

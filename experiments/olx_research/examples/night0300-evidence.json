@@ -1,0 +1,258 @@
+{
+  "summary": {
+    "mode": "isolated_research",
+    "new_live_calls": 9,
+    "http200": 9,
+    "actual_bytes": 14184190,
+    "new_details": 9,
+    "total_details": 71,
+    "pending": 342,
+    "market_coverage": "0",
+    "estimated": 0,
+    "max_comparables": 4,
+    "holdout": {
+      "split_seed": null,
+      "split_provenance": [
+        {
+          "seed": "olx-stage2323-v1",
+          "plan": "STAGES-1-8-20261004.md",
+          "membership": "existing42saved"
+        },
+        {
+          "seed": "olx-night0100-v1",
+          "frozen_at": "2026-10-04T22:03:19.068353+00:00",
+          "plan": "examples/night0100-plan.json",
+          "ids": [
+            "931628438",
+            "931531106",
+            "936475095",
+            "936768428",
+            "935278577",
+            "935248576",
+            "936650343",
+            "935880570",
+            "933374014",
+            "936742559",
+            "933340614",
+            "918032755",
+            "932274776",
+            "932672631",
+            "934959971",
+            "936062035",
+            "931454683",
+            "935942186",
+            "930356909",
+            "926300831"
+          ]
+        },
+        {
+          "seed": "olx-night0300-v1",
+          "frozen_at": "2026-10-05T00:17:00Z",
+          "basis": "sha256(seed:id), frozen before detail parsing/evaluation; search prices already existed",
+          "plan": "examples/night0300-plan.json",
+          "ids": [
+            "936688938",
+            "933246541",
+            "932143005",
+            "927670638",
+            "936181092",
+            "935738586",
+            "935685825",
+            "935633775",
+            "934655269"
+          ]
+        }
+      ],
+      "benchmark_kind": "withheld_asking_price_only",
+      "frozen_holdout_count": 9,
+      "loaded_holdout_count": 9,
+      "reference_count": 62,
+      "eligible_holdout_count": 5,
+      "estimated_holdout_count": 0,
+      "eligible_coverage": "0",
+      "unknown_holdout_count": 9,
+      "metrics": {
+        "median": {
+          "evaluated": 0,
+          "mean_absolute_usd": null,
+          "mean_absolute_percent": null
+        },
+        "trimmed_mean": {
+          "evaluated": 0,
+          "mean_absolute_usd": null,
+          "mean_absolute_percent": null
+        },
+        "weighted_median": {
+          "evaluated": 0,
+          "mean_absolute_usd": null,
+          "mean_absolute_percent": null
+        }
+      },
+      "sale_price_accuracy_verified": false,
+      "profitable_labels": 0,
+      "false_positive": null,
+      "false_negative": null,
+      "winner_selected": null,
+      "unknown_crossposts_may_remain": true
+    },
+    "new_group": {
+      "complete_drive": 9,
+      "complete_power": 4,
+      "complete_body": 9,
+      "complete_condition": 9,
+      "complete_modification": 0,
+      "screened_ready": 4,
+      "bodies": {
+        "wagon": 2,
+        "liftback": 5,
+        "hatchback": 1,
+        "sedan": 1
+      },
+      "powers": {
+        "None": 5,
+        "102": 2,
+        "105": 1,
+        "110": 1
+      },
+      "conditions": {
+        "seller_declared_running": 9
+      }
+    },
+    "local_previews": 124,
+    "unpaid_previews": 0,
+    "restart_previews": 0,
+    "actual_telegram_calls": 0,
+    "paid_ria_calls": 0,
+    "fx_calls": 0,
+    "production_changed": false
+  },
+  "requests": {
+    "started_at": 1791159370.053617,
+    "max_calls": 9,
+    "max_bytes": 29360128,
+    "max_seconds": 600,
+    "calls": [
+      {
+        "id": "936688938",
+        "url": "https://www.olx.ua/d/obyavlenie/skoda-octavia-a5-1-6-mpi-ID11ofA6.html",
+        "cap": 3145728,
+        "started_at": 1791159370.053728,
+        "state": "finished",
+        "http": 200,
+        "curl_exit": 0,
+        "bytes": 1587281,
+        "finished_at": 1791159376.4200432,
+        "sha256": "af2775a7524b6e8adc47eb676bec59f869d09dcc949d4d1a7964edd30485a6e2",
+        "parsed": true
+      },
+      {
+        "id": "933246541",
+        "url": "https://www.olx.ua/d/obyavlenie/prodam-skoda-octavia-a5-1-6-mpi-ID119O3z.html",
+        "cap": 3145728,
+        "started_at": 1791159380.4202392,
+        "state": "finished",
+        "http": 200,
+        "curl_exit": 0,
+        "bytes": 1572843,
+        "finished_at": 1791159384.6353595,
+        "sha256": "a4843b5295c84972ce083091cbc378167020ca5748ac5387cbe5b5dfdc98c4d2",
+        "parsed": true
+      },
+      {
+        "id": "932143005",
+        "url": "https://www.olx.ua/d/obyavlenie/skoda-oktavia-a5-ii-pokolnnya-1-6-mpi-benzin-vdmnniy-stan-vd-vlasnika-ID115aYB.html",
+        "cap": 3145728,
+        "started_at": 1791159388.635613,
+        "state": "finished",
+        "http": 200,
+        "curl_exit": 0,
+        "bytes": 1590401,
+        "finished_at": 1791159393.151649,
+        "sha256": "75abbdf9b8ddc9efcc8011ee8feba948db3dc12817cc4f3ba608a382ad132e21",
+        "parsed": true
+      },
+      {
+        "id": "927670638",
+        "url": "https://www.olx.ua/d/obyavlenie/skoda-octavia-a5-1-6mpi-ID10MpwE.html",
+        "cap": 3145728,
+        "started_at": 1791159397.151807,
+        "state": "finished",
+        "http": 200,
+        "curl_exit": 0,
+        "bytes": 1572267,
+        "finished_at": 1791159402.4036314,
+        "sha256": "7627ce2dedd3138201f395c8cd4d73cc1eca399943b0e5da351d8351d0ec3c1c",
+        "parsed": true
+      },
+      {
+        "id": "936181092",
+        "url": "https://www.olx.ua/d/obyavlenie/prodam-skoda-octavia-a5-ID11m7t2.html",
+        "cap": 3145728,
+        "started_at": 1791159406.403813,
+        "state": "finished",
+        "http": 200,
+        "curl_exit": 0,
+        "bytes": 1571894,
+        "finished_at": 1791159410.713102,
+        "sha256": "c0d8ec32e717bc46877c2a4908b1ff8ffe2920e0e91af5a52b1b4535ab9c0346",
+        "parsed": true
+      },
+      {
+        "id": "935738586",
+        "url": "https://www.olx.ua/d/obyavlenie/skoda-octavia-a5-ID11kglQ.html",
+        "cap": 3145728,
+        "started_at": 1791159414.7132618,
+        "state": "finished",
+        "http": 200,
+        "curl_exit": 0,
+        "bytes": 1585324,
+        "finished_at": 1791159419.3992171,
+        "sha256": "fb412b3a134c889c45bb1f57bb16c59588e4d17e70c4aaf2ee813ddf665aad94",
+        "parsed": true
+      },
+      {
+        "id": "935685825",
+        "url": "https://www.olx.ua/d/obyavlenie/skoda-octavia-a5-ID11k2CR.html",
+        "cap": 3145728,
+        "started_at": 1791159423.3993893,
+        "state": "finished",
+        "http": 200,
+        "curl_exit": 0,
+        "bytes": 1564289,
+        "finished_at": 1791159429.2470975,
+        "sha256": "c6216d44859ad4a863cfc7e1366ac4d6b169e9b375ecd9a3bf00fb8d9706573b",
+        "parsed": true
+      },
+      {
+        "id": "935633775",
+        "url": "https://www.olx.ua/d/obyavlenie/skoda-octavia-a5-ID11jP5l.html",
+        "cap": 3145728,
+        "started_at": 1791159433.2472897,
+        "state": "finished",
+        "http": 200,
+        "curl_exit": 0,
+        "bytes": 1567296,
+        "finished_at": 1791159437.553678,
+        "sha256": "9ac539aefb6c5dbfb6c2341b561dd213ee10d02fede0b02717debc2be9e69954",
+        "parsed": true
+      },
+      {
+        "id": "934655269",
+        "url": "https://www.olx.ua/d/obyavlenie/skoda-octavia-a5-1-6-benzin-mehanka-ID11fIvZ.html",
+        "cap": 3145728,
+        "started_at": 1791159441.5538404,
+        "state": "finished",
+        "http": 200,
+        "curl_exit": 0,
+        "bytes": 1572595,
+        "finished_at": 1791159446.0986629,
+        "sha256": "a83bcc84ec943acd7b35b657e069c6ac3ec06d14d480bcdbcef8fe22215d8d83",
+        "parsed": true
+      }
+    ],
+    "halted": true,
+    "retry_count": 0,
+    "finished_at": 1791159446.1677668,
+    "actual_bytes": 14184190
+  }
+}
