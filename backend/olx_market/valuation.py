@@ -16,8 +16,11 @@ FIELDS=('brand','model','generation','body','fuel','transmission','engine_cc','d
 
 
 def screened(car,quote,now):
-    reasons=asking_price_reasons(car)
-    if car.get('source')!='olx' or not isinstance(car.get('id'),str):reasons.append('identity_invalid')
+    if car.get('source')=='auto_ria':
+        from .ria_reference import reasons as ria_reasons
+        reasons=ria_reasons(car)
+    else:reasons=asking_price_reasons(car)
+    if car.get('source') not in ('olx','auto_ria') or not isinstance(car.get('id'),str):reasons.append('identity_invalid')
     for k in FIELDS:
         if car.get(k) is None:reasons.append('missing_'+k)
     for k in ('year','mileage_km'):
@@ -55,7 +58,7 @@ def estimate(target,candidates,quote,now,*,minimum=8):
             v=c.get('vehicle_key')
             if v and c.get('checked_at')==vehicle_latest[v]:
                 if screened(c,quote,now)[1]:vehicle_held.add(v)
-                signature=tuple(str(c.get(k)) for k in (*FIELDS,'modification','year','mileage_km','research_condition','price','currency'))
+                signature=tuple(str(c.get(k)) for k in (*FIELDS,'generation_variant','fuel_subtype','modification','year','mileage_km','research_condition','price','currency'))
                 vehicle_signatures.setdefault(v,set()).add(signature)
     vehicle_held.update(v for v,s in vehicle_signatures.items() if len(s)>1)
     for key,vs in sorted(versions.items(),key=lambda x:str(x[0])):
@@ -74,6 +77,11 @@ def estimate(target,candidates,quote,now,*,minimum=8):
             if (c.get('modification') and target.get('modification')
                     and c['modification'].casefold()!=target['modification'].casefold()):
                 why.append('mismatch_modification')
+            if 'auto_ria' in (c.get('source'),target.get('source')):
+                if (not c.get('generation_variant') or not target.get('generation_variant')
+                        or c['generation_variant']!=target['generation_variant']):why.append('mismatch_generation_variant')
+                if c.get('fuel')=='gas_petrol' and (not c.get('fuel_subtype') or not target.get('fuel_subtype')
+                        or c['fuel_subtype']!=target['fuel_subtype']):why.append('mismatch_fuel_subtype')
             if abs(c['year']-target['year'])>1:why.append('mismatch_year')
             if abs(c['mileage_km']-target['mileage_km'])>30000:why.append('mismatch_mileage')
             if c['research_condition']!=target['research_condition']:why.append('mismatch_condition')
@@ -83,7 +91,7 @@ def estimate(target,candidates,quote,now,*,minimum=8):
         rows.append((c,Decimal(p['usd_amount']),p))
     base['excluded']=excluded;base['exclusions']=dict(Counter(r for e in excluded for r in e['reasons']))
     base['sample']=len(rows)
-    base['used_comparables']=[{'id':c['id'],'asking_usd':str(v),'checked_at':c['checked_at'],'fx_basis':p['fx_basis']} for c,v,p in rows]
+    base['used_comparables']=[{'source':c['source'],'id':c['id'],'url':c.get('url'),'asking_usd':str(v),'checked_at':c['checked_at'],'fx_basis':p['fx_basis']} for c,v,p in rows]
     base['independent_vehicles_verified']=len(rows) if (target_key and target.get('vehicle_identity_verified') is True and all(c.get('vehicle_key') and c.get('vehicle_identity_verified') is True for c,_,_ in rows)) else None
     if len(rows)<minimum:base['reasons']=['insufficient_comparables'];return base
     with localcontext() as ctx:
@@ -94,11 +102,11 @@ def estimate(target,candidates,quote,now,*,minimum=8):
         base['excluded']+=outliers
         base['exclusions']=dict(Counter(r for e in base['excluded'] for r in e['reasons']))
         base['sample']=len(accepted)
-        base['used_comparables']=[{'id':c['id'],'asking_usd':str(v),'checked_at':c['checked_at'],'fx_basis':p['fx_basis']} for c,v,p in accepted]
+        base['used_comparables']=[{'source':c['source'],'id':c['id'],'url':c.get('url'),'asking_usd':str(v),'checked_at':c['checked_at'],'fx_basis':p['fx_basis']} for c,v,p in accepted]
         base['independent_vehicles_verified']=len(accepted) if (target_key and target.get('vehicle_identity_verified') is True and all(c.get('vehicle_key') and c.get('vehicle_identity_verified') is True for c,_,_ in accepted)) else None
         if len(accepted)<minimum:
             base['sample']=len(accepted);base['reasons']=['insufficient_after_outliers']
-            base['used_comparables']=[{'id':c['id'],'asking_usd':str(v),'checked_at':c['checked_at'],'fx_basis':p['fx_basis']} for c,v,p in accepted]
+            base['used_comparables']=[{'source':c['source'],'id':c['id'],'url':c.get('url'),'asking_usd':str(v),'checked_at':c['checked_at'],'fx_basis':p['fx_basis']} for c,v,p in accepted]
             return base
         rows=accepted;vals=sorted(v for _,v,_ in rows);median=_percentile(vals,Decimal('.5'))
         if (max(vals)-min(vals))/median>Decimal('.4'):base['reasons']=['wide_dispersion'];return base
@@ -122,7 +130,7 @@ def estimate(target,candidates,quote,now,*,minimum=8):
             selection_reason='Predeclared transparent research baseline; no accuracy winner established',
             range_usd={'low':str(low),'high':str(high)},range_kind='empirical_IQR_not_confidence_or_sale_interval',
             methods={m:{'reference_usd':str(v),'discount_percent':str((v-actual)/v*100)} for m,v in refs.items()},
-            used_comparables=[{'id':c['id'],'asking_usd':str(v),'checked_at':c['checked_at'],'fx_basis':p['fx_basis']} for c,v,p in rows],
+            used_comparables=[{'source':c['source'],'id':c['id'],'url':c.get('url'),'asking_usd':str(v),'checked_at':c['checked_at'],'fx_basis':p['fx_basis']} for c,v,p in rows],
             data_date_range={'oldest':min(c['checked_at'] for c,_,_ in rows),'newest':max(c['checked_at'] for c,_,_ in rows)},
             reasons=['asking_not_sale','source_declared_attributes','independent_holdout_not_validated',
                      'unknown_crossposts_may_remain','unobserved_repair_costs_and_options'])

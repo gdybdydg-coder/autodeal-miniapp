@@ -155,7 +155,9 @@ def profile_ready(profile,now):
                 or not re.fullmatch('[a-f0-9]{40}',freeze['commit'])
                 or type(freeze['frozen_at']) is not int
                 or any(freeze['frozen_at']>c['checked_at'] for c in cars)):return False
-        if not cars or any(not public_detail_url(c.get('url')) for c in cars):return False
+        from .olx_market.ria_reference import public_url as ria_public_url
+        if not cars or any(not (public_detail_url(c.get('url')) if c.get('source')=='olx'
+                else ria_public_url(c) if c.get('source')=='auto_ria' else False) for c in cars):return False
         if any(type(c.get('checked_at')) is not int or not 0<=now-c['checked_at']<=PROFILE_MAX_AGE for c in cars):return False
         keys=[c.get('vehicle_key') for c in cars]
         # Unique public VIN-derived claims plus explicit reviewed photo evidence.
@@ -245,7 +247,8 @@ def caption(car,price,assessment,method):
         '📉 Нижче ринкового орієнтира: '+str(discount.quantize(Decimal('.1')))+'%',
         '📍 '+escape(' · '.join(str(car[k]) for k in ('locality','region') if car.get(k))),
         '⚙️ '+escape(' · '.join(attrs)),'',
-        '🔎 Оцінка за '+str(assessment['sample'])+' сумісними аналогами.',
+        '🔎 Оцінка за '+str(assessment['sample'])+' сумісними аналогами.'+
+            (' Джерело аналогів: AUTO.RIA.' if any(c.get('source')=='auto_ria' for c in assessment['used_comparables']) else ''),
         'Ринковий діапазон: '+money(assessment['range_usd']['low'])+'–'+money(assessment['range_usd']['high'])+' USD.',
         'Орієнтир за цінами пропозицій; ціна продажу не підтверджена.',
         'Перше виявлення не підтверджує нову публікацію.','/olx_stop — зупинити лише OLX.'])

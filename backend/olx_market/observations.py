@@ -8,6 +8,18 @@ from experiments.olx_offline.html_snapshot import SearchParser
 from .vehicle_attributes import corroborate
 
 
+def octavia_variant(text):
+    """Explicit seller vocabulary only; A5 or a year alone never implies FL."""
+    text=text.casefold()
+    pre=list(re.finditer(r'(?<!\w)(?:дорестайл\w*|до\s*рестайл\w*|pre[ -]?fl)(?!\w)',text))
+    rest=list(re.finditer(r'(?<!\w)(?:fl|рестайл\w*|restyling|facelift)(?!\w)',text))
+    rest=[m for m in rest if not any(p.start()<=m.start()<p.end() for p in pre)]
+    if any(re.search(r'(?:не|not|без)\s+$',text[max(0,m.start()-8):m.start()]) for m in pre+rest):return None
+    if pre and not rest:return 'pre_FL'
+    if rest and not pre:return 'FL'
+    return None
+
+
 def description_damage(nodes):
     """High precision visible claims; no repair-cost or physical-condition inference.
 
@@ -89,6 +101,11 @@ def enrich(data, parsed):
             car['generation']='A5'
             evidence['generation']={'basis':'seller_declared_title','independently_verified':False,
                                     'title_sha256':hashlib.sha256(title.encode()).hexdigest()}
+            variant=octavia_variant(title+' '+fields.get('Покоління',''))
+            if variant:
+                car['generation_variant']=variant
+                evidence['generation_variant']={'basis':'explicit_visible_seller_vocabulary',
+                    'independently_verified':False,'title_sha256':hashlib.sha256(title.encode()).hexdigest()}
         elif a5 and other:conflicts.append('generation')
     tech=fields.get('Технічний стан',''); paint=fields.get('Лакофарбове покриття','')
     if tech and 'Технічний стан' not in conflicts and 'Лакофарбове покриття' not in conflicts:

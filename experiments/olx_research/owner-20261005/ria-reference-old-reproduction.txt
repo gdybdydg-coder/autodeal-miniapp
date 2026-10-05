@@ -1,0 +1,19 @@
+F                                                                        [100%]
+=================================== FAILURES ===================================
+___ test_ria_full_references_can_pass_same_eight_and_three_control_contract ____
+
+live = namespace(engine=Engine(sqlite:////tmp/pytest-of-root/pytest-16/test_ria_full_references_can_p0/backend.sqlite), pipel..., olx_owner_batch_until=0, olx_owner_feed_enabled=True, olx_owner_feed_search_id=900, olx_owner_feed_until=1790949600))
+
+    def test_ria_full_references_can_pass_same_eight_and_three_control_contract(live):
+        p=profile(live)
+>       assert feed.profile_ready(p,live.clock[0])
+E       AssertionError: assert False
+E        +  where False = <function profile_ready at 0x7f239e380c20>({'dataset_kind': 'saved_real', 'owner_authorized': True, 'source_review': {'bounded_public_channel_reviewed': True}, '...a', 'id': '40123461', 'url': 'https://auto.ria.com/auto_skoda_octavia_40123461.html', 'price': '8150', ...}, ...], ...}, 1790942400)
+E        +    where <function profile_ready at 0x7f239e380c20> = feed.profile_ready
+
+backend/tests/test_olx_ria_reference.py:80: AssertionError
+=========================== short test summary info ============================
+FAILED backend/tests/test_olx_ria_reference.py::test_ria_full_references_can_pass_same_eight_and_three_control_contract
+1 failed in 1.01s
+
+exit=1

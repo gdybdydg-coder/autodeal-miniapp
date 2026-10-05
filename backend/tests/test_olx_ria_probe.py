@@ -296,3 +296,44 @@ def test_reviewed_phase4_reads_comparison_cache_without_mutation_and_reuses_call
         assert 'generation_mapping' in r.result['observations'][-1]['missing_criteria']
     assert probe.run_once(live.engine,live.settings,live.plan,fetch=fetch) is None
     assert len(calls)==1
+
+
+@pytest.mark.parametrize('status',['technical_hold','source_hold'])
+def test_terminal_hold_receipt_is_read_only_without_retry(live,monkeypatch,status):
+    assert probe.initialize(live.engine,live.settings,live.plan)
+    with Session(live.engine) as db:
+        r=db.get(SourceProbe,probe.STATE);r.status=status
+        r.result={**r.result,'error':'olx_detail_unavailable','olx_calls':[
+            {'id':'936768428','status':'http_200','bytes':2097153,'truncated':True,'cap':2097152}]}
+        db.commit();before=deepcopy(r.result)
+    calls=[]
+    probe.run_once(live.engine,live.settings,live.plan,fetch=lambda *a:calls.append(a),olx_fetch=lambda *a:calls.append(a))
+    receipt=probe.report_completed(live.engine)
+    assert receipt['last_olx_receipt']['truncated'] is True
+    assert receipt['olx_bytes_known']==2097153 and receipt['restart_additional_requests']==0
+    assert calls==[]
+    with Session(live.engine) as db:
+        r=db.get(SourceProbe,probe.STATE)
+        assert r.result==before and r.requests==0 and r.status==status
+
+
+@pytest.mark.parametrize('why',['approved302','forbidden403','unknown_result','same_url','wrong_ad','wrong_phase'])
+def test_locale_retry_is_one_reviewed_transition_only(live,why):
+    assert probe.initialize(live.engine,live.settings,live.plan)
+    old=deepcopy(live.plan['candidates'][0])
+    with Session(live.engine) as db:
+        r=db.get(SourceProbe,probe.STATE);r.status='technical_hold'
+        r.result={**r.result,'phase':4,'error':'olx_detail_unavailable','olx_calls':[
+            {**old,'status':'http_302','bytes':77,'truncated':False}]}
+        r.requests=22
+        if why=='forbidden403':r.result={**r.result,'olx_calls':[{**old,'status':'http_403','truncated':False}]}
+        if why=='unknown_result':r.result={**r.result,'olx_calls':[{**old,'status':'reserved','truncated':False}]}
+        if why=='wrong_phase':r.result={**r.result,'phase':5}
+        db.commit()
+    plan=deepcopy(live.plan);plan.update(phase=5,maximum_olx_gets=5)
+    plan['candidates'][0]['url']=old['url'].replace('/d/uk/','/d/')
+    if why=='same_url':plan['candidates'][0]['url']=old['url']
+    if why=='wrong_ad':plan['candidates'][0]['id']='933340614'
+    assert probe.initialize(live.engine,live.settings,plan)==(why=='approved302')
+    with Session(live.engine) as db:assert db.get(SourceProbe,probe.STATE).requests==22
+    assert not probe.initialize(live.engine,live.settings,plan)

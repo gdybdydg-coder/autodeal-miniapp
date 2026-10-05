@@ -7,14 +7,14 @@
   "until": 1791205200,
   "maximum_ria_calls": 30,
   "maximum_ai_calls": 6,
-  "maximum_olx_gets": 4,
-  "maximum_olx_bytes": 8388608,
+  "maximum_olx_gets": 5,
+  "maximum_olx_bytes": 10485760,
   "technical_ready": false,
   "telegram_enabled": false,
   "candidates": [
     {
       "id": "936658970",
-      "url": "https://www.olx.ua/d/obyavlenie/skoda-octavia-a5-1-6-tdi-ID11o7MK.html"
+      "url": "https://www.olx.ua/d/uk/obyavlenie/skoda-octavia-a5-1-6-tdi-ID11o7MK.html"
     }
   ],
   "control_membership_frozen_before_current_prices": [
@@ -22,8 +22,8 @@
     "933340614"
   ],
   "controls_are_not_references": true,
-  "purpose": "Fresh complete known 1.6TDI/105/manual/front wagon candidate and read-only comparison cache audit. Preserve spent22/2, no budget extension or readiness override.",
-  "phase": 4,
+  "purpose": "Single reviewed locale canonical retry for confirmed302 only; same spent ledger, original30/6/deadline retained; no sender.",
+  "phase": 5,
   "dictionary_evidence": {
     "brands": {
       "path": "auto/categories/1/marks",
@@ -269,5 +269,11 @@
     "damage": 1,
     "abroad": 2,
     "custom": 1
+  },
+  "redirect_url_evidence": {
+    "url": "https://www.olx.ua/d/uk/obyavlenie/skoda-octavia-a5-1-6-tdi-ID11o7MK.html",
+    "observed_via": "previously acquired real full-page explicit Ukrainian alternate URL; used for address only, not current facts",
+    "saved_page_sha256": "f06cba726a0ce749a25578cf60d9b1c965ae2969e758970f96e988cc118e9c17",
+    "http302_receipt_log": "403c832e-3255-41b4-acfa-b1b94d4878e2"
   }
 }

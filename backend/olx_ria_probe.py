@@ -67,10 +67,19 @@ def initialize(engine,settings,plan):
             phase4=(plan.get('phase')==4 and previous.result.get('phase')==3
                     and previous.status=='completed_reference_audit_not_admitted'
                     and previous.result.get('error') is None)
+            last=previous.result.get('olx_calls',[{}])[-1] if previous.result.get('olx_calls') else {}
+            entries=plan.get('candidates',[])
+            phase5=(plan.get('phase')==5 and previous.result.get('phase')==4
+                    and previous.status=='technical_hold'
+                    and previous.result.get('error')=='olx_detail_unavailable'
+                    and last.get('status')=='http_302' and last.get('truncated') is False
+                    and len(entries)==1 and entries[0].get('id')==last.get('id')
+                    and entries[0].get('url')!=last.get('url')
+                    and feed.same_detail_url(entries[0].get('url'),last.get('url')))
             phase2=(plan.get('phase')==2 and previous.result.get('phase',1)==1
                     and previous.status=='technical_hold'
                     and previous.result.get('error')=='dictionary_mapping_ambiguous_or_missing')
-            if ((not phase4 and not phase3 and not phase2) or previous.result.get('phase',1) not in (1,2,3)
+            if ((not phase5 and not phase4 and not phase3 and not phase2) or previous.result.get('phase',1) not in (1,2,3,4)
                     or previous.result.get('owner_id')!=settings.admin_telegram_id
                     or previous.result.get('fingerprint')!=plan['fingerprint']):return False
             previous.status='checking'
@@ -252,7 +261,7 @@ def run_once(engine,settings,plan=None,fetch=transport,olx_fetch=feed.source_fet
         catalogs={}
         for key,path in paths.items():
             evidence=plan.get('dictionary_evidence',{}).get(key)
-            if plan.get('phase') in (2,4) and evidence:
+            if plan.get('phase') in (2,4,5) and evidence:
                 if (evidence['path']!=path or not 0<=time.time()-evidence['checked_at']<=86400
                         or not evidence.get('receipt_log_id')):raise ValueError('dictionary_receipt_invalid')
                 catalogs[key]=[(id,name) for id,name in evidence['items']]
@@ -279,7 +288,7 @@ def run_once(engine,settings,plan=None,fetch=transport,olx_fetch=feed.source_fet
             if code!=200 or truncated:raise ValueError('olx_detail_unavailable')
             car=enrich(raw,parse_detail_snapshot(raw,fetched_at=int(time.time()),truncated=False))['listing']
             if car['id']!=entry['id'] or not feed.same_detail_url(car['url'],entry['url']):raise ValueError('olx_identity_mismatch')
-            if plan.get('phase')==4:
+            if plan.get('phase') in (4,5):
                 if (car.get('category')!='whole_passenger_car'
                         or car.get('eligibility_review',{}).get('status')!='allowed'
                         or not car.get('observed_asking_display',{}).get('description_reviewed_in_full')):
@@ -295,7 +304,7 @@ def run_once(engine,settings,plan=None,fetch=transport,olx_fetch=feed.source_fet
             body_id=exact_id(catalogs['body'],{'wagon':['Універсал','Универсал'],'liftback':['Ліфтбек','Лифтбек']}.get(car.get('body'),[]))
             fuel_names={'petrol':['Бензин'],'diesel':['Дизель']}.get(car.get('fuel'))
             fuel_id=exact_id(catalogs['fuel'],fuel_names) if fuel_names else None
-            if fuel_id is None and plan.get('phase') not in (2,4):raise ValueError('dictionary_mapping_ambiguous_or_missing')
+            if fuel_id is None and plan.get('phase') not in (2,4,5):raise ValueError('dictionary_mapping_ambiguous_or_missing')
             gear_id=exact_id(catalogs['gear'],{'manual':['Ручна / Механіка','Ручна/Механіка','Ручная / Механика']}.get(car.get('transmission'),[]))
             # Diagnostic criteria deliberately do not guess ambiguous generation IDs.
             # Never admissible as a card valuation until all missing criteria reviewed.
@@ -333,7 +342,7 @@ def run_once(engine,settings,plan=None,fetch=transport,olx_fetch=feed.source_fet
                 'provider_quantity':blocks[0].get('quantityAdv') if len(blocks)==1 else None,
                 'peers':safe_peers,'technical_ready':False,'status':'diagnostic_only_compatibility_pending',
                 'missing_criteria':(['fuel_subtype_mapping'] if fuel_id is None else [])+
-                    ([] if plan.get('phase')==2 else ['generation_mapping'] if plan.get('phase')==4 else ['generation_mapping','drive_mapping'])+
+                    ([] if plan.get('phase')==2 else ['generation_mapping'] if plan.get('phase') in (4,5) else ['generation_mapping','drive_mapping'])+
                     ([] if car.get('power_hp') is not None else ['power_mapping'])+
                     ['condition_compatibility','independent_compatible_peer_details','frozen_control_validation']}
             with Session(engine) as db:
@@ -350,15 +359,16 @@ def run_once(engine,settings,plan=None,fetch=transport,olx_fetch=feed.source_fet
 def report_completed(engine):
     with Session(engine) as db:
         row=db.get(SourceProbe,STATE)
-        if not row or not row.status.startswith('completed_'):return
+        if not row or not (row.status.startswith('completed_') or row.status in ('technical_hold','source_hold')):return
         d=row.result
         calls=d.get('calls',[]);olx=d.get('olx_calls',[])
-        summary={'status':row.status,'ria_calls':row.requests,
+        summary={'status':row.status,'error':d.get('error'),'ria_calls':row.requests,
             'ai_calls':sum(c.get('kind')=='ai' for c in calls),
             'ria_bytes_known':sum(c.get('bytes',0) for c in calls),
             'olx_gets':len(olx),'olx_bytes_known':sum(c.get('bytes',0) for c in olx),
             'olx_bytes_unknown_receipts':sum('bytes' not in c or c.get('status')=='reserved' for c in olx),
             'reference_details':len(d.get('reference_details',[])),
+            'last_olx_receipt':{k:olx[-1].get(k) for k in ('id','status','bytes','truncated','cap')} if olx else None,
             'technical_ready':False,'telegram_calls':0,'restart_additional_requests':0}
     LOG.info('OLX RIA completed receipt %s',json.dumps(summary));return summary
 
