@@ -1,4 +1,4 @@
-Latest night checkpoint: [03:00 density-ranked detail batch](NIGHT-0300-20261005.md). Nine new pages were verified, but body/power fragmentation kept market coverage at 0/71 and the maximum compatible sample at 4/8. 404 tests +150 subtests; production and Telegram remain untouched.
+Latest night checkpoint: [04:00 event/frontier correction](NIGHT-0400-20261005.md). Newer queued search snapshots are retained, invalid old source dates cannot create raise/update events, and review separates first_seen/update/raise/reprice. 406 tests +150 subtests; market coverage remains 0/71 and production/Telegram remain untouched.
 
 # OLX: isolated review, 2026-10-04
 

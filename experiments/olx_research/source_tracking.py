@@ -78,14 +78,25 @@ def detail_change(previous,current,*,first_seen):
         else:events.append('display_currency_changed_not_verified_seller_price_change')
         if any(previous.get(f)!=current.get(f) for f in ('year','mileage_km','engine_cc','fuel','transmission','body','generation','drive_type','power_hp','modification','doors')):
             events.append('characteristics_changed')
-        old_dates=previous.get('source_date_observations',{}).get('values',{})
+        old_date_obs=previous.get('source_date_observations',{})
+        old_dates=(old_date_obs.get('values',{}) if old_date_obs.get('identity_matches') is True
+                   and not old_date_obs.get('issues') else {})
         for f,event in (('lastRefreshTime','source_refresh_advanced'),('pushupTime','source_pushup_advanced')):
             old=old_dates.get(f,{}).get('epoch');new=dates.get(f,{}).get('epoch')
             if type(old) is int and type(new) is int and new>old:events.append(event)
         a=previous.get('eligibility_review',{}).get('fingerprint');b=current.get('eligibility_review',{}).get('fingerprint')
         if a and b and a!=b:events.append('eligibility_evidence_changed')
+    event_kinds=[]
+    if 'first_observed' in events:event_kinds.append('first_seen')
+    if any(event in events for event in (
+            'characteristics_changed','source_refresh_advanced',
+            'eligibility_evidence_changed','display_currency_changed_not_verified_seller_price_change')):
+        event_kinds.append('update')
+    if 'source_pushup_advanced' in events:event_kinds.append('raise')
+    if 'display_price_changed' in events:event_kinds.append('reprice')
     created=dates.get('createdTime',{}).get('epoch')
-    return {'events':events,'first_seen_at':first_seen,'observed_at':current.get('checked_at'),
+    return {'events':events,'event_kinds':event_kinds,
+            'first_seen_at':first_seen,'observed_at':current.get('checked_at'),
             'source_reported_created_at':created,'reported_preexisting':type(created) is int and created<first_seen,
             'source_date_conflicts':date_obs.get('issues',[]),'first_publication_verified':False,
             'publication_latency_seconds':None,'seller_original_price_change_verified':False}

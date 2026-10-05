@@ -114,6 +114,8 @@ class Frontier:
                 queued=self.db.execute('SELECT payload FROM research_refreshes WHERE source=? AND id=?',(row['source'],row['id'])).fetchone()
                 if queued:
                     latest=json.loads(queued[0])
+                    if latest.get('checked_at',0)>original.get('checked_at',0):
+                        self.db.execute('UPDATE research_candidates SET payload=? WHERE source=? AND id=?',(queued[0],row['source'],row['id']))
                     if latest.get('checked_at',0)>car['checked_at'] and search_signature(latest)!=search_signature(original):
                         state='pending';reason='search_changed_during_detail';next_at=max(now,car['checked_at']+60)
                         self.db.execute('UPDATE research_candidates SET payload=?,attempts=0 WHERE source=? AND id=?',(queued[0],row['source'],row['id']))

@@ -1,0 +1,44 @@
+{
+  "mode": "isolated_event_semantics_evidence",
+  "saved_real": {
+    "detail_ids": 71,
+    "detail_versions_per_id": 1,
+    "longitudinal_detail_transitions": 0,
+    "event_kinds_from_single_current_versions": {
+      "first_seen": 71
+    },
+    "update_raise_reprice_rates": null,
+    "reason": "Only one sanitized detail version per ID is retained in the replay fixture; no longitudinal rate can be inferred.",
+    "repeated_search_page": {
+      "first_observed_added_ids": [
+        "906697765",
+        "936800233"
+      ],
+      "not_present_in_repeat_ids": [
+        "929444221",
+        "935328240",
+        "936759183"
+      ],
+      "order_changed": true,
+      "overlap_count": 49,
+      "comparison_seconds": 719,
+      "both_pages_complete": true,
+      "catalogue_complete": false,
+      "new_publication_count": null,
+      "reason": "One moving relevance window cannot establish complete discovery or publication latency"
+    }
+  },
+  "synthetic_regressions": {
+    "separate_first_seen_update_raise_reprice": true,
+    "invalid_prior_source_dates_cannot_create_update_or_raise": true,
+    "newer_same_signature_search_snapshot_is_retained": true
+  },
+  "local_flow": {
+    "prepared_cards": 124,
+    "unpaid_cards": 0,
+    "restart_cards": 0,
+    "actual_telegram_calls": 0
+  },
+  "network_calls": 0,
+  "production_changed": false
+}

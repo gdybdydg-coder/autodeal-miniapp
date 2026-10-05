@@ -60,9 +60,25 @@ def test_price_refresh_and_first_seen_do_not_prove_publication():
     after['source_date_observations']['values']['pushupTime']['epoch']=EPOCH+5
     first=detail_change(None,before,first_seen=EPOCH)
     assert first['events']==['first_observed'] and first['reported_preexisting']
+    assert first['event_kinds']==['first_seen']
     change=detail_change(before,after,first_seen=EPOCH)
     assert set(change['events'])=={'display_price_changed','source_refresh_advanced','source_pushup_advanced'}
+    assert change['event_kinds']==['update','raise','reprice']
     assert not change['first_publication_verified'] and change['publication_latency_seconds'] is None
+
+
+def test_invalid_previous_source_dates_cannot_create_raise_or_update_events():
+    before=car();before['source_date_observations']={
+        'identity_matches':False,'issues':['source_date_identity_mismatch'],
+        'values':{'lastRefreshTime':{'epoch':EPOCH-100},'pushupTime':{'epoch':EPOCH-100}}}
+    after=copy.deepcopy(before);after['checked_at']=EPOCH+10
+    after['source_date_observations']={
+        'identity_matches':True,'issues':[],
+        'values':{'lastRefreshTime':{'epoch':EPOCH+5},'pushupTime':{'epoch':EPOCH+5}}}
+    change=detail_change(before,after,first_seen=EPOCH)
+    assert 'source_refresh_advanced' not in change['events']
+    assert 'source_pushup_advanced' not in change['events']
+    assert change['event_kinds']==[]
 
 
 def test_page_shift_is_explicit_without_completeness_claim():
@@ -150,6 +166,20 @@ def test_new_search_during_lease_is_retained_without_overwriting_claim(tmp_path)
     assert pending['car']['price']==5500
     db.finish(pending['token'],200,EPOCH+101,car={**newer,'checked_at':EPOCH+100})
     assert db.snapshot()['candidate_counts']=={'stored':1};db.close()
+
+
+def test_same_signature_search_during_lease_preserves_latest_snapshot_without_refetch(tmp_path):
+    db=Frontier(tmp_path/'refresh.db');old=car('a',6000)
+    db.record_page('page',page([old]));work=db.claim(users(),None,EPOCH)[0]
+    newer={**old,'checked_at':EPOCH+20};observed=page([newer]);observed['summary']['fetched_at']=EPOCH+20
+    db.record_page('page',observed)
+    db.finish(work['token'],200,EPOCH+22,car={**old,'checked_at':EPOCH+21})
+    row=db.db.execute('SELECT payload,state FROM research_candidates').fetchone()
+    assert row['state']=='stored'
+    assert json.loads(row['payload'])['checked_at']==EPOCH+20
+    assert db.claim(users(),None,EPOCH+100)==[]
+    assert db.db.execute('SELECT count(*) FROM research_detail_events').fetchone()[0]==1
+    db.close()
 
 
 def test_later_detail_supersedes_search_observed_during_fetch(tmp_path):

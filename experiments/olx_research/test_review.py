@@ -36,6 +36,8 @@ def test_html_explains_missing_eur_pair_instead_of_hiding_price_reason(tmp_path)
          'users':fake,'now':EPOCH,'split':{eur['id']:'holdout'}}
     html=export(build(raw,tmp_path/'eur.db'))
     assert 'Немає перевіреної пари курсів EUR/USD' in html
+    assert "first_seen:'перше спостереження'" in html
+    assert "['Події спостереження',observedEvents]" in html
     assert "['converted_uah','converted_eur']" in html
     script=re.findall(r'<script(?: [^>]*)?>(.*?)</script>',html,re.S)[-1]
     path=tmp_path/'review.js';path.write_text(script)

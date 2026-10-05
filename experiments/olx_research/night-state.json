@@ -3,11 +3,7 @@
   "night": "2026-10-05-Europe-Kyiv",
   "status": "active",
   "deadline": "2026-10-05T08:00:00+03:00",
-  "lease": {
-    "owner": "night-20261005-0400",
-    "started_at": "2026-10-05T01:04:38Z",
-    "expires_at": "2026-10-05T01:39:38Z"
-  },
+  "lease": null,
   "budget": {
     "olx_get_cap": 60,
     "olx_bytes_cap": 167772160,
@@ -131,7 +127,17 @@
       "subtests_passed": 150,
       "summary": "Density planner fixed non-A5 leak and price-independent ranking;9/9 details;71 total;body/power split;market0/71,max4;124 local previews,unpaid0,restart0,Telegram0",
       "checkpoint": "NIGHT-0300-20261005.md"
+    },
+    {
+      "owner": "night-20261005-0400",
+      "completed_at": "2026-10-05T01:09:10Z",
+      "olx_calls": 0,
+      "fx_calls": 0,
+      "tests_passed": 406,
+      "subtests_passed": 150,
+      "summary": "Fixed loss of newer queued search snapshot; guarded invalid old source dates; separated first_seen/update/raise/reprice; saved-real longitudinal rates unknown;124 local previews,unpaid0,restart0,Telegram0",
+      "checkpoint": "NIGHT-0400-20261005.md"
     }
   ],
-  "next_step": "Read NIGHT-0300-20261005.md. Do not call bank.gov.ua again tonight and do not repeat the 9 night0300 URLs. Remaining342 candidates have no second >=8 strict explicit-A5/non-conflicting-modification window. Prefer offline evidence/review or a genuinely new characteristic-density hypothesis. 31OLXGET/92MiB and5FXGET remain; reserve exact URLs before any allowed I/O."
+  "next_step": "Read NIGHT-0400-20261005.md. Do not call bank.gov.ua again tonight or repeat consumed detail URLs. Event semantics/frontier retention are corrected; saved-real update/raise/reprice rates remain unknown because only one detail version per ID is retained. Prefer offline holdout/evaluation denominator and leakage audit or a genuinely new density hypothesis. 31OLXGET/92MiB and5FXGET remain; reserve exact URLs before any allowed I/O."
 }
