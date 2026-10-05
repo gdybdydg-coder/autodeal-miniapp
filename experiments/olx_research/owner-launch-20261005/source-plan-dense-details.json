@@ -1,0 +1,71 @@
+{
+  "task": "owner-launch-20261005-2157",
+  "hypothesis": "Six frozen full current public cards will test the real HTML adapter across one dense group, preserve three separate controls, and determine body/drive/condition/identity availability before spending on the remaining eight.",
+  "freeze_commit": "d408c0eeeb85ff70f1a16a427c96a50c9b048c1f",
+  "frozen_at": 1791228634,
+  "membership_sha256": "271bb2fab75a9ffdb95468d6c67ebc5b9873b76fa4c5fa5c9a8b21ca1eef44af",
+  "budget": {
+    "public_ria_get_cap": 6,
+    "olx_get_cap": 0,
+    "byte_cap": 12582912,
+    "per_get_cap": 2097152,
+    "pause_seconds": 4,
+    "timeout_seconds": 20,
+    "packet_seconds": 180,
+    "retries": 0,
+    "paid_ria_gets": 0,
+    "telegram_calls": 0,
+    "total_prior_hour_gets": 6,
+    "total_hour_get_cap": 12
+  },
+  "requests": [
+    {
+      "source": "auto_ria_public_html",
+      "id": "40219391",
+      "url": "https://auto.ria.com/auto_skoda_octavia_40219391.html",
+      "role": "holdout"
+    },
+    {
+      "source": "auto_ria_public_html",
+      "id": "40019461",
+      "url": "https://auto.ria.com/auto_skoda_octavia_40019461.html",
+      "role": "holdout"
+    },
+    {
+      "source": "auto_ria_public_html",
+      "id": "40133416",
+      "url": "https://auto.ria.com/auto_skoda_octavia_40133416.html",
+      "role": "holdout"
+    },
+    {
+      "source": "auto_ria_public_html",
+      "id": "40391488",
+      "url": "https://auto.ria.com/auto_skoda_octavia_40391488.html",
+      "role": "reference"
+    },
+    {
+      "source": "auto_ria_public_html",
+      "id": "39809027",
+      "url": "https://auto.ria.com/auto_skoda_octavia_39809027.html",
+      "role": "reference"
+    },
+    {
+      "source": "auto_ria_public_html",
+      "id": "40343200",
+      "url": "https://auto.ria.com/auto_skoda_octavia_40343200.html",
+      "role": "reference"
+    }
+  ],
+  "rules": {
+    "source_hold_on": [
+      401,
+      403,
+      429,
+      "CAPTCHA"
+    ],
+    "follow_redirects": false,
+    "no_credentials": true,
+    "reservations_not_refunded": true
+  },
+  "reserved_at": "2026-10-05T19:30:57.308925+00:00"
+}
