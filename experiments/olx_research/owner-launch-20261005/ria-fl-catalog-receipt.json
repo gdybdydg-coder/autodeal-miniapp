@@ -1,0 +1,19 @@
+{
+  "source": "auto_ria_public_html",
+  "url": "https://auto.ria.com/car/skoda/octavia/a5-fl/",
+  "reserved_commit": "03fbe7da20b3bb7d129a86235c6e60d97fe4ba04",
+  "started_at": "2026-10-05T19:13:22.004784+00:00",
+  "completed_at": "2026-10-05T19:13:30.295358+00:00",
+  "elapsed_seconds": 8.291,
+  "http_status": 200,
+  "curl_exit": 0,
+  "body_bytes": 466262,
+  "body_sha256": "74190dcdd950dc61ec14d4ed1ea00f8fcff155b8c66f14bccf828472a4224c81",
+  "captcha_challenge_indicator": false,
+  "source_hold": null,
+  "paid_api_calls": 0,
+  "get_calls": 1,
+  "telegram_calls": 0,
+  "redirects_followed": 0,
+  "retries": 0
+}

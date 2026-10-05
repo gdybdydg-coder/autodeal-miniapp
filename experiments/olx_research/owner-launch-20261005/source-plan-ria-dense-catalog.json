@@ -1,0 +1,40 @@
+{
+  "task": "owner-launch-20261005-2157",
+  "hypothesis": "Observed public A5 FL1.6D MT catalog selects a dense engine/gear family without price or region cap and yields exact full-card URLs for future compatible frozen references/controls.",
+  "budget": {
+    "public_ria_get_cap": 1,
+    "olx_get_cap": 0,
+    "byte_cap": 2097152,
+    "per_get_cap": 2097152,
+    "pause_seconds": 4,
+    "timeout_seconds": 20,
+    "retries": 0,
+    "paid_ria_gets": 0,
+    "telegram_calls": 0
+  },
+  "requests": [
+    {
+      "source": "auto_ria_public_html",
+      "url": "https://auto.ria.com/car/skoda/octavia/a5-fl/1-6d-mt/",
+      "role": "density_discovery_not_reference",
+      "observed_url_receipt": "FLcatalog2026-10-05T19:13:30Z actualvisiblehref label1.6D MT"
+    }
+  ],
+  "selection_policy": {
+    "price_used_for_selection": false,
+    "minimum_analogs": 8,
+    "critical_unknowns_not_filled": true
+  },
+  "rules": {
+    "source_hold_on": [
+      401,
+      403,
+      429,
+      "CAPTCHA"
+    ],
+    "follow_redirects": false,
+    "no_credentials": true,
+    "reservations_not_refunded": true
+  },
+  "reserved_at": "2026-10-05T19:17:10.467741+00:00"
+}
