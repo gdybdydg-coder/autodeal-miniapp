@@ -166,6 +166,8 @@
   },
   "html_preview": {
     "cases": 71,
+    "evaluation_panel_present": true,
+    "sale_profit_warning_present": true,
     "embedded_json_valid": true,
     "javascript_syntax_valid": true,
     "browser_render_verified": false

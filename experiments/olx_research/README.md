@@ -1,4 +1,4 @@
-Latest night checkpoint: [05:00 holdout denominator audit](NIGHT-0500-20261005.md). Frozen, loaded, eligible, known-ineligible and unestimated-eligible denominators are explicit, and all three asking methods expose the same comparable group. 408 tests +150 subtests; market coverage remains 0/71 and production/Telegram remain untouched.
+Latest night checkpoint: [06:00 review evidence panel](NIGHT-0600-20261005.md). The local HTML now shows frozen/loaded/eligible/known-ineligible/unestimated-eligible denominators and explicitly warns that zero coverage is not method validation. 409 tests +150 subtests; market coverage remains 0/71 and production/Telegram remain untouched.
 
 # OLX: isolated review, 2026-10-04
 

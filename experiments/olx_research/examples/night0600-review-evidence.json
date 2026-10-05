@@ -1,0 +1,43 @@
+{
+  "mode": "offline_saved_real_review_presentation_audit",
+  "network_calls": 0,
+  "production_changed": false,
+  "saved_real": {
+    "cases": 71,
+    "estimated": 0,
+    "evaluation_panel": {
+      "frozen": 9,
+      "loaded": 9,
+      "missing": 0,
+      "eligible": 5,
+      "known_ineligible": 4,
+      "estimated": 0,
+      "unestimated_eligible": 5,
+      "frozen_coverage": "0",
+      "loaded_coverage": "0",
+      "eligible_coverage": "0"
+    },
+    "sale_price_accuracy_verified": false,
+    "false_positive": null,
+    "false_negative": null
+  },
+  "html": {
+    "self_contained": true,
+    "evaluation_panel_present": true,
+    "sale_profit_warning_present": true,
+    "embedded_json_valid": true,
+    "javascript_syntax_valid": true,
+    "browser_render_verified": false
+  },
+  "local_flow": {
+    "first_pass_paid_fake_cards": 124,
+    "unpaid_cards": 0,
+    "restart_cards": 0,
+    "telegram_calls": 0
+  },
+  "limitations": [
+    "The browser-rendered layout was not visually verified.",
+    "Zero coverage does not validate any valuation method.",
+    "No sale-price or independent profit labels exist."
+  ]
+}
