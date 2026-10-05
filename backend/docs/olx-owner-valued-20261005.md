@@ -43,3 +43,25 @@ sender/profile checks. Expanded owner/new+legacy transport suite: 123 passed (6.
 All tests use temporary databases and fixture transports behind an import-time
 network fence. Synthetic controls do not prove real market coverage or delivery.
 No real OLX Telegram sends are authorized by test successes alone.
+
+## Current real-data verification after disabled deploy
+
+2026-10-05: protected owner verified; confirmed paid/ready; one active search #4,
+1000–7000 USD, Vinnytsia/Ternopil/Khmelnytskyi/Chernivtsi, threshold 10%.
+New public focused A5 1.6 TDI search HTTP200 (3,624,200 bytes), followed by
+14 complete details HTTP200 (22,041,145 bytes) under committed reservations.
+13 refreshed existing details and one new ID => 72 unique saved details, 0 estimates,
+maximum4/8 compatible peers. 8/14 have explicit power; only1/14 has a validated
+public VIN-derived claim. Three separately frozen controls:2 eligible,0 estimated,
+maximum3 peers. Asking error metrics remain unknown; no method winner selected.
+No real OLX Telegram calls/receipts. Do not enable on the strength of synthetic tests.
+Fresh official dated PrivatBank fallback:44.9857000 UAH/USD, effective2026-10-05,
+acquired07:02:57Z. NBU403 hold was respected; no repeated request to NBU.
+
+Reproduced and fixed OLX-only mismatch of Russian vs Ukrainian names of the four
+allowed regions:4 failures before /5 pass after. No geographic range was added,
+and saved filters were not edited. Expanded new+legacy owner suite:135 passed.
+Source regular-use authorization and complete publication semantics remain unknown;
+bounded publicly accessible HTML is not a demonstrated commercial catalogue API.
+A continuously discovering observer is not installed. Code/preflight are deployed
+defaultoff; authorization for owner testing is separate from technical readiness.
