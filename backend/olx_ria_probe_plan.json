@@ -12,235 +12,266 @@
   "technical_ready": false,
   "telegram_enabled": false,
   "candidates": [
-    {"id": "936768428", "url": "https://www.olx.ua/d/uk/obyavlenie/skoda-octavia-a5-ID11oAgc.html"},
-    {"id": "933340614", "url": "https://www.olx.ua/d/uk/obyavlenie/skoda-octavia-a5-2007-r-v-ID11acvS.html"}
+    {
+      "id": "936768428",
+      "url": "https://www.olx.ua/d/uk/obyavlenie/skoda-octavia-a5-ID11oAgc.html"
+    },
+    {
+      "id": "933340614",
+      "url": "https://www.olx.ua/d/uk/obyavlenie/skoda-octavia-a5-2007-r-v-ID11acvS.html"
+    }
   ],
-  "control_membership_frozen_before_current_prices": ["936768428", "933340614"],
+  "control_membership_frozen_before_current_prices": [
+    "936768428",
+    "933340614"
+  ],
   "controls_are_not_references": true,
-  "purpose": "Reviewed phase2 fuel mapping correction. Continue same spent ledger; incomplete fuel subtype never becomes delivery evidence.",
-  "phase": 2,
-  "dictionary_evidence":
-{
-  "brands": {
-    "path": "auto/categories/1/marks",
-    "checked_at": 1791197333,
-    "receipt_log_id": "e508f22a-c060-4329-a5ec-978a03057dfa",
-    "items": [
-      [
-        70,
-        "Skoda"
+  "purpose": "Reviewed reference audit: preserve nine spent API calls, no additional OLX GET or AI quote, freeze controls before full detail prices, never sender.",
+  "phase": 3,
+  "dictionary_evidence": {
+    "brands": {
+      "path": "auto/categories/1/marks",
+      "checked_at": 1791197333,
+      "receipt_log_id": "e508f22a-c060-4329-a5ec-978a03057dfa",
+      "items": [
+        [
+          70,
+          "Skoda"
+        ]
       ]
-    ]
+    },
+    "models": {
+      "path": "auto/categories/1/marks/70/models",
+      "checked_at": 1791197337,
+      "receipt_log_id": "b9e32f15-3893-4d65-baae-94f1c7c206d8",
+      "items": [
+        [
+          652,
+          "Octavia"
+        ]
+      ]
+    },
+    "body": {
+      "path": "auto/categories/1/bodystyles",
+      "checked_at": 1791197341,
+      "receipt_log_id": "9b0dfbdd-9f70-4d84-bac1-f8c94bbb806f",
+      "items": [
+        [
+          3,
+          "Седан"
+        ],
+        [
+          5,
+          "Позашляховик / Кросовер"
+        ],
+        [
+          8,
+          "Мінівен"
+        ],
+        [
+          449,
+          "Мікровен"
+        ],
+        [
+          4,
+          "Хетчбек"
+        ],
+        [
+          2,
+          "Універсал"
+        ],
+        [
+          6,
+          "Купе"
+        ],
+        [
+          7,
+          "Кабріолет"
+        ],
+        [
+          9,
+          "Пікап"
+        ],
+        [
+          307,
+          "Ліфтбек"
+        ],
+        [
+          448,
+          "Фастбек"
+        ],
+        [
+          252,
+          "Лімузин"
+        ],
+        [
+          315,
+          "Родстер"
+        ],
+        [
+          454,
+          "Тарга"
+        ]
+      ]
+    },
+    "fuel": {
+      "path": "auto/type",
+      "checked_at": 1791197346,
+      "receipt_log_id": "30d70b4c-ee92-483f-9dca-0a6439611c79",
+      "items": [
+        [
+          1,
+          "Бензин"
+        ],
+        [
+          3,
+          "Газ"
+        ],
+        [
+          4,
+          "Газ пропан-бутан / Бензин"
+        ],
+        [
+          8,
+          "Газ метан / Бензин"
+        ],
+        [
+          5,
+          "Гібрид (HEV)"
+        ],
+        [
+          10,
+          "Гібрид (PHEV)"
+        ],
+        [
+          11,
+          "Гібрид (MHEV)"
+        ],
+        [
+          12,
+          "Гібрид (REEV)"
+        ],
+        [
+          2,
+          "Дизель"
+        ],
+        [
+          6,
+          "Електро"
+        ]
+      ]
+    },
+    "gear": {
+      "path": "auto/categories/1/gearboxes",
+      "checked_at": 1791197350,
+      "receipt_log_id": "54e9ec15-0c7d-432c-b039-5f1db316670f",
+      "items": [
+        [
+          1,
+          "Ручна / Механіка"
+        ],
+        [
+          2,
+          "Автомат"
+        ],
+        [
+          3,
+          "Типтронік"
+        ],
+        [
+          4,
+          "Робот"
+        ],
+        [
+          5,
+          "Варіатор"
+        ],
+        [
+          6,
+          "Редуктор"
+        ]
+      ]
+    },
+    "drive": {
+      "path": "auto/categories/1/driverTypes",
+      "checked_at": 1791197355,
+      "receipt_log_id": "33560c1e-b143-4e16-ba58-ace942d3032f",
+      "items": [
+        [
+          1,
+          "Повний"
+        ],
+        [
+          2,
+          "Передній"
+        ],
+        [
+          3,
+          "Задній"
+        ]
+      ]
+    },
+    "generation": {
+      "path": "generations/by/models/652/generations",
+      "checked_at": 1791197359,
+      "receipt_log_id": "c5d7da4b-db57-4eac-897d-260b35d3233b",
+      "items": [
+        [
+          167,
+          "III покоління/A7"
+        ],
+        [
+          3133,
+          "II покоління/A5"
+        ],
+        [
+          3607,
+          "II покоління/A5 (FL)"
+        ],
+        [
+          3609,
+          "III покоління/A7 (FL)"
+        ],
+        [
+          7993,
+          "IV покоління/A8"
+        ],
+        [
+          8067,
+          "I покоління/Tour"
+        ],
+        [
+          8075,
+          "I покоління/Tour (FL)"
+        ],
+        [
+          19822,
+          "IV покоління/A8 (FL)"
+        ]
+      ]
+    }
   },
-  "models": {
-    "path": "auto/categories/1/marks/70/models",
-    "checked_at": 1791197337,
-    "receipt_log_id": "b9e32f15-3893-4d65-baae-94f1c7c206d8",
-    "items": [
-      [
-        652,
-        "Octavia"
-      ]
-    ]
-  },
-  "body": {
-    "path": "auto/categories/1/bodystyles",
-    "checked_at": 1791197341,
-    "receipt_log_id": "9b0dfbdd-9f70-4d84-bac1-f8c94bbb806f",
-    "items": [
-      [
-        3,
-        "Седан"
-      ],
-      [
-        5,
-        "Позашляховик / Кросовер"
-      ],
-      [
-        8,
-        "Мінівен"
-      ],
-      [
-        449,
-        "Мікровен"
-      ],
-      [
-        4,
-        "Хетчбек"
-      ],
-      [
-        2,
-        "Універсал"
-      ],
-      [
-        6,
-        "Купе"
-      ],
-      [
-        7,
-        "Кабріолет"
-      ],
-      [
-        9,
-        "Пікап"
-      ],
-      [
-        307,
-        "Ліфтбек"
-      ],
-      [
-        448,
-        "Фастбек"
-      ],
-      [
-        252,
-        "Лімузин"
-      ],
-      [
-        315,
-        "Родстер"
-      ],
-      [
-        454,
-        "Тарга"
-      ]
-    ]
-  },
-  "fuel": {
-    "path": "auto/type",
-    "checked_at": 1791197346,
-    "receipt_log_id": "30d70b4c-ee92-483f-9dca-0a6439611c79",
-    "items": [
-      [
-        1,
-        "Бензин"
-      ],
-      [
-        3,
-        "Газ"
-      ],
-      [
-        4,
-        "Газ пропан-бутан / Бензин"
-      ],
-      [
-        8,
-        "Газ метан / Бензин"
-      ],
-      [
-        5,
-        "Гібрид (HEV)"
-      ],
-      [
-        10,
-        "Гібрид (PHEV)"
-      ],
-      [
-        11,
-        "Гібрид (MHEV)"
-      ],
-      [
-        12,
-        "Гібрид (REEV)"
-      ],
-      [
-        2,
-        "Дизель"
-      ],
-      [
-        6,
-        "Електро"
-      ]
-    ]
-  },
-  "gear": {
-    "path": "auto/categories/1/gearboxes",
-    "checked_at": 1791197350,
-    "receipt_log_id": "54e9ec15-0c7d-432c-b039-5f1db316670f",
-    "items": [
-      [
-        1,
-        "Ручна / Механіка"
-      ],
-      [
-        2,
-        "Автомат"
-      ],
-      [
-        3,
-        "Типтронік"
-      ],
-      [
-        4,
-        "Робот"
-      ],
-      [
-        5,
-        "Варіатор"
-      ],
-      [
-        6,
-        "Редуктор"
-      ]
-    ]
-  },
-  "drive": {
-    "path": "auto/categories/1/driverTypes",
-    "checked_at": 1791197355,
-    "receipt_log_id": "33560c1e-b143-4e16-ba58-ace942d3032f",
-    "items": [
-      [
-        1,
-        "Повний"
-      ],
-      [
-        2,
-        "Передній"
-      ],
-      [
-        3,
-        "Задній"
-      ]
-    ]
-  },
-  "generation": {
-    "path": "generations/by/models/652/generations",
-    "checked_at": 1791197359,
-    "receipt_log_id": "c5d7da4b-db57-4eac-897d-260b35d3233b",
-    "items": [
-      [
-        167,
-        "III покоління/A7"
-      ],
-      [
-        3133,
-        "II покоління/A5"
-      ],
-      [
-        3607,
-        "II покоління/A5 (FL)"
-      ],
-      [
-        3609,
-        "III покоління/A7 (FL)"
-      ],
-      [
-        7993,
-        "IV покоління/A8"
-      ],
-      [
-        8067,
-        "I покоління/Tour"
-      ],
-      [
-        8075,
-        "I покоління/Tour (FL)"
-      ],
-      [
-        19822,
-        "IV покоління/A8 (FL)"
-      ]
-    ]
+  "reference_search": {
+    "category_id": 1,
+    "searchType": 4,
+    "status_id": 0,
+    "page": 0,
+    "countpage": 18,
+    "order_by": 7,
+    "marka_id[0]": 70,
+    "model_id[0]": 652,
+    "generation_id[0][0]": 3133,
+    "bodystyle[0]": 2,
+    "type[0]": 4,
+    "gearbox[0]": 1,
+    "s_yers[0]": 2004,
+    "po_yers[0]": 2006,
+    "raceFrom": 224,
+    "raceTo": 284,
+    "engineVolumeFrom": 1.6,
+    "engineVolumeTo": 1.6,
+    "damage": 1,
+    "abroad": 2,
+    "custom": 1
   }
-}
 }

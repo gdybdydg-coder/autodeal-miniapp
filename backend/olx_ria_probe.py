@@ -61,15 +61,20 @@ def initialize(engine,settings,plan):
         if previous:
             # One reviewed correction may continue the SAME spent ledger.
             # No crash/source hold replay, reset, or automatic phase advance.
-            if (plan.get('phase')!=2 or previous.result.get('phase',1)!=1
-                    or previous.status!='technical_hold'
-                    or previous.result.get('error')!='dictionary_mapping_ambiguous_or_missing'
+            phase3=(plan.get('phase')==3 and previous.result.get('phase')==2
+                    and previous.status=='completed_observations_not_admitted'
+                    and previous.result.get('error') is None)
+            phase2=(plan.get('phase')==2 and previous.result.get('phase',1)==1
+                    and previous.status=='technical_hold'
+                    and previous.result.get('error')=='dictionary_mapping_ambiguous_or_missing')
+            if ((not phase3 and not phase2) or previous.result.get('phase',1) not in (1,2)
                     or previous.result.get('owner_id')!=settings.admin_telegram_id
                     or previous.result.get('fingerprint')!=plan['fingerprint']):return False
             previous.status='checking'
-            previous.result={**previous.result,'phase':2,'previous_error':previous.result['error'],
-                             'phase2_started_at':time.time(),'error':None}
+            previous.result={**previous.result,'phase':plan['phase'],'previous_error':previous.result['error'],
+                             'phase_started_at':time.time(),'error':None}
             db.commit();return True
+        if plan.get('phase',1)!=1:return False
         db.add(SourceProbe(id=STATE,status='checking',requests=0,checked_at=time.time(),
             result={'budget':{'maximum_ria_calls':MAX_CALLS,'maximum_ai_calls':MAX_AI},
                 'owner_id':settings.admin_telegram_id,'search_id':plan['search_id'],
@@ -109,8 +114,12 @@ def transport(settings,path,body=None,params=None):
 
 
 def request(engine,settings,plan,path,body=None,params=None,fetch=transport):
-    kind='ai' if body is not None else 'dictionary'
+    kind='ai' if body is not None else ('search' if path=='auto/search' else 'detail' if path=='auto/info' else 'dictionary')
     index=reserve(engine,settings,plan,kind,path,body)
+    if params:
+        with Session(engine) as db:
+            row=db.get(SourceProbe,STATE,with_for_update=True);d=copy.deepcopy(row.result)
+            d['calls'][index]['params']=params;row.result=d;db.commit()
     if not allowed(engine,settings,plan):raise ValueError('owner_access_or_stop_blocked')
     code,data,size=fetch(settings,path,body,params)
     with Session(engine) as db:
@@ -144,6 +153,52 @@ def exact_id(rows,names):
     return str(ids.pop())
 
 
+def audit_references(engine,settings,plan,fetch):
+    """Freeze search membership before detail prices; never admit readiness here."""
+    from .ria_search import parse_ids, parse_car
+    params=plan['reference_search']
+    if params.get('marka_id[0]')!=70 or params.get('model_id[0]')!=652:
+        raise ValueError('reference_identity_changed')
+    data=request(engine,settings,plan,'auto/search',params=params,fetch=fetch)
+    found=parse_ids(data)
+    ids=found['ids'][:18]
+    with Session(engine) as db:
+        row=db.get(SourceProbe,STATE,with_for_update=True);d=copy.deepcopy(row.result)
+        d['reference_membership']={'ids':ids,'control_ids':ids[:3],
+            'frozen_at':time.time(),'total_search_matches':found['total'],
+            'selection':'source order, no detail-price ranking','technical_ready':False}
+        d['reference_details']=[];row.result=d;db.commit()
+    LOG.info('OLX RIA reference membership %s',json.dumps(d['reference_membership']))
+    for sid in ids:
+        data=request(engine,settings,plan,'auto/info',params={'auto_id':sid},fetch=fetch)
+        try:
+            car=parse_car(data,sid)
+            safe={k:car.get(k) for k in ('id','price','year','url','brand_id','model_id',
+                'body_id','fuel_id','gear_id','generation_id','modification_id','engine_cc',
+                'mileage','vehicle_key','comparable_condition','condition_exclusions','category_id','observed_at')}
+            auto=data.get('autoData',{})
+            # Log observed non-sensitive schema names, never VIN/contact/description values.
+            safe['auto_schema_keys']=sorted(str(k) for k in auto)
+            safe['explicit_numeric_attributes']={k:auto[k] for k in ('driveId','driveTypeId','power','powerHp','horsePower')
+                if type(auto.get(k)) in (int,float) and 0<auto[k]<10000}
+            expected={'brand_id':70,'model_id':652,'generation_id':3133,'body_id':2,
+                      'fuel_id':4,'gear_id':1,'engine_cc':1600,'category_id':1}
+            safe['mismatches']=[k for k,v in expected.items() if safe.get(k)!=v]
+            if not safe.get('mileage') or not 224000<=safe['mileage']<=284000:safe['mismatches'].append('mileage')
+            if not safe.get('year') or not 2004<=safe['year']<=2006:safe['mismatches'].append('year')
+            if not safe.get('comparable_condition'):safe['mismatches'].append('condition')
+            safe['unknown_critical']=['drive','power','target_fuel_subtype','cross_source_target_identity']
+            safe['role']='control' if sid in ids[:3] else 'reference_candidate'
+            safe['independent_identity_available']=bool(safe.get('vehicle_key'))
+            safe['status']='not_admitted_pending_critical_compatibility'
+        except Exception as exc:
+            safe={'id':sid,'status':'detail_rejected','error':type(exc).__name__}
+        with Session(engine) as db:
+            row=db.get(SourceProbe,STATE,with_for_update=True);d=copy.deepcopy(row.result)
+            d['reference_details'].append(safe);row.result=d;db.commit()
+        LOG.info('OLX RIA reference detail %s',json.dumps(safe,ensure_ascii=False))
+
+
 def run_once(engine,settings,plan=None,fetch=transport,olx_fetch=feed.source_fetch):
     if not enabled():return
     if plan is None:
@@ -152,6 +207,9 @@ def run_once(engine,settings,plan=None,fetch=transport,olx_fetch=feed.source_fet
     if not initialize(engine,settings,plan):return
     status='completed_observations_not_admitted';error=None
     try:
+        if plan.get('phase')==3:
+            audit_references(engine,settings,plan,fetch)
+            return finish(engine,'completed_reference_audit_not_admitted',None)
         paths={'brands':'auto/categories/1/marks','models':'auto/categories/1/marks/70/models',
                'body':'auto/categories/1/bodystyles','fuel':'auto/type',
                'gear':'auto/categories/1/gearboxes','drive':'auto/categories/1/driverTypes',
@@ -234,6 +292,10 @@ def run_once(engine,settings,plan=None,fetch=transport,olx_fetch=feed.source_fet
     except Exception as exc:
         status='source_hold' if isinstance(exc,ValueError) and ('hold_http_' in str(exc) or 'source_hold_challenge' in str(exc)) else 'technical_hold'
         error=str(exc) if isinstance(exc,ValueError) else type(exc).__name__
+    return finish(engine,status,error)
+
+
+def finish(engine,status,error):
     with Session(engine) as db:
         row=db.get(SourceProbe,STATE,with_for_update=True)
         row.status=status;row.result={**row.result,'error':error,'finished_at':time.time()};db.commit()

@@ -22,5 +22,20 @@
     "bytes": 4194304
   },
   "actual_probe_results_pending": true,
-  "telegram_receipts": []
+  "telegram_receipts": [],
+  "phase1_result": {
+    "status": "technical_hold",
+    "error": "dictionary_mapping_ambiguous_or_missing",
+    "ria_calls": 7,
+    "ai_calls": 0,
+    "olx_gets": 1,
+    "olx_actual_bytes": null
+  },
+  "phase2_commit": "2dc80af62de3409f685dcbfaef3edef7056331e8",
+  "phase2_deploy": "dep-db1o4mp7lnhs73dqsv70",
+  "phase2_tests_passed": 119,
+  "phase2_test_seconds": 23.86,
+  "receipt_bug_reproduced_old_exit": 1,
+  "shared_olx_reserved_gets": 26,
+  "shared_olx_reserved_bytes": 69206016
 }
