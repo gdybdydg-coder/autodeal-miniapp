@@ -296,3 +296,22 @@ def test_reviewed_phase4_reads_comparison_cache_without_mutation_and_reuses_call
         assert 'generation_mapping' in r.result['observations'][-1]['missing_criteria']
     assert probe.run_once(live.engine,live.settings,live.plan,fetch=fetch) is None
     assert len(calls)==1
+
+
+@pytest.mark.parametrize('status',['technical_hold','source_hold'])
+def test_terminal_hold_receipt_is_read_only_without_retry(live,monkeypatch,status):
+    assert probe.initialize(live.engine,live.settings,live.plan)
+    with Session(live.engine) as db:
+        r=db.get(SourceProbe,probe.STATE);r.status=status
+        r.result={**r.result,'error':'olx_detail_unavailable','olx_calls':[
+            {'id':'936768428','status':'http_200','bytes':2097153,'truncated':True,'cap':2097152}]}
+        db.commit();before=deepcopy(r.result)
+    calls=[]
+    probe.run_once(live.engine,live.settings,live.plan,fetch=lambda *a:calls.append(a),olx_fetch=lambda *a:calls.append(a))
+    receipt=probe.report_completed(live.engine)
+    assert receipt['last_olx_receipt']['truncated'] is True
+    assert receipt['olx_bytes_known']==2097153 and receipt['restart_additional_requests']==0
+    assert calls==[]
+    with Session(live.engine) as db:
+        r=db.get(SourceProbe,probe.STATE)
+        assert r.result==before and r.requests==0 and r.status==status

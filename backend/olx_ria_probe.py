@@ -350,15 +350,16 @@ def run_once(engine,settings,plan=None,fetch=transport,olx_fetch=feed.source_fet
 def report_completed(engine):
     with Session(engine) as db:
         row=db.get(SourceProbe,STATE)
-        if not row or not row.status.startswith('completed_'):return
+        if not row or not (row.status.startswith('completed_') or row.status in ('technical_hold','source_hold')):return
         d=row.result
         calls=d.get('calls',[]);olx=d.get('olx_calls',[])
-        summary={'status':row.status,'ria_calls':row.requests,
+        summary={'status':row.status,'error':d.get('error'),'ria_calls':row.requests,
             'ai_calls':sum(c.get('kind')=='ai' for c in calls),
             'ria_bytes_known':sum(c.get('bytes',0) for c in calls),
             'olx_gets':len(olx),'olx_bytes_known':sum(c.get('bytes',0) for c in olx),
             'olx_bytes_unknown_receipts':sum('bytes' not in c or c.get('status')=='reserved' for c in olx),
             'reference_details':len(d.get('reference_details',[])),
+            'last_olx_receipt':{k:olx[-1].get(k) for k in ('id','status','bytes','truncated','cap')} if olx else None,
             'technical_ready':False,'telegram_calls':0,'restart_additional_requests':0}
     LOG.info('OLX RIA completed receipt %s',json.dumps(summary));return summary
 
