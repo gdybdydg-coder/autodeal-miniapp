@@ -4,24 +4,156 @@
   "night_state_resumed": false,
   "status": "reserved",
   "hypothesis": "Saved densest complete group is Octavia A5 1.6 diesel manual wagon/front/105 hp, 2010 around 264-274k km, max4 peers. Prior general A5 search and MPI collection missed the explicitly observed focused 1.6 TDI query. Discover by characteristics, not price; holdout frozen before refreshed full prices.",
-  "owner_search": {"id":4,"fingerprint":"aa3dc66cadd6d6343f55f3930823173faf45741059cac1968b66a411b8a99be2","filters":{"currency":"USD","region":["вінницька","тернопільська","хмельницька","чернівецька"],"price_min":1000,"price_max":7000},"threshold":10},
+  "owner_search": {
+    "id": 4,
+    "fingerprint": "aa3dc66cadd6d6343f55f3930823173faf45741059cac1968b66a411b8a99be2",
+    "filters": {
+      "currency": "USD",
+      "region": [
+        "вінницька",
+        "тернопільська",
+        "хмельницька",
+        "чернівецька"
+      ],
+      "price_min": 1000,
+      "price_max": 7000
+    },
+    "threshold": 10
+  },
   "owner_access_checked_at": "2026-10-05T06:57:32.522190131Z",
   "confirmed_paid": true,
   "ready": true,
-  "episode_caps": {"olx_gets":60,"olx_bytes":167772160,"fx_gets":6},
-  "reserved_olx_gets":1,
-  "reserved_olx_bytes":4194304,
-  "reserved_fx_gets":1,
-  "source_holds": [{"source":"bank.gov.ua","reason":"HTTP403 observed 2026-10-04T23:00:19Z for 2026-10-05 rates; no repeated NBU request or bypass"}],
-  "requests": [
-    {"kind":"olx_search","url":"https://www.olx.ua/transport/legkovye-avtomobili/q-skoda%20octavia%20a5%2016%20tdi/","observed_via":"OLX public indexed query, turn43search0; indexed listing prices not current evidence","cap":4194304},
-    {"kind":"fx","url":"https://api.privatbank.ua/p24api/exchange_rates?json&date=05.10.2026","observed_via":"previously verified official dated PrivatBank API; same-day NBU fallback","cap":262144}
+  "episode_caps": {
+    "olx_gets": 60,
+    "olx_bytes": 167772160,
+    "fx_gets": 6
+  },
+  "reserved_olx_gets": 15,
+  "reserved_olx_bytes": 33554432,
+  "reserved_fx_gets": 1,
+  "source_holds": [
+    {
+      "source": "bank.gov.ua",
+      "reason": "HTTP403 observed 2026-10-04T23:00:19Z for 2026-10-05 rates; no repeated NBU request or bypass"
+    }
   ],
-  "timeout_seconds":20,
-  "spacing_seconds":4,
-  "retry_cap":0,
-  "packet_seconds":600,
-  "no_telegram":true,
-  "no_paid_ria":true,
-  "halt_on":[401,403,429,"CAPTCHA"]
+  "requests": [
+    {
+      "kind": "olx_search",
+      "url": "https://www.olx.ua/transport/legkovye-avtomobili/q-skoda%20octavia%20a5%2016%20tdi/",
+      "observed_via": "OLX public indexed query, turn43search0; indexed listing prices not current evidence",
+      "cap": 4194304
+    },
+    {
+      "kind": "fx",
+      "url": "https://api.privatbank.ua/p24api/exchange_rates?json&date=05.10.2026",
+      "observed_via": "previously verified official dated PrivatBank API; same-day NBU fallback",
+      "cap": 262144
+    },
+    {
+      "kind": "olx_detail",
+      "id": "920786921",
+      "url": "https://www.olx.ua/d/obyavlenie/skoda-octavia-a5-fl-ID10jvJX.html",
+      "cap": 2097152
+    },
+    {
+      "kind": "olx_detail",
+      "id": "936197359",
+      "url": "https://www.olx.ua/d/obyavlenie/prodam-avto-skoda-octavia-a5-1-6-tdi-garniy-stan-ID11mbHp.html",
+      "cap": 2097152
+    },
+    {
+      "kind": "olx_detail",
+      "id": "936658970",
+      "url": "https://www.olx.ua/d/obyavlenie/skoda-octavia-a5-1-6-tdi-ID11o7MK.html",
+      "cap": 2097152
+    },
+    {
+      "kind": "olx_detail",
+      "id": "931146600",
+      "url": "https://www.olx.ua/d/obyavlenie/prodam-shkodu-a5-restalng-ID110ZLy.html",
+      "cap": 2097152
+    },
+    {
+      "kind": "olx_detail",
+      "id": "936176647",
+      "url": "https://www.olx.ua/d/obyavlenie/skoda-octavia-a5-fl-ID11m6jl.html",
+      "cap": 2097152
+    },
+    {
+      "kind": "olx_detail",
+      "id": "935196654",
+      "url": "https://www.olx.ua/d/obyavlenie/prodam-skoda-octavia-a5-universal-1-6-turbo-dizel-ID11hZn0.html",
+      "cap": 2097152
+    },
+    {
+      "kind": "olx_detail",
+      "id": "935707774",
+      "url": "https://www.olx.ua/d/obyavlenie/prodam-skoda-octavia-a5-rest-1-6-tdi-ID11k8kS.html",
+      "cap": 2097152
+    },
+    {
+      "kind": "olx_detail",
+      "id": "936372176",
+      "url": "https://www.olx.ua/d/obyavlenie/prodam-avtomobl-skoda-a5-ID11mWb2.html",
+      "cap": 2097152
+    },
+    {
+      "kind": "olx_detail",
+      "id": "852826578",
+      "url": "https://www.olx.ua/d/obyavlenie/skoda-octavia-a5-fl-1-6-tdi-IDWIn9o.html",
+      "cap": 2097152
+    },
+    {
+      "kind": "olx_detail",
+      "id": "936415277",
+      "url": "https://www.olx.ua/d/obyavlenie/skoda-octavia-a5-2012-ID11n6od.html",
+      "cap": 2097152
+    },
+    {
+      "kind": "olx_detail",
+      "id": "933483565",
+      "url": "https://www.olx.ua/d/obyavlenie/octavia-a5-2010-1-6-ID11aNIx.html",
+      "cap": 2097152
+    },
+    {
+      "kind": "olx_detail",
+      "id": "932654807",
+      "url": "https://www.olx.ua/d/obyavlenie/skoda-a5-2012-rk-dizel-dvigun-1-6-ID117k7t.html",
+      "cap": 2097152
+    },
+    {
+      "kind": "olx_detail",
+      "id": "892218290",
+      "url": "https://www.olx.ua/d/obyavlenie/avtomobl-skoda-oktavia-a5-IDYnEJA.html",
+      "cap": 2097152
+    },
+    {
+      "kind": "olx_detail",
+      "id": "917982649",
+      "url": "https://www.olx.ua/d/obyavlenie/prodam-shkodu-oktavia-a5-full-1-6-dizel-ID107LdL.html",
+      "cap": 2097152
+    }
+  ],
+  "timeout_seconds": 20,
+  "spacing_seconds": 4,
+  "retry_cap": 0,
+  "packet_seconds": 600,
+  "no_telegram": true,
+  "no_paid_ria": true,
+  "halt_on": [
+    401,
+    403,
+    429,
+    "CAPTCHA"
+  ],
+  "first_receipt": {
+    "OLX_GET": 1,
+    "OLX_bytes": 3624200,
+    "FX_GET": 1,
+    "FX_bytes": 2836,
+    "source_hold": null,
+    "dated_fallback_rate": "44.9857000",
+    "fx_effective_date": "2026-10-05"
+  }
 }

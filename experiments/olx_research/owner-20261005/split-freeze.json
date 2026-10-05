@@ -1,0 +1,153 @@
+{
+  "frozen_at": 1791183965,
+  "seed": "olx-owner-cohort-20261005",
+  "membership": {
+    "920786921": "holdout",
+    "936197359": "holdout",
+    "936658970": "holdout",
+    "931146600": "reference",
+    "936176647": "reference",
+    "935196654": "reference",
+    "935707774": "reference",
+    "936372176": "reference",
+    "852826578": "reference",
+    "936415277": "reference",
+    "933483565": "reference",
+    "932654807": "reference",
+    "892218290": "reference",
+    "917982649": "reference"
+  },
+  "membership_sha256": "d8f91b9a4b57f6d904dc5ecd1fb3dad0dd6eb10be24877cb9c9ac642825837bc",
+  "basis": "window2011+-1,264000+-30000,explicit1600dieselmanual; known body/drive/power contradictions excluded; no prices in selection or split",
+  "minimum": 8,
+  "controls_count": 3,
+  "candidate_body_unknown_is_not_compatibility_proof": true,
+  "rows": [
+    {
+      "id": "920786921",
+      "url": "https://www.olx.ua/d/obyavlenie/skoda-octavia-a5-fl-ID10jvJX.html",
+      "year": 2010,
+      "mileage_km": 242000,
+      "engine_cc": 1600,
+      "fuel": "diesel",
+      "transmission": "manual"
+    },
+    {
+      "id": "936197359",
+      "url": "https://www.olx.ua/d/obyavlenie/prodam-avto-skoda-octavia-a5-1-6-tdi-garniy-stan-ID11mbHp.html",
+      "year": 2010,
+      "mileage_km": 238000,
+      "engine_cc": 1600,
+      "fuel": "diesel",
+      "transmission": "manual"
+    },
+    {
+      "id": "936658970",
+      "url": "https://www.olx.ua/d/obyavlenie/skoda-octavia-a5-1-6-tdi-ID11o7MK.html",
+      "year": 2010,
+      "mileage_km": 270000,
+      "engine_cc": 1600,
+      "fuel": "diesel",
+      "transmission": "manual"
+    },
+    {
+      "id": "931146600",
+      "url": "https://www.olx.ua/d/obyavlenie/prodam-shkodu-a5-restalng-ID110ZLy.html",
+      "year": 2010,
+      "mileage_km": 272000,
+      "engine_cc": 1600,
+      "fuel": "diesel",
+      "transmission": "manual"
+    },
+    {
+      "id": "936176647",
+      "url": "https://www.olx.ua/d/obyavlenie/skoda-octavia-a5-fl-ID11m6jl.html",
+      "year": 2010,
+      "mileage_km": 274000,
+      "engine_cc": 1600,
+      "fuel": "diesel",
+      "transmission": "manual"
+    },
+    {
+      "id": "935196654",
+      "url": "https://www.olx.ua/d/obyavlenie/prodam-skoda-octavia-a5-universal-1-6-turbo-dizel-ID11hZn0.html",
+      "year": 2010,
+      "mileage_km": 270000,
+      "engine_cc": 1600,
+      "fuel": "diesel",
+      "transmission": "manual"
+    },
+    {
+      "id": "935707774",
+      "url": "https://www.olx.ua/d/obyavlenie/prodam-skoda-octavia-a5-rest-1-6-tdi-ID11k8kS.html",
+      "year": 2012,
+      "mileage_km": 240000,
+      "engine_cc": 1600,
+      "fuel": "diesel",
+      "transmission": "manual"
+    },
+    {
+      "id": "936372176",
+      "url": "https://www.olx.ua/d/obyavlenie/prodam-avtomobl-skoda-a5-ID11mWb2.html",
+      "year": 2012,
+      "mileage_km": 280000,
+      "engine_cc": 1600,
+      "fuel": "diesel",
+      "transmission": "manual"
+    },
+    {
+      "id": "852826578",
+      "url": "https://www.olx.ua/d/obyavlenie/skoda-octavia-a5-fl-1-6-tdi-IDWIn9o.html",
+      "year": 2012,
+      "mileage_km": 270000,
+      "engine_cc": 1600,
+      "fuel": "diesel",
+      "transmission": "manual"
+    },
+    {
+      "id": "936415277",
+      "url": "https://www.olx.ua/d/obyavlenie/skoda-octavia-a5-2012-ID11n6od.html",
+      "year": 2012,
+      "mileage_km": 261000,
+      "engine_cc": 1600,
+      "fuel": "diesel",
+      "transmission": "manual"
+    },
+    {
+      "id": "933483565",
+      "url": "https://www.olx.ua/d/obyavlenie/octavia-a5-2010-1-6-ID11aNIx.html",
+      "year": 2010,
+      "mileage_km": 264000,
+      "engine_cc": 1600,
+      "fuel": "diesel",
+      "transmission": "manual"
+    },
+    {
+      "id": "932654807",
+      "url": "https://www.olx.ua/d/obyavlenie/skoda-a5-2012-rk-dizel-dvigun-1-6-ID117k7t.html",
+      "year": 2012,
+      "mileage_km": 273000,
+      "engine_cc": 1600,
+      "fuel": "diesel",
+      "transmission": "manual"
+    },
+    {
+      "id": "892218290",
+      "url": "https://www.olx.ua/d/obyavlenie/avtomobl-skoda-oktavia-a5-IDYnEJA.html",
+      "year": 2010,
+      "mileage_km": 254000,
+      "engine_cc": 1600,
+      "fuel": "diesel",
+      "transmission": "manual"
+    },
+    {
+      "id": "917982649",
+      "url": "https://www.olx.ua/d/obyavlenie/prodam-shkodu-oktavia-a5-full-1-6-dizel-ID107LdL.html",
+      "year": 2012,
+      "mileage_km": 260000,
+      "engine_cc": 1600,
+      "fuel": "diesel",
+      "transmission": "manual"
+    }
+  ]
+}
