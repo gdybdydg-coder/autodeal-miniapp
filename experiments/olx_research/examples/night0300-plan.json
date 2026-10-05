@@ -1,0 +1,170 @@
+{
+  "mode": "reserved_public_detail_batch",
+  "hypothesis": "title-hint density can concentrate a compatible 1.6 MPI petrol cohort without using asking price",
+  "source": "saved_search_candidates_not_new_search",
+  "request_cap": 9,
+  "byte_cap": 29360128,
+  "pause_seconds": 4,
+  "timeout_seconds": 20,
+  "retry_cap": 1,
+  "selection": {
+    "status": "detail_batch_plannable",
+    "required_sample": 8,
+    "planned_calls": 9,
+    "candidate_window_count": 9,
+    "exact_modification_hint_count": 4,
+    "profile": {
+      "engine_cc": 1600,
+      "fuel": "petrol",
+      "transmission": "manual",
+      "year_center": 2005,
+      "mileage_km_center": 271000,
+      "modification_hint": "1.6 mpi",
+      "year_tolerance": 1,
+      "mileage_km_tolerance": 30000
+    },
+    "candidates": [
+      {
+        "source": "olx",
+        "id": "936688938",
+        "url": "https://www.olx.ua/d/obyavlenie/skoda-octavia-a5-1-6-mpi-ID11ofA6.html",
+        "selection_hints": {
+          "explicit_a5": true,
+          "other_generation_or_tour": false,
+          "body_hint": null,
+          "modification_hint": "1.6 mpi",
+          "power_hp_hint": null,
+          "ambiguous_hint": false
+        }
+      },
+      {
+        "source": "olx",
+        "id": "933246541",
+        "url": "https://www.olx.ua/d/obyavlenie/prodam-skoda-octavia-a5-1-6-mpi-ID119O3z.html",
+        "selection_hints": {
+          "explicit_a5": true,
+          "other_generation_or_tour": false,
+          "body_hint": null,
+          "modification_hint": "1.6 mpi",
+          "power_hp_hint": null,
+          "ambiguous_hint": false
+        }
+      },
+      {
+        "source": "olx",
+        "id": "932143005",
+        "url": "https://www.olx.ua/d/obyavlenie/skoda-oktavia-a5-ii-pokolnnya-1-6-mpi-benzin-vdmnniy-stan-vd-vlasnika-ID115aYB.html",
+        "selection_hints": {
+          "explicit_a5": true,
+          "other_generation_or_tour": false,
+          "body_hint": null,
+          "modification_hint": "1.6 mpi",
+          "power_hp_hint": null,
+          "ambiguous_hint": false
+        }
+      },
+      {
+        "source": "olx",
+        "id": "927670638",
+        "url": "https://www.olx.ua/d/obyavlenie/skoda-octavia-a5-1-6mpi-ID10MpwE.html",
+        "selection_hints": {
+          "explicit_a5": true,
+          "other_generation_or_tour": false,
+          "body_hint": null,
+          "modification_hint": "1.6 mpi",
+          "power_hp_hint": null,
+          "ambiguous_hint": false
+        }
+      },
+      {
+        "source": "olx",
+        "id": "936181092",
+        "url": "https://www.olx.ua/d/obyavlenie/prodam-skoda-octavia-a5-ID11m7t2.html",
+        "selection_hints": {
+          "explicit_a5": true,
+          "other_generation_or_tour": false,
+          "body_hint": null,
+          "modification_hint": null,
+          "power_hp_hint": null,
+          "ambiguous_hint": false
+        }
+      },
+      {
+        "source": "olx",
+        "id": "935738586",
+        "url": "https://www.olx.ua/d/obyavlenie/skoda-octavia-a5-ID11kglQ.html",
+        "selection_hints": {
+          "explicit_a5": true,
+          "other_generation_or_tour": false,
+          "body_hint": null,
+          "modification_hint": null,
+          "power_hp_hint": null,
+          "ambiguous_hint": false
+        }
+      },
+      {
+        "source": "olx",
+        "id": "935685825",
+        "url": "https://www.olx.ua/d/obyavlenie/skoda-octavia-a5-ID11k2CR.html",
+        "selection_hints": {
+          "explicit_a5": true,
+          "other_generation_or_tour": false,
+          "body_hint": null,
+          "modification_hint": null,
+          "power_hp_hint": null,
+          "ambiguous_hint": false
+        }
+      },
+      {
+        "source": "olx",
+        "id": "935633775",
+        "url": "https://www.olx.ua/d/obyavlenie/skoda-octavia-a5-ID11jP5l.html",
+        "selection_hints": {
+          "explicit_a5": true,
+          "other_generation_or_tour": false,
+          "body_hint": null,
+          "modification_hint": null,
+          "power_hp_hint": null,
+          "ambiguous_hint": false
+        }
+      },
+      {
+        "source": "olx",
+        "id": "934655269",
+        "url": "https://www.olx.ua/d/obyavlenie/skoda-octavia-a5-1-6-benzin-mehanka-ID11fIvZ.html",
+        "selection_hints": {
+          "explicit_a5": true,
+          "other_generation_or_tour": false,
+          "body_hint": null,
+          "modification_hint": null,
+          "power_hp_hint": null,
+          "ambiguous_hint": false
+        }
+      }
+    ],
+    "selection_hints_are_verified_attributes": false,
+    "distinct_ads_are_verified_physical_vehicles": false,
+    "price_used_for_selection": false,
+    "remaining_detail_requirements": [
+      "body",
+      "drive_type",
+      "power_hp",
+      "research_condition",
+      "full_page_asking_display",
+      "vehicle_identity"
+    ]
+  },
+  "urls": [
+    "https://www.olx.ua/d/obyavlenie/skoda-octavia-a5-1-6-mpi-ID11ofA6.html",
+    "https://www.olx.ua/d/obyavlenie/prodam-skoda-octavia-a5-1-6-mpi-ID119O3z.html",
+    "https://www.olx.ua/d/obyavlenie/skoda-oktavia-a5-ii-pokolnnya-1-6-mpi-benzin-vdmnniy-stan-vd-vlasnika-ID115aYB.html",
+    "https://www.olx.ua/d/obyavlenie/skoda-octavia-a5-1-6mpi-ID10MpwE.html",
+    "https://www.olx.ua/d/obyavlenie/prodam-skoda-octavia-a5-ID11m7t2.html",
+    "https://www.olx.ua/d/obyavlenie/skoda-octavia-a5-ID11kglQ.html",
+    "https://www.olx.ua/d/obyavlenie/skoda-octavia-a5-ID11k2CR.html",
+    "https://www.olx.ua/d/obyavlenie/skoda-octavia-a5-ID11jP5l.html",
+    "https://www.olx.ua/d/obyavlenie/skoda-octavia-a5-1-6-benzin-mehanka-ID11fIvZ.html"
+  ],
+  "production_effect": false,
+  "telegram_calls_allowed": 0
+}

@@ -11,8 +11,8 @@
   "budget": {
     "olx_get_cap": 60,
     "olx_bytes_cap": 167772160,
-    "olx_reserved_calls": 20,
-    "olx_reserved_bytes": 41943040,
+    "olx_reserved_calls": 29,
+    "olx_reserved_bytes": 71303168,
     "fx_get_cap": 6,
     "fx_reserved_calls": 1
   },
@@ -67,6 +67,25 @@
       ],
       "reserved_at": "2026-10-04T22:59:30Z",
       "result": "examples/night0200-fx-evidence.json"
+    },
+    {
+      "owner": "night-20261005-0300",
+      "plan": "examples/night0300-plan.json",
+      "calls": 9,
+      "bytes": 29360128,
+      "urls": [
+        "https://www.olx.ua/d/obyavlenie/skoda-octavia-a5-1-6-mpi-ID11ofA6.html",
+        "https://www.olx.ua/d/obyavlenie/prodam-skoda-octavia-a5-1-6-mpi-ID119O3z.html",
+        "https://www.olx.ua/d/obyavlenie/skoda-oktavia-a5-ii-pokolnnya-1-6-mpi-benzin-vdmnniy-stan-vd-vlasnika-ID115aYB.html",
+        "https://www.olx.ua/d/obyavlenie/skoda-octavia-a5-1-6mpi-ID10MpwE.html",
+        "https://www.olx.ua/d/obyavlenie/prodam-skoda-octavia-a5-ID11m7t2.html",
+        "https://www.olx.ua/d/obyavlenie/skoda-octavia-a5-ID11kglQ.html",
+        "https://www.olx.ua/d/obyavlenie/skoda-octavia-a5-ID11k2CR.html",
+        "https://www.olx.ua/d/obyavlenie/skoda-octavia-a5-ID11jP5l.html",
+        "https://www.olx.ua/d/obyavlenie/skoda-octavia-a5-1-6-benzin-mehanka-ID11fIvZ.html"
+      ],
+      "reserved_at": "2026-10-05T00:13:56Z",
+      "result": "examples/night0300-evidence.json"
     }
   ],
   "runs": [
