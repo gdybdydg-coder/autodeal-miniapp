@@ -315,3 +315,25 @@ def test_terminal_hold_receipt_is_read_only_without_retry(live,monkeypatch,statu
     with Session(live.engine) as db:
         r=db.get(SourceProbe,probe.STATE)
         assert r.result==before and r.requests==0 and r.status==status
+
+
+@pytest.mark.parametrize('why',['approved302','forbidden403','unknown_result','same_url','wrong_ad','wrong_phase'])
+def test_locale_retry_is_one_reviewed_transition_only(live,why):
+    assert probe.initialize(live.engine,live.settings,live.plan)
+    old=deepcopy(live.plan['candidates'][0])
+    with Session(live.engine) as db:
+        r=db.get(SourceProbe,probe.STATE);r.status='technical_hold'
+        r.result={**r.result,'phase':4,'error':'olx_detail_unavailable','olx_calls':[
+            {**old,'status':'http_302','bytes':77,'truncated':False}]}
+        r.requests=22
+        if why=='forbidden403':r.result={**r.result,'olx_calls':[{**old,'status':'http_403','truncated':False}]}
+        if why=='unknown_result':r.result={**r.result,'olx_calls':[{**old,'status':'reserved','truncated':False}]}
+        if why=='wrong_phase':r.result={**r.result,'phase':5}
+        db.commit()
+    plan=deepcopy(live.plan);plan.update(phase=5,maximum_olx_gets=5)
+    plan['candidates'][0]['url']=old['url'].replace('/d/uk/','/d/')
+    if why=='same_url':plan['candidates'][0]['url']=old['url']
+    if why=='wrong_ad':plan['candidates'][0]['id']='933340614'
+    assert probe.initialize(live.engine,live.settings,plan)==(why=='approved302')
+    with Session(live.engine) as db:assert db.get(SourceProbe,probe.STATE).requests==22
+    assert not probe.initialize(live.engine,live.settings,plan)
