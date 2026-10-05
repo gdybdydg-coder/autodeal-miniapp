@@ -198,7 +198,7 @@ def test_reference_audit_freezes_controls_and_preserves_budget_no_sender(live,mo
             assert row.result['reference_membership']['control_ids']==['1001','1002','1003']
             assert row.result['calls'][-1]['params']==params
         return 200,{'autoData':{'VIN':'NEVER','power':102,'driveId':2},'VIN':'NEVER'},20
-    monkeypatch.setattr(ria_search,'parse_car',lambda data,sid:{'id':sid,'price':5100,'year':2005,
+    monkeypatch.setattr(ria_search,'parse_car',lambda data,sid:{'id':sid,'price_usd':5100,'year':2005,
         'brand_id':70,'model_id':652,'generation_id':3133,'body_id':2,'fuel_id':4,'gear_id':1,
         'engine_cc':1600,'category_id':1,'mileage':254000,'vehicle_key':'derived:test',
         'comparable_condition':True,'condition_exclusions':[]})
@@ -210,6 +210,7 @@ def test_reference_audit_freezes_controls_and_preserves_budget_no_sender(live,mo
         row=db.get(SourceProbe,probe.STATE)
         assert 'NEVER' not in str(row.result)
         assert row.result['reference_details'][3]['role']=='reference_candidate'
+        assert row.result['reference_details'][0]['price_usd']==5100
         assert row.result['reference_details'][0]['mismatches']==[]
         assert row.result['reference_details'][0]['unknown_critical']
     assert probe.run_once(live.engine,live.settings,live.plan,fetch=fetch) is None
@@ -240,3 +241,15 @@ def test_stop_after_reference_search_prevents_detail_call(live):
     r=probe.run_once(live.engine,live.settings,live.plan,fetch=fetch)
     assert r['ria_calls']==10 and len(calls)==1
     assert r['error']=='owner_access_or_stop_blocked'
+
+
+def test_completed_receipt_reports_unknown_bytes_without_spending(live):
+    seed_phase2(live)
+    with Session(live.engine) as db:
+        r=db.get(SourceProbe,probe.STATE)
+        r.result={**r.result,'olx_calls':[{'status':'reserved','bytes':0},{'status':'http_200','bytes':123}]}
+        db.commit()
+    summary=probe.report_completed(live.engine)
+    assert summary['ria_calls']==9 and summary['olx_bytes_known']==123
+    assert summary['olx_bytes_unknown_receipts']==1
+    assert summary['restart_additional_requests']==0 and summary['telegram_calls']==0
