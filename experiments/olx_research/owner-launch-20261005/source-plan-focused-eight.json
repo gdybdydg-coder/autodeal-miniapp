@@ -1,0 +1,118 @@
+{
+  "task": "owner-focused-cohort-20261005-2302",
+  "hypothesis": "Complete the eight untouched frozen references, then evaluate exact compatible counts and untouched control errors; do not change membership, fill traits or relax8.",
+  "freeze_commit": "d408c0eeeb85ff70f1a16a427c96a50c9b048c1f",
+  "frozen_at": 1791228634,
+  "membership_sha256": "271bb2fab75a9ffdb95468d6c67ebc5b9873b76fa4c5fa5c9a8b21ca1eef44af",
+  "reserved_at": "2026-10-05T20:06:51.408034+00:00",
+  "hour_bucket": 497564,
+  "hour_basis": "same fixedUTC bucket as ownerfeed SourceProbe runtime, notrolling-window reset",
+  "daily_scope": "current explicitly approved OWNER scenario, conservatively includes all prior owner daytime episodes; prior separately bounded stopped NIGHT scope is not reopened or reused, paidprobe expired",
+  "daily_prior_conservative_reserved_gets": 43,
+  "daily_prior_reserved_bytes": 105119744,
+  "historical_fx_included_in_byte_ceiling": true,
+  "daily_after_reservation_gets": 51,
+  "daily_after_reservation_bytes": 121896960,
+  "budget": {
+    "public_ria_get_cap": 8,
+    "olx_get_cap": 0,
+    "byte_cap": 16777216,
+    "per_get_cap": 2097152,
+    "pause_seconds": 4,
+    "timeout_seconds": 20,
+    "packet_seconds": 240,
+    "retries": 0,
+    "paid_ria_gets": 0,
+    "telegram_calls": 0,
+    "total_hour_get_cap": 12,
+    "total_daily_get_cap": 60,
+    "total_daily_byte_cap": 167772160
+  },
+  "requests": [
+    {
+      "source": "auto_ria_public_html",
+      "id": "39790008",
+      "url": "https://auto.ria.com/auto_skoda_octavia_39790008.html",
+      "role": "reference",
+      "observed_in_saved_public_catalogs": [
+        "ria-dense-catalog.html"
+      ]
+    },
+    {
+      "source": "auto_ria_public_html",
+      "id": "40177989",
+      "url": "https://auto.ria.com/auto_skoda_octavia_40177989.html",
+      "role": "reference",
+      "observed_in_saved_public_catalogs": [
+        "ria-dense-catalog.html"
+      ]
+    },
+    {
+      "source": "auto_ria_public_html",
+      "id": "40271556",
+      "url": "https://auto.ria.com/auto_skoda_octavia_40271556.html",
+      "role": "reference",
+      "observed_in_saved_public_catalogs": [
+        "ria-dense-catalog.html"
+      ]
+    },
+    {
+      "source": "auto_ria_public_html",
+      "id": "40133304",
+      "url": "https://auto.ria.com/auto_skoda_octavia_40133304.html",
+      "role": "reference",
+      "observed_in_saved_public_catalogs": [
+        "ria-dense-page2.html"
+      ]
+    },
+    {
+      "source": "auto_ria_public_html",
+      "id": "40271690",
+      "url": "https://auto.ria.com/auto_skoda_octavia_40271690.html",
+      "role": "reference",
+      "observed_in_saved_public_catalogs": [
+        "ria-catalog.html",
+        "ria-fl-catalog.html"
+      ]
+    },
+    {
+      "source": "auto_ria_public_html",
+      "id": "40082502",
+      "url": "https://auto.ria.com/auto_skoda_octavia_40082502.html",
+      "role": "reference",
+      "observed_in_saved_public_catalogs": [
+        "ria-fl-catalog.html"
+      ]
+    },
+    {
+      "source": "auto_ria_public_html",
+      "id": "40434063",
+      "url": "https://auto.ria.com/auto_skoda_octavia_40434063.html",
+      "role": "reference",
+      "observed_in_saved_public_catalogs": [
+        "ria-dense-catalog.html"
+      ]
+    },
+    {
+      "source": "auto_ria_public_html",
+      "id": "40420542",
+      "url": "https://auto.ria.com/auto_skoda_octavia_40420542.html",
+      "role": "reference",
+      "observed_in_saved_public_catalogs": [
+        "ria-dense-catalog.html"
+      ]
+    }
+  ],
+  "rules": {
+    "source_hold_on": [
+      401,
+      403,
+      429,
+      "CAPTCHA"
+    ],
+    "follow_redirects": false,
+    "no_credentials": true,
+    "reservations_not_refunded": true,
+    "old_night_and_paid_budgets_not_reused": true
+  }
+}
