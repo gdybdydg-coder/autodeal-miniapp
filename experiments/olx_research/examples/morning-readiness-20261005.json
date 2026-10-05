@@ -1,0 +1,79 @@
+{
+  "mode": "final_offline_readiness_gate",
+  "facts": {
+    "source": {
+      "regular_channel_verified": false,
+      "first_publication_verified": false
+    },
+    "market": {
+      "minimum_required": 8,
+      "maximum_comparables": 4,
+      "total": 71,
+      "estimated": 0
+    },
+    "holdout": {
+      "frozen": 9,
+      "loaded": 9,
+      "eligible": 5,
+      "estimated": 0,
+      "maximum_comparables": 1,
+      "independently_labeled": 0,
+      "sale_or_profit_accuracy_verified": false
+    },
+    "flow": {
+      "paid_active_stop_guard_verified": true,
+      "paid_fake_cards": 124,
+      "unpaid_cards": 0,
+      "restart_duplicates": 0,
+      "real_telegram_calls": 0,
+      "owner_canary_delivery_verified": false
+    },
+    "review": {
+      "prepared": true,
+      "cases": 71,
+      "evaluation_panel_present": true,
+      "browser_render_verified": false
+    },
+    "authorization": {
+      "owner_canary": false,
+      "client_rollout": false
+    }
+  },
+  "gate_result": {
+    "technical_ready": false,
+    "ready_for_owner_canary": false,
+    "ready_for_client_rollout": false,
+    "blockers": [
+      "regular_source_channel_unverified",
+      "first_publication_unverified",
+      "insufficient_compatible_analogs",
+      "zero_real_market_coverage",
+      "no_estimable_holdout",
+      "no_independent_sale_or_profit_labels",
+      "owner_canary_not_authorized"
+    ],
+    "client_rollout_blockers": [
+      "regular_source_channel_unverified",
+      "first_publication_unverified",
+      "insufficient_compatible_analogs",
+      "zero_real_market_coverage",
+      "no_estimable_holdout",
+      "no_independent_sale_or_profit_labels",
+      "owner_canary_not_authorized",
+      "owner_canary_delivery_not_verified",
+      "client_rollout_not_authorized"
+    ],
+    "production_action": "none",
+    "stage9_started": false,
+    "stage10_started": false
+  },
+  "evidence": {
+    "tests_before_gate": 409,
+    "subtests_before_gate": 150,
+    "night_olx_reserved_gets": 29,
+    "night_olx_actual_bytes": 45648183,
+    "night_fx_gets": 1,
+    "production_main": "afaf9cee348db64f0558e5d113b2895c48366421",
+    "render_live_deploy": "dep-db1a7eu0tbcc73a8jk10"
+  }
+}

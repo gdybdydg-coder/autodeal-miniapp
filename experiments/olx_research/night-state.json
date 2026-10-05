@@ -1,15 +1,11 @@
 {
   "version": 1,
   "night": "2026-10-05-Europe-Kyiv",
-  "status": "active",
+  "status": "stopped",
+  "stopped_at": "2026-10-05T04:00:13Z",
+  "stop_reason": "Final morning release gate failed closed: stages5-6 lack source/newness proof, adequate compatible analogs, real coverage and independent labels; all available isolated stage7-8 work is saved.",
   "deadline": "2026-10-05T08:00:00+03:00",
-  "lease": {
-    "owner": "night-20261005-0700",
-    "started_at": "2026-10-05T03:57:13Z",
-    "expires_at": "2026-10-05T04:32:13Z",
-    "head": "5c2e35dd5eda1d29bf77049cc4b72cfdc9466b93",
-    "scope": "final offline release gate and morning readiness summary"
-  },
+  "lease": null,
   "budget": {
     "olx_get_cap": 60,
     "olx_bytes_cap": 167772160,
@@ -163,7 +159,17 @@
       "subtests_passed": 150,
       "summary": "Added sanitized holdout denominator panel and zero-coverage warning to local HTML; saved-real panel9 frozen/loaded,5 eligible,4 known-ineligible,0 estimated,5 eligible-unestimated;124 local previews,unpaid0,restart0,Telegram0",
       "checkpoint": "NIGHT-0600-20261005.md"
+    },
+    {
+      "owner": "night-20261005-0700",
+      "completed_at": "2026-10-05T04:00:13Z",
+      "olx_calls": 0,
+      "fx_calls": 0,
+      "tests_passed": 411,
+      "subtests_passed": 150,
+      "summary": "Added fail-closed release gate and self-contained morning readiness report; technical_ready=false, owner/client=false; stages5-6 blocked,7-8 isolated-only; production unchanged",
+      "checkpoint": "MORNING-READINESS-20261005.md"
     }
   ],
-  "next_step": "Read NIGHT-0600-20261005.md. Do not call bank.gov.ua again tonight or repeat consumed detail URLs. Local HTML now exposes holdout denominators and warns that zero coverage is not validation; browser layout remains unverified. The final morning run should produce a self-contained readiness summary without claiming stages5-6 ready or activating production. 31OLXGET/92MiB and5FXGET remain."
+  "next_step": "No further night work. Read MORNING-READINESS-20261005.md. Resume only with a new verified source/density hypothesis and explicit permissions; stages9-10 remain separately unauthorized."
 }

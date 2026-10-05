@@ -1,4 +1,4 @@
-Latest night checkpoint: [06:00 review evidence panel](NIGHT-0600-20261005.md). The local HTML now shows frozen/loaded/eligible/known-ineligible/unestimated-eligible denominators and explicitly warns that zero coverage is not method validation. 409 tests +150 subtests; market coverage remains 0/71 and production/Telegram remain untouched.
+Final night result: [morning readiness summary](MORNING-READINESS-20261005.md). A fail-closed release gate records that stages5–6 remain blocked while stages7–8 are complete only as an isolated prototype. 411 tests +150 subtests; market coverage remains0/71 and production/Telegram remain untouched.
 
 # OLX: isolated review, 2026-10-04
 
