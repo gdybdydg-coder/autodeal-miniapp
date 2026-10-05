@@ -1,0 +1,49 @@
+{
+  "task": "owner-launch-20261005-2157",
+  "hypothesis": "A publicly observed exact A5 FL generation catalog may provide a denser real1.6diesel/manual group, selected by complete compatible traits rather than asking price. This source also corroborates native catalog generationID3607 without year inference.",
+  "budget": {
+    "public_ria_get_cap": 1,
+    "olx_get_cap": 0,
+    "byte_cap": 2097152,
+    "per_get_cap": 2097152,
+    "pause_seconds": 4,
+    "timeout_seconds": 20,
+    "retries": 0,
+    "paid_ria_gets": 0,
+    "telegram_calls": 0
+  },
+  "requests": [
+    {
+      "source": "auto_ria_public_html",
+      "url": "https://auto.ria.com/car/skoda/octavia/a5-fl/",
+      "role": "density_discovery_not_reference",
+      "observed_url_receipt": "root model catalog2026-10-05T19:10:07Z actualhref/PINIA catalog generation id3607"
+    }
+  ],
+  "selection_policy": {
+    "fields": [
+      "generation",
+      "engine",
+      "fuel",
+      "gear",
+      "body",
+      "drive",
+      "year",
+      "mileage"
+    ],
+    "price_used_for_selection": false,
+    "owner_region_and_price_applied_to_candidate_only": true
+  },
+  "rules": {
+    "source_hold_on": [
+      401,
+      403,
+      429,
+      "CAPTCHA"
+    ],
+    "follow_redirects": false,
+    "no_credentials": true,
+    "reservations_not_refunded": true
+  },
+  "reserved_at": "2026-10-05T19:12:55.720389+00:00"
+}

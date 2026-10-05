@@ -1,0 +1,19 @@
+{
+  "source": "auto_ria_public_html",
+  "url": "https://auto.ria.com/car/skoda/octavia/",
+  "reserved_commit": "82e788fb886bb421bb60bff4f4ee44df4b9293b4",
+  "started_at": "2026-10-05T19:09:56.998265+00:00",
+  "completed_at": "2026-10-05T19:10:07.070954+00:00",
+  "elapsed_seconds": 10.073,
+  "http_status": 200,
+  "curl_exit": 0,
+  "body_bytes": 506539,
+  "body_sha256": "2399f37ef6c01e889099889e0585e1ef27d2c7747bdcc6f7091143cc1d0e5795",
+  "captcha_challenge_indicator": false,
+  "source_hold": null,
+  "paid_api_calls": 0,
+  "get_calls": 1,
+  "telegram_calls": 0,
+  "redirects_followed": 0,
+  "retries": 0
+}
