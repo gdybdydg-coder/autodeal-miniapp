@@ -173,7 +173,7 @@ def audit_references(engine,settings,plan,fetch):
         data=request(engine,settings,plan,'auto/info',params={'auto_id':sid},fetch=fetch)
         try:
             car=parse_car(data,sid)
-            safe={k:car.get(k) for k in ('id','price','year','url','brand_id','model_id',
+            safe={k:car.get(k) for k in ('id','price_usd','year','url','brand_id','model_id',
                 'body_id','fuel_id','gear_id','generation_id','modification_id','engine_cc',
                 'mileage','vehicle_key','comparable_condition','condition_exclusions','category_id','observed_at')}
             auto=data.get('autoData',{})
@@ -187,7 +187,7 @@ def audit_references(engine,settings,plan,fetch):
             if not safe.get('mileage') or not 224000<=safe['mileage']<=284000:safe['mismatches'].append('mileage')
             if not safe.get('year') or not 2004<=safe['year']<=2006:safe['mismatches'].append('year')
             if not safe.get('comparable_condition'):safe['mismatches'].append('condition')
-            safe['unknown_critical']=['drive','power','target_fuel_subtype','cross_source_target_identity']
+            safe['unknown_critical']=([] if safe['explicit_numeric_attributes'].get('driveId')==2 else ['drive'])+['power','target_fuel_subtype','cross_source_target_identity']
             safe['role']='control' if sid in ids[:3] else 'reference_candidate'
             safe['independent_identity_available']=bool(safe.get('vehicle_key'))
             safe['status']='not_admitted_pending_critical_compatibility'
@@ -204,7 +204,9 @@ def run_once(engine,settings,plan=None,fetch=transport,olx_fetch=feed.source_fet
     if plan is None:
         try:plan=json.loads(PLAN.read_text())
         except (OSError,ValueError):return
-    if not initialize(engine,settings,plan):return
+    if not initialize(engine,settings,plan):
+        if allowed(engine,settings,plan):report_completed(engine)
+        return
     status='completed_observations_not_admitted';error=None
     try:
         if plan.get('phase')==3:
@@ -293,6 +295,22 @@ def run_once(engine,settings,plan=None,fetch=transport,olx_fetch=feed.source_fet
         status='source_hold' if isinstance(exc,ValueError) and ('hold_http_' in str(exc) or 'source_hold_challenge' in str(exc)) else 'technical_hold'
         error=str(exc) if isinstance(exc,ValueError) else type(exc).__name__
     return finish(engine,status,error)
+
+
+def report_completed(engine):
+    with Session(engine) as db:
+        row=db.get(SourceProbe,STATE)
+        if not row or not row.status.startswith('completed_'):return
+        d=row.result
+        calls=d.get('calls',[]);olx=d.get('olx_calls',[])
+        summary={'status':row.status,'ria_calls':row.requests,
+            'ai_calls':sum(c.get('kind')=='ai' for c in calls),
+            'ria_bytes_known':sum(c.get('bytes',0) for c in calls),
+            'olx_gets':len(olx),'olx_bytes_known':sum(c.get('bytes',0) for c in olx),
+            'olx_bytes_unknown_receipts':sum('bytes' not in c or c.get('status')=='reserved' for c in olx),
+            'reference_details':len(d.get('reference_details',[])),
+            'technical_ready':False,'telegram_calls':0,'restart_additional_requests':0}
+    LOG.info('OLX RIA completed receipt %s',json.dumps(summary));return summary
 
 
 def finish(engine,status,error):

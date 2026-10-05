@@ -2,7 +2,7 @@
   "version": 1,
   "authorization": "2026-10-05 explicit owner-only valued OLX request; clients unauthorized",
   "night_state_resumed": false,
-  "status": "phase3_reference_audit_reserved",
+  "status": "completed_reference_audit_not_admitted",
   "hypothesis": "Saved densest complete group is Octavia A5 1.6 diesel manual wagon/front/105 hp, 2010 around 264-274k km, max4 peers. Prior general A5 search and MPI collection missed the explicitly observed focused 1.6 TDI query. Discover by characteristics, not price; holdout frozen before refreshed full prices.",
   "owner_search": {
     "id": 4,
@@ -223,8 +223,8 @@
     "dated_fallback_rate": "44.9857000",
     "fx_effective_date": "2026-10-05"
   },
-  "actual_olx_calls": 23,
-  "actual_olx_bytes": 47049350,
+  "actual_olx_calls": 26,
+  "actual_olx_bytes": null,
   "actual_fx_calls": 1,
   "actual_fx_bytes": 2836,
   "telegram_calls": 0,
@@ -249,7 +249,7 @@
     "maximum_calls": 30,
     "maximum_ai": 6,
     "persistent_state": "olx-ria-probe-20261005-1332-v1",
-    "actual_calls": 9,
+    "actual_calls": 22,
     "provider_charged_units": null,
     "actual_ai_calls": 2,
     "phase1_result": {
@@ -300,6 +300,25 @@
       "observations": 2,
       "technical_ready": false,
       "telegram_calls": 0
-    }
-  }
+    },
+    "remaining_calls": 8,
+    "remaining_ai": 4,
+    "phase3_result": {
+      "search_matches": 12,
+      "full_details": 12,
+      "controls": 3,
+      "reference_candidates": 9,
+      "condition_rejected_reference": 2,
+      "potential_references_before_power_and_target_identity": 7,
+      "admitted_estimates": 0,
+      "telegram_calls": 0,
+      "prices_not_retained_due_projection_bug": 12
+    },
+    "actual_response_bytes": 236437,
+    "probe_olx_known_response_bytes": 3137140
+  },
+  "actual_olx_bytes_pre_probe": 47049350,
+  "next_step": "Owner feed remains off. Need >=8 independent fully compatible references plus viable controls, explicit target fuel subtype and cross-source identity; correct price projection already tested. Preserve remaining8/4 API budget; no automatic replay or new resources. Current two candidates are below benefit10% or above reference. No broader collection, invented attributes, lowering minimum or force-ready.",
+  "actual_olx_bytes_known_lower_bound": 50186490,
+  "unknown_olx_byte_receipts": 1
 }

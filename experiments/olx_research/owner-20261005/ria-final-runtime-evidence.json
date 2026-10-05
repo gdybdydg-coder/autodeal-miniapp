@@ -1,0 +1,170 @@
+{
+  "verified_main": "91abde67da06bfacc2d0bf279df2bef8cda17281",
+  "deployment": "dep-db1oe6h42hec73dkfd00",
+  "live_at": "2026-10-05T11:17:56.819932Z",
+  "receipt": {
+    "log_id": "990e4784-fe5d-4738-9686-fd06157557a3",
+    "at": "2026-10-05T11:17:48.517719328Z",
+    "status": "completed_reference_audit_not_admitted",
+    "ria_calls": 22,
+    "ai_calls": 2,
+    "ria_bytes_known": 236437,
+    "olx_gets": 3,
+    "olx_bytes_known": 3137140,
+    "olx_bytes_unknown_receipts": 1,
+    "reference_details": 12,
+    "technical_ready": false,
+    "telegram_calls": 0,
+    "restart_additional_requests": 0
+  },
+  "preflight": {
+    "log_id": "866bd818-ad66-4a00-9972-c6b4113e6922",
+    "at": "2026-10-05T11:17:46.314798781Z",
+    "enabled": false,
+    "owner_verified": true,
+    "recipient_count": 1,
+    "strict_paid_policy": true,
+    "confirmed_paid": true,
+    "ready": true,
+    "own_searches": [
+      {
+        "id": 4,
+        "fingerprint": "aa3dc66cadd6d6343f55f3930823173faf45741059cac1968b66a411b8a99be2",
+        "filters": {
+          "currency": "USD",
+          "region": [
+            "вінницька",
+            "тернопільська",
+            "хмельницька",
+            "чернівецька"
+          ],
+          "price_min": 1000,
+          "price_max": 7000
+        },
+        "threshold": 10,
+        "only_deals": true
+      }
+    ],
+    "selected_search_id": 0,
+    "interval_seconds": 600,
+    "legacy_batch_enabled": false,
+    "legacy_canary_enabled": false,
+    "until": 0,
+    "profile_present": false
+  },
+  "autoria": {
+    "at": "2026-10-05T11:17:55.822174513Z",
+    "log_id": "52228904-d11f-4142-bcd6-9d865cd253ea",
+    "instance": "srv-dal2h35g1s2s73e0sj80-hl9qf",
+    "config": {
+      "active_window_enabled": false,
+      "automobile_admin_copies_enabled": false,
+      "delivery_enabled": true,
+      "full_scan_enabled": false,
+      "html_shadow_configured": true,
+      "manual_payment_notices_enabled": true,
+      "monitor_enabled": true,
+      "provider_valuation_enabled": true,
+      "recent_publications_enabled": true,
+      "release": "91abde67da06bfacc2d0bf279df2bef8cda17281",
+      "shared_distribution_enabled": true,
+      "strict_paid_sources": true,
+      "valuation_selection_status": "api_range_selection_native_parity_unverified"
+    },
+    "limits": {
+      "daily": 90000,
+      "hourly": 4500,
+      "total": 1102160
+    },
+    "schedule": {
+      "active_period": "day",
+      "budget_limited": false,
+      "enabled": true,
+      "estimate_basis": "one_page_per_poll_standard_24h_day",
+      "interval_seconds": 110,
+      "minimum_planning_limits": {
+        "daily": 3394,
+        "hourly": 320
+      },
+      "periods": [
+        {
+          "end": "08:00",
+          "interval_seconds": 3600,
+          "name": "night",
+          "requested_interval_seconds": 3600,
+          "start": "23:00"
+        },
+        {
+          "end": "18:00",
+          "interval_seconds": 110,
+          "name": "day",
+          "requested_interval_seconds": 110,
+          "start": "08:00"
+        },
+        {
+          "end": "23:00",
+          "interval_seconds": 60,
+          "name": "evening",
+          "requested_interval_seconds": 60,
+          "start": "18:00"
+        }
+      ],
+      "requested_interval_seconds": 110,
+      "requested_search_calls_per_day": 2546,
+      "timezone": "Europe/Kyiv"
+    },
+    "primary": {
+      "running": true,
+      "feed_states": {
+        "watching": 4
+      },
+      "pending": {}
+    },
+    "owner": {
+      "confirmed_paid": true,
+      "source_access_allowed": true,
+      "ready": true,
+      "last": {
+        "accepted_at": 1791198433.49191,
+        "discovered_at": 1791198414.2616706,
+        "evaluated_at": 1791198416.6400783,
+        "owner_approval_covers_acceptance": true,
+        "queued_at": 1791198423.6544652,
+        "saved_access_event_covers_acceptance": true,
+        "send_started_at": 1791198433.1563776,
+        "source_id": "40522721",
+        "state": "sent"
+      }
+    },
+    "source_access_audit": {
+      "active_entitlement_without_current_purchase_clients": 0,
+      "basis": "saved_owner_approval_audit_access_and_membership_no_source_calls",
+      "current_owner_approval_with_access_clients": 4,
+      "current_owner_approval_without_access_clients": 0,
+      "current_paid_excluded_admin_clients": 0,
+      "current_paid_excluded_config_only_clients": 0,
+      "current_paid_not_ready_clients": 0,
+      "current_paid_without_enabled_search_clients": 1,
+      "current_purchase_without_owner_audit_clients": 0,
+      "owner_approval_with_access_blocked_by_guard_clients": 0,
+      "paid_ready_searches_without_current_membership": 0
+    }
+  },
+  "existing_backend": {
+    "total": 222,
+    "identical": 221,
+    "changed": "backend/app.py: 5 additive isolated probe lifecycle lines"
+  },
+  "telegram_receipts": [],
+  "price_bug": {
+    "reproduced_old": 1,
+    "test_seconds": 0.83,
+    "corrected": true,
+    "real_missing_prices": 12,
+    "not_backfilled": true
+  },
+  "tests": {
+    "passed": 126,
+    "seconds": 29.39
+  }
+}

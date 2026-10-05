@@ -1,5 +1,5 @@
 {
-  "main_commit": "473534ad433b2ae4d1bad8eab033a84b06a5aed5",
+  "main_commit": "91abde67da06bfacc2d0bf279df2bef8cda17281",
   "research_commit": "32dc444819db99fc6d4caa490604021013f0473d",
   "default_off_deploy": "dep-db1nvo97lnhs73dq8kdg",
   "default_off_live_at": "2026-10-05T10:47:05.22188Z",
@@ -21,7 +21,7 @@
     "requests": 2,
     "bytes": 4194304
   },
-  "actual_probe_results_pending": true,
+  "actual_probe_results_pending": false,
   "telegram_receipts": [],
   "phase1_result": {
     "status": "technical_hold",
@@ -37,5 +37,22 @@
   "phase2_test_seconds": 23.86,
   "receipt_bug_reproduced_old_exit": 1,
   "shared_olx_reserved_gets": 26,
-  "shared_olx_reserved_bytes": 69206016
+  "shared_olx_reserved_bytes": 69206016,
+  "phase3_commit": "fd3955b0ad547c32a5fdc5056ef1a65f7d4235dd",
+  "phase3_deploy": "dep-db1obi5g1s2s73b4frv0",
+  "price_projection_fix_deploy": "dep-db1oe6h42hec73dkfd00",
+  "ria_calls": 22,
+  "ai_calls": 2,
+  "olx_gets": 3,
+  "telegram_calls": 0,
+  "technical_ready": false,
+  "phase3_tests": {
+    "passed": 126,
+    "seconds": 29.39
+  },
+  "price_projection_reproduction": {
+    "old_failed": 1,
+    "seconds": 0.83,
+    "error": "KeyError price_usd"
+  }
 }
