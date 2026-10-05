@@ -1,0 +1,20 @@
+{
+  "source": "auto_ria_public_html",
+  "id": "40106586",
+  "url": "https://auto.ria.com/auto_skoda_octavia_40106586.html",
+  "reserved_commit": "06ce469134feeb2309f93e4b71a4ae7ba25b0808",
+  "started_at": "2026-10-05T19:04:57.958461+00:00",
+  "completed_at": "2026-10-05T19:05:08.692885+00:00",
+  "elapsed_seconds": 10.734,
+  "http_status": 200,
+  "curl_exit": 0,
+  "body_bytes": 524193,
+  "body_sha256": "75dd7e3e44ad12c890ca0acdeddfb643fb1485354921477ea663df8b5ad0a531",
+  "captcha_indicator": false,
+  "source_hold": null,
+  "paid_api_calls": 0,
+  "get_calls": 1,
+  "telegram_calls": 0,
+  "redirects_followed": 0,
+  "retries": 0
+}

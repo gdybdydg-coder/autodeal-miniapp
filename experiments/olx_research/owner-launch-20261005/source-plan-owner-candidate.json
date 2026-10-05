@@ -1,0 +1,36 @@
+{
+  "task": "owner-launch-20261005-2157",
+  "hypothesis": "Refresh the only saved owner-filter matching target with a validated VIN-derived claim to check whether current explicit power, condition and FL vocabulary are sufficient; do not infer missing traits or send unvalued cards.",
+  "budget": {
+    "olx_get_cap": 1,
+    "byte_cap": 2097152,
+    "per_get_cap": 2097152,
+    "pause_seconds": 4,
+    "timeout_seconds": 20,
+    "retries": 0,
+    "fx_gets": 0,
+    "paid_ria_gets": 0,
+    "telegram_calls": 0
+  },
+  "requests": [
+    {
+      "source": "olx",
+      "id": "936176691",
+      "url": "https://www.olx.ua/d/uk/obyavlenie/skoda-octavia-a5-1-6-tdi-2012-ID11m6k3.html",
+      "role": "possible_owner_candidate_not_a_market_reference",
+      "observed_url_receipt": "night saved current-cohort.json; paid and region filters matched old saved snapshot only"
+    }
+  ],
+  "rules": {
+    "source_hold_on": [
+      401,
+      403,
+      429,
+      "CAPTCHA"
+    ],
+    "follow_redirects": false,
+    "no_credentials": true,
+    "reservations_not_refunded": true
+  },
+  "reserved_at": "2026-10-05T19:06:00.430972+00:00"
+}
