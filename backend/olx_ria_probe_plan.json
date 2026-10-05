@@ -1,0 +1,21 @@
+{
+  "run_id": "olx-ria-probe-20261005-1332-v1",
+  "owner_authorized": true,
+  "client_authorized": false,
+  "search_id": 4,
+  "fingerprint": "aa3dc66cadd6d6343f55f3930823173faf45741059cac1968b66a411b8a99be2",
+  "until": 1791205200,
+  "maximum_ria_calls": 30,
+  "maximum_ai_calls": 6,
+  "maximum_olx_gets": 2,
+  "maximum_olx_bytes": 4194304,
+  "technical_ready": false,
+  "telegram_enabled": false,
+  "candidates": [
+    {"id": "936768428", "url": "https://www.olx.ua/d/uk/obyavlenie/skoda-octavia-a5-ID11oAgc.html"},
+    {"id": "933340614", "url": "https://www.olx.ua/d/uk/obyavlenie/skoda-octavia-a5-2007-r-v-ID11acvS.html"}
+  ],
+  "control_membership_frozen_before_current_prices": ["936768428", "933340614"],
+  "controls_are_not_references": true,
+  "purpose": "First real parameter API observations; compatibility and controls remain independently required"
+}
