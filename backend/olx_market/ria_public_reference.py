@@ -201,6 +201,47 @@ def _generation_from_dictionary(label, dictionary, now):
     return dictionary['mapping'].get(label.split(',')[0].strip())
 
 
+def _own_description_condition_claim(description):
+    """Two observed whole-car declarations, with explicit ownership/scope.
+
+    A bare technical-and-visual claim is allowed only at the start of this
+    complete listing description. A later clause must explicitly offer the
+    seller's own Skoda. Engine-only praise, prior cars and negated claims do not
+    establish a whole-car condition. No text leaves this pure adapter.
+    """
+    text = description.strip()
+    patterns = (
+        ('whole_car_technical_and_visual_good-v2',
+         r'^(?P<claim>(?:(?:авто|автомобиль|машина)\s+)?в\s+технически\s+и\s+визуально\s+'
+         r'хорошем\s+состоянии)(?=[.!?\n]|$|,\s*пригнан\s+из\s+Европы\b)'),
+        ('own_skoda_serviced_no_investment-v2',
+         r'(?:^|[.!?\n])\s*(?P<claim>предлагаю\s+свою\s+шкоду\s+в\s+отличном\s+состоянии,\s+'
+         r'которая\s+полностью\s+обслужена\s+и\s+не\s+требует\s+вложений(?:[.!?]|$))'),
+    )
+    found = []
+    for kind, pattern in patterns:
+        for match in re.finditer(pattern, text, re.I):
+            claim = match.group('claim').strip()
+            if kind == 'whole_car_technical_and_visual_good-v2':
+                # The actual observed claim continues with import/ownership
+                # context. It does not permit an arbitrary assertion suffix.
+                # Inspect its complete sentence for historical/other-car scope.
+                sentence = re.match(r'[^.!?\n]*(?:[.!?]|$)', text)
+                if sentence is None:
+                    continue
+                claim = sentence.group().strip()
+                if re.search(r'\b(?:был[аои]?|раньше|ранее|раніше|колись|'
+                             r'предыдущ\w*|попередн\w*|друг\w*|чуж\w*)\b|'
+                             r'\bдо\s+(?:аварии|дтп|аварії)\b', claim, re.I):
+                    continue
+            found.append((kind, claim))
+    if len(found) != 1:
+        return None
+    kind, claim = found[0]
+    return {'policy': 'explicit_own_whole_car_description-v2', 'pattern': kind,
+            'claim_sha256': hashlib.sha256(claim.encode()).hexdigest()}
+
+
 def _validate_receipt(data, sid, receipt, checked_at, now, provenance):
     if not isinstance(receipt, dict) or not isinstance(provenance, dict):
         raise ValueError('ria_public_receipt_missing')
@@ -575,6 +616,11 @@ def _from_public_html(data, sid, checked_at, provenance, receipt, *, now,
                                                  closed=True, text=lambda: description)])
     condition = ('seller_declared_running' if technical_label in
         ('Полностью неповрежденное', 'Повністю непошкоджене') else None)
+    own_condition_claim = _own_description_condition_claim(description)
+    description_condition_used = False
+    if not technical_label and not paint_label and own_condition_claim:
+        condition = 'seller_declared_running'
+        description_condition_used = True
     if condition and paint_label.startswith(('Требует восстановления', 'Потребує відновлення',
                                              'Потрібно відновлення')):
         condition = 'running_body_repair'
@@ -587,9 +633,11 @@ def _from_public_html(data, sid, checked_at, provenance, receipt, *, now,
          r'|(?:двигун\w*|двигател\w*)\s+(?:потребує|требует)\s+(?:капітальн\w*\s+|капитальн\w*\s+)?ремонт\w*)'),
         ('body_repair', r'\b(?:(?:потребує|потріб\w*|требует|нуж\w*)\s+(?:кузовн\w*\s+ремонт\w*|ремонт\w*\s+кузов\w*)'
          r'|кузов\w*\s+(?:потребує|требует)\s+ремонт\w*)'),
+        ('body_condition_nuance', r'\b(?:моменты|моменти|нюансы|нюанси)\s+(?:по|з|с)\s+кузов\w*'),
     ):
         for match in re.finditer(pattern, description_folded):
-            if not re.search(r'(?:не|без)\s+$', description_folded[max(0, match.start()-8):match.start()]):
+            if not re.search(r'(?:не|без|нет|немає|нема)\s+(?:\w+\s+){0,2}$',
+                             description_folded[max(0, match.start()-40):match.start()]):
                 unsupported_condition.append(code)
     if unsupported_condition:
         condition = None
@@ -641,6 +689,12 @@ def _from_public_html(data, sid, checked_at, provenance, receipt, *, now,
         visible_power_kw=visible_kw,
         power_consistency_policy='round_explicit_hp_to_source_catalog_integer-v1',
         engine_volume_basis='explicit_visible_engine_volume' if cc else 'engine_volume_not_explicit')
+    if description_condition_used:
+        out['condition_evidence'].update(
+            basis='corroborated_complete_public_own_description_claim',
+            own_claim_policy=own_condition_claim['policy'],
+            own_claim_pattern=own_condition_claim['pattern'],
+            own_claim_sha256=own_condition_claim['claim_sha256'])
     out['ria_public_reference_evidence'] = {'version': VERSION, 'method': 'public_html',
         'http_status': 200, 'body_sha256': receipt['body_sha256'], 'body_bytes': len(data),
         'reserved_commit': receipt['reserved_commit'], 'paid_api_calls': 0,

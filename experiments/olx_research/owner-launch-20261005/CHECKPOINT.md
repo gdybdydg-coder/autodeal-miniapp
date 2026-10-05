@@ -1,3 +1,9 @@
+# Актуальне продовження після23:02Kyiv
+
+Повний поточний результат: [FOCUSED-COHORT-CHECKPOINT.md](FOCUSED-COHORT-CHECKPOINT.md). Решту8frozenreference fetched; source-complete3reference+2control, max2/8,0/3controlestimates. Ownerpermissiontrue/clientfalse/technicalfalse; OLXenable/TG0. Старий нижній nextstep про unfetched8 — історичний. Currentfix52tests+76subtestsPASS; budget51/60GET/116.25MiB.
+
+---
+
 # OLX лише для власника — актуальний checkpoint 05.10.2026, 22:50 Kyiv
 
 Дозвіл власника чинний: `authorization.json`; повторне погодження цього owner-only запуску не потрібне. Дозвіл іншим клієнтам відсутній. Запуск ще **не виконано**: technical_ready=false, валідованого market profile немає, production/main/env/DB/webhook не змінені, Telegram attempts=0. Без оцінки контрольні повідомлення не надсилалися.

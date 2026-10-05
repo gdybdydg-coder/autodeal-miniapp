@@ -44,7 +44,7 @@ def fixture(*, generation='II поколение/A5 (FL), 1.6D MT (105 к.с.)',
             description=DESCRIPTION, currency='USD', schema_price=8000,
             visible_price='8 000 $', engine='Дизель, 1.6 л', drive='Передний',
             canonical=URL, visible_vin=VIN, active=True, unknown_power=False,
-            visible_description=None):
+            visible_description=None, technical='Полностью неповрежденное', paint=None):
     if unknown_power:
         generation = 'II поколение/A5 (FL)'
     vehicle = {'@type': 'Vehicle', '@id': URL, 'url': URL, 'mainEntityOfPage': URL,
@@ -61,7 +61,9 @@ def fixture(*, generation='II поколение/A5 (FL), 1.6D MT (105 к.с.)',
         'descGenerationBaseValue': generation, 'descEngineEngine': engine,
         'descTransmissionTransmission': 'Ручная / Механика',
         'descDriveTypeDriveType': drive, 'basicInfoTableMainInfo0': '250 тыс. км',
-        'descTechStateText': 'Полностью неповрежденное'}
+        'descTechStateText': technical}
+    if paint is not None:
+        labels['descPaintConditionValue'] = paint
     templates = [{'id': ident, 'isHide': False,
                   'elements': [{'type': 'Text', 'content': text}]}
                  for ident, text in labels.items()]
@@ -274,6 +276,72 @@ class PublicReferenceContracts(unittest.TestCase):
                 car = project(description=DESCRIPTION + ' ' + description)
                 self.assertEqual(car['research_condition'], 'seller_declared_running')
                 self.assertEqual(car['condition_evidence']['unsupported_condition_flags'], [])
+
+    def test_complete_own_car_good_condition_claim_when_attribute_is_missing(self):
+        for claim in (
+            'В технически и визуально хорошем состоянии, пригнан из Европы.',
+            'Предлагаю свою Шкоду в отличном состоянии, которая полностью обслужена и не требует вложений.',
+        ):
+            with self.subTest(claim=claim):
+                car = project(description=claim, technical='')
+                self.assertEqual(car['research_condition'], 'seller_declared_running')
+                self.assertEqual(car['condition_evidence']['basis'],
+                                 'corroborated_complete_public_own_description_claim')
+                self.assertEqual(car['condition_evidence']['own_claim_sha256'], hashlib.sha256(claim.encode()).hexdigest())
+                self.assertFalse(car['condition_evidence']['independently_verified'])
+                self.assertNotIn(claim, json.dumps(car))
+
+    def test_negated_historical_and_other_car_condition_claims_are_not_own_current_claims(self):
+        for claim in (
+            'Авто не в технически и визуально хорошем состоянии.',
+            'Раніше авто в технически и визуально хорошем состоянии.',
+            'У друга авто в технически и визуально хорошем состоянии.',
+            'Другое авто в технически и визуально хорошем состоянии.',
+            'Предлагаю чужую Шкоду в отличном состоянии, которая полностью обслужена и не требует вложений.',
+            'Предлагаю свою Шкоду не в отличном состоянии, которая полностью обслужена и не требует вложений.',
+            'Предлагаю свою Шкоду в отличном состоянии, которая не полностью обслужена и требует вложений.',
+            'Двигатель работает ровно, без посторонних звуков и дыма.',
+        ):
+            with self.subTest(claim=claim):
+                car = project(description=claim, technical='')
+                self.assertIsNone(car['research_condition'])
+                self.assertIn('ria_public_research_condition_pending', public.reasons(car, NOW))
+
+    def test_postfix_historical_and_other_car_claims_are_not_current_own_condition(self):
+        for claim in (
+            'В технически и визуально хорошем состоянии была предыдущая машина.',
+            'В технически и визуально хорошем состоянии было до аварии.',
+            'В технически и визуально хорошем состоянии, была предыдущая машина.',
+            'В технически и визуально хорошем состоянии, пригнан из Европы, но это была предыдущая машина.',
+            'В технически и визуально хорошем состоянии, пригнан из Европы, таким было до аварии.',
+            'Предлагаю свою Шкоду в отличном состоянии, которая полностью обслужена и не требует вложений была раньше.',
+        ):
+            with self.subTest(claim=claim):
+                car = project(description=claim, technical='')
+                self.assertIsNone(car['research_condition'])
+                self.assertIn('ria_public_research_condition_pending', public.reasons(car, NOW))
+
+    def test_own_good_condition_claim_does_not_override_body_or_engine_conflicts(self):
+        claim = 'В технически и визуально хорошем состоянии.'
+        for conflict in ('Но есть моменты по кузову.', 'Є нюанси по кузову.',
+                         'Двигун потребує ремонту.', 'Кузов потребує ремонту.'):
+            with self.subTest(conflict=conflict):
+                car = project(description=claim + ' ' + conflict, technical='')
+                self.assertIsNone(car['research_condition'])
+
+    def test_nonempty_unknown_paint_and_repaired_technical_label_are_not_clean(self):
+        claim = 'В технически и визуально хорошем состоянии.'
+        for kwargs in ({'technical': '', 'paint': 'Неисправленные следы использования'},
+                       {'technical': '', 'paint': 'Неизвестная окраска'},
+                       {'technical': 'Профессионально отремонтированные повреждения'}):
+            with self.subTest(kwargs=kwargs):
+                car = project(description=claim, **kwargs)
+                self.assertIsNone(car['research_condition'])
+
+    def test_source_description_damage_stays_separate_from_clean_claim(self):
+        claim = 'В технически и визуально хорошем состоянии. На лобовому склі тріщина.'
+        car = project(description=claim, technical='')
+        self.assertEqual(car['research_condition'], 'running_reported_damage:windshield_crack')
 
     def test_visible_attribute_conflict_not_trusted(self):
         data, receipt = fixture()

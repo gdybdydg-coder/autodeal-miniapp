@@ -1,0 +1,95 @@
+{
+  "log_id": "8d93065d-9b8a-412c-b223-045727c8900f",
+  "observed_at": "2026-10-05T20:02:06.620673411Z",
+  "configuration": {
+    "active_window_enabled": false,
+    "automobile_admin_copies_enabled": false,
+    "delivery_enabled": true,
+    "full_scan_enabled": false,
+    "html_shadow_configured": true,
+    "manual_payment_notices_enabled": true,
+    "monitor_enabled": true,
+    "provider_valuation_enabled": true,
+    "recent_publications_enabled": true,
+    "release": "2d81e13ab04077133eca0a668a575e2d571b6cd7",
+    "shared_distribution_enabled": true,
+    "strict_paid_sources": true,
+    "valuation_selection_status": "api_range_selection_native_parity_unverified"
+  },
+  "schedule": {
+    "active_period": "night",
+    "budget_limited": false,
+    "enabled": true,
+    "estimate_basis": "one_page_per_poll_standard_24h_day",
+    "interval_seconds": 3600,
+    "minimum_planning_limits": {
+      "daily": 5091,
+      "hourly": 480
+    },
+    "periods": [
+      {
+        "end": "08:00",
+        "interval_seconds": 3600,
+        "name": "night",
+        "requested_interval_seconds": 3600,
+        "start": "23:00"
+      },
+      {
+        "end": "18:00",
+        "interval_seconds": 110,
+        "name": "day",
+        "requested_interval_seconds": 110,
+        "start": "08:00"
+      },
+      {
+        "end": "23:00",
+        "interval_seconds": 60,
+        "name": "evening",
+        "requested_interval_seconds": 60,
+        "start": "18:00"
+      }
+    ],
+    "requested_interval_seconds": 3600,
+    "requested_search_calls_per_day": 3818,
+    "timezone": "Europe/Kyiv"
+  },
+  "running": true,
+  "pending_jobs": {
+    "reserved_for_new_publications": 17
+  },
+  "delivery": {
+    "last_client_accepted_at": 1791230355.184199,
+    "last_owner_accepted_at": 1791229703.773245,
+    "receipt_basis": "telegram_api_acceptance",
+    "states_queued_last_hour": {
+      "sent": 27
+    },
+    "unattempted_admin_copies_remaining": 0
+  },
+  "limits": {
+    "daily": 90000,
+    "hourly": 4500,
+    "total": 1102160
+  },
+  "owner_paid_access_summary": [
+    {
+      "account": "administrator",
+      "source_access_allowed": true,
+      "access_basis": "approved_manual_purchase_and_current_entitlement",
+      "owner_approval_recorded": true,
+      "ready": true,
+      "searches_enabled": 1,
+      "last_ordinary_delivery": {
+        "accepted_at": 1791229703.773245,
+        "discovered_at": 1791229371.9409053,
+        "evaluated_at": 1791229681.7158484,
+        "owner_approval_covers_acceptance": true,
+        "queued_at": 1791229687.1100395,
+        "saved_access_event_covers_acceptance": true,
+        "send_started_at": 1791229703.506833,
+        "source_id": "40173304",
+        "state": "sent"
+      }
+    }
+  ]
+}

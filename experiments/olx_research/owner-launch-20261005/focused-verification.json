@@ -1,0 +1,43 @@
+{
+  "checked_at": "2026-10-05T20:31:24Z",
+  "command": "PYTHONPATH=. python -m pytest backend/test_olx_ria_public_reference.py backend/test_olx_public_channel.py -q",
+  "tests_passed": 52,
+  "subtests_passed": 76,
+  "elapsed_seconds": 0.22,
+  "exit_code": 0,
+  "suite_kind": "isolated synthetic regressions and saved-real public receipt fixtures, not delivery",
+  "meaningful_reproduction": {
+    "confirmed_omission": "Two current own-car complete descriptions contained a condition claim not read when technical/paint labels were absent",
+    "negative_postfix_before_fix": 6,
+    "negative_postfix_after_fix": 0,
+    "minimum": 8
+  },
+  "replay": {
+    "frozen_attempts": 14,
+    "parsed": 10,
+    "source_complete": 5,
+    "source_complete_references": 3,
+    "source_complete_controls": 2,
+    "max_compatible_control_references": 2,
+    "estimated_controls": 0,
+    "total_controls": 3,
+    "technical_ready": false,
+    "owner_authorized": true,
+    "client_authorized": false,
+    "telegram_attempts": 0
+  },
+  "unchanged_direct_live_baseline": {
+    "commit": "2d81e13ab04077133eca0a668a575e2d571b6cd7",
+    "existing_python_unchanged": 178,
+    "changed_existing_only_olx": 5,
+    "app_unchanged": true,
+    "ria_transport_formula_schedule_quota_payments_unchanged": true
+  },
+  "no_claims": {
+    "real_telegram_delivery": false,
+    "market_value_ready": false,
+    "method_selected": false,
+    "photo_review_done": false,
+    "production_deployment": false
+  }
+}

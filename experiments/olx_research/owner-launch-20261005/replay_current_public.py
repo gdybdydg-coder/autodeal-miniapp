@@ -1,4 +1,4 @@
-"""Offline replay of the immutable six-card packet; never fetches sources.
+"""Offline replay of immutable full-card packets in one frozen split.
 
 Pass the scratch source directory containing the original HTML and receipts.
 Raw VIN, contacts and descriptions are deliberately excluded from output.
@@ -30,17 +30,27 @@ from backend.olx_market.evaluation import evaluate_holdout
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('source_directory', type=Path)
+    parser.add_argument('--additional-packet', action='append', default=[], type=Path)
+    parser.add_argument('--output-prefix', default='dense-current')
     args = parser.parse_args()
     output = Path(__file__).resolve().parent
     source = args.source_directory
     now = int(datetime.now(timezone.utc).timestamp())
     packet = json.loads((source / 'dense-details-receipt.json').read_text())
+    receipts = list(packet['requests'])
+    for path in args.additional_packet:
+        additional = json.loads(path.read_text())
+        if any(additional.get(k) != packet[k] for k in ('freeze_commit', 'frozen_at')):
+            raise ValueError('Additional packet must preserve the original frozen split')
+        receipts.extend(additional['requests'])
+    if len({r['id'] for r in receipts}) != len(receipts):
+        raise ValueError('Duplicate detail receipts require explicit resolution')
     split = json.loads((output / 'dense-split-freeze.json').read_text())
     dictionary = public.generation_dictionary_from_public_html(
         (source / 'ria-catalog.html').read_bytes(),
         json.loads((source / 'ria-catalog-receipt.json').read_text()), now=now)
     cars, rows = [], []
-    for receipt in packet['requests']:
+    for receipt in receipts:
         sid = receipt['id']
         provenance = {'role': receipt['role'],
             'frozen_commit': packet['freeze_commit'], 'frozen_at': packet['frozen_at'],
@@ -65,8 +75,8 @@ def main():
         split_provenance=[{'seed': 'owner-public-dense-price-blind-v1',
             'basis': 'explicit_frozen_price_blind_before_full_card_prices',
             'commit': packet['freeze_commit'], 'frozen_at': packet['frozen_at']}])
-    result = {'kind': 'six_current_frozen_full_public_html_not_a_ready_market_profile',
-        'checked_at': now, 'attempted': len(packet['requests']), 'parsed': len(cars),
+    result = {'kind': 'current_frozen_full_public_html_not_a_ready_market_profile',
+        'checked_at': now, 'attempted': len(receipts), 'parsed': len(cars),
         'source_admission_complete': sum(not public.reasons(c, now) for c in cars),
         'source_complete_reference': sum(c['reference_provenance']['role'] == 'reference'
             and not public.reasons(c, now) for c in cars),
@@ -82,8 +92,8 @@ def main():
         'max_compatible_control_references': max(
             (r['review']['assessment']['sample'] for r in evaluation['rows']), default=0),
         'evaluation': evaluation, 'rows': rows}
-    for filename, value in (('dense-current-details-sanitized.json', cars),
-                            ('dense-current-evaluation.json', result)):
+    for filename, value in ((args.output_prefix + '-details-sanitized.json', cars),
+                            (args.output_prefix + '-evaluation.json', result)):
         (output / filename).write_text(json.dumps(value, ensure_ascii=False, indent=2) + '\n')
     print(json.dumps({k: v for k, v in result.items() if k != 'evaluation'},
                      ensure_ascii=False, indent=2))
