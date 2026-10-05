@@ -2,7 +2,7 @@
   "version": 1,
   "authorization": "2026-10-05 explicit owner-only valued OLX request; clients unauthorized",
   "night_state_resumed": false,
-  "status": "reserved_owner_enable_pagination",
+  "status": "reserved_owner_enable_two_new_details",
   "hypothesis": "Saved densest complete group is Octavia A5 1.6 diesel manual wagon/front/105 hp, 2010 around 264-274k km, max4 peers. Prior general A5 search and MPI collection missed the explicitly observed focused 1.6 TDI query. Discover by characteristics, not price; holdout frozen before refreshed full prices.",
   "owner_search": {
     "id": 4,
@@ -28,8 +28,8 @@
     "olx_bytes": 167772160,
     "fx_gets": 6
   },
-  "reserved_olx_gets": 21,
-  "reserved_olx_bytes": 58720256,
+  "reserved_olx_gets": 23,
+  "reserved_olx_bytes": 62914560,
   "reserved_fx_gets": 1,
   "source_holds": [
     {
@@ -170,6 +170,18 @@
       "url": "https://www.olx.ua/transport/legkovye-avtomobili/skoda/q-skoda-octavia-a5-%D0%B4%D0%B8%D0%B7%D0%B5%D0%BB%D1%8C/?page=5",
       "cap": 4194304,
       "observed_via": "exact public pagination links from enable-search HTTP200"
+    },
+    {
+      "kind": "olx_detail_enable",
+      "id": "936387379",
+      "url": "https://www.olx.ua/d/obyavlenie/shkoda-skoda-a5-2012-roku-ID11mZ8f.html",
+      "cap": 2097152
+    },
+    {
+      "kind": "olx_detail_enable",
+      "id": "936646018",
+      "url": "https://www.olx.ua/d/obyavlenie/shkoda-oktavya-a5-ID11o4pQ.html",
+      "cap": 2097152
     }
   ],
   "timeout_seconds": 20,
@@ -193,8 +205,8 @@
     "dated_fallback_rate": "44.9857000",
     "fx_effective_date": "2026-10-05"
   },
-  "actual_olx_calls": 17,
-  "actual_olx_bytes": 29536016,
+  "actual_olx_calls": 21,
+  "actual_olx_bytes": 43893690,
   "actual_fx_calls": 1,
   "actual_fx_bytes": 2836,
   "telegram_calls": 0,

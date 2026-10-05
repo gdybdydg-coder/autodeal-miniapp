@@ -1,0 +1,203 @@
+{
+  "reservation_commit": "d5c4b963dcc0da737dc4a38e7d1f030b59c52425",
+  "calls": [
+    {
+      "kind": "olx_search_enable_pagination",
+      "url": "https://www.olx.ua/transport/legkovye-avtomobili/skoda/q-skoda-octavia-a5-%D0%B4%D0%B8%D0%B7%D0%B5%D0%BB%D1%8C/?page=2",
+      "cap": 4194304,
+      "observed_via": "exact public pagination links from enable-search HTTP200",
+      "started_at": 1791190176.9768338,
+      "state": "finished",
+      "http": 200,
+      "curl_exit": 0,
+      "bytes": 3661246,
+      "finished_at": 1791190185.262666,
+      "sha256": "297d003d6ec10e0c295b494b982ee24fd6ca282a32b7976399d35e688f224041",
+      "parsed": true,
+      "summary": {
+        "fetched_at": 1791190185,
+        "bytes_parsed": 3661246,
+        "download_truncated": false,
+        "closed_cards": 41,
+        "unique_cards": 41,
+        "duplicate_cards": 0,
+        "rejected_cards": 0,
+        "jsonld_offer_count": 0,
+        "jsonld_urls_in_cards": 0,
+        "cards_absent_from_jsonld": 41,
+        "cards_with_photo_urls": 5,
+        "observed_pagination_links": [
+          "/transport/legkovye-avtomobili/skoda/q-skoda-octavia-a5-дизель/?page=3",
+          "/transport/legkovye-avtomobili/skoda/q-skoda-octavia-a5-дизель/?page=4",
+          "/transport/legkovye-avtomobili/skoda/q-skoda-octavia-a5-дизель/?page=5",
+          "/uk/transport/legkovye-avtomobili/skoda/q-skoda-octavia-a5-дизель/?page=2"
+        ],
+        "observed_sort": {
+          "value": "relevance:desc",
+          "label": "Рекомендованное вам"
+        },
+        "placement_counts": {
+          "promoted": 1,
+          "organic": 40,
+          "unknown": 0
+        },
+        "publication_verified": 0,
+        "whole_car_category_verified": 0,
+        "full_price_verified": 0,
+        "collection_complete": false,
+        "ready_for_delivery": false,
+        "attribute_locale_adapter": "explicit_uk_ru_spans_v1"
+      }
+    },
+    {
+      "kind": "olx_search_enable_pagination",
+      "url": "https://www.olx.ua/transport/legkovye-avtomobili/skoda/q-skoda-octavia-a5-%D0%B4%D0%B8%D0%B7%D0%B5%D0%BB%D1%8C/?page=3",
+      "cap": 4194304,
+      "observed_via": "exact public pagination links from enable-search HTTP200",
+      "started_at": 1791190189.262944,
+      "state": "finished",
+      "http": 200,
+      "curl_exit": 0,
+      "bytes": 3688451,
+      "finished_at": 1791190196.3507445,
+      "sha256": "c1fc20d18de490b1505f02665bb006543ca879714ef3c3a50b420e6edaa37ae7",
+      "parsed": true,
+      "summary": {
+        "fetched_at": 1791190196,
+        "bytes_parsed": 3688451,
+        "download_truncated": false,
+        "closed_cards": 40,
+        "unique_cards": 40,
+        "duplicate_cards": 0,
+        "rejected_cards": 0,
+        "jsonld_offer_count": 0,
+        "jsonld_urls_in_cards": 0,
+        "cards_absent_from_jsonld": 40,
+        "cards_with_photo_urls": 5,
+        "observed_pagination_links": [
+          "/transport/legkovye-avtomobili/skoda/q-skoda-octavia-a5-дизель/?page=2",
+          "/transport/legkovye-avtomobili/skoda/q-skoda-octavia-a5-дизель/?page=4",
+          "/transport/legkovye-avtomobili/skoda/q-skoda-octavia-a5-дизель/?page=5",
+          "/uk/transport/legkovye-avtomobili/skoda/q-skoda-octavia-a5-дизель/?page=3"
+        ],
+        "observed_sort": {
+          "value": "relevance:desc",
+          "label": "Рекомендованное вам"
+        },
+        "placement_counts": {
+          "promoted": 0,
+          "organic": 40,
+          "unknown": 0
+        },
+        "publication_verified": 0,
+        "whole_car_category_verified": 0,
+        "full_price_verified": 0,
+        "collection_complete": false,
+        "ready_for_delivery": false,
+        "attribute_locale_adapter": "explicit_uk_ru_spans_v1"
+      }
+    },
+    {
+      "kind": "olx_search_enable_pagination",
+      "url": "https://www.olx.ua/transport/legkovye-avtomobili/skoda/q-skoda-octavia-a5-%D0%B4%D0%B8%D0%B7%D0%B5%D0%BB%D1%8C/?page=4",
+      "cap": 4194304,
+      "observed_via": "exact public pagination links from enable-search HTTP200",
+      "started_at": 1791190200.3510551,
+      "state": "finished",
+      "http": 200,
+      "curl_exit": 0,
+      "bytes": 3756117,
+      "finished_at": 1791190207.4834194,
+      "sha256": "ad3b242f663c59280eac395d75ac78200a3c1adef1c851317546a59ff9c657b1",
+      "parsed": true,
+      "summary": {
+        "fetched_at": 1791190207,
+        "bytes_parsed": 3756117,
+        "download_truncated": false,
+        "closed_cards": 40,
+        "unique_cards": 40,
+        "duplicate_cards": 0,
+        "rejected_cards": 0,
+        "jsonld_offer_count": 0,
+        "jsonld_urls_in_cards": 0,
+        "cards_absent_from_jsonld": 40,
+        "cards_with_photo_urls": 5,
+        "observed_pagination_links": [
+          "/transport/legkovye-avtomobili/skoda/q-skoda-octavia-a5-дизель/?page=2",
+          "/transport/legkovye-avtomobili/skoda/q-skoda-octavia-a5-дизель/?page=3",
+          "/transport/legkovye-avtomobili/skoda/q-skoda-octavia-a5-дизель/?page=5",
+          "/uk/transport/legkovye-avtomobili/skoda/q-skoda-octavia-a5-дизель/?page=4"
+        ],
+        "observed_sort": {
+          "value": "relevance:desc",
+          "label": "Рекомендованное вам"
+        },
+        "placement_counts": {
+          "promoted": 0,
+          "organic": 40,
+          "unknown": 0
+        },
+        "publication_verified": 0,
+        "whole_car_category_verified": 0,
+        "full_price_verified": 0,
+        "collection_complete": false,
+        "ready_for_delivery": false,
+        "attribute_locale_adapter": "explicit_uk_ru_spans_v1"
+      }
+    },
+    {
+      "kind": "olx_search_enable_pagination",
+      "url": "https://www.olx.ua/transport/legkovye-avtomobili/skoda/q-skoda-octavia-a5-%D0%B4%D0%B8%D0%B7%D0%B5%D0%BB%D1%8C/?page=5",
+      "cap": 4194304,
+      "observed_via": "exact public pagination links from enable-search HTTP200",
+      "started_at": 1791190211.483664,
+      "state": "finished",
+      "http": 200,
+      "curl_exit": 0,
+      "bytes": 3251860,
+      "finished_at": 1791190218.4820395,
+      "sha256": "71227fb576b166aae61207eb515e0e29a06a98ace8648b9895d8dc22675fbcf7",
+      "parsed": true,
+      "summary": {
+        "fetched_at": 1791190218,
+        "bytes_parsed": 3251860,
+        "download_truncated": false,
+        "closed_cards": 13,
+        "unique_cards": 13,
+        "duplicate_cards": 0,
+        "rejected_cards": 0,
+        "jsonld_offer_count": 0,
+        "jsonld_urls_in_cards": 0,
+        "cards_absent_from_jsonld": 13,
+        "cards_with_photo_urls": 5,
+        "observed_pagination_links": [
+          "/transport/legkovye-avtomobili/skoda/q-skoda-octavia-a5-дизель/?page=2",
+          "/transport/legkovye-avtomobili/skoda/q-skoda-octavia-a5-дизель/?page=3",
+          "/transport/legkovye-avtomobili/skoda/q-skoda-octavia-a5-дизель/?page=4",
+          "/uk/transport/legkovye-avtomobili/skoda/q-skoda-octavia-a5-дизель/?page=5"
+        ],
+        "observed_sort": {
+          "value": "relevance:desc",
+          "label": "Рекомендованное вам"
+        },
+        "placement_counts": {
+          "promoted": 0,
+          "organic": 13,
+          "unknown": 0
+        },
+        "publication_verified": 0,
+        "whole_car_category_verified": 0,
+        "full_price_verified": 0,
+        "collection_complete": false,
+        "ready_for_delivery": false,
+        "attribute_locale_adapter": "explicit_uk_ru_spans_v1"
+      }
+    }
+  ],
+  "source_hold": null,
+  "no_telegram": true,
+  "paid_ria_calls": 0,
+  "retry_count": 0,
+  "started_at": 1791190176.976463,
+  "finished_at": 1791190218.680036
+}

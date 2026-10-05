@@ -1,0 +1,24 @@
+{
+  "frozen_at": 1791190469,
+  "membership": {
+    "936387379": "reference",
+    "936646018": "reference"
+  },
+  "membership_sha256": "2cd7420c45fd9897572bfe991ebaa927fc8b2077ee9025b760fa4190c77ec38c",
+  "basis": "two previously uncollected explicitly1600/diesel/manual/year2012/mileage254-256k ads, no asking-price ranking; prior3 controls stay controls; this supplement cannot by itself establish8refs or3estimated controls",
+  "minimum": 8,
+  "rows": [
+    {
+      "kind": "olx_detail_enable",
+      "id": "936387379",
+      "url": "https://www.olx.ua/d/obyavlenie/shkoda-skoda-a5-2012-roku-ID11mZ8f.html",
+      "cap": 2097152
+    },
+    {
+      "kind": "olx_detail_enable",
+      "id": "936646018",
+      "url": "https://www.olx.ua/d/obyavlenie/shkoda-oktavya-a5-ID11o4pQ.html",
+      "cap": 2097152
+    }
+  ]
+}
