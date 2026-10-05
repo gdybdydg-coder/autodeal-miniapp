@@ -1,0 +1,45 @@
+{
+  "mode": "offline_saved_real_holdout_denominator_and_leakage_audit",
+  "network_calls": 0,
+  "production_changed": false,
+  "saved_real": {
+    "cars": 71,
+    "frozen_holdout_ads": 9,
+    "loaded_holdout_ads": 9,
+    "missing_frozen_ads": 0,
+    "eligible_loaded_ads": 5,
+    "known_ineligible_loaded_ads": 4,
+    "estimated_loaded_ads": 0,
+    "unestimated_eligible_loaded_ads": 5,
+    "frozen_estimate_coverage": "0",
+    "loaded_estimate_coverage": "0",
+    "eligible_estimate_coverage": "0",
+    "maximum_holdout_comparables": 1,
+    "asking_error_rows": 0,
+    "sale_price_labels": 0,
+    "profit_labels": 0,
+    "method_winner": null
+  },
+  "method_contract": {
+    "methods": [
+      "median",
+      "trimmed_mean",
+      "weighted_median"
+    ],
+    "same_screened_comparable_group": true,
+    "verified_by": "synthetic regression because saved-real has zero estimable holdouts",
+    "target_or_known_crosspost_reference_leakage": 0
+  },
+  "local_flow": {
+    "first_pass_paid_fake_cards": 124,
+    "unpaid_cards": 0,
+    "restart_cards": 0,
+    "telegram_calls": 0
+  },
+  "limitations": [
+    "No saved-real holdout has eight compatible references.",
+    "Asking-price error is not sale-price or profit accuracy.",
+    "Unknown physical crossposts may remain.",
+    "Zero coverage does not validate any method."
+  ]
+}

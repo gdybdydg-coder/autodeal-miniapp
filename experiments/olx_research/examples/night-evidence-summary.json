@@ -121,10 +121,24 @@
     "benchmark_kind": "withheld_asking_price_only",
     "frozen_holdout_count": 9,
     "loaded_holdout_count": 9,
+    "missing_holdout_count": 0,
     "reference_count": 62,
     "eligible_holdout_count": 5,
+    "known_ineligible_holdout_count": 4,
     "estimated_holdout_count": 0,
+    "unestimated_eligible_holdout_count": 5,
+    "frozen_estimate_coverage": "0",
+    "loaded_estimate_coverage": "0",
     "eligible_coverage": "0",
+    "evaluation_denominators": {
+      "frozen_holdout_ads": 9,
+      "loaded_holdout_ads": 9,
+      "eligible_loaded_ads": 5,
+      "estimated_loaded_ads": 0,
+      "missing_frozen_ads": 0,
+      "known_ineligible_loaded_ads": 4,
+      "unestimated_eligible_loaded_ads": 5
+    },
     "unknown_holdout_count": 9,
     "metrics": {
       "median": {

@@ -3,13 +3,7 @@
   "night": "2026-10-05-Europe-Kyiv",
   "status": "active",
   "deadline": "2026-10-05T08:00:00+03:00",
-  "lease": {
-    "owner": "night-20261005-0500",
-    "started_at": "2026-10-05T02:04:48Z",
-    "expires_at": "2026-10-05T02:44:48Z",
-    "head": "b11367775776cbd23a2e3945f4defa797173bae0",
-    "scope": "offline holdout denominators and leakage audit"
-  },
+  "lease": null,
   "budget": {
     "olx_get_cap": 60,
     "olx_bytes_cap": 167772160,
@@ -143,7 +137,17 @@
       "subtests_passed": 150,
       "summary": "Fixed loss of newer queued search snapshot; guarded invalid old source dates; separated first_seen/update/raise/reprice; saved-real longitudinal rates unknown;124 local previews,unpaid0,restart0,Telegram0",
       "checkpoint": "NIGHT-0400-20261005.md"
+    },
+    {
+      "owner": "night-20261005-0500",
+      "completed_at": "2026-10-05T02:09:23Z",
+      "olx_calls": 0,
+      "fx_calls": 0,
+      "tests_passed": 408,
+      "subtests_passed": 150,
+      "summary": "Separated frozen/loaded/eligible holdout denominators and exposed one shared comparable group for all methods; saved-real9 frozen,5 eligible,4 known-ineligible,0 estimated,max holdout sample1;124 local previews,unpaid0,restart0,Telegram0",
+      "checkpoint": "NIGHT-0500-20261005.md"
     }
   ],
-  "next_step": "Read NIGHT-0400-20261005.md. Do not call bank.gov.ua again tonight or repeat consumed detail URLs. Event semantics/frontier retention are corrected; saved-real update/raise/reprice rates remain unknown because only one detail version per ID is retained. Prefer offline holdout/evaluation denominator and leakage audit or a genuinely new density hypothesis. 31OLXGET/92MiB and5FXGET remain; reserve exact URLs before any allowed I/O."
+  "next_step": "Read NIGHT-0500-20261005.md. Do not call bank.gov.ua again tonight or repeat consumed detail URLs. Holdout denominators and same-comparable-group evidence are explicit; saved-real has9 frozen,5 eligible,4 known ineligible,0 estimated and maximum holdout sample1/8. Prefer offline review/HTML evidence presentation or a genuinely new density hypothesis without relaxing compatibility. 31OLXGET/92MiB and5FXGET remain; reserve exact URLs before any allowed I/O."
 }

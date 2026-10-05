@@ -1,4 +1,4 @@
-Latest night checkpoint: [04:00 event/frontier correction](NIGHT-0400-20261005.md). Newer queued search snapshots are retained, invalid old source dates cannot create raise/update events, and review separates first_seen/update/raise/reprice. 406 tests +150 subtests; market coverage remains 0/71 and production/Telegram remain untouched.
+Latest night checkpoint: [05:00 holdout denominator audit](NIGHT-0500-20261005.md). Frozen, loaded, eligible, known-ineligible and unestimated-eligible denominators are explicit, and all three asking methods expose the same comparable group. 408 tests +150 subtests; market coverage remains 0/71 and production/Telegram remain untouched.
 
 # OLX: isolated review, 2026-10-04
 

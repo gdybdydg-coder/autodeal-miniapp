@@ -72,9 +72,14 @@ def evaluate_holdout(cars,split,quote,now,*,minimum=8,split_provenance=None):
                 delta=abs(Decimal(v['reference_usd'])-benchmark)
                 error[m]={'absolute_usd':str(delta),'absolute_percent':str(delta/benchmark*100)}
                 errors[m].append((delta,delta/benchmark*100))
+        comparable_ids=[v['id'] for v in review['assessment']['used_comparables']]
         rows.append({'target_id':c['id'],'benchmark_kind':'withheld_asking_price_not_sale_or_fair_value',
                      'benchmark_usd':str(benchmark) if benchmark is not None else None,
-                     'eligible':not reasons,'error_against_asking':error,'review':review})
+                     'eligible':not reasons,'error_against_asking':error,
+                     'comparison_group_ids':comparable_ids,
+                     'same_comparable_group_for_all_methods':(
+                         set(error)==set(review['assessment']['methods']) if error else None),
+                     'review':review})
     estimated=sum(bool(r['error_against_asking']) for r in rows)
     metrics={}
     with localcontext() as ctx:
@@ -84,11 +89,30 @@ def evaluate_holdout(cars,split,quote,now,*,minimum=8,split_provenance=None):
                         'mean_absolute_percent':str(sum(v[1] for v in values)/len(values)) if values else None}
     provenance=split_provenance or [{'seed':SPLIT_SEED,'basis':'legacy_frozen_partition'}]
     seeds={p.get('seed') for p in provenance}
+    frozen=sum(v=='holdout' for v in split.values())
+    loaded=len(control)
+    missing=frozen-loaded
+    known_ineligible=loaded-eligible
+    unestimated_eligible=eligible-estimated
+    def ratio(n,d):
+        if not d:return None
+        with localcontext() as ctx:
+            ctx.prec=50
+            return str(Decimal(n)/d)
+    denominators={'frozen_holdout_ads':frozen,'loaded_holdout_ads':loaded,
+        'eligible_loaded_ads':eligible,'estimated_loaded_ads':estimated,
+        'missing_frozen_ads':missing,'known_ineligible_loaded_ads':known_ineligible,
+        'unestimated_eligible_loaded_ads':unestimated_eligible}
     return {'split_seed':next(iter(seeds)) if len(seeds)==1 else None,
             'split_provenance':provenance,'benchmark_kind':'withheld_asking_price_only',
-            'frozen_holdout_count':sum(v=='holdout' for v in split.values()),'loaded_holdout_count':len(control),
+            'frozen_holdout_count':frozen,'loaded_holdout_count':loaded,
             'reference_count':len(reference),'eligible_holdout_count':eligible,'estimated_holdout_count':estimated,
-            'eligible_coverage':str(Decimal(estimated)/eligible) if eligible else None,
+            'missing_holdout_count':missing,'known_ineligible_holdout_count':known_ineligible,
+            'unestimated_eligible_holdout_count':unestimated_eligible,
+            'frozen_estimate_coverage':ratio(estimated,frozen),
+            'loaded_estimate_coverage':ratio(estimated,loaded),
+            'eligible_coverage':ratio(estimated,eligible),
+            'evaluation_denominators':denominators,
             'unknown_holdout_count':len(control)-estimated,'metrics':metrics,'rows':rows,
             'sale_price_accuracy_verified':False,'profitable_labels':0,'false_positive':None,'false_negative':None,
             'winner_selected':None,'unknown_crossposts_may_remain':True}
