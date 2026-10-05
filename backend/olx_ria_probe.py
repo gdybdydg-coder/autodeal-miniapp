@@ -57,12 +57,25 @@ def allowed(engine,settings,plan):
 def initialize(engine,settings,plan):
     if not allowed(engine,settings,plan):return False
     with Session(engine) as db:
+        previous=db.get(SourceProbe,STATE,with_for_update=True)
+        if previous:
+            # One reviewed correction may continue the SAME spent ledger.
+            # No crash/source hold replay, reset, or automatic phase advance.
+            if (plan.get('phase')!=2 or previous.result.get('phase',1)!=1
+                    or previous.status!='technical_hold'
+                    or previous.result.get('error')!='dictionary_mapping_ambiguous_or_missing'
+                    or previous.result.get('owner_id')!=settings.admin_telegram_id
+                    or previous.result.get('fingerprint')!=plan['fingerprint']):return False
+            previous.status='checking'
+            previous.result={**previous.result,'phase':2,'previous_error':previous.result['error'],
+                             'phase2_started_at':time.time(),'error':None}
+            db.commit();return True
         db.add(SourceProbe(id=STATE,status='checking',requests=0,checked_at=time.time(),
             result={'budget':{'maximum_ria_calls':MAX_CALLS,'maximum_ai_calls':MAX_AI},
                 'owner_id':settings.admin_telegram_id,'search_id':plan['search_id'],
                 'fingerprint':plan['fingerprint'],'until':plan['until'],
                 'calls':[],'olx_calls':[],'observations':[],
-                'technical_ready':False,'telegram_calls':0}))
+                'technical_ready':False,'telegram_calls':0,'phase':1}))
         try:db.commit();return True
         except IntegrityError:db.rollback();return False
 
@@ -145,7 +158,12 @@ def run_once(engine,settings,plan=None,fetch=transport,olx_fetch=feed.source_fet
                'generation':'generations/by/models/652/generations'}
         catalogs={}
         for key,path in paths.items():
-            catalogs[key]=catalog_rows(request(engine,settings,plan,path,fetch=fetch))
+            evidence=plan.get('dictionary_evidence',{}).get(key)
+            if plan.get('phase')==2 and evidence:
+                if (evidence['path']!=path or not 0<=time.time()-evidence['checked_at']<=86400
+                        or not evidence.get('receipt_log_id')):raise ValueError('dictionary_receipt_invalid')
+                catalogs[key]=[(id,name) for id,name in evidence['items']]
+            else:catalogs[key]=catalog_rows(request(engine,settings,plan,path,fetch=fetch))
             # Only public dictionary IDs/labels, no credentials or private content.
             LOG.info('OLX RIA probe dictionary %s',json.dumps({'kind':key,'items':catalogs[key]},ensure_ascii=False))
         brand=exact_id(catalogs['brands'],['Skoda','Škoda'])
@@ -160,21 +178,32 @@ def run_once(engine,settings,plan=None,fetch=transport,olx_fetch=feed.source_fet
                 row.result=d;db.commit()
             if not allowed(engine,settings,plan):raise ValueError('owner_access_or_stop_blocked')
             code,raw,truncated=olx_fetch(entry['url'])
+            with Session(engine) as db:
+                row=db.get(SourceProbe,STATE,with_for_update=True);d=copy.deepcopy(row.result)
+                d['olx_calls'][-1].update(status='http_'+str(code),bytes=len(raw),truncated=truncated)
+                row.result=d;db.commit()
             if code in (401,403,429):raise ValueError('olx_source_hold_http_'+str(code))
             if code!=200 or truncated:raise ValueError('olx_detail_unavailable')
             car=enrich(raw,parse_detail_snapshot(raw,fetched_at=int(time.time()),truncated=False))['listing']
             if car['id']!=entry['id'] or not feed.same_detail_url(car['url'],entry['url']):raise ValueError('olx_identity_mismatch')
             body_id=exact_id(catalogs['body'],{'wagon':['Універсал','Универсал'],'liftback':['Ліфтбек','Лифтбек']}.get(car.get('body'),[]))
-            fuel_id=exact_id(catalogs['fuel'],{'petrol':['Бензин'],'diesel':['Дизель']}.get(car.get('fuel'),[]))
+            fuel_names={'petrol':['Бензин'],'diesel':['Дизель']}.get(car.get('fuel'))
+            fuel_id=exact_id(catalogs['fuel'],fuel_names) if fuel_names else None
+            if fuel_id is None and plan.get('phase')!=2:raise ValueError('dictionary_mapping_ambiguous_or_missing')
             gear_id=exact_id(catalogs['gear'],{'manual':['Ручна / Механіка','Ручна/Механіка','Ручная / Механика']}.get(car.get('transmission'),[]))
             # Diagnostic criteria deliberately do not guess ambiguous generation IDs.
             # Never admissible as a card valuation until all missing criteria reviewed.
             params={'categoryId':'1','brandId':brand,'modelId':model,'bodyId':body_id,
-                    'fuelId':fuel_id,'gearBoxId':gear_id,
+                    'gearBoxId':gear_id,
                     'year':{'gte':str(car['year']),'lte':str(car['year'])},
                     'mileage':{'gte':str(car['mileage_km']/1000),'lte':str(car['mileage_km']/1000)},
                     'engineVolume':{'gte':str(car['engine_cc']/1000),'lte':str(car['engine_cc']/1000)}}
             if car.get('power_hp') is not None:params['power']=car['power_hp']
+            if fuel_id is not None:params['fuelId']=fuel_id
+            if plan.get('phase')==2:
+                generation=exact_id(catalogs['generation'],['II покоління/'+car.get('generation','')])
+                drive=exact_id(catalogs['drive'],{'front':['Передній'],'rear':['Задній'],'all':['Повний']}.get(car.get('drive_type'),[]))
+                params.update(generationId=generation,driveId=drive)
             body={'langId':4,'period':168,'params':params}
             data=request(engine,settings,plan,'auto/ai-avarage-price/',body,fetch=fetch)
             blocks=[b for b in data.get('statisticData',[]) if isinstance(b,dict) and b.get('type')=='avgPrice']
@@ -194,14 +223,16 @@ def run_once(engine,settings,plan=None,fetch=transport,olx_fetch=feed.source_fet
                 'request':body,'average_usd':avg,'provider_range_fraction':blocks[0].get('avgValueRange') if len(blocks)==1 else None,
                 'provider_quantity':blocks[0].get('quantityAdv') if len(blocks)==1 else None,
                 'peers':safe_peers,'technical_ready':False,'status':'diagnostic_only_compatibility_pending',
-                'missing_criteria':['generation_mapping','drive_mapping','condition_compatibility']}
+                'missing_criteria':(['fuel_subtype_mapping'] if fuel_id is None else [])+
+                    ([] if plan.get('phase')==2 else ['generation_mapping','drive_mapping'])+
+                    ['condition_compatibility','independent_compatible_peer_details','frozen_control_validation']}
             with Session(engine) as db:
                 row=db.get(SourceProbe,STATE,with_for_update=True);d=copy.deepcopy(row.result)
                 d['olx_calls'][-1].update(status='http_200',bytes=len(raw))
                 d['observations'].append(observation);row.result=d;db.commit()
             LOG.info('OLX RIA probe observation %s',json.dumps(observation,ensure_ascii=False))
     except Exception as exc:
-        status='source_hold' if isinstance(exc,ValueError) and 'hold_http_' in str(exc) else 'technical_hold'
+        status='source_hold' if isinstance(exc,ValueError) and ('hold_http_' in str(exc) or 'source_hold_challenge' in str(exc)) else 'technical_hold'
         error=str(exc) if isinstance(exc,ValueError) else type(exc).__name__
     with Session(engine) as db:
         row=db.get(SourceProbe,STATE,with_for_update=True)
