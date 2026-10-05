@@ -1,0 +1,132 @@
+[
+  {
+    "source": "olx",
+    "id": "936387379",
+    "url": "https://www.olx.ua/d/obyavlenie/shkoda-skoda-a5-2012-roku-ID11mZ8f.html",
+    "price": "8500",
+    "currency": "USD",
+    "brand": "Skoda",
+    "model": "Octavia",
+    "generation": "A5",
+    "body": "wagon",
+    "fuel": "diesel",
+    "transmission": "manual",
+    "engine_cc": 1600,
+    "drive_type": "front",
+    "power_hp": null,
+    "modification": null,
+    "year": 2012,
+    "mileage_km": 256000,
+    "research_condition": "seller_declared_running",
+    "category": "whole_passenger_car",
+    "checked_at": 1791190523,
+    "region": "Винницкая область",
+    "locality": "Винница",
+    "field_conflicts": [],
+    "research_field_conflicts": [],
+    "price_conflicts": [],
+    "price_review": {
+      "status": "needs_review",
+      "reasons": [
+        "full_price_unconfirmed"
+      ],
+      "version": "price-review-v1",
+      "text_is_not_proof": true
+    },
+    "observed_asking_display": {
+      "status": "corroborated_display",
+      "reasons": [],
+      "amount": "8500",
+      "currency": "USD",
+      "basis": "complete_visible_detail_and_matching_public_state",
+      "original_seller_currency_verified": false,
+      "full_price_verified": false,
+      "description_reviewed_in_full": true,
+      "limits": [
+        "original_seller_currency_unverified",
+        "first_publication_unverified",
+        "asking_amount_is_not_a_completed_sale_price"
+      ],
+      "state_regular_price": {
+        "amount": "382185",
+        "currency": "UAH"
+      }
+    },
+    "vehicle_key": null,
+    "eligibility_review": {
+      "status": "allowed",
+      "reasons": [
+        "customs_cleared_declared",
+        "no_forbidden_offer_evidence"
+      ],
+      "customs_status": "cleared_declared",
+      "description_complete": true,
+      "version": "olx-eligibility-v2"
+    }
+  },
+  {
+    "source": "olx",
+    "id": "936646018",
+    "url": "https://www.olx.ua/d/obyavlenie/shkoda-oktavya-a5-ID11o4pQ.html",
+    "price": "8300",
+    "currency": "USD",
+    "brand": "Skoda",
+    "model": "Octavia",
+    "generation": "A5",
+    "body": "liftback",
+    "fuel": "diesel",
+    "transmission": "manual",
+    "engine_cc": 1600,
+    "drive_type": "front",
+    "power_hp": 105,
+    "modification": null,
+    "year": 2012,
+    "mileage_km": 254000,
+    "research_condition": "seller_declared_running",
+    "category": "whole_passenger_car",
+    "checked_at": 1791190532,
+    "region": "Запорожская область",
+    "locality": "Запорожье",
+    "field_conflicts": [],
+    "research_field_conflicts": [],
+    "price_conflicts": [],
+    "price_review": {
+      "status": "needs_review",
+      "reasons": [
+        "full_price_unconfirmed"
+      ],
+      "version": "price-review-v1",
+      "text_is_not_proof": true
+    },
+    "observed_asking_display": {
+      "status": "corroborated_display",
+      "reasons": [],
+      "amount": "8300",
+      "currency": "USD",
+      "basis": "complete_visible_detail_and_matching_public_state",
+      "original_seller_currency_verified": false,
+      "full_price_verified": false,
+      "description_reviewed_in_full": true,
+      "limits": [
+        "original_seller_currency_unverified",
+        "first_publication_unverified",
+        "asking_amount_is_not_a_completed_sale_price"
+      ],
+      "state_regular_price": {
+        "amount": "373192",
+        "currency": "UAH"
+      }
+    },
+    "vehicle_key": "vin-sha256:aab9ca66f64f5360da243e735d03839a6fa4342870c6b62d0c38b51285a26590",
+    "eligibility_review": {
+      "status": "allowed",
+      "reasons": [
+        "customs_cleared_declared",
+        "no_forbidden_offer_evidence"
+      ],
+      "customs_status": "cleared_declared",
+      "description_complete": true,
+      "version": "olx-eligibility-v2"
+    }
+  }
+]

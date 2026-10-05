@@ -1,0 +1,21 @@
+{
+  "dataset_kind": "saved_real_replay_not_Telegram",
+  "passed": 6,
+  "tests": [
+    "test_real_matching_khmelnytskyi_ad_never_receives_fabricated_value",
+    "test_real_missing_power_is_unknown_not_a_guessed_105",
+    "test_saved_real_frozen_controls_keep_zero_coverage_and_no_winner",
+    "test_actual_vinnytsia_region_does_not_override_owner_price_limit",
+    "test_actual_complete_new_ad_still_needs_eight_compatible_references",
+    "test_new_references_do_not_turn_prior_controls_into_reference_cars"
+  ],
+  "elapsed_seconds": 0.05,
+  "network_guard_before_import": true,
+  "production_code_changes": 0,
+  "prior_attempts": [
+    "pytest unavailable in selected Python; not counted as execution",
+    "initial new test feed import lacked httpx; replaced unnecessary runtime import with pure held-out evaluation",
+    "initial assertion mistakenly used global74 sample1 for refreshed16 fixture sample0; corrected denominator"
+  ],
+  "execution": "standard-library runpy; six plain assertion test functions, no fixture or parametrized cases omitted"
+}

@@ -2,7 +2,7 @@
   "version": 1,
   "authorization": "2026-10-05 explicit owner-only valued OLX request; clients unauthorized",
   "night_state_resumed": false,
-  "status": "reserved_owner_enable_two_new_details",
+  "status": "completed_owner_enable_data_blocked",
   "hypothesis": "Saved densest complete group is Octavia A5 1.6 diesel manual wagon/front/105 hp, 2010 around 264-274k km, max4 peers. Prior general A5 search and MPI collection missed the explicitly observed focused 1.6 TDI query. Discover by characteristics, not price; holdout frozen before refreshed full prices.",
   "owner_search": {
     "id": 4,
@@ -205,8 +205,8 @@
     "dated_fallback_rate": "44.9857000",
     "fx_effective_date": "2026-10-05"
   },
-  "actual_olx_calls": 21,
-  "actual_olx_bytes": 43893690,
+  "actual_olx_calls": 23,
+  "actual_olx_bytes": 47049350,
   "actual_fx_calls": 1,
   "actual_fx_bytes": 2836,
   "telegram_calls": 0,
@@ -224,8 +224,6 @@
   },
   "last_user_authorization": "2026-10-05 11:36:42 Europe/Kyiv: enable OLX only for owner; valuation and access requirements retained",
   "access_basis": "latest structured runtime: configured owner paid approval/current entitlement, ready and one enabled search; startup protected search#4 fingerprint unchanged in repository; final server must recheck current fingerprint before send",
-  "lease": {
-    "owner": "owner-enable-1136-20261005",
-    "expires_at": 1791192231
-  }
+  "lease": null,
+  "latest_review": "enable-current-review.json"
 }

@@ -1,0 +1,105 @@
+{
+  "observed_at": 1791190688.9268687,
+  "configuration": {
+    "active_window_enabled": false,
+    "automobile_admin_copies_enabled": false,
+    "delivery_enabled": true,
+    "full_scan_enabled": false,
+    "html_shadow_configured": true,
+    "manual_payment_notices_enabled": true,
+    "monitor_enabled": true,
+    "provider_valuation_enabled": true,
+    "recent_publications_enabled": true,
+    "release": "3a5586a5259e62b371754502e72ae1625d7db25f",
+    "shared_distribution_enabled": true,
+    "strict_paid_sources": true,
+    "valuation_selection_status": "api_range_selection_native_parity_unverified"
+  },
+  "source_access_audit": {
+    "active_entitlement_without_current_purchase_clients": 0,
+    "basis": "saved_owner_approval_audit_access_and_membership_no_source_calls",
+    "current_owner_approval_with_access_clients": 4,
+    "current_owner_approval_without_access_clients": 0,
+    "current_paid_excluded_admin_clients": 0,
+    "current_paid_excluded_config_only_clients": 0,
+    "current_paid_not_ready_clients": 0,
+    "current_paid_without_enabled_search_clients": 1,
+    "current_purchase_without_owner_audit_clients": 0,
+    "owner_approval_with_access_blocked_by_guard_clients": 0,
+    "paid_ready_searches_without_current_membership": 0
+  },
+  "monitor": {
+    "running": true,
+    "interval_seconds": 110,
+    "schedule": {
+      "active_period": "day",
+      "budget_limited": false,
+      "enabled": true,
+      "estimate_basis": "one_page_per_poll_standard_24h_day",
+      "interval_seconds": 110,
+      "minimum_planning_limits": {
+        "daily": 3394,
+        "hourly": 320
+      },
+      "periods": [
+        {
+          "end": "08:00",
+          "interval_seconds": 3600,
+          "name": "night",
+          "requested_interval_seconds": 3600,
+          "start": "23:00"
+        },
+        {
+          "end": "18:00",
+          "interval_seconds": 110,
+          "name": "day",
+          "requested_interval_seconds": 110,
+          "start": "08:00"
+        },
+        {
+          "end": "23:00",
+          "interval_seconds": 60,
+          "name": "evening",
+          "requested_interval_seconds": 60,
+          "start": "18:00"
+        }
+      ],
+      "requested_interval_seconds": 110,
+      "requested_search_calls_per_day": 2546,
+      "timezone": "Europe/Kyiv"
+    }
+  },
+  "owner": [
+    {
+      "ready": true,
+      "source_access_allowed": true,
+      "enabled_searches": 1,
+      "recent_ordinary_deliveries": [
+        {
+          "source_id": "40521711",
+          "state": "sent",
+          "accepted_at": 1791187735.1498687,
+          "owner_approval_covers_acceptance": true,
+          "saved_access_event_covers_acceptance": true
+        },
+        {
+          "source_id": "40491864",
+          "state": "sent",
+          "accepted_at": 1791186263.782993,
+          "owner_approval_covers_acceptance": true,
+          "saved_access_event_covers_acceptance": true
+        },
+        {
+          "source_id": "40521321",
+          "state": "sent",
+          "accepted_at": 1791182784.2819676,
+          "owner_approval_covers_acceptance": true,
+          "saved_access_event_covers_acceptance": true
+        }
+      ]
+    }
+  ],
+  "production_code_changes_this_turn": 0,
+  "production_env_changes_this_turn": 0,
+  "OLX_telegram_calls_this_turn": 0
+}

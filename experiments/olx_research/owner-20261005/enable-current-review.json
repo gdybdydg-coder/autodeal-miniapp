@@ -1,0 +1,111 @@
+{
+  "checked_at": 1791190635,
+  "owner_authorized": true,
+  "client_authorized": false,
+  "runtime_commit": "3a5586a5259e62b371754502e72ae1625d7db25f",
+  "OLX_runtime_enabled": false,
+  "technical_ready": false,
+  "current_full_unique": 74,
+  "estimated": 0,
+  "max_comparables": 3,
+  "new_detail_count": 2,
+  "new_search_unique_ads": 173,
+  "new_search_count": 5,
+  "controls": {
+    "frozen_holdout_count": 3,
+    "eligible_holdout_count": 2,
+    "estimated_holdout_count": 0,
+    "metrics": {
+      "median": {
+        "evaluated": 0,
+        "mean_absolute_usd": null,
+        "mean_absolute_percent": null
+      },
+      "trimmed_mean": {
+        "evaluated": 0,
+        "mean_absolute_usd": null,
+        "mean_absolute_percent": null
+      },
+      "weighted_median": {
+        "evaluated": 0,
+        "mean_absolute_usd": null,
+        "mean_absolute_percent": null
+      }
+    }
+  },
+  "candidate_reviews": [
+    {
+      "id": "936387379",
+      "url": "https://www.olx.ua/d/obyavlenie/shkoda-skoda-a5-2012-roku-ID11mZ8f.html",
+      "price": "8500",
+      "currency": "USD",
+      "region": "Винницкая область",
+      "year": 2012,
+      "mileage_km": 256000,
+      "body": "wagon",
+      "power_hp": null,
+      "research_condition": "seller_declared_running",
+      "checked_at": 1791190523,
+      "owner_filter_match": false,
+      "filter_reasons": [
+        "filter_price_max"
+      ],
+      "status": "profitability_unconfirmed",
+      "sample": 0,
+      "reference_usd": null,
+      "reasons": [
+        "missing_power_hp"
+      ]
+    },
+    {
+      "id": "936646018",
+      "url": "https://www.olx.ua/d/obyavlenie/shkoda-oktavya-a5-ID11o4pQ.html",
+      "price": "8300",
+      "currency": "USD",
+      "region": "Запорожская область",
+      "year": 2012,
+      "mileage_km": 254000,
+      "body": "liftback",
+      "power_hp": 105,
+      "research_condition": "seller_declared_running",
+      "checked_at": 1791190532,
+      "owner_filter_match": false,
+      "filter_reasons": [
+        "filter_price_max",
+        "filter_region"
+      ],
+      "status": "profitability_unconfirmed",
+      "sample": 1,
+      "reference_usd": null,
+      "reasons": [
+        "insufficient_comparables"
+      ]
+    }
+  ],
+  "telegram": {
+    "attempts": 0,
+    "accepted": 0,
+    "rejected": 0,
+    "uncertain": 0
+  },
+  "no_paid_ria_calls": true,
+  "production_env_changes": 0,
+  "source_holds": [],
+  "selected_method": null,
+  "sale_price_accuracy_verified": false,
+  "budget_exhausted": false,
+  "episode_budget": {
+    "episode_caps": {
+      "olx_gets": 60,
+      "olx_bytes": 167772160,
+      "fx_gets": 6
+    },
+    "reserved_olx_gets": 23,
+    "reserved_olx_bytes": 62914560,
+    "actual_olx_calls": 23,
+    "actual_olx_bytes": 47049350,
+    "reserved_fx_gets": 1,
+    "actual_fx_calls": 1,
+    "actual_fx_bytes": 2836
+  }
+}

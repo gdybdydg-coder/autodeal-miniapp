@@ -120,3 +120,46 @@ Do not fabricate missing power/condition/value, weaken min8, refill controls fro
 known prices, replay old samples, or enable other clients. No automatic resumption,
 continuous observer or new ChatGPT background promise. Stages for wider rollout
 and client delivery still require new authorization.
+
+
+## New owner authorization recheck — 2026-10-05T12:03:21+03:00
+
+User permission to enable sending is retained. This is not a readiness override.
+Main/live remains3a5586a5259e62b371754502e72ae1625d7db25f; no production code/env/deploy
+changes in this follow-up. OLX stillOFF; accepted/rejected/uncertain OLX receipts0.
+
+New broad publicly observed A5 diesel query and its four observed pagination pages
+allHTTP200:173 distinct advertised IDs across this moving relevance window. It is
+not a complete catalogue or physical independence proof. Exactly two uncollected
+explicit1.6diesel/manual/year2012/254–256k detail URLs were frozen as references and
+reserved before full prices (5990bc3); bothHTTP200. Earlier3controls retain their
+frozen membership. No retries, credentials, challenge bypass, Telegram or paid RIA.
+New sourceGETs7 /21,384,005body bytes. Foreground episode totals23GET /47,049,350bytes,
+reserved23GET /60MiB within60GET /160MiB; FX1/6. Budget is NOT exhausted. Lease released.
+
+Current global asking-price coverage0/74 full saved observations; maxcompatible3/8.
+Frozen controls3, eligible2, estimated0. Three method error metrics remainunknown;
+no winner or sale/profit accuracy is fabricated. New936387379(Vinnytsia) displays
+8500USD, above owner's7000 ceiling, and lacks explicitpower. New936646018(Zaporizhzhia)
+displays8300USD, wrong region/above ceiling; globally one compatible older ad,
+zero compatible peers within the refreshed16fixture. Unknowns remainunknown.
+Earlier commentary incorrectly described the Vinnytsia candidate as matching
+filters before checking its full price; explicitly corrected after the pricecheck.
+
+Six saved-real assertions pass under a network fence before imports (runpy,0.05s);
+three are new, three overlap previoussavedtests. Production pytest unavailable in
+this runtime; no new full backend run claimed. Failed harness/denominator attempts
+are recorded in enable-verification.json. Prior2057backend/282offline results are
+historical verified evidence, not new live-delivery proof.
+
+Latest structured runtime confirms protected owner's genuinepaid access, ready
+status, one enabled search,4paid/filtergroups and unchanged RIA schedule/limits.
+Real ordinaryRIA receipt40521711 accepted2026-10-05T11:08:55.149+03:00, after final3a5586adeployment.
+APIacceptance does not prove reading. AUTO.RIA code/config/state not modified here.
+
+Next: a verified denser compatible cohort with>=8independent refs and>=3estimable
+separate controls, or a newly supported source/attribute hypothesis. Do not blindly
+repeat the current5pages, reduce8, fillpower, activate old samples, or create a fake
+profile. Remainingbudget37GET/100MiB reserved-cap headroom is available only for
+a justified new source hypothesis; no background work is promised. Ownerpermission
+persists, otherclients unauthorized.

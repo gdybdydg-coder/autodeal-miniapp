@@ -1,0 +1,39 @@
+{
+  "reservation_commit": "5990bc379670d82c34f8d3fd440325fae949ac57",
+  "calls": [
+    {
+      "kind": "olx_detail_enable",
+      "id": "936387379",
+      "url": "https://www.olx.ua/d/obyavlenie/shkoda-skoda-a5-2012-roku-ID11mZ8f.html",
+      "cap": 2097152,
+      "started_at": 1791190516.8520427,
+      "state": "finished",
+      "http": 200,
+      "curl_exit": 0,
+      "bytes": 1566723,
+      "finished_at": 1791190523.1754732,
+      "sha256": "82ad6ff6b8ea41fc70e49b7cd3557650a300c168838f907ea5c0c88a9d36b890",
+      "parsed": true
+    },
+    {
+      "kind": "olx_detail_enable",
+      "id": "936646018",
+      "url": "https://www.olx.ua/d/obyavlenie/shkoda-oktavya-a5-ID11o4pQ.html",
+      "cap": 2097152,
+      "started_at": 1791190527.1764734,
+      "state": "finished",
+      "http": 200,
+      "curl_exit": 0,
+      "bytes": 1588937,
+      "finished_at": 1791190532.6680946,
+      "sha256": "d444313d70be134858e9a8f6fcf1ca638d9dc88e49dd8caa94b3f8b7fe2216d1",
+      "parsed": true
+    }
+  ],
+  "source_hold": null,
+  "no_telegram": true,
+  "paid_ria_calls": 0,
+  "retry_count": 0,
+  "started_at": 1791190516.8518946,
+  "finished_at": 1791190532.783293
+}
