@@ -1,0 +1,44 @@
+{
+  "task": "prelaunch-review-20261005-2034",
+  "permission": "isolated_preparation_only_new_confirmation_required",
+  "hypothesis": "Three explicitly observed public detail URLs can establish current availability and exact condition for the review; no valuation readiness is inferred.",
+  "kind": "public_detail_only_no_market_collection",
+  "budget": {
+    "olx_get_cap": 3,
+    "byte_cap": 6291456,
+    "per_get_cap": 2097152,
+    "pause_seconds": 4,
+    "timeout_seconds": 20,
+    "total_seconds": 90,
+    "retries": 0,
+    "fx_gets": 0,
+    "paid_ria_gets": 0,
+    "telegram_calls": 0
+  },
+  "requests": [
+    {
+      "id": "936658970",
+      "url": "https://www.olx.ua/d/uk/obyavlenie/skoda-octavia-a5-1-6-tdi-ID11o7MK.html"
+    },
+    {
+      "id": "936768428",
+      "url": "https://www.olx.ua/d/uk/obyavlenie/skoda-octavia-a5-ID11oAgc.html"
+    },
+    {
+      "id": "933340614",
+      "url": "https://www.olx.ua/d/uk/obyavlenie/skoda-octavia-a5-2007-r-v-ID11acvS.html"
+    }
+  ],
+  "rules": {
+    "source_hold_on": [
+      401,
+      403,
+      429,
+      "CAPTCHA"
+    ],
+    "follow_redirects": false,
+    "no_credentials": true,
+    "reservations_not_refunded": true,
+    "old_night_and_paid_budgets_not_reused": true
+  }
+}
