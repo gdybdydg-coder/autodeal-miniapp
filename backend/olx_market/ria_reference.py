@@ -7,13 +7,40 @@ import hashlib
 import json
 import re
 from copy import deepcopy
+from types import SimpleNamespace
 from urllib.parse import urlsplit
 
-VERSION='olx-ria-reference-v1'
+VERSION='olx-ria-reference-v2'
+MODIFICATION_POLICY='explicit_provider_engine_code-v1'
 FIELDS=('source','id','url','price','currency','brand','model','generation',
     'generation_variant','body','fuel','fuel_subtype','transmission','drive_type',
     'engine_cc','power_hp','year','mileage_km','research_condition','checked_at',
-    'vehicle_key','vehicle_identity_verified','category','eligibility_review','reference_provenance')
+    'vehicle_key','vehicle_identity_verified','category','eligibility_review','reference_provenance',
+    'modification','source_modification_evidence','condition_evidence')
+
+
+def engine_modification(label,car):
+    """Keep explicit engine codes, never infer them from year/power/catalog ID.
+
+    The field is a provider modification label, not arbitrary seller prose.
+    An explicitly labelled engine code is retained verbatim after case folding.
+    The only unlabelled vocabulary is literal BKC/BXE directly following the
+    explicit '1.9 TDI' descriptor, with matching source fuel/volume. This is a
+    token comparison policy, not a claim that all 1.9 TDI engines have that code.
+    Trim names (Ambiente/Elegance), transmission words and catalog IDs do not
+    become engine identities. Other unlabelled codes remain unassigned.
+    """
+    if not isinstance(label,str) or not 1<=len(label)<=150:
+        raise ValueError('reference_modification_label_pending')
+    codes=set(re.findall(r'(?:код\s+двигуна|код\s+двигателя|engine\s+code)\s*[:=-]?\s*([a-z0-9]{2,6})(?!\w)',label,re.I))
+    codes={c.casefold() for c in codes}
+    if car.get('engine_cc')==1900 and car.get('fuel_id')==2:
+        codes.update(c.casefold() for c in re.findall(r'(?<!\w)1[.,]9\s*TDI\s+(BKC|BXE)(?!\w)',label,re.I))
+    if len(codes)>1:raise ValueError('reference_modification_conflict')
+    key='engine_code:'+next(iter(codes)) if codes else None
+    return key,{'policy':MODIFICATION_POLICY,'catalog_id':car.get('modification_id'),
+        'label_sha256':hashlib.sha256(label.encode()).hexdigest(),
+        'basis':'explicit_provider_engine_code' if key else 'engine_code_not_explicit'}
 
 
 def binding(car):
@@ -82,6 +109,13 @@ def from_full_info(data,sid,checked_at,provenance):
     eligibility=review_listing({'title':data.get('title'),'category':'whole_passenger_car',
         'description':description,'description_available':isinstance(description,str) and bool(description.strip())})
     if eligibility['status']!='allowed':raise ValueError('reference_full_description_not_eligible')
+    # Reuse the OLX condition vocabulary on this complete API description.
+    # The adapter node is only an in-memory text interface, not an HTML receipt.
+    from .observations import description_damage
+    damage=description_damage([SimpleNamespace(attrs={'data-testid':'ad_description'},
+        closed=True,text=lambda:description)])
+    condition='running_reported_damage:'+'+'.join(damage) if damage else 'seller_declared_running'
+    modification,modification_evidence=engine_modification(label,car)
     for clause in re.split(r'[.!?;,\n]',description.casefold()):
         for payment in re.finditer(r'перш\w*\s+внес\w*|перв\w*\s+взнос\w*',clause):
             before=clause[max(0,payment.start()-30):payment.start()]
@@ -91,7 +125,11 @@ def from_full_info(data,sid,checked_at,provenance):
         'brand':'Skoda','model':'Octavia','generation':generation[0],'generation_variant':generation[1],
         'body':body,'fuel':fuel[0],'fuel_subtype':fuel[1],'transmission':'manual','drive_type':drive,
         'engine_cc':car['engine_cc'],'power_hp':int(powers[0]),'year':car['year'],
-        'mileage_km':car['mileage'],'research_condition':'seller_declared_running','checked_at':checked_at,
+        'mileage_km':car['mileage'],'research_condition':condition,'checked_at':checked_at,
+        'modification':modification,'source_modification_evidence':modification_evidence,
+        'condition_evidence':{'basis':'complete_source_api_description',
+            'description_sha256':hashlib.sha256(description.encode()).hexdigest(),
+            'description_damage_flags':damage,'independently_verified':False},
         'category':'whole_passenger_car','eligibility_review':{'status':'allowed','description_complete':True},
         'vehicle_key':'vin-sha256:'+hashlib.sha256(vin.strip().upper().encode()).hexdigest(),
         'vehicle_identity_verified':True,'identity_review':{'distinct_photos_reviewed':False},

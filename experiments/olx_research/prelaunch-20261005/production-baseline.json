@@ -1,0 +1,111 @@
+{
+  "checked_at": "2026-10-05T17:33:40.721401701Z",
+  "release": "2d81e13ab04077133eca0a668a575e2d571b6cd7",
+  "deployment": "dep-db1pi6vavr4c73d1mog0",
+  "deployment_finished_at": "2026-10-05T12:34:38.098022Z",
+  "log_id": "197d420b-2cad-498c-91c2-34534885289f",
+  "ria_monitor_running": true,
+  "pending_jobs_by_reason": {},
+  "watching_groups": 6,
+  "current_paid_clients": 5,
+  "paid_owner_searches": 1,
+  "access_guard_blocks_genuine_paid": 0,
+  "last_owner_accepted": {
+    "source_id": "40524871",
+    "accepted_at": 1791220854.475308,
+    "owner_approval_covers_acceptance": true,
+    "basis": "telegram_api_acceptance_not_reading"
+  },
+  "last_client_accepted": {
+    "source_id": "40524931",
+    "accepted_at": 1791221524.4002416,
+    "basis": "telegram_api_acceptance_not_reading"
+  },
+  "schedule": {
+    "timezone": "Europe/Kyiv",
+    "night": {
+      "start": "23:00",
+      "end": "08:00",
+      "interval_seconds": 3600
+    },
+    "day": {
+      "start": "08:00",
+      "end": "18:00",
+      "interval_seconds": 110
+    },
+    "evening": {
+      "start": "18:00",
+      "end": "23:00",
+      "interval_seconds": 60
+    }
+  },
+  "api_limits": {
+    "hourly": 4500,
+    "daily": 90000,
+    "total": 1102160
+  },
+  "strict_paid_sources": true,
+  "delivery_enabled": true,
+  "automobile_admin_copies_enabled": false,
+  "manual_payment_notices_enabled": true,
+  "additional_paid_ria_calls_by_this_task": 0,
+  "production_mutations_by_this_task": 0,
+  "new_telegram_calls_by_this_task": 0,
+  "protected_hashes": [
+    {
+      "path": "backend/app.py",
+      "sha256": "ffeb0083c7f9f0c4f23eb7144adfc30d48c98b1af90162a0dfe83b593ddab6c0",
+      "identical_to_live_commit": true
+    },
+    {
+      "path": "backend/ria_search.py",
+      "sha256": "6265ad505c1ab877c8dbe70d3ee37779d8f70cdf48fbff5059ca7345792157e0",
+      "identical_to_live_commit": true
+    },
+    {
+      "path": "backend/valuation.py",
+      "sha256": "5cdd05ade7ba4f444893f7ce334ecef4f1cac2b3f7fe696f40e8d8be57f48a61",
+      "identical_to_live_commit": true
+    },
+    {
+      "path": "backend/monitor.py",
+      "sha256": "f15f3eb36072d240f301f314347e90aef0d736e5d0135b297497ef6a9256462a",
+      "identical_to_live_commit": true
+    },
+    {
+      "path": "backend/paid_source_access.py",
+      "sha256": "279ce419e93a07ebdc4fca73599bc3e7f8bc754f6486774d2f2e4c2e95835bea",
+      "identical_to_live_commit": true
+    },
+    {
+      "path": "backend/billing.py",
+      "sha256": "eb9e0c32dfbfee4fa40bc25931d187726c0579a188cf8709304e963fbaf33289",
+      "identical_to_live_commit": true
+    },
+    {
+      "path": "backend/models.py",
+      "sha256": "7770287aa38313bd6c7a24301f96c6e344ed735c6958243841772f6272d8c482",
+      "identical_to_live_commit": true
+    },
+    {
+      "path": "backend/telegram_setup.py",
+      "sha256": "b5cc824958fd4984a910321557d014af68f90e50dcdf409a181d8750819b44e1",
+      "identical_to_live_commit": true
+    }
+  ],
+  "last_observed_olx_startup": {
+    "checked_at": "2026-10-05T12:34:35.711975366Z",
+    "enabled": false,
+    "legacy_batch_enabled": false,
+    "legacy_canary_enabled": false,
+    "profile_present": false,
+    "not_current_db_read": true
+  },
+  "push_safety": {
+    "render_branch": "main",
+    "autoDeploy": "yes",
+    "previews": "off",
+    "workflow_allows_new_research_branch": false,
+    "checked_at": "2026-10-05T17:43:00Z"
+  }
+}

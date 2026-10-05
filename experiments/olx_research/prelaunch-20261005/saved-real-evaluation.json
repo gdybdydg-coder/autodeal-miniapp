@@ -1,0 +1,165 @@
+{
+  "kind": "mixed_saved_real_replay_with_three_current_details_not_live_market_census",
+  "checked_at": 1791223569,
+  "unique_loaded_ads": 74,
+  "fresh_detail_ads": 3,
+  "asking_estimates": 0,
+  "max_exploratory_sample": 3,
+  "exploratory_pool_not_validated_reference": true,
+  "minimum": 8,
+  "frozen_holdout": 3,
+  "eligible_holdout": 2,
+  "estimated_holdout": 0,
+  "metrics": {
+    "median": {
+      "evaluated": 0,
+      "mean_absolute_usd": null,
+      "mean_absolute_percent": null
+    },
+    "trimmed_mean": {
+      "evaluated": 0,
+      "mean_absolute_usd": null,
+      "mean_absolute_percent": null
+    },
+    "weighted_median": {
+      "evaluated": 0,
+      "mean_absolute_usd": null,
+      "mean_absolute_percent": null
+    }
+  },
+  "selected_method": null,
+  "owner_previews": [
+    {
+      "source": "olx",
+      "id": "933340614",
+      "url": "https://www.olx.ua/d/uk/obyavlenie/skoda-octavia-a5-2007-r-v-ID11acvS.html",
+      "checked_at": 1791222476,
+      "price": "6000",
+      "currency": "USD",
+      "owner_filter": {
+        "match": true,
+        "reasons": [],
+        "unknown": []
+      },
+      "sample": 0,
+      "reference_usd": null,
+      "status": "profitability_unconfirmed",
+      "reasons": [
+        "insufficient_comparables"
+      ],
+      "exclusions": {
+        "condition_unconfirmed": 13,
+        "missing_power_hp": 38,
+        "mismatch_condition": 2,
+        "mismatch_drive_type": 3,
+        "mismatch_mileage": 19,
+        "mismatch_power_hp": 17,
+        "mismatch_year": 16,
+        "mismatch_body": 12,
+        "mismatch_fuel": 16,
+        "known_vehicle_current_evidence_invalid": 7,
+        "eligibility_not_allowed": 2,
+        "fx_cache_expired": 2,
+        "mismatch_engine_cc": 6,
+        "ordinary_sale_not_corroborated": 7,
+        "price_context_deposit": 1,
+        "visible_sale_terms_missing_or_conflicting": 7,
+        "self_or_known_crosspost": 1,
+        "missing_generation": 2
+      },
+      "research_condition": "seller_declared_running",
+      "generation_variant": null,
+      "target_identity_verified": false,
+      "technical_ready": false
+    },
+    {
+      "source": "olx",
+      "id": "936658970",
+      "url": "https://www.olx.ua/d/uk/obyavlenie/skoda-octavia-a5-1-6-tdi-ID11o7MK.html",
+      "checked_at": 1791222450,
+      "price": "6500",
+      "currency": "USD",
+      "owner_filter": {
+        "match": true,
+        "reasons": [],
+        "unknown": []
+      },
+      "sample": 0,
+      "reference_usd": null,
+      "status": "profitability_unconfirmed",
+      "reasons": [
+        "insufficient_comparables"
+      ],
+      "exclusions": {
+        "condition_unconfirmed": 13,
+        "missing_power_hp": 38,
+        "mismatch_condition": 23,
+        "mismatch_drive_type": 3,
+        "mismatch_fuel": 17,
+        "mismatch_power_hp": 14,
+        "mismatch_year": 17,
+        "mismatch_body": 12,
+        "mismatch_mileage": 8,
+        "known_vehicle_current_evidence_invalid": 7,
+        "eligibility_not_allowed": 2,
+        "fx_cache_expired": 2,
+        "mismatch_engine_cc": 6,
+        "ordinary_sale_not_corroborated": 7,
+        "price_context_deposit": 1,
+        "visible_sale_terms_missing_or_conflicting": 7,
+        "missing_generation": 2
+      },
+      "research_condition": "running_reported_damage:body_dents+windshield_crack",
+      "generation_variant": null,
+      "target_identity_verified": false,
+      "technical_ready": false
+    },
+    {
+      "source": "olx",
+      "id": "936768428",
+      "url": "https://www.olx.ua/d/uk/obyavlenie/skoda-octavia-a5-ID11oAgc.html",
+      "checked_at": 1791222463,
+      "price": "5100",
+      "currency": "USD",
+      "owner_filter": {
+        "match": true,
+        "reasons": [],
+        "unknown": []
+      },
+      "sample": 0,
+      "reference_usd": null,
+      "status": "profitability_unconfirmed",
+      "reasons": [
+        "ordinary_sale_not_corroborated",
+        "visible_sale_terms_missing_or_conflicting"
+      ],
+      "exclusions": {},
+      "research_condition": "seller_declared_running",
+      "generation_variant": null,
+      "target_identity_verified": false,
+      "technical_ready": false
+    }
+  ],
+  "all_asking_prices_not_sales": true,
+  "fresh_source_complete": false,
+  "technical_ready": false,
+  "new_owner_permission_pending": true,
+  "client_authorized": false,
+  "paid_ria_calls": 0,
+  "telegram_calls": 0,
+  "quote": {
+    "rate": "44.9857000",
+    "source": "https://api.privatbank.ua/p24api/exchange_rates?json&date=05.10.2026",
+    "kind": "nbu_official",
+    "effective_date": "2026-10-05",
+    "fetched_at": "2026-10-05T07:02:57.607491+00:00",
+    "published_at": null,
+    "buy": null,
+    "sell": null,
+    "eur_rate": null,
+    "eur_units": null,
+    "units": "UAH per 1 USD",
+    "policy": "olx-research-fx-v1",
+    "transaction_channel": "official_reference_not_transaction_rate"
+  }
+}

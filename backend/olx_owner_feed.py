@@ -19,6 +19,7 @@ import time
 import uuid
 import httpx
 from zoneinfo import ZoneInfo
+from urllib.parse import urljoin, urlsplit
 
 from sqlalchemy import select, update
 from sqlalchemy.orm import Session
@@ -31,7 +32,7 @@ from .olx_market.fx_policy import normalize, Quote
 from .olx_market.valuation import estimate, METHODS
 from .olx_market.evaluation import evaluate_holdout, stability
 from .olx_market.observations import enrich
-from .olx_market.source_tracking import public_detail_url, same_detail_url
+from .olx_market.source_tracking import public_detail_url, same_detail_url, detail_change
 from experiments.olx_offline.detail_snapshot import parse_detail_snapshot
 from experiments.olx_offline.integration import filters_from_backend
 
@@ -47,6 +48,10 @@ MAX_DAILY_BYTES=160*1024*1024
 DETAIL_CAP=2*1024*1024
 PROFILE_MAX_AGE=24*3600
 DETAIL_MAX_AGE=300
+MAX_CYCLE_SECONDS=60
+SOURCE_TIMEOUT=20
+TRANSIENT_RETRY_SECONDS=60
+FAILED_EPISODE_COOLDOWN=3600
 
 
 def interval(now=None):
@@ -148,13 +153,24 @@ def profile_ready(profile,now):
                 or profile.get('source_review',{}).get('bounded_public_channel_reviewed') is not True):return False
         cars=profile['reference']+profile['holdout']
         freeze=profile['split_freeze']
-        membership={c['id']:'reference' for c in profile['reference']}
-        membership.update({c['id']:'holdout' for c in profile['holdout']})
+        key_format=profile.get('split_key_format')
+        if key_format not in (None,'source_id_v1'):return False
+        key=lambda c:c['source']+':'+c['id'] if key_format=='source_id_v1' else c['id']
+        membership={key(c):role for role in ('reference','holdout') for c in profile[role]}
         digest=hashlib.sha256(json.dumps(membership,sort_keys=True,separators=(',',':')).encode()).hexdigest()
         if (len(membership)!=len(cars) or freeze['membership_sha256']!=digest
                 or not re.fullmatch('[a-f0-9]{40}',freeze['commit'])
                 or type(freeze['frozen_at']) is not int
                 or any(freeze['frozen_at']>c['checked_at'] for c in cars)):return False
+        # An intact provider receipt is still unusable if its frozen role was
+        # changed after observation. Bind each receipt to this exact split.
+        for role in ('reference','holdout'):
+            for car in profile[role]:
+                if car.get('source')!='auto_ria':continue
+                provenance=car.get('reference_provenance') or {}
+                if (provenance.get('role')!=role
+                        or provenance.get('frozen_commit')!=freeze['commit']
+                        or provenance.get('frozen_at')!=freeze['frozen_at']):return False
         from .olx_market.ria_reference import public_url as ria_public_url
         if not cars or any(not (public_detail_url(c.get('url')) if c.get('source')=='olx'
                 else ria_public_url(c) if c.get('source')=='auto_ria' else False) for c in cars):return False
@@ -165,10 +181,8 @@ def profile_ready(profile,now):
         if (any(not isinstance(k,str) or not re.fullmatch('vin-sha256:[a-f0-9]{64}',k) for k in keys)
                 or len(set(keys))!=len(keys)
                 or any(c.get('identity_review',{}).get('distinct_photos_reviewed') is not True for c in cars)):return False
-        split={c['id']:'reference' for c in profile['reference']}
-        split.update({c['id']:'holdout' for c in profile['holdout']})
         quote=Quote.restore(profile['quote']) if profile.get('quote') else None
-        evaluation=evaluate_holdout(cars,split,quote,int(now),minimum=MINIMUM)
+        evaluation=evaluate_holdout(cars,membership,quote,int(now),minimum=MINIMUM)
         if evaluation['estimated_holdout_count']<3:return False
         method=profile['selected_method']
         scored={m:Decimal(v['mean_absolute_percent']) for m,v in evaluation['metrics'].items()
@@ -205,7 +219,8 @@ def claim(engine):
         if not changed.rowcount:db.rollback();return None
         row=db.get(SourceProbe,STATE);data=copy.deepcopy(row.result)
         if now>=data['until']:row.status='finished';db.commit();return None
-        data.update(lease=token,lease_until=now+60,next_at=now+interval(now))
+        data.update(lease=token,lease_until=now+MAX_CYCLE_SECONDS,
+                    cycle_until=now+MAX_CYCLE_SECONDS,next_at=now+interval(now))
         row.result=data;db.commit();return token,data
 
 
@@ -219,8 +234,199 @@ def reserve_get(engine,settings,token,state):
         if d['hour']!=hour:d.update(hour=hour,hour_gets=0)
         if d['day']!=day:d.update(day=day,day_gets=0,day_bytes=0)
         if d['hour_gets']>=MAX_HOURLY_GETS or d['day_gets']>=MAX_DAILY_GETS or d['day_bytes']+DETAIL_CAP>MAX_DAILY_BYTES:return False
-        d.update(hour_gets=d['hour_gets']+1,day_gets=d['day_gets']+1,day_bytes=d['day_bytes']+DETAIL_CAP,lease_until=now+60)
+        d.update(hour_gets=d['hour_gets']+1,day_gets=d['day_gets']+1,day_bytes=d['day_bytes']+DETAIL_CAP)
         row.requests+=1;row.result=d;db.commit();return True
+
+
+def current_lease(engine,token):
+    now=time.time()
+    with Session(engine) as db:
+        row=db.get(SourceProbe,STATE)
+        return bool(row and row.status=='active' and row.result.get('lease')==token
+            and now<min(row.result.get('lease_until',0),row.result.get('cycle_until',0)))
+
+
+def detail_state(engine,source_id):
+    with Session(engine) as db:
+        row=db.get(SourceProbe,STATE)
+        return copy.deepcopy(row.result.get('detail_states',{}).get(source_id,{})) if row else {}
+
+
+def sanitized_detail(car):
+    """Persist only normalized card/market facts and bounded coded evidence."""
+    fields=('source','id','url','price','currency','brand','model','generation',
+        'generation_variant','body','fuel','fuel_subtype','transmission','drive_type',
+        'engine_cc','power_hp','modification','doors','year','mileage_km','category',
+        'research_condition','checked_at','vehicle_identity_verified')
+    out={k:copy.deepcopy(car[k]) for k in fields if k in car}
+    key=car.get('vehicle_key')
+    out['vehicle_key']=key if isinstance(key,str) and re.fullmatch('vin-sha256:[a-f0-9]{64}',key) else None
+    def label(value):
+        if not isinstance(value,str):return None
+        value=re.sub(r'\b[A-HJ-NPR-Z0-9]{17}\b','[приховано]',value,flags=re.I)
+        value=re.sub(r'(?<!\w)\+?\d[\d\s().-]{5,}\d(?!\w)','[приховано]',value)
+        return value[:256]
+    for k in ('title','locality','region'):
+        if k in car:out[k]=label(car[k])
+    def metadata(value,allowed):
+        if not isinstance(value,dict):return {}
+        result={}
+        for k in allowed:
+            v=value.get(k)
+            if type(v) in (bool,int) or v is None:
+                if k in value:result[k]=v
+            elif isinstance(v,str) and (re.fullmatch(r'[a-z][a-z0-9_:.+/-]{0,149}',v)
+                    or re.fullmatch(r'[a-f0-9]{40}|[a-f0-9]{64}',v)
+                    or (k=='amount' and re.fullmatch(r'\d+(?:\.\d+)?',v))
+                    or (k=='currency' and v in ('UAH','USD','EUR'))):result[k]=v
+            elif isinstance(v,list):result[k]=[x for x in v if isinstance(x,str)
+                    and re.fullmatch(r'[a-z][a-z0-9_:.+/-]{0,149}',x)][:100]
+        return result
+    for k,allowed in {
+        'eligibility_review':('version','status','reasons','fingerprint','description_complete',
+            'customs_status','customs_independently_verified'),
+        'price_review':('version','status','reasons','text_is_not_proof'),
+        'observed_asking_display':('status','reasons','amount','currency','basis',
+            'description_reviewed_in_full','original_seller_currency_verified','full_price_verified','limits'),
+        'research_asking_display':('status','reasons','previous_reasons','amount','currency','basis',
+            'description_reviewed_in_full','original_seller_currency_verified','full_price_verified','limits'),
+        'identity_review':('distinct_photos_reviewed','physical_identity_verified','format_verified','basis'),
+        'condition_evidence':('basis','description_sha256','description_damage_flags','independently_verified'),
+        'research_condition_evidence':('version','status','basis','binding','fingerprint','http_status',
+            'checked_at','description_sha256','description_damage_flags','independently_verified'),
+    }.items():
+        if k in car:out[k]=metadata(car[k],allowed)
+    for k in ('observed_asking_display','research_asking_display'):
+        if k in out and isinstance(car[k].get('state_regular_price'),dict):
+            out[k]['state_regular_price']=metadata(car[k]['state_regular_price'],('amount','currency'))
+    for k in ('field_conflicts','research_field_conflicts','price_conflicts'):
+        if k in car:
+            out[k]=metadata({'codes':car[k]},('codes',)).get('codes',[])
+            if car[k] and not out[k]:out[k]=['unclassified_observed_conflict']
+    evidence=car.get('research_evidence')
+    if isinstance(evidence,dict):
+        out['research_evidence']={k:metadata(v,('basis','independently_verified','title_sha256',
+            'description_sha256','description_damage_flags','description_basis'))
+            for k,v in evidence.items() if k in ('generation','generation_variant','condition','body')}
+    dates=car.get('source_date_observations')
+    if isinstance(dates,dict):
+        out['source_date_observations']=metadata(dates,('identity_matches','issues','origin','path'))
+        values=dates.get('values') or {}
+        out['source_date_observations']['values']={k:{'epoch':v['epoch']}
+            for k,v in values.items() if k in ('createdTime','lastRefreshTime','pushupTime','validToTime')
+            and isinstance(v,dict) and type(v.get('epoch')) is int}
+    out['photos']=[]
+    for url in car.get('photos',[])[:30]:
+        try:
+            u=urlsplit(url)
+            if (u.scheme=='https' and u.hostname and (u.hostname=='olxcdn.com' or u.hostname.endswith('.olxcdn.com'))
+                    and not (u.username or u.password or u.port or u.fragment)):out['photos'].append(url)
+        except (ValueError,TypeError):continue
+    return out
+
+
+def save_detail_state(engine,token,source_id,changes):
+    """Persist source refresh work separately from the attempt/delivery ledger."""
+    with Session(engine) as db:
+        row=db.get(SourceProbe,STATE,with_for_update=True)
+        if not row or row.status!='active' or row.result.get('lease')!=token:return False
+        states=copy.deepcopy(row.result.get('detail_states',{}))
+        states[source_id]={**states.get(source_id,{}),**changes}
+        row.result={**row.result,'detail_states':states};db.commit();return True
+
+
+def source_receipt(engine,token,source_id,url,status,body=None,*,truncated=False,redirect=None):
+    """Commit observed bytes; transport exceptions leave bytes unknown."""
+    with Session(engine) as db:
+        row=db.get(SourceProbe,STATE,with_for_update=True)
+        if not row or row.result.get('lease')!=token:return False
+        receipt={'source':'olx','id':source_id,'url':url,'at':time.time(),
+                 'status':status,'bytes':len(body) if body is not None else None,
+                 'truncated':truncated}
+        if redirect:receipt['observed_locale_redirect']=redirect
+        row.result={**row.result,
+            'actual_bytes':row.result.get('actual_bytes',0)+(len(body) if body is not None else 0),
+            'unknown_byte_receipts':row.result.get('unknown_byte_receipts',0)+int(body is None),
+            'source_receipts':(row.result.get('source_receipts',[])+[receipt])[-120:]}
+        db.commit();return True
+
+
+def locale_redirect(url,location):
+    """Accept only an explicit observed redirect to the same ad's UK route."""
+    if not isinstance(location,str) or not 1<=len(location)<=2048:return None
+    resolved=urljoin(url,location)
+    if not same_detail_url(url,resolved) or url==resolved:return None
+    before=urlsplit(url);after=urlsplit(resolved)
+    return resolved if (before.path.startswith('/d/obyavlenie/')
+        and after.path==before.path.replace('/d/','/d/uk/',1)) else None
+
+
+def fetch_current_detail(engine,settings,token,state,card,fetch,last,deadline):
+    """At most two reserved GETs per episode, no implicit redirects/retries.
+
+    This refreshes only the reviewed static initial candidate list. It is not
+    continuous discovery. The existing nightly detail_change event policy is
+    reused; no research SQLite, shared RIA state or paid transport is opened.
+    """
+    record=detail_state(engine,card['id']);now=time.time()
+    if record.get('status')=='unavailable' or record.get('next_at',0)>now:return None
+    previous=record.get('listing')
+    if previous and 0<=now-previous.get('checked_at',0)<=DETAIL_MAX_AGE:
+        return previous
+    attempts=record.get('attempts',0)
+    if record.get('status') in ('stored','cooldown'):attempts=0
+    url=record.get('resolved_url',card['url'])
+    while attempts<2:
+        if last[0] is not None:time.sleep(max(0,4-(time.monotonic()-last[0])))
+        # Leave room for one complete bounded request; do not extend the lease.
+        if (time.monotonic()+SOURCE_TIMEOUT>deadline
+                or time.time()+SOURCE_TIMEOUT>state['cycle_until']
+                or not current_lease(engine,token)
+                or not reserve_get(engine,settings,token,state)):return None
+        if not current_search(engine,settings,fingerprint=state['fingerprint']):return None
+        attempts+=1
+        if not save_detail_state(engine,token,card['id'],{'status':'fetching','attempts':attempts,
+                'next_at':time.time()+TRANSIENT_RETRY_SECONDS,'resolved_url':url}):return None
+        if not current_lease(engine,token) or not current_search(engine,settings,fingerprint=state['fingerprint']):return None
+        try:
+            response=fetch(url)
+        except (TimeoutError,OSError,httpx.TimeoutException,httpx.TransportError) as exc:
+            last[0]=time.monotonic()
+            source_receipt(engine,token,card['id'],url,type(exc).__name__)
+            save_detail_state(engine,token,card['id'],{'status':'retry' if attempts<2 else 'cooldown',
+                'next_at':time.time()+(TRANSIENT_RETRY_SECONDS if attempts<2 else FAILED_EPISODE_COOLDOWN),
+                'last_error':'transient_'+type(exc).__name__})
+            return None
+        last[0]=time.monotonic()
+        if not isinstance(response,(tuple,list)) or len(response) not in (3,4):raise ValueError('invalid_source_response')
+        code,data,truncated=response[:3];location=response[3] if len(response)==4 else None
+        redirect=locale_redirect(url,location) if code==302 else None
+        source_receipt(engine,token,card['id'],url,code,data,truncated=truncated,redirect=redirect)
+        if code in (401,403,429):raise ValueError('source_hold_http_'+str(code))
+        if code==302:
+            if not redirect or attempts>=2 or truncated:raise ValueError('unverified_or_repeated_source_redirect')
+            save_detail_state(engine,token,card['id'],{'resolved_url':redirect})
+            url=redirect
+            continue
+        if code in (408,500,502,503,504):
+            save_detail_state(engine,token,card['id'],{'status':'retry' if attempts<2 else 'cooldown',
+                'next_at':time.time()+(TRANSIENT_RETRY_SECONDS if attempts<2 else FAILED_EPISODE_COOLDOWN),
+                'last_error':'transient_http_'+str(code)})
+            return None
+        if code in (404,410):
+            save_detail_state(engine,token,card['id'],{'status':'unavailable','last_error':'http_'+str(code)})
+            return None
+        if code!=200 or truncated or len(data)>DETAIL_CAP:raise ValueError('incomplete_source_response')
+        if not current_lease(engine,token):return None
+        car=sanitized_detail(enrich(data,parse_detail_snapshot(data,fetched_at=int(time.time()),truncated=False))['listing'])
+        if car['id']!=card['id'] or car.get('source')!='olx' or not same_detail_url(car['url'],card['url']):raise ValueError('source_identity_mismatch')
+        first=record.get('first_seen_at',int(time.time()))
+        change=detail_change(previous,car,first_seen=first)
+        if not save_detail_state(engine,token,card['id'],{'status':'stored','attempts':0,
+            'next_at':time.time()+interval(),'first_seen_at':first,'listing':car,
+            'changes':change,'last_error':None}):return None
+        return car
+    return None
 
 
 def caption(car,price,assessment,method):
@@ -259,7 +465,9 @@ def assessment_for(car,profile,search,now):
     price=normalize(car,quote,now)
     if price['status']!='ready' or not filter_reasons(car,search['filters'],quote,now)['match']:return None
     if (not re.fullmatch('vin-sha256:[a-f0-9]{64}',car.get('vehicle_key') or '')
-            or any(c.get('vehicle_key')==car['vehicle_key'] for c in profile['holdout'])):return None
+            or any((c.get('source'),c.get('id'))==(car.get('source'),car.get('id'))
+                or c.get('vehicle_key')==car['vehicle_key']
+                for c in profile['reference']+profile['holdout'])):return None
     checked=stability(car,profile['reference'],quote,int(now),minimum=MINIMUM)
     a=checked['assessment'];method=profile['selected_method']
     if a['status']!='experimental_asking_estimate' or not checked['methods'][method]['stable_under_omission']:return None
@@ -290,12 +498,13 @@ def send_card(engine,settings,token,state,car,profile,sender):
         except IntegrityError:db.rollback();return False
     response={'not_attempted':True};method=None
     try:
-        if current_search(engine,settings,fingerprint=state['fingerprint']):
+        if current_lease(engine,token) and current_search(engine,settings,fingerprint=state['fingerprint']):
             r=sender(settings.bot_token,'getChat',{'chat_id':settings.admin_telegram_id},timeout=5)
             chat=r.get('result',{}) if isinstance(r,dict) else {}
             if (r.get('ok') is True and type(chat.get('id')) is int and chat['id']==settings.admin_telegram_id
                     and chat.get('type')=='private' and current_search(engine,settings,fingerprint=state['fingerprint'])
-                    and profile_ready(profile,time.time()) and time.time()-car['checked_at']<=DETAIL_MAX_AGE):
+                    and current_lease(engine,token) and profile_ready(profile,time.time())
+                    and time.time()-car['checked_at']<=DETAIL_MAX_AGE):
                 text=caption(car,*proof,profile['selected_method'])
                 payload={'chat_id':settings.admin_telegram_id,'parse_mode':'HTML',
                     'reply_markup':{'inline_keyboard':[[{'text':'Переглянути на OLX','url':car['url']}]]}}
@@ -326,33 +535,20 @@ def tick(engine,settings,fetch=None,sender=telegram_setup.call,profile=None):
     if not profile_ready(profile,time.time()):return 'technical_data_pending'
     initialize(engine,settings,search);owned=claim(engine)
     if not owned:return 'paused_finished_or_busy'
-    token,state=owned;last=None
+    token,state=owned;last=[None];deadline=time.monotonic()+MAX_CYCLE_SECONDS
     try:
-        fetch=source_fetch if fetch is None else fetch
+        fetch=(lambda url:source_fetch(url,include_location=True)) if fetch is None else fetch
         for card in profile.get('candidate_urls',[]):
             with Session(engine) as db:
                 control=db.get(SourceProbe,STATE)
                 if not control or control.result.get('attempts',0)>=MAX_INITIAL:break
-            if card['id'] in state['seen']:continue
-            if not public_detail_url(card['url']) or not reserve_get(engine,settings,token,state):break
-            if last is not None:time.sleep(max(0,4-(time.monotonic()-last)))
-            if not current_search(engine,settings,fingerprint=state['fingerprint']):break
-            code,data,truncated=fetch(card['url']);last=time.monotonic()
-            with Session(engine) as db:
-                row=db.get(SourceProbe,STATE,with_for_update=True)
-                row.result={**row.result,'actual_bytes':row.result['actual_bytes']+len(data)};db.commit()
-            if code in (401,403,429):raise ValueError('source_hold_http_'+str(code))
-            if code in (404,410):
-                state['seen'].append(card['id'])
-                with Session(engine) as db:
-                    row=db.get(SourceProbe,STATE,with_for_update=True)
-                    row.result={**row.result,'seen':state['seen']};db.commit()
-                continue
-            if code!=200 or truncated or len(data)>DETAIL_CAP:raise ValueError('incomplete_source_response')
-            car=enrich(data,parse_detail_snapshot(data,fetched_at=int(time.time()),truncated=False))['listing']
-            if car['id']!=card['id'] or not same_detail_url(car['url'],card['url']):raise ValueError('source_identity_mismatch')
+                if legacy.prior_attempt(db,card['id'],settings.admin_telegram_id):continue
+            if not public_detail_url(card['url']):raise ValueError('unobserved_public_detail_url')
+            if not current_lease(engine,token) or not current_search(engine,settings,fingerprint=state['fingerprint']):break
+            car=fetch_current_detail(engine,settings,token,state,card,fetch,last,deadline)
+            if car is None:continue
             proof=assessment_for(car,profile,search,time.time())
-            state['seen'].append(car['id'])
+            if car['id'] not in state['seen']:state['seen'].append(car['id'])
             state['reviews'].append({'id':car['id'],'checked_at':car['checked_at'],
                 'status':'estimated' if proof else 'Недостатньо даних для оцінки'})
             with Session(engine) as db:
@@ -364,7 +560,8 @@ def tick(engine,settings,fetch=None,sender=telegram_setup.call,profile=None):
         with Session(engine) as db:
             row=db.get(SourceProbe,STATE,with_for_update=True)
             if row:
-                row.status='source_hold' if str(exc).startswith('source_hold') else 'technical_hold'
+                if row.status=='active':
+                    row.status='source_hold' if str(exc).startswith('source_hold') else 'technical_hold'
                 row.result={**row.result,'last_error':str(exc) if isinstance(exc,ValueError) else type(exc).__name__};db.commit()
         LOG.warning('OLX valued owner held (%s)',type(exc).__name__)
     finally:
@@ -375,9 +572,9 @@ def tick(engine,settings,fetch=None,sender=telegram_setup.call,profile=None):
     return 'cycle_complete'
 
 
-def source_fetch(url):
+def source_fetch(url,*,include_location=False):
     if not public_detail_url(url):raise ValueError('unobserved_public_detail_url')
-    deadline=time.monotonic()+20
+    deadline=time.monotonic()+SOURCE_TIMEOUT
     with httpx.Client(timeout=httpx.Timeout(5,connect=5),follow_redirects=False,
             headers={'User-Agent':'AutoDeal-OwnerTest/1.0 (bounded public OLX pages)'}) as client:
         with client.stream('GET',url) as response:
@@ -385,11 +582,15 @@ def source_fetch(url):
             for chunk in response.iter_bytes():
                 if time.monotonic()>deadline:raise TimeoutError('source_deadline')
                 body.extend(chunk[:DETAIL_CAP+1-len(body)])
-                if len(body)>DETAIL_CAP:return response.status_code,bytes(body[:DETAIL_CAP]),True
+                if len(body)>DETAIL_CAP:
+                    result=(response.status_code,bytes(body[:DETAIL_CAP]),True)
+                    return result+(response.headers.get('Location'),) if include_location else result
+            if time.monotonic()>deadline:raise TimeoutError('source_deadline')
             if response.status_code==200 and any(m in bytes(body).lower() for m in
                     (b'challenge-platform',b'robot verification',b'captcha-page')):
                 raise ValueError('source_hold_challenge')
-            return response.status_code,bytes(body),False
+            result=(response.status_code,bytes(body),False)
+            return result+(response.headers.get('Location'),) if include_location else result
 
 
 async def run(engine,settings,stop):

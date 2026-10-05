@@ -1,0 +1,89 @@
+{
+  "final_code_tests": {
+    "backend_olx_and_offline": {
+      "passed": 566,
+      "subtests": 150,
+      "seconds": 41.98
+    },
+    "standalone_pure_market": {
+      "passed": 20,
+      "subtests": 8,
+      "seconds": 0.83
+    },
+    "saved_real_receipt_assertions": {
+      "passed": 2,
+      "seconds": 0.16
+    },
+    "unique_total": 588,
+    "subtests_total": 158
+  },
+  "barrier": "socket/DNS blocked before imports/collection; temporary fixture SQLite; no .env or production database",
+  "standalone_app_imported": false,
+  "backend_fixture_settings_module_imported": true,
+  "live_source": {
+    "gets": 3,
+    "bytes": 4714020,
+    "http200": 3,
+    "fx_gets": 0,
+    "paid_ria_calls": 0,
+    "telegram_calls": 0
+  },
+  "market": {
+    "replayed_loaded_saved_ads": 74,
+    "fresh_details": 3,
+    "estimates": 0,
+    "max_exploratory_analogs": 3,
+    "required": 8,
+    "estimated_controls": 0,
+    "required_controls": 3,
+    "selected_method": null,
+    "technical_ready": false
+  },
+  "earlier_failed_reproductions": [
+    {
+      "group": "provider_condition_modification_binding",
+      "cases": 11,
+      "failures": 7,
+      "errors": 3,
+      "then_fixed": true
+    },
+    {
+      "group": "frozen_role_commit_time",
+      "cases": 3,
+      "failures": 3,
+      "then_fixed": true
+    },
+    {
+      "group": "owner_source_ledger_lease",
+      "cases": 12,
+      "failures": 7,
+      "then_fixed": true
+    },
+    {
+      "group": "cross_source_evaluation",
+      "cases": 6,
+      "failures": 3,
+      "errors": 1,
+      "then_fixed": true
+    },
+    {
+      "group": "missing_engine_code_compatibility",
+      "cases": 13,
+      "failures": 2,
+      "then_fixed": true
+    }
+  ],
+  "harness_failures": [
+    {
+      "reason": "offline test_prototype top-level module requires explicit PYTHONPATH=.:experiments/olx_offline",
+      "resolved_without_product_code_change": true
+    },
+    {
+      "reason": "standalone no-app assertion cannot be combined with legacy Settings-importing fixture suite",
+      "resolved_by_separate_processes_no_weakened_assertion": true
+    }
+  ],
+  "warning": "Starlette testclient/httpx deprecation only,1 warning",
+  "production_mutations": 0,
+  "new_owner_permission_pending": true
+}

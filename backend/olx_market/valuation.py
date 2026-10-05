@@ -77,6 +77,13 @@ def estimate(target,candidates,quote,now,*,minimum=8):
             if (c.get('modification') and target.get('modification')
                     and c['modification'].casefold()!=target['modification'].casefold()):
                 why.append('mismatch_modification')
+            # A known engine code makes that distinction material. Unknown
+            # codes cannot be filled from the other side to reach the minimum.
+            if any(str(v or '').startswith('engine_code:') for v in
+                    (c.get('modification'),target.get('modification'))):
+                if not all(str(v or '').startswith('engine_code:') for v in
+                        (c.get('modification'),target.get('modification'))):
+                    why.append('modification_compatibility_pending')
             if 'auto_ria' in (c.get('source'),target.get('source')):
                 if (not c.get('generation_variant') or not target.get('generation_variant')
                         or c['generation_variant']!=target['generation_variant']):why.append('mismatch_generation_variant')

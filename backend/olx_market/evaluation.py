@@ -22,12 +22,12 @@ def stability(target,reference,quote,now,*,minimum=8):
          'max_allowed_leave_one_shift_percent':str(STABILITY_LIMIT_PERCENT),
          'leave_one_out':[],'methods':{},'physical_independence_verified':False}
     if base['status']!='experimental_asking_estimate':return out
-    used={c['id'] for c in base['used_comparables']}
+    used={(c['source'],c['id']) for c in base['used_comparables']}
     # n-1 is ONLY a sensitivity diagnostic; it cannot authorize n-1 delivery.
-    for id in sorted(used):
-        reduced=[c for c in reference if c.get('id')!=id]
+    for source,id in sorted(used):
+        reduced=[c for c in reference if (c.get('source'),c.get('id'))!=(source,id)]
         a=estimate(target,reduced,quote,now,minimum=max(3,minimum-1))
-        out['leave_one_out'].append({'omitted_id':id,'status':a['status'],
+        out['leave_one_out'].append({'omitted_source':source,'omitted_id':id,'status':a['status'],
                                     'methods':a['methods'],'reasons':a['reasons']})
     with localcontext() as ctx:
         ctx.prec=50
@@ -47,15 +47,44 @@ def stability(target,reference,quote,now,*,minimum=8):
 
 
 def evaluate_holdout(cars,split,quote,now,*,minimum=8,split_provenance=None):
+    """Keys may be (source, id), 'source:id', or unambiguous legacy bare IDs.
+
+    A shared numeric ID is not a shared listing across marketplaces. Duplicate
+    legacy/namespaced aliases and ambiguous legacy IDs fail closed rather than
+    inflating loaded/frozen counts or moving a reference into the controls.
+    """
     if any(v not in ('reference','holdout') for v in split.values()):raise ValueError('Explicit frozen split required')
-    known={}
+    qualified={};legacy=set()
+    for k in split:
+        identity=None
+        if isinstance(k,tuple):
+            if len(k)!=2 or not all(isinstance(v,str) for v in k):raise ValueError('Explicit source and ID membership required')
+            identity=k
+        elif isinstance(k,str):
+            source,sep,id=k.partition(':')
+            if sep and source in ('olx','auto_ria'):
+                if not id:raise ValueError('Explicit source and ID membership required')
+                identity=(source,id)
+            else:legacy.add(k)
+        else:raise ValueError('Explicit source and ID membership required')
+        if identity:
+            if identity in qualified:raise ValueError('Ambiguous duplicate frozen membership aliases')
+            qualified[identity]=k
+    if any(id in legacy for source,id in qualified):raise ValueError('Ambiguous duplicate frozen membership aliases')
+    sources={}
+    for c in cars:sources.setdefault(c['id'],set()).add(c.get('source'))
+    if any(len(sources.get(k,set()))>1 for k in legacy):
+        raise ValueError('Ambiguous legacy source ID membership')
+    known={};roles={}
     for c in cars:
-        if c['id'] not in split:raise ValueError('Every observation needs frozen membership')
         key=(c.get('source'),c['id'])
         if key in known:raise ValueError('Resolve duplicate versions before evaluation')
+        membership_key=qualified.get(key,c['id'])
+        if membership_key not in split:raise ValueError('Every observation needs frozen membership')
+        roles[key]=split[membership_key]
         known[key]=c
-    reference=[c for c in cars if split[c['id']]=='reference']
-    control=[c for c in cars if split[c['id']]=='holdout']
+    reference=[c for key,c in known.items() if roles[key]=='reference']
+    control=[c for key,c in known.items() if roles[key]=='holdout']
     # A later discovered known crosspost cannot leak between split partitions.
     control_keys={c['vehicle_key'] for c in control if c.get('vehicle_key')}
     reference=[c for c in reference if not c.get('vehicle_key') or c['vehicle_key'] not in control_keys]
@@ -73,10 +102,11 @@ def evaluate_holdout(cars,split,quote,now,*,minimum=8,split_provenance=None):
                 error[m]={'absolute_usd':str(delta),'absolute_percent':str(delta/benchmark*100)}
                 errors[m].append((delta,delta/benchmark*100))
         comparable_ids=[v['id'] for v in review['assessment']['used_comparables']]
-        rows.append({'target_id':c['id'],'benchmark_kind':'withheld_asking_price_not_sale_or_fair_value',
+        rows.append({'target_source':c.get('source'),'target_id':c['id'],'benchmark_kind':'withheld_asking_price_not_sale_or_fair_value',
                      'benchmark_usd':str(benchmark) if benchmark is not None else None,
                      'eligible':not reasons,'error_against_asking':error,
                      'comparison_group_ids':comparable_ids,
+                     'comparison_group_keys':[{'source':v['source'],'id':v['id']} for v in review['assessment']['used_comparables']],
                      'same_comparable_group_for_all_methods':(
                          set(error)==set(review['assessment']['methods']) if error else None),
                      'review':review})

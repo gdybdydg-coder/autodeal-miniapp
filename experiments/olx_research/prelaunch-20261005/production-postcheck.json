@@ -1,0 +1,58 @@
+{
+  "id": "4fb6529f-abff-4e05-bb1c-c353deca41ac",
+  "timestamp": "2026-10-05T17:49:06.114183084Z",
+  "release": "2d81e13ab04077133eca0a668a575e2d571b6cd7",
+  "running": true,
+  "pending_jobs_by_reason": {},
+  "process_configuration": {
+    "active_window_enabled": false,
+    "automobile_admin_copies_enabled": false,
+    "delivery_enabled": true,
+    "full_scan_enabled": false,
+    "html_shadow_configured": true,
+    "manual_payment_notices_enabled": true,
+    "monitor_enabled": true,
+    "provider_valuation_enabled": true,
+    "recent_publications_enabled": true,
+    "release": "2d81e13ab04077133eca0a668a575e2d571b6cd7",
+    "shared_distribution_enabled": true,
+    "strict_paid_sources": true,
+    "valuation_selection_status": "api_range_selection_native_parity_unverified"
+  },
+  "schedule": [
+    {
+      "end": "08:00",
+      "interval_seconds": 3600,
+      "name": "night",
+      "requested_interval_seconds": 3600,
+      "start": "23:00"
+    },
+    {
+      "end": "18:00",
+      "interval_seconds": 110,
+      "name": "day",
+      "requested_interval_seconds": 110,
+      "start": "08:00"
+    },
+    {
+      "end": "23:00",
+      "interval_seconds": 60,
+      "name": "evening",
+      "requested_interval_seconds": 60,
+      "start": "18:00"
+    }
+  ],
+  "limits": {
+    "daily": 90000,
+    "hourly": 4500,
+    "total": 1102160
+  },
+  "last_owner_accepted_at": 1791220854.475308,
+  "last_client_accepted_at": 1791222527.4072952,
+  "current_paid_clients": 5,
+  "paid_access_blocked": 0,
+  "read_only": true,
+  "production_mutations": 0,
+  "telegram_calls_by_this_task": 0,
+  "paid_ria_calls_by_this_task": 0
+}

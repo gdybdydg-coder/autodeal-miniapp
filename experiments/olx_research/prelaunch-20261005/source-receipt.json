@@ -1,0 +1,53 @@
+{
+  "reservation_commit": "072c02e545771eee9aea3ebc74807bde71031a41",
+  "calls": [
+    {
+      "id": "936658970",
+      "url": "https://www.olx.ua/d/uk/obyavlenie/skoda-octavia-a5-1-6-tdi-ID11o7MK.html",
+      "cap_bytes": 2097152,
+      "started_at": 1791222442.0243752,
+      "state": "finished",
+      "http": 200,
+      "curl_exit": 0,
+      "bytes": 1574890,
+      "finished_at": 1791222450.6340628,
+      "sha256": "03dcd1e8800d876299c83ff2775677534802a92e859b0263735ddf8ab8ce0cc5",
+      "parsed": true
+    },
+    {
+      "id": "936768428",
+      "url": "https://www.olx.ua/d/uk/obyavlenie/skoda-octavia-a5-ID11oAgc.html",
+      "cap_bytes": 2097152,
+      "started_at": 1791222454.6343617,
+      "state": "finished",
+      "http": 200,
+      "curl_exit": 0,
+      "bytes": 1569850,
+      "finished_at": 1791222463.4271586,
+      "sha256": "2c9cdf7227f5bf3839cc3c31cbaf3497a5553915bc427924c627f42783677644",
+      "parsed": true
+    },
+    {
+      "id": "933340614",
+      "url": "https://www.olx.ua/d/uk/obyavlenie/skoda-octavia-a5-2007-r-v-ID11acvS.html",
+      "cap_bytes": 2097152,
+      "started_at": 1791222467.4313328,
+      "state": "finished",
+      "http": 200,
+      "curl_exit": 0,
+      "bytes": 1569280,
+      "finished_at": 1791222476.094563,
+      "sha256": "1f9797299239c0816b72cf435ddf3232552f311fa70b210eb52e9cd550e4aeec",
+      "parsed": true
+    }
+  ],
+  "started_at": 1791222442.0242925,
+  "source_hold": null,
+  "telegram_calls": 0,
+  "paid_ria_calls": 0,
+  "fx_calls": 0,
+  "retry_count": 0,
+  "finished_at": 1791222476.3115463,
+  "actual_bytes": 4714020,
+  "actual_gets": 3
+}

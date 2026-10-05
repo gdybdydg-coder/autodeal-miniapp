@@ -1,0 +1,227 @@
+[
+  {
+    "source": "olx",
+    "id": "933340614",
+    "url": "https://www.olx.ua/d/uk/obyavlenie/skoda-octavia-a5-2007-r-v-ID11acvS.html",
+    "title": "Skoda Octavia a5 2007 р.в.",
+    "price": "6000",
+    "currency": "USD",
+    "brand": "Skoda",
+    "model": "Octavia",
+    "generation": "A5",
+    "generation_variant": null,
+    "body": "wagon",
+    "fuel": "gas_petrol",
+    "fuel_subtype": null,
+    "transmission": "manual",
+    "engine_cc": 1600,
+    "drive_type": "front",
+    "power_hp": 102,
+    "modification": null,
+    "year": 2007,
+    "mileage_km": 221000,
+    "region": "Вінницька область",
+    "city": null,
+    "research_condition": "seller_declared_running",
+    "checked_at": 1791222476,
+    "category": "whole_passenger_car",
+    "vehicle_key": null,
+    "identity_review": null,
+    "eligibility_review": {
+      "status": "allowed",
+      "reasons": [
+        "customs_cleared_declared",
+        "no_forbidden_offer_evidence"
+      ],
+      "fingerprint": "21ce2c0370da1a0591b35828e893dbc122eebe4e00e6c2fc2993c56d212a7fce",
+      "customs_status": "cleared_declared",
+      "customs_independently_verified": false,
+      "description_complete": true,
+      "version": "olx-eligibility-v2"
+    },
+    "observed_asking_display": {
+      "status": "corroborated_display",
+      "reasons": [],
+      "amount": "6000",
+      "currency": "USD",
+      "basis": "complete_visible_detail_and_matching_public_state",
+      "original_seller_currency_verified": false,
+      "full_price_verified": false,
+      "description_reviewed_in_full": true,
+      "limits": [
+        "original_seller_currency_unverified",
+        "first_publication_unverified",
+        "asking_amount_is_not_a_completed_sale_price"
+      ],
+      "state_regular_price": {
+        "amount": "269777",
+        "currency": "UAH"
+      }
+    },
+    "price_review": {
+      "status": "needs_review",
+      "reasons": [
+        "full_price_unconfirmed"
+      ],
+      "version": "price-review-v1",
+      "text_is_not_proof": true
+    },
+    "field_conflicts": [],
+    "price_conflicts": [],
+    "live_checked_at": 1791222476,
+    "valuation_status": "Недостатньо даних для оцінки",
+    "market_reference_usd": null,
+    "benefit_percent": null
+  },
+  {
+    "source": "olx",
+    "id": "936658970",
+    "url": "https://www.olx.ua/d/uk/obyavlenie/skoda-octavia-a5-1-6-tdi-ID11o7MK.html",
+    "title": "Skoda octavia a5 1.6 tdi",
+    "price": "6500",
+    "currency": "USD",
+    "brand": "Skoda",
+    "model": "Octavia",
+    "generation": "A5",
+    "generation_variant": null,
+    "body": "wagon",
+    "fuel": "diesel",
+    "fuel_subtype": null,
+    "transmission": "manual",
+    "engine_cc": 1600,
+    "drive_type": "front",
+    "power_hp": 105,
+    "modification": null,
+    "year": 2010,
+    "mileage_km": 270000,
+    "region": "Хмельницька область",
+    "city": null,
+    "research_condition": "running_reported_damage:body_dents+windshield_crack",
+    "checked_at": 1791222450,
+    "category": "whole_passenger_car",
+    "vehicle_key": null,
+    "identity_review": null,
+    "eligibility_review": {
+      "status": "allowed",
+      "reasons": [
+        "customs_cleared_declared",
+        "no_forbidden_offer_evidence"
+      ],
+      "fingerprint": "401c469da38a9d71c361895c3314395061ac6a14d63337e7eb75b40965990a2b",
+      "customs_status": "cleared_declared",
+      "customs_independently_verified": false,
+      "description_complete": true,
+      "version": "olx-eligibility-v2"
+    },
+    "observed_asking_display": {
+      "status": "corroborated_display",
+      "reasons": [],
+      "amount": "6500",
+      "currency": "USD",
+      "basis": "complete_visible_detail_and_matching_public_state",
+      "original_seller_currency_verified": false,
+      "full_price_verified": false,
+      "description_reviewed_in_full": true,
+      "limits": [
+        "original_seller_currency_unverified",
+        "first_publication_unverified",
+        "asking_amount_is_not_a_completed_sale_price"
+      ],
+      "state_regular_price": {
+        "amount": "292259",
+        "currency": "UAH"
+      }
+    },
+    "price_review": {
+      "status": "needs_review",
+      "reasons": [
+        "full_price_unconfirmed"
+      ],
+      "version": "price-review-v1",
+      "text_is_not_proof": true
+    },
+    "field_conflicts": [],
+    "price_conflicts": [],
+    "live_checked_at": 1791222450,
+    "valuation_status": "Недостатньо даних для оцінки",
+    "market_reference_usd": null,
+    "benefit_percent": null
+  },
+  {
+    "source": "olx",
+    "id": "936768428",
+    "url": "https://www.olx.ua/d/uk/obyavlenie/skoda-octavia-a5-ID11oAgc.html",
+    "title": "Skoda Octavia A5",
+    "price": "5100",
+    "currency": "USD",
+    "brand": "Skoda",
+    "model": "Octavia",
+    "generation": "A5",
+    "generation_variant": null,
+    "body": "wagon",
+    "fuel": "gas_petrol",
+    "fuel_subtype": null,
+    "transmission": "manual",
+    "engine_cc": 1600,
+    "drive_type": "front",
+    "power_hp": 102,
+    "modification": null,
+    "year": 2005,
+    "mileage_km": 254000,
+    "region": "Хмельницька область",
+    "city": null,
+    "research_condition": "seller_declared_running",
+    "checked_at": 1791222463,
+    "category": "whole_passenger_car",
+    "vehicle_key": null,
+    "identity_review": null,
+    "eligibility_review": {
+      "status": "allowed",
+      "reasons": [
+        "customs_cleared_declared",
+        "no_forbidden_offer_evidence"
+      ],
+      "fingerprint": "9b494e4e9a6209e5059287c56385b70b1cd0f1af2ce8b6998b5b1c96eec1d337",
+      "customs_status": "cleared_declared",
+      "customs_independently_verified": false,
+      "description_complete": true,
+      "version": "olx-eligibility-v2"
+    },
+    "observed_asking_display": {
+      "status": "needs_review",
+      "reasons": [
+        "ordinary_sale_not_corroborated",
+        "visible_sale_terms_missing_or_conflicting"
+      ],
+      "amount": "5100",
+      "currency": "USD",
+      "basis": "complete_visible_detail_and_matching_public_state",
+      "original_seller_currency_verified": false,
+      "full_price_verified": false,
+      "description_reviewed_in_full": true,
+      "limits": [
+        "original_seller_currency_unverified",
+        "first_publication_unverified",
+        "asking_amount_is_not_a_completed_sale_price"
+      ],
+      "state_regular_price": {
+        "amount": "229311",
+        "currency": "UAH"
+      }
+    },
+    "price_review": {
+      "status": "needs_review",
+      "reasons": [
+        "full_price_unconfirmed"
+      ],
+      "version": "price-review-v1",
+      "text_is_not_proof": true
+    },
+    "field_conflicts": [],
+    "price_conflicts": [],
+    "live_checked_at": 1791222463,
+    "valuation_status": "Недостатньо даних для оцінки",
+    "market_reference_usd": null,
+    "benefit_percent": null
+  }
+]

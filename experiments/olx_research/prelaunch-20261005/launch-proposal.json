@@ -1,0 +1,82 @@
+{
+  "proposal_id": "olx-owner-only-prelaunch-20261005-2034-v1",
+  "status": "not_ready_pending_verified_market_data_and_new_owner_confirmation",
+  "approved": false,
+  "technical_ready": false,
+  "owner_permission": "new_explicit_confirmation_required",
+  "client_permission": false,
+  "runtime_changes_now": false,
+  "recipient_policy": "exactly_one_protected_configured_owner_private_chat_verified_before_send",
+  "search_id": 4,
+  "search_fingerprint": "aa3dc66cadd6d6343f55f3930823173faf45741059cac1968b66a411b8a99be2",
+  "required_access": [
+    "current_genuine_owner_confirmed_payment",
+    "active_owned_pinned_search",
+    "ready_without_stop",
+    "matching_unchanged_filters",
+    "olx_not_stopped"
+  ],
+  "filters": {
+    "price_min_usd": 1000,
+    "price_max_usd": 7000,
+    "regions": [
+      "Вінницька",
+      "Тернопільська",
+      "Хмельницька",
+      "Чернівецька"
+    ],
+    "min_discount_percent": 10
+  },
+  "mode": "initial_static_reviewed_canary_not_continuous_discovery",
+  "message_attempt_cap": 3,
+  "duration_seconds": 86400,
+  "schedule": {
+    "timezone": "Europe/Kyiv",
+    "08:00-23:00": 600,
+    "23:00-08:00": 3600
+  },
+  "budget": {
+    "source_gets_hourly": 12,
+    "source_gets_daily": 60,
+    "source_bytes_daily": 167772160,
+    "detail_bytes_cap": 2097152,
+    "source_timeout_seconds": 20,
+    "source_pause_seconds": 4,
+    "iteration_seconds": 60,
+    "controlled_retry_maximum": 1,
+    "paid_ria_calls": 0
+  },
+  "readiness_requirements": [
+    "eight_or_more_compatible_independently_reviewed_current_reference_vehicles",
+    "three_or_more_separate_estimable_frozen_asking_controls",
+    "method_chosen_by_control_errors_not_profit_count",
+    "stable_omission_diagnostics",
+    "source_channel_review",
+    "new_explicit_permission_for_this_exact_trial"
+  ],
+  "stop_commands": [
+    "/olx_stop",
+    "/stop"
+  ],
+  "non_stop_command": "/olx_status",
+  "future_configuration": {
+    "OLX_OWNER_FEED_ENABLED": "first_false_then_true_only_after_verification_and_confirmation",
+    "OLX_OWNER_FEED_SEARCH_ID": 4,
+    "OLX_OWNER_FEED_UNTIL": "explicit_future_deadline_no_more_than_24h",
+    "OLX_OWNER_BATCH_ENABLED": false,
+    "OLX_OWNER_CANARY_ENABLED": false,
+    "OLX_RIA_PROBE_ENABLED": false
+  },
+  "future_profile": "backend/olx_owner_profile.json_not_created_or_installed_in_this_task",
+  "future_files_to_transfer": [
+    "backend/olx_market/ria_reference.py",
+    "backend/olx_market/evaluation.py",
+    "backend/olx_market/valuation.py",
+    "backend/olx_owner_feed.py"
+  ],
+  "ria_configuration_and_state_changes": false,
+  "unknown_telegram_outcome_policy": "persist_uncertain_and_never_automatic_resend_or_photo_to_text_fallback",
+  "rollback": "disable_only_new_OLX_flag_or_olx_stop_preserve_OLX_ledger_and_all_payment_search_RIA_history",
+  "future_profile_split_key_format": "source_id_v1",
+  "future_reference_adapter_version": "olx-ria-reference-v2"
+}
