@@ -3,7 +3,11 @@
   "night": "2026-10-05-Europe-Kyiv",
   "status": "active",
   "deadline": "2026-10-05T08:00:00+03:00",
-  "lease": null,
+  "lease": {
+    "owner": "night-20261005-0300",
+    "started_at": "2026-10-05T00:06:58Z",
+    "expires_at": "2026-10-05T00:41:58Z"
+  },
   "budget": {
     "olx_get_cap": 60,
     "olx_bytes_cap": 167772160,
