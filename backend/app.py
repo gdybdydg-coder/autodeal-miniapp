@@ -79,6 +79,9 @@ class Settings:
     olx_owner_canary_test_ads_enabled: bool = False
     olx_owner_batch_enabled: bool = False
     olx_owner_batch_until: float = 0
+    olx_owner_feed_enabled: bool = False
+    olx_owner_feed_search_id: int = 0
+    olx_owner_feed_until: float = 0
 
     @classmethod
     def env(cls):
@@ -126,6 +129,9 @@ class Settings:
             olx_owner_canary_test_ads_enabled=os.getenv("OLX_OWNER_CANARY_TEST_ADS_ENABLED") == "true",
             olx_owner_batch_enabled=os.getenv("OLX_OWNER_BATCH_ENABLED") == "true",
             olx_owner_batch_until=float(os.getenv("OLX_OWNER_BATCH_UNTIL", "0") or 0),
+            olx_owner_feed_enabled=os.getenv("OLX_OWNER_FEED_ENABLED") == "true",
+            olx_owner_feed_search_id=int(os.getenv("OLX_OWNER_FEED_SEARCH_ID", "0") or 0),
+            olx_owner_feed_until=float(os.getenv("OLX_OWNER_FEED_UNTIL", "0") or 0),
         )
 
     @property
@@ -227,9 +233,12 @@ def create_app(settings: Settings, engine=None, *, paid_source_only=False):
                 logging.getLogger("uvicorn.error").warning(
                     "AUTO.RIA source comparison unavailable (%s)", type(exc).__name__)
         comparison_task = asyncio.create_task(compare_source_once()) if settings.ria_source_comparison_listing_id else None
-        from . import olx_owner_canary, olx_owner_batch
+        from . import olx_owner_canary, olx_owner_batch, olx_owner_feed
         await asyncio.to_thread(olx_owner_batch.log_status, engine, settings)
-        olx_task = (asyncio.create_task(olx_owner_batch.run(engine, settings, stop))
+        await asyncio.to_thread(olx_owner_feed.log_preflight, engine, settings)
+        olx_task = (asyncio.create_task(olx_owner_feed.run(engine, settings, stop))
+                    if settings.olx_owner_feed_enabled else
+                    asyncio.create_task(olx_owner_batch.run(engine, settings, stop))
                     if olx_owner_batch.enabled(settings) else
                     asyncio.create_task(olx_owner_canary.run(engine, settings, stop))
                     if olx_owner_canary.enabled(settings) else None)
@@ -698,8 +707,10 @@ def create_app(settings: Settings, engine=None, *, paid_source_only=False):
             telegram_setup.call(settings.bot_token, "sendMessage", {"chat_id": uid, "text": text})
             return {"ok": True}
         reminder_reply = await asyncio.to_thread(tariff_reminder_commands.handle, engine, settings, event)
-        from . import olx_owner_canary, olx_owner_batch
-        olx_reply = await asyncio.to_thread(olx_owner_batch.handle, engine, settings, event)
+        from . import olx_owner_canary, olx_owner_batch, olx_owner_feed
+        olx_reply = await asyncio.to_thread(olx_owner_feed.handle, engine, settings, event)
+        if olx_reply is None:
+            olx_reply = await asyncio.to_thread(olx_owner_batch.handle, engine, settings, event)
         if olx_reply is None:
             olx_reply = await asyncio.to_thread(olx_owner_canary.handle, engine, settings, event)
         if olx_reply is not None:

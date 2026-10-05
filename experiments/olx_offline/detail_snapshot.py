@@ -70,11 +70,11 @@ def _asking_display_observation(nodes, raw, *, complete, price_relationship, pri
     params = ad.get('params')
     sale_terms = [x for x in params if isinstance(x, dict) and x.get('key') == 'sale_terms'] if isinstance(params, list) else []
     if (len(sale_terms) != 1 or sale_terms[0].get('normalizedValue') != ['regular_sale']
-            or sale_terms[0].get('value') != 'Звичайний продаж'):
+            or sale_terms[0].get('value') not in ('Звичайний продаж','Простая продажа')):
         reasons.append('ordinary_sale_not_corroborated')
     visible_sale = [n.text().partition(':')[2].strip() for n in nodes if n.tag == 'p'
-                    and n.text().partition(':')[0] == 'Умови продажу']
-    if not visible_sale or any(x != 'Звичайний продаж' for x in visible_sale):
+                    and n.text().partition(':')[0] in ('Умови продажу','Условия продажи')]
+    if not visible_sale or any(x not in ('Звичайний продаж','Простая продажа') for x in visible_sale):
         reasons.append('visible_sale_terms_missing_or_conflicting')
     source_price = ad.get('price')
     if not isinstance(source_price, dict):
@@ -227,6 +227,9 @@ def parse_detail_snapshot(data, *, fetched_at, truncated, fx_quote=None):
     year=v.get('productionDate')
     if isinstance(year,str) and re.fullmatch(r'\d{4}',year):raw['year']=int(year)
     allowed={"Пробіг":'mileage',"Об'єм двигуна":'engine','Тип кузова':'body','Коробка передач':'transmission','Вид палива':'fuel','Умови продажу':'sale_terms','Розмитнена':'customs','Технічний стан':'technical_condition'}
+    allowed.update({'Пробег':'mileage','Объем двигателя':'engine','Объём двигателя':'engine',
+                    'Вид топлива':'fuel','Условия продажи':'sale_terms','Растаможена':'customs',
+                    'Техническое состояние':'technical_condition'})
     fields={};conflicts=[]
     for n in nodes:
         if n.tag!='p':continue
@@ -235,17 +238,17 @@ def parse_detail_snapshot(data, *, fetched_at, truncated, fx_quote=None):
             label=allowed[key];value=value.strip()
             if label in fields and fields[label]!=value:conflicts.append(label)
             fields[label]=value
-    m=re.fullmatch(r'([\d\s]+)\s+тис\.км\.',fields.get('mileage',''))
+    m=re.fullmatch(r'([\d\s]+)\s+(?:тис|тыс)\.км\.',fields.get('mileage',''))
     if m:raw['mileage_km']=int(re.sub(r'\s','',m[1]))*1000
     m=re.fullmatch(r'(\d+(?:[.,]\d+)?)\s*л\.',fields.get('engine',''))
     if m:raw['engine_cc']=int(Decimal(m[1].replace(',','.'))*1000)
-    raw['body']={'Хетчбек':'hatchback','Седан':'sedan','Універсал':'wagon','Унiверсал':'wagon'}.get(fields.get('body'))
-    raw['fuel']={'Бензин':'petrol','Дизель':'diesel','Газ / бензин':'gas_petrol','Гібрид':'hybrid','Електро':'electric'}.get(fields.get('fuel'))
-    raw['transmission']={'Механічна':'manual','Автоматична':'automatic','Варіатор':'cvt','Типтронік':'tiptronic','Роботизована':'robotized'}.get(fields.get('transmission'))
-    if fields.get('customs') in ('Так','Ні'):
-        raw['customs_cleared']=fields['customs']=='Так'
+    raw['body']={'Хетчбек':'hatchback','Хэтчбек':'hatchback','Седан':'sedan','Універсал':'wagon','Унiверсал':'wagon','Универсал':'wagon'}.get(fields.get('body'))
+    raw['fuel']={'Бензин':'petrol','Дизель':'diesel','Газ / бензин':'gas_petrol','Гібрид':'hybrid','Гибрид':'hybrid','Електро':'electric','Электро':'electric'}.get(fields.get('fuel'))
+    raw['transmission']={'Механічна':'manual','Механическая':'manual','Автоматична':'automatic','Автоматическая':'automatic','Варіатор':'cvt','Вариатор':'cvt','Типтронік':'tiptronic','Типтроник':'tiptronic','Роботизована':'robotized','Роботизированная':'robotized'}.get(fields.get('transmission'))
+    if fields.get('customs') in ('Так','Ні','Да','Нет'):
+        raw['customs_cleared']=fields['customs'] in ('Так','Да')
     # Exact observed source wording, not a claim of independently verified state.
-    if fields.get('technical_condition')=='На ходу, технічно справна':
+    if fields.get('technical_condition') in ('На ходу, технічно справна','На ходу, технически исправна'):
         raw['condition']='normal'
     geography, geography_provenance, area_observation, geography_conflicts = _geography(nodes, v)
     raw.update(geography)
