@@ -1,0 +1,19 @@
+{
+  "source": "auto_ria_public_html",
+  "url": "https://auto.ria.com/car/skoda/octavia/a5-fl/1-6d-mt/?page=2",
+  "reserved_commit": "755a9565af178f42b78006b899dc8d8c19dd9726",
+  "started_at": "2026-10-05T19:21:28.603152+00:00",
+  "completed_at": "2026-10-05T19:21:36.338976+00:00",
+  "elapsed_seconds": 7.736,
+  "http_status": 200,
+  "curl_exit": 0,
+  "body_bytes": 162340,
+  "body_sha256": "61be43813cb0f4e36c46ee6ecf76998fc92cab85f7babb5e1502f2c5ab7861bf",
+  "captcha_challenge_indicator": false,
+  "source_hold": null,
+  "paid_api_calls": 0,
+  "get_calls": 1,
+  "telegram_calls": 0,
+  "redirects_followed": 0,
+  "retries": 0
+}

@@ -1,0 +1,32 @@
+{
+  "dataset_kind": "potential_public_catalog_roster_not_admitted_reference",
+  "frozen_at": 1791228634,
+  "membership": {
+    "auto_ria:40219391": "holdout",
+    "auto_ria:40019461": "holdout",
+    "auto_ria:40133416": "holdout",
+    "auto_ria:40391488": "reference",
+    "auto_ria:39809027": "reference",
+    "auto_ria:40343200": "reference",
+    "auto_ria:39790008": "reference",
+    "auto_ria:40177989": "reference",
+    "auto_ria:40271556": "reference",
+    "auto_ria:40133304": "reference",
+    "auto_ria:40271690": "reference",
+    "auto_ria:40082502": "reference",
+    "auto_ria:40434063": "reference",
+    "auto_ria:40420542": "reference"
+  },
+  "membership_sha256": "271bb2fab75a9ffdb95468d6c67ebc5b9873b76fa4c5fa5c9a8b21ca1eef44af",
+  "selection": "Explicit1.6dieselMTFL/105hp vendor catalog traits, years2010-2012 and mileage244-315k, without asking-price or region ranking; three controls fixed before full-card prices/method tuning. Full body/drive/condition/identity must still be verified.",
+  "price_used_in_selection": false,
+  "technical_ready": false,
+  "known_owner_candidates_excluded_from_all_roles": [
+    "olx:936176691",
+    "olx:936658970",
+    "olx:936768428",
+    "olx:933340614",
+    "olx:936749861"
+  ],
+  "asking_price_accuracy_not_sale_accuracy": true
+}
