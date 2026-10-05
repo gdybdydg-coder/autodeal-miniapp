@@ -1,0 +1,23 @@
+{
+  "version": 1,
+  "status": "reserved",
+  "hypothesis": "Previous exact TDI-title search missed cars advertised as A5 diesel or Combi; broad public diesel query may expose more explicitly matching 1600/manual/2009-2012/240-300k cards. Characteristics density only; do not mix engines, fill power, or repeat old GETs.",
+  "owner_authorized": true,
+  "client_authorized": false,
+  "technical_readiness_override": false,
+  "requests": [
+    {
+      "kind": "olx_search_enable",
+      "url": "https://www.olx.ua/transport/legkovye-avtomobili/skoda/q-skoda-octavia-a5-%D0%B4%D0%B8%D0%B7%D0%B5%D0%BB%D1%8C/",
+      "cap": 4194304,
+      "observed_via": "turn44search8 official OLX public indexed broad A5 diesel listing",
+      "hypothesis": "Previous exact TDI-title search missed cars advertised as A5 diesel or Combi; broad public diesel query may expose more explicitly matching 1600/manual/2009-2012/240-300k cards. Characteristics density only; do not mix engines, fill power, or repeat old GETs."
+    }
+  ],
+  "reserved_at": 1791189937,
+  "no_telegram": true,
+  "no_paid_ria": true,
+  "retry_cap": 0,
+  "spacing_seconds": 4,
+  "timeout_seconds": 20
+}
