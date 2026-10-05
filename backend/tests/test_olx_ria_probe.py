@@ -253,3 +253,46 @@ def test_completed_receipt_reports_unknown_bytes_without_spending(live):
     assert summary['ria_calls']==9 and summary['olx_bytes_known']==123
     assert summary['olx_bytes_unknown_receipts']==1
     assert summary['restart_additional_requests']==0 and summary['telegram_calls']==0
+
+
+def test_reviewed_phase4_reads_comparison_cache_without_mutation_and_reuses_calls(live,monkeypatch):
+    from pathlib import Path
+    import json
+    from backend.models import ValuationPeer
+    seed_phase2(live)
+    with Session(live.engine) as db:
+        r=db.get(SourceProbe,probe.STATE);r.status='completed_reference_audit_not_admitted'
+        r.requests=22
+        r.result={**r.result,'phase':3,'calls':[{'kind':'dictionary'} for _ in range(7)]+[{'kind':'ai'} for _ in range(2)]+[{'kind':'detail'} for _ in range(13)],'olx_calls':[{'status':'http_200','bytes':10} for _ in range(3)]}
+        cached={'id':'777','brand_id':70,'model_id':652,'price_usd':7200,'VIN':'PRIVATE'}
+        db.add(ValuationPeer(source_id='777',group_key='test',car=cached,observed_at=live.clock[0],available=True));db.commit()
+    config=json.loads(Path(probe.PLAN).read_text())
+    live.plan.update(phase=4,maximum_olx_gets=4,dictionary_evidence=config['dictionary_evidence'])
+    for row in live.plan['dictionary_evidence'].values():row['checked_at']=live.clock[0]
+    car={'source':'olx','id':'936768428','url':live.plan['candidates'][0]['url'],
+        'brand':'Skoda','model':'Octavia','body':'wagon','fuel':'diesel','transmission':'manual',
+        'year':2010,'mileage_km':270000,'engine_cc':1600,'power_hp':105,'price':'6500','currency':'USD',
+        'checked_at':live.clock[0],'research_condition':'seller_declared_running','generation':'A5',
+        'drive_type':'front','category':'whole_passenger_car','eligibility_review':{'status':'allowed'},
+        'observed_asking_display':{'description_reviewed_in_full':True}}
+    monkeypatch.setattr(probe,'parse_detail_snapshot',lambda *a,**k:{'listing':deepcopy(car)})
+    monkeypatch.setattr(probe,'enrich',lambda raw,p:p)
+    calls=[]
+    def fetch(settings,path,body,params):
+        calls.append(path)
+        assert path=='auto/ai-avarage-price/'
+        assert body['params']['fuelId']=='2' and body['params']['power']==105
+        assert 'generationId' not in body['params']
+        return 200,{'statisticData':[{'type':'avgPrice','price':{'USD':7500}}]},100
+    result=probe.run_once(live.engine,live.settings,live.plan,fetch=fetch,olx_fetch=lambda *a:(200,b'fresh',False))
+    assert result['ria_calls']==23 and result['ai_calls']==3 and result['olx_gets']==4
+    assert result['technical_ready'] is False and result['telegram_calls']==0
+    with Session(live.engine) as db:
+        assert db.get(ValuationPeer,'777').car==cached
+        r=db.get(SourceProbe,probe.STATE)
+        assert 'PRIVATE' not in str(r.result)
+        assert r.result['comparison_cache_audit']['fresh_octavia_rows']==1
+        assert r.result['comparison_cache_audit']['shared_state_writes']==0
+        assert 'generation_mapping' in r.result['observations'][-1]['missing_criteria']
+    assert probe.run_once(live.engine,live.settings,live.plan,fetch=fetch) is None
+    assert len(calls)==1

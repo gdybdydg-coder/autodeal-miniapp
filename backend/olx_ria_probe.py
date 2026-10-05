@@ -64,10 +64,13 @@ def initialize(engine,settings,plan):
             phase3=(plan.get('phase')==3 and previous.result.get('phase')==2
                     and previous.status=='completed_observations_not_admitted'
                     and previous.result.get('error') is None)
+            phase4=(plan.get('phase')==4 and previous.result.get('phase')==3
+                    and previous.status=='completed_reference_audit_not_admitted'
+                    and previous.result.get('error') is None)
             phase2=(plan.get('phase')==2 and previous.result.get('phase',1)==1
                     and previous.status=='technical_hold'
                     and previous.result.get('error')=='dictionary_mapping_ambiguous_or_missing')
-            if ((not phase3 and not phase2) or previous.result.get('phase',1) not in (1,2)
+            if ((not phase4 and not phase3 and not phase2) or previous.result.get('phase',1) not in (1,2,3)
                     or previous.result.get('owner_id')!=settings.admin_telegram_id
                     or previous.result.get('fingerprint')!=plan['fingerprint']):return False
             previous.status='checking'
@@ -199,6 +202,35 @@ def audit_references(engine,settings,plan,fetch):
         LOG.info('OLX RIA reference detail %s',json.dumps(safe,ensure_ascii=False))
 
 
+def audit_saved_comparisons(engine,settings,plan):
+    """Read existing comparison-only cache; never create or refresh shared rows."""
+    if not allowed(engine,settings,plan):raise ValueError('owner_access_or_stop_blocked')
+    from sqlalchemy import select, text
+    from .models import ValuationPeer
+    now=time.time()
+    with Session(engine) as db:
+        if db.bind.dialect.name=='postgresql':db.execute(text("SET LOCAL statement_timeout = '3000ms'"))
+        rows=list(db.scalars(select(ValuationPeer).where(ValuationPeer.available.is_(True),
+            ValuationPeer.observed_at>=now-900,
+            ValuationPeer.car['brand_id'].as_integer()==70,
+            ValuationPeer.car['model_id'].as_integer()==652)
+            .order_by(ValuationPeer.observed_at.desc(),ValuationPeer.source_id).limit(200)))
+        summaries=[]
+        for r in rows:
+            c=r.car
+            summaries.append({k:c.get(k) for k in ('id','url','brand_id','model_id','generation_id',
+                'body_id','fuel_id','gear_id','engine_cc','mileage','year','price_usd','observed_at',
+                'modification_id','modification_name','vehicle_key','comparable_condition','condition_exclusions')})
+        db.rollback()
+    audit={'kind':'read_only_existing_comparison_cache','fresh_octavia_rows':len(summaries),
+        'truncated':len(summaries)==200,'maximum_age_seconds':900,'checked_at':now,
+        'shared_state_writes':0,'paid_api_calls':0,'technical_ready':False}
+    with Session(engine) as db:
+        row=db.get(SourceProbe,STATE,with_for_update=True)
+        row.result={**row.result,'comparison_cache_audit':audit,'saved_comparison_peers':summaries};db.commit()
+    LOG.info('OLX RIA comparison cache audit %s',json.dumps(audit))
+
+
 def run_once(engine,settings,plan=None,fetch=transport,olx_fetch=feed.source_fetch):
     if not enabled():return
     if plan is None:
@@ -212,6 +244,7 @@ def run_once(engine,settings,plan=None,fetch=transport,olx_fetch=feed.source_fet
         if plan.get('phase')==3:
             audit_references(engine,settings,plan,fetch)
             return finish(engine,'completed_reference_audit_not_admitted',None)
+        if plan.get('phase')==4:audit_saved_comparisons(engine,settings,plan)
         paths={'brands':'auto/categories/1/marks','models':'auto/categories/1/marks/70/models',
                'body':'auto/categories/1/bodystyles','fuel':'auto/type',
                'gear':'auto/categories/1/gearboxes','drive':'auto/categories/1/driverTypes',
@@ -219,7 +252,7 @@ def run_once(engine,settings,plan=None,fetch=transport,olx_fetch=feed.source_fet
         catalogs={}
         for key,path in paths.items():
             evidence=plan.get('dictionary_evidence',{}).get(key)
-            if plan.get('phase')==2 and evidence:
+            if plan.get('phase') in (2,4) and evidence:
                 if (evidence['path']!=path or not 0<=time.time()-evidence['checked_at']<=86400
                         or not evidence.get('receipt_log_id')):raise ValueError('dictionary_receipt_invalid')
                 catalogs[key]=[(id,name) for id,name in evidence['items']]
@@ -246,10 +279,23 @@ def run_once(engine,settings,plan=None,fetch=transport,olx_fetch=feed.source_fet
             if code!=200 or truncated:raise ValueError('olx_detail_unavailable')
             car=enrich(raw,parse_detail_snapshot(raw,fetched_at=int(time.time()),truncated=False))['listing']
             if car['id']!=entry['id'] or not feed.same_detail_url(car['url'],entry['url']):raise ValueError('olx_identity_mismatch')
+            if plan.get('phase')==4:
+                if (car.get('category')!='whole_passenger_car'
+                        or car.get('eligibility_review',{}).get('status')!='allowed'
+                        or not car.get('observed_asking_display',{}).get('description_reviewed_in_full')):
+                    raise ValueError('fresh_candidate_full_eligibility_pending')
+                safe_target={k:car.get(k) for k in ('id','url','brand','model','year','mileage_km','engine_cc',
+                    'fuel','transmission','body','generation','drive_type','power_hp','modification',
+                    'research_condition','price','currency','checked_at','vehicle_key','region')}
+                safe_target['technical_ready']=False
+                with Session(engine) as db:
+                    row=db.get(SourceProbe,STATE,with_for_update=True);d=copy.deepcopy(row.result)
+                    d.setdefault('fresh_candidates',[]).append(safe_target);row.result=d;db.commit()
+                LOG.info('OLX RIA fresh candidate %s',json.dumps(safe_target,ensure_ascii=False))
             body_id=exact_id(catalogs['body'],{'wagon':['Універсал','Универсал'],'liftback':['Ліфтбек','Лифтбек']}.get(car.get('body'),[]))
             fuel_names={'petrol':['Бензин'],'diesel':['Дизель']}.get(car.get('fuel'))
             fuel_id=exact_id(catalogs['fuel'],fuel_names) if fuel_names else None
-            if fuel_id is None and plan.get('phase')!=2:raise ValueError('dictionary_mapping_ambiguous_or_missing')
+            if fuel_id is None and plan.get('phase') not in (2,4):raise ValueError('dictionary_mapping_ambiguous_or_missing')
             gear_id=exact_id(catalogs['gear'],{'manual':['Ручна / Механіка','Ручна/Механіка','Ручная / Механика']}.get(car.get('transmission'),[]))
             # Diagnostic criteria deliberately do not guess ambiguous generation IDs.
             # Never admissible as a card valuation until all missing criteria reviewed.
@@ -264,6 +310,9 @@ def run_once(engine,settings,plan=None,fetch=transport,olx_fetch=feed.source_fet
                 generation=exact_id(catalogs['generation'],['II покоління/'+car.get('generation','')])
                 drive=exact_id(catalogs['drive'],{'front':['Передній'],'rear':['Задній'],'all':['Повний']}.get(car.get('drive_type'),[]))
                 params.update(generationId=generation,driveId=drive)
+            if plan.get('phase')==4:
+                params['driveId']=exact_id(catalogs['drive'],{'front':['Передній'],'rear':['Задній'],'all':['Повний']}.get(car.get('drive_type'),[]))
+                # A5 names the family. Do not infer pre-FL vs FL by model year.
             body={'langId':4,'period':168,'params':params}
             data=request(engine,settings,plan,'auto/ai-avarage-price/',body,fetch=fetch)
             blocks=[b for b in data.get('statisticData',[]) if isinstance(b,dict) and b.get('type')=='avgPrice']
@@ -284,7 +333,8 @@ def run_once(engine,settings,plan=None,fetch=transport,olx_fetch=feed.source_fet
                 'provider_quantity':blocks[0].get('quantityAdv') if len(blocks)==1 else None,
                 'peers':safe_peers,'technical_ready':False,'status':'diagnostic_only_compatibility_pending',
                 'missing_criteria':(['fuel_subtype_mapping'] if fuel_id is None else [])+
-                    ([] if plan.get('phase')==2 else ['generation_mapping','drive_mapping'])+
+                    ([] if plan.get('phase')==2 else ['generation_mapping'] if plan.get('phase')==4 else ['generation_mapping','drive_mapping'])+
+                    ([] if car.get('power_hp') is not None else ['power_mapping'])+
                     ['condition_compatibility','independent_compatible_peer_details','frozen_control_validation']}
             with Session(engine) as db:
                 row=db.get(SourceProbe,STATE,with_for_update=True);d=copy.deepcopy(row.result)

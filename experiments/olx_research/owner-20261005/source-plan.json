@@ -2,7 +2,7 @@
   "version": 1,
   "authorization": "2026-10-05 explicit owner-only valued OLX request; clients unauthorized",
   "night_state_resumed": false,
-  "status": "completed_reference_audit_not_admitted",
+  "status": "phase4_fresh_dense_candidate_reserved",
   "hypothesis": "Saved densest complete group is Octavia A5 1.6 diesel manual wagon/front/105 hp, 2010 around 264-274k km, max4 peers. Prior general A5 search and MPI collection missed the explicitly observed focused 1.6 TDI query. Discover by characteristics, not price; holdout frozen before refreshed full prices.",
   "owner_search": {
     "id": 4,
@@ -28,8 +28,8 @@
     "olx_bytes": 167772160,
     "fx_gets": 6
   },
-  "reserved_olx_gets": 26,
-  "reserved_olx_bytes": 69206016,
+  "reserved_olx_gets": 27,
+  "reserved_olx_bytes": 71303168,
   "reserved_fx_gets": 1,
   "source_holds": [
     {
@@ -200,6 +200,13 @@
       "id": "936768428",
       "url": "https://www.olx.ua/d/uk/obyavlenie/skoda-octavia-a5-ID11oAgc.html",
       "cap": 2097152
+    },
+    {
+      "kind": "phase4_fresh_dense_candidate",
+      "id": "936658970",
+      "url": "https://www.olx.ua/d/obyavlenie/skoda-octavia-a5-1-6-tdi-ID11o7MK.html",
+      "cap": 2097152,
+      "observed_via": "saved real whole-detail URL and 105hp/diesel/1.6/manual/front/wagon fields; refresh to establish current availability before use"
     }
   ],
   "timeout_seconds": 20,
@@ -242,7 +249,12 @@
   },
   "last_user_authorization": "2026-10-05 11:36:42 Europe/Kyiv: enable OLX only for owner; valuation and access requirements retained",
   "access_basis": "latest structured runtime: configured owner paid approval/current entitlement, ready and one enabled search; startup protected search#4 fingerprint unchanged in repository; final server must recheck current fingerprint before send",
-  "lease": null,
+  "lease": {
+    "owner": "owner-followup-20261005-1455",
+    "acquired_at": "2026-10-05T12:06:55.905031+00:00",
+    "expires_at": "2026-10-05T12:36:55.905048+00:00",
+    "scope": "one fresh known 1.6TDI candidate + read-only comparison-cache audit; no sender; approved existing API budget"
+  },
   "latest_review": "enable-current-review.json",
   "paid_ria_episode": {
     "authorized_at": "2026-10-05T13:32:01+03:00",
@@ -315,7 +327,16 @@
       "prices_not_retained_due_projection_bug": 12
     },
     "actual_response_bytes": 236437,
-    "probe_olx_known_response_bytes": 3137140
+    "probe_olx_known_response_bytes": 3137140,
+    "phase4_reservation": {
+      "maximum_calls": 1,
+      "maximum_ai_calls": 1,
+      "maximum_bytes": 1048576,
+      "cache_audit_additional_calls": 0,
+      "new_budgets": false,
+      "technical_ready_override": false,
+      "sender": false
+    }
   },
   "actual_olx_bytes_pre_probe": 47049350,
   "next_step": "Owner feed remains off. Need >=8 independent fully compatible references plus viable controls, explicit target fuel subtype and cross-source identity; correct price projection already tested. Preserve remaining8/4 API budget; no automatic replay or new resources. Current two candidates are below benefit10% or above reference. No broader collection, invented attributes, lowering minimum or force-ready.",
