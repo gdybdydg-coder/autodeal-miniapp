@@ -2,7 +2,7 @@
   "version": 1,
   "authorization": "2026-10-05 explicit owner-only valued OLX request; clients unauthorized",
   "night_state_resumed": false,
-  "status": "complete_no_send_data_insufficient",
+  "status": "reserved_followup_density_window",
   "hypothesis": "Saved densest complete group is Octavia A5 1.6 diesel manual wagon/front/105 hp, 2010 around 264-274k km, max4 peers. Prior general A5 search and MPI collection missed the explicitly observed focused 1.6 TDI query. Discover by characteristics, not price; holdout frozen before refreshed full prices.",
   "owner_search": {
     "id": 4,
@@ -28,8 +28,8 @@
     "olx_bytes": 167772160,
     "fx_gets": 6
   },
-  "reserved_olx_gets": 15,
-  "reserved_olx_bytes": 33554432,
+  "reserved_olx_gets": 16,
+  "reserved_olx_bytes": 37748736,
   "reserved_fx_gets": 1,
   "source_holds": [
     {
@@ -133,6 +133,12 @@
       "id": "917982649",
       "url": "https://www.olx.ua/d/obyavlenie/prodam-shkodu-oktavia-a5-full-1-6-dizel-ID107LdL.html",
       "cap": 2097152
+    },
+    {
+      "kind": "olx_search_followup",
+      "url": "https://www.olx.ua/transport/legkovye-avtomobili/skoda/q-octavia-a5/?page=11",
+      "observed_via": "saved official public pagination of search-5.json; not previously a completed GET receipt",
+      "cap": 4194304
     }
   ],
   "timeout_seconds": 20,
@@ -162,5 +168,6 @@
   "actual_fx_bytes": 2836,
   "telegram_calls": 0,
   "review": "current-evidence.json",
-  "no_automatic_resume": true
+  "no_automatic_resume": true,
+  "followup_hypothesis": "Focused 1.6TDI text query omits cars titled only A5/FL. Previously observed general A5 page11 is outside prior collected pages and may contain explicit same 1600diesel/manual/year2009-2011/234-294k fields. Parse density first, no price ranking, do not repeat checked details or collect other engine groups."
 }
