@@ -1,9 +1,9 @@
 {
   "proposal_id": "olx-owner-only-prelaunch-20261005-2034-v1",
-  "status": "not_ready_pending_verified_market_data_and_new_owner_confirmation",
-  "approved": false,
+  "status": "authorized_owner_only_pending_verified_market_data",
+  "approved": true,
   "technical_ready": false,
-  "owner_permission": "new_explicit_confirmation_required",
+  "owner_permission": "granted_2026-10-05_2157_Europe_Kyiv",
   "client_permission": false,
   "runtime_changes_now": false,
   "recipient_policy": "exactly_one_protected_configured_owner_private_chat_verified_before_send",
@@ -51,8 +51,7 @@
     "three_or_more_separate_estimable_frozen_asking_controls",
     "method_chosen_by_control_errors_not_profit_count",
     "stable_omission_diagnostics",
-    "source_channel_review",
-    "new_explicit_permission_for_this_exact_trial"
+    "source_channel_review"
   ],
   "stop_commands": [
     "/olx_stop",
@@ -60,7 +59,7 @@
   ],
   "non_stop_command": "/olx_status",
   "future_configuration": {
-    "OLX_OWNER_FEED_ENABLED": "first_false_then_true_only_after_verification_and_confirmation",
+    "OLX_OWNER_FEED_ENABLED": "first_false_then_true_only_after_technical_verification",
     "OLX_OWNER_FEED_SEARCH_ID": 4,
     "OLX_OWNER_FEED_UNTIL": "explicit_future_deadline_no_more_than_24h",
     "OLX_OWNER_BATCH_ENABLED": false,
@@ -78,5 +77,6 @@
   "unknown_telegram_outcome_policy": "persist_uncertain_and_never_automatic_resend_or_photo_to_text_fallback",
   "rollback": "disable_only_new_OLX_flag_or_olx_stop_preserve_OLX_ledger_and_all_payment_search_RIA_history",
   "future_profile_split_key_format": "source_id_v1",
-  "future_reference_adapter_version": "olx-ria-reference-v2"
+  "future_reference_adapter_version": "olx-ria-reference-v2",
+  "authorization_receipt": "../owner-launch-20261005/authorization.json"
 }

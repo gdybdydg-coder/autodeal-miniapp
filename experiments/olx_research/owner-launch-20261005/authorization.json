@@ -1,0 +1,13 @@
+{
+  "id": "olx-owner-trial-authorized-20261005-2157",
+  "recorded_at": "2026-10-05T19:03:58.209075+00:00",
+  "owner_authorized": true,
+  "authorization_basis": "User explicitly answered так, даю повний дозвіл to bounded owner-only proposal; prior permissions pending are historical.",
+  "client_authorized": false,
+  "technical_ready": false,
+  "proposal_id": "olx-owner-only-prelaunch-20261005-2034-v1",
+  "paid_ria_calls": 0,
+  "message_attempt_cap": 3,
+  "activation_max_duration_seconds": 86400,
+  "production_activation_condition": "valid independently reviewed current market profile, isolated tests, disabled deployment verification, genuine paid active pinned owner search and correct private recipient"
+}
