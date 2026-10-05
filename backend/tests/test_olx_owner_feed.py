@@ -261,3 +261,12 @@ def test_olx_own_night_interval(hour,expected):
     from zoneinfo import ZoneInfo
     at=datetime(2026,10,5,hour,tzinfo=ZoneInfo('Europe/Kyiv')).timestamp()
     assert feed.interval(at)==expected
+
+def test_disabled_new_status_never_reports_old_sample_as_new_delivery(live):
+    live.settings=replace(live.settings,olx_owner_feed_enabled=False)
+    event={'message':{'chat':{'id':900,'type':'private'},'from':{'id':900},'text':'/olx_status'}}
+    reply=feed.handle(live.engine,live.settings,event)
+    assert 'Перевірена оцінка готова: ні' in reply['text']
+    assert 'Підтверджено Telegram: 0' in reply['text']
+    assert 'Стан: вимкнено' in reply['text']
+    with Session(live.engine) as db:assert db.get(SourceProbe,feed.STATE) is None

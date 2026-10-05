@@ -403,10 +403,12 @@ def handle(engine,settings,event):
     command,_,mention=raw.partition('@')
     if mention and mention.casefold()!=telegram_setup.BOT_USERNAME.casefold():return None
     if command not in ('/olx_status','/olx_stop'):return None
-    # The new off module must not swallow legacy /olx_stop before it is installed.
+    # An explicitly enabled legacy task retains its own stop command. With
+    # both old switches off, status belongs to this new, default-off canary.
     with Session(engine) as db:
         row=db.get(SourceProbe,STATE)
-        if not settings.olx_owner_feed_enabled and not row:return None
+        if (not settings.olx_owner_feed_enabled and not row
+                and (settings.olx_owner_batch_enabled or settings.olx_owner_canary_enabled)):return None
         if command=='/olx_stop':
             if not row:
                 row=SourceProbe(id=STATE,status='paused_by_owner',checked_at=time.time(),requests=0,
@@ -414,9 +416,12 @@ def handle(engine,settings,event):
             else:row.status='paused_by_owner'
             db.commit()
     info=preflight(engine,settings)
+    technical=profile_ready(load_profile(),time.time())
     text=('🟠 OLX зупинено. AUTO.RIA продовжує працювати.' if command=='/olx_stop' else
         '🟠 OLX • лише власник\nСтан: '+str(info.get('status','вимкнено'))+
         '\nПідтверджено Telegram: '+str(info.get('state',{}).get('accepted',0))+
+        '\nПеревірена оцінка готова: '+('так' if technical else 'ні')+
+        '\nПочатковий пакет: максимум 3 спроби. Постійний збір ще не запущений.'+
         '\nІнтервал: '+str(interval())+' с\nЛіміти: 12 GET/год, 60 GET/день, 160 MiB/день.'+
         '\n/olx_stop — зупинити лише OLX.')
     return billing.message(settings.admin_telegram_id,text)
