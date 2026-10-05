@@ -1,0 +1,27 @@
+{
+  "version": 1,
+  "authorization": "2026-10-05 explicit owner-only valued OLX request; clients unauthorized",
+  "night_state_resumed": false,
+  "status": "reserved",
+  "hypothesis": "Saved densest complete group is Octavia A5 1.6 diesel manual wagon/front/105 hp, 2010 around 264-274k km, max4 peers. Prior general A5 search and MPI collection missed the explicitly observed focused 1.6 TDI query. Discover by characteristics, not price; holdout frozen before refreshed full prices.",
+  "owner_search": {"id":4,"fingerprint":"aa3dc66cadd6d6343f55f3930823173faf45741059cac1968b66a411b8a99be2","filters":{"currency":"USD","region":["вінницька","тернопільська","хмельницька","чернівецька"],"price_min":1000,"price_max":7000},"threshold":10},
+  "owner_access_checked_at": "2026-10-05T06:57:32.522190131Z",
+  "confirmed_paid": true,
+  "ready": true,
+  "episode_caps": {"olx_gets":60,"olx_bytes":167772160,"fx_gets":6},
+  "reserved_olx_gets":1,
+  "reserved_olx_bytes":4194304,
+  "reserved_fx_gets":1,
+  "source_holds": [{"source":"bank.gov.ua","reason":"HTTP403 observed 2026-10-04T23:00:19Z for 2026-10-05 rates; no repeated NBU request or bypass"}],
+  "requests": [
+    {"kind":"olx_search","url":"https://www.olx.ua/transport/legkovye-avtomobili/q-skoda%20octavia%20a5%2016%20tdi/","observed_via":"OLX public indexed query, turn43search0; indexed listing prices not current evidence","cap":4194304},
+    {"kind":"fx","url":"https://api.privatbank.ua/p24api/exchange_rates?json&date=05.10.2026","observed_via":"previously verified official dated PrivatBank API; same-day NBU fallback","cap":262144}
+  ],
+  "timeout_seconds":20,
+  "spacing_seconds":4,
+  "retry_cap":0,
+  "packet_seconds":600,
+  "no_telegram":true,
+  "no_paid_ria":true,
+  "halt_on":[401,403,429,"CAPTCHA"]
+}

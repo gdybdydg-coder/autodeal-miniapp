@@ -228,3 +228,10 @@ def test_current_fx_fallback_keeps_usd_and_shared_currency_basis(tmp_path):
     assert normalize({'price':'10000','currency':'???'},quote,at)['status']=='pending'
     assert book.select(at,transport)[0].basis==quote.basis and len(calls)==2
     book.close()
+
+@pytest.mark.parametrize('actual',['Хмельницкая область','Хмельницька область','Винницкая область','Тернопольская область','Черновицкая область'])
+def test_observed_olx_russian_region_names_match_saved_ukrainian_regions(live,actual):
+    from backend.olx_market.candidates import filter_reasons
+    c=synthetic_car(live,region=actual)
+    f={'region':['вінницька','тернопільська','хмельницька','чернівецька']}
+    assert filter_reasons(c,f,None,live.clock[0])['match']

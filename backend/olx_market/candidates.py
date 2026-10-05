@@ -2,16 +2,23 @@
 from decimal import Decimal
 from .fx_policy import normalize
 
+# OLX renders these same four oblasts in either interface language. This is
+# an explicit name mapping, never an inferred locality or expanded geography.
+REGION_NAMES={'винницкая':'вінницька','тернопольская':'тернопільська',
+              'хмельницкая':'хмельницька','черновицкая':'чернівецька'}
+
 
 def filter_reasons(car, filters, quote, now):
     rejected=[]; unknown=[]
-    def label(v):return str(v).casefold().removesuffix(' область').strip()
+    def label(v,key):
+        text=str(v).casefold().removesuffix(' область').strip()
+        return REGION_NAMES.get(text,text) if key=='region' else text
     for key in ('brand','model','region','body','fuel','transmission'):
         wanted=filters.get(key); actual=car.get(key)
         if not wanted: continue
         wanted=wanted if isinstance(wanted,list) else [wanted]
         if actual is None: unknown.append('missing_'+key)
-        elif label(actual) not in [label(v) for v in wanted]: rejected.append('filter_'+key)
+        elif label(actual,key) not in [label(v,key) for v in wanted]: rejected.append('filter_'+key)
     for key in ('year','mileage_km','engine_cc'):
         actual=car.get(key)
         for end,op in (('min',lambda a,b:a<b),('max',lambda a,b:a>b)):
