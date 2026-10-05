@@ -2,7 +2,7 @@
   "version": 1,
   "authorization": "2026-10-05 explicit owner-only valued OLX request; clients unauthorized",
   "night_state_resumed": false,
-  "status": "phase5_known_locale_url_reserved",
+  "status": "completed_followup_cross_source_adapter_live_valuation_not_admitted",
   "hypothesis": "Saved densest complete group is Octavia A5 1.6 diesel manual wagon/front/105 hp, 2010 around 264-274k km, max4 peers. Prior general A5 search and MPI collection missed the explicitly observed focused 1.6 TDI query. Discover by characteristics, not price; holdout frozen before refreshed full prices.",
   "owner_search": {
     "id": 4,
@@ -242,7 +242,7 @@
     "dated_fallback_rate": "44.9857000",
     "fx_effective_date": "2026-10-05"
   },
-  "actual_olx_calls": 27,
+  "actual_olx_calls": 28,
   "actual_olx_bytes": null,
   "actual_fx_calls": 1,
   "actual_fx_bytes": 2836,
@@ -261,21 +261,16 @@
   },
   "last_user_authorization": "2026-10-05 11:36:42 Europe/Kyiv: enable OLX only for owner; valuation and access requirements retained",
   "access_basis": "latest structured runtime: configured owner paid approval/current entitlement, ready and one enabled search; startup protected search#4 fingerprint unchanged in repository; final server must recheck current fingerprint before send",
-  "lease": {
-    "owner": "owner-followup-20261005-1455",
-    "acquired_at": "2026-10-05T12:06:55.905031+00:00",
-    "expires_at": "2026-10-05T12:36:55.905048+00:00",
-    "scope": "Reviewed302 one exact saved locale URL retry, cross-source reference adapter; no sender; original budget/deadline retained"
-  },
+  "lease": null,
   "latest_review": "enable-current-review.json",
   "paid_ria_episode": {
     "authorized_at": "2026-10-05T13:32:01+03:00",
     "maximum_calls": 30,
     "maximum_ai": 6,
     "persistent_state": "olx-ria-probe-20261005-1332-v1",
-    "actual_calls": 22,
+    "actual_calls": 23,
     "provider_charged_units": null,
-    "actual_ai_calls": 2,
+    "actual_ai_calls": 3,
     "phase1_result": {
       "status": "technical_hold",
       "error": "dictionary_mapping_ambiguous_or_missing",
@@ -325,8 +320,8 @@
       "technical_ready": false,
       "telegram_calls": 0
     },
-    "remaining_calls": 8,
-    "remaining_ai": 4,
+    "remaining_calls": 7,
+    "remaining_ai": 3,
     "phase3_result": {
       "search_matches": 12,
       "full_details": 12,
@@ -372,10 +367,47 @@
         "saved_page_sha256": "f06cba726a0ce749a25578cf60d9b1c965ae2969e758970f96e988cc118e9c17",
         "http302_receipt_log": "403c832e-3255-41b4-acfa-b1b94d4878e2"
       }
+    },
+    "phase5_result": {
+      "status": "completed_observations_not_admitted",
+      "error": null,
+      "cumulative_ria_calls": 23,
+      "cumulative_ai_calls": 3,
+      "cumulative_olx_gets": 5,
+      "observations": 3,
+      "target": "936658970",
+      "asking_usd": "6500",
+      "diagnostic_average_usd": "7386",
+      "diagnostic_difference_percent": "11.99566747901435147576496074",
+      "condition": "running_reported_damage:body_dents+windshield_crack",
+      "technical_ready": false,
+      "telegram_calls": 0,
+      "missing": [
+        "generation_mapping",
+        "condition_compatibility",
+        "independent_compatible_peer_details",
+        "frozen_control_validation"
+      ],
+      "result_log": "a08bed4f-c4db-4b2f-9e5c-88044c192181",
+      "observation_log": "6ba6cb3a-5b48-4378-b245-9e9391bb08a8",
+      "bytes_note": "Full response bytes persisted in server SourceProbe; latest phase5 totals not yet exposed in result log. First old response bytes were not retained. Do not infer zero."
     }
   },
   "actual_olx_bytes_pre_probe": 47049350,
-  "next_step": "Owner feed remains off. Need >=8 independent fully compatible references plus viable controls, explicit target fuel subtype and cross-source identity; correct price projection already tested. Preserve remaining8/4 API budget; no automatic replay or new resources. Current two candidates are below benefit10% or above reference. No broader collection, invented attributes, lowering minimum or force-ready.",
+  "next_step": "Need >=8 independent current same-variant/condition references and >=3 price-blind frozen compatible controls. Current diesel target has body dents/windshield crack; generic average is not a verified value. Remaining7 HTTP/3AI cannot establish a new >=11 full-info group alone. Review stored evidence first; no automatic phase5 replay or budget/deadline extension.",
   "actual_olx_bytes_known_lower_bound": 50186490,
-  "unknown_olx_byte_receipts": 1
+  "unknown_olx_byte_receipts": 1,
+  "actual_olx_bytes_known_floor": 50186567,
+  "release": {
+    "owner": "owner-followup-20261005-1455",
+    "reason": "bounded foreground followup results and tests saved; no delivery/readiness; original API/deadline unchanged"
+  },
+  "tests": {
+    "focused": 161,
+    "independent_integration": 31,
+    "network_fence_before_import": true,
+    "old_reference_adapter_failure_reproduced": true
+  },
+  "production_commit": "2d81e13ab04077133eca0a668a575e2d571b6cd7",
+  "owner_feed_enabled": false
 }
