@@ -1,0 +1,41 @@
+{
+  "task": "owner-launch-20261005-2157",
+  "hypothesis": "The initial observed1.6DMT catalog has only10preliminary traits-compatible IDs before body/drive/independence verification; one explicitly linked next page can determine whether at least11potential frozen references+controls exist without broad marque collection or price ranking.",
+  "budget": {
+    "public_ria_get_cap": 1,
+    "olx_get_cap": 0,
+    "byte_cap": 2097152,
+    "per_get_cap": 2097152,
+    "pause_seconds": 4,
+    "timeout_seconds": 20,
+    "retries": 0,
+    "paid_ria_gets": 0,
+    "telegram_calls": 0
+  },
+  "requests": [
+    {
+      "source": "auto_ria_public_html",
+      "url": "https://auto.ria.com/car/skoda/octavia/a5-fl/1-6d-mt/?page=2",
+      "role": "density_discovery_not_reference",
+      "observed_url_receipt": "dense1.6DMT catalog2026-10-05T19:17:46Z literalpaginationhref"
+    }
+  ],
+  "selection_policy": {
+    "price_used_for_selection": false,
+    "minimum_analogs": 8,
+    "required_separate_controls": 3,
+    "critical_unknowns_not_filled": true
+  },
+  "rules": {
+    "source_hold_on": [
+      401,
+      403,
+      429,
+      "CAPTCHA"
+    ],
+    "follow_redirects": false,
+    "no_credentials": true,
+    "reservations_not_refunded": true
+  },
+  "reserved_at": "2026-10-05T19:21:01.183891+00:00"
+}
