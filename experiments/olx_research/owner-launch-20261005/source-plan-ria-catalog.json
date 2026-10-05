@@ -1,0 +1,35 @@
+{
+  "task": "owner-launch-20261005-2157",
+  "hypothesis": "An observed unpriced public model catalog can expose real detailed URLs and explicit characteristics or visible catalog generation links for one dense compatible cohort, selected without price ranking. No profile readiness is inferred from a search card.",
+  "budget": {
+    "public_ria_get_cap": 1,
+    "olx_get_cap": 0,
+    "byte_cap": 2097152,
+    "per_get_cap": 2097152,
+    "pause_seconds": 4,
+    "timeout_seconds": 20,
+    "retries": 0,
+    "paid_ria_gets": 0,
+    "telegram_calls": 0
+  },
+  "requests": [
+    {
+      "source": "auto_ria_public_html",
+      "url": "https://auto.ria.com/car/skoda/octavia/",
+      "role": "density_discovery_not_reference",
+      "observed_url_receipt": "public HTML40106586 page canonical model footer/PINIA, receipt06ce469"
+    }
+  ],
+  "rules": {
+    "source_hold_on": [
+      401,
+      403,
+      429,
+      "CAPTCHA"
+    ],
+    "follow_redirects": false,
+    "no_credentials": true,
+    "reservations_not_refunded": true
+  },
+  "reserved_at": "2026-10-05T19:09:22.878869+00:00"
+}

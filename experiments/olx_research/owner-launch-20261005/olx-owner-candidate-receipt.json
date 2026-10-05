@@ -1,0 +1,23 @@
+{
+  "source": "olx",
+  "id": "936176691",
+  "url": "https://www.olx.ua/d/uk/obyavlenie/skoda-octavia-a5-1-6-tdi-2012-ID11m6k3.html",
+  "reserved_commit": "2d41c51d6c6549c39b110ee38d36da51ca9ef80c",
+  "started_at": "2026-10-05T19:06:28.776243+00:00",
+  "completed_at": "2026-10-05T19:06:36.681227+00:00",
+  "elapsed_seconds": 7.905,
+  "http_status": 200,
+  "curl_exit": 0,
+  "body_bytes": 1590038,
+  "body_sha256": "079573ec5b2482cdbfca426fb6ed027040827cd65ea76ac62e31f41bbaafbb14",
+  "captcha_indicator": true,
+  "source_hold": null,
+  "paid_api_calls": 0,
+  "get_calls": 1,
+  "telegram_calls": 0,
+  "redirects_followed": 0,
+  "retries": 0,
+  "captcha_indicator_kind": "configuration_vocabulary_only",
+  "captcha_challenge_verified": false,
+  "hold_correction": "Initial broad token detector matched captchaSiteKey/invalidCaptcha/reCaptcha configuration on a complete identity-corroborated ad, not an authentication challenge; no additional network I/O or challenge handling occurred."
+}
