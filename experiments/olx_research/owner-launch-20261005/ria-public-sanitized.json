@@ -1,0 +1,160 @@
+{
+  "dataset_kind": "saved_real",
+  "evaluated_at": 1791227407,
+  "receipt": {
+    "source": "auto_ria_public_html",
+    "id": "40106586",
+    "url": "https://auto.ria.com/auto_skoda_octavia_40106586.html",
+    "reserved_commit": "06ce469134feeb2309f93e4b71a4ae7ba25b0808",
+    "started_at": "2026-10-05T19:04:57.958461+00:00",
+    "completed_at": "2026-10-05T19:05:08.692885+00:00",
+    "elapsed_seconds": 10.734,
+    "http_status": 200,
+    "curl_exit": 0,
+    "body_bytes": 524193,
+    "body_sha256": "75dd7e3e44ad12c890ca0acdeddfb643fb1485354921477ea663df8b5ad0a531",
+    "captcha_indicator": false,
+    "source_hold": null,
+    "paid_api_calls": 0,
+    "get_calls": 1,
+    "telegram_calls": 0,
+    "redirects_followed": 0,
+    "retries": 0
+  },
+  "catalog_receipt": {
+    "source": "auto_ria_public_html",
+    "url": "https://auto.ria.com/car/skoda/octavia/",
+    "reserved_commit": "82e788fb886bb421bb60bff4f4ee44df4b9293b4",
+    "started_at": "2026-10-05T19:09:56.998265+00:00",
+    "completed_at": "2026-10-05T19:10:07.070954+00:00",
+    "elapsed_seconds": 10.073,
+    "http_status": 200,
+    "curl_exit": 0,
+    "body_bytes": 506539,
+    "body_sha256": "2399f37ef6c01e889099889e0585e1ef27d2c7747bdcc6f7091143cc1d0e5795",
+    "captcha_challenge_indicator": false,
+    "source_hold": null,
+    "paid_api_calls": 0,
+    "get_calls": 1,
+    "telegram_calls": 0,
+    "redirects_followed": 0,
+    "retries": 0
+  },
+  "listing": {
+    "source": "auto_ria",
+    "id": "40106586",
+    "url": "https://auto.ria.com/auto_skoda_octavia_40106586.html",
+    "price": "5500",
+    "currency": "USD",
+    "brand": "Skoda",
+    "model": "Octavia",
+    "generation": "A5",
+    "generation_variant": "pre_FL",
+    "body": "wagon",
+    "fuel": "gas_petrol",
+    "fuel_subtype": "propane",
+    "transmission": "manual",
+    "drive_type": "front",
+    "engine_cc": 1600,
+    "power_hp": 115,
+    "year": 2005,
+    "mileage_km": 228000,
+    "research_condition": "seller_declared_running",
+    "checked_at": 1791227108,
+    "modification": null,
+    "source_modification_evidence": {
+      "policy": "explicit_provider_engine_code-v1",
+      "catalog_id": null,
+      "label_sha256": "d43ffcc1ab3f069940c7574704bf71ed27574194da7cac49df0775f79e8c5e66",
+      "basis": "engine_code_not_explicit"
+    },
+    "condition_evidence": {
+      "basis": "corroborated_complete_public_description_and_technical_label",
+      "description_sha256": "62fbd0f70d90fd9ba4c3475d1e469461be5afd8cc374b956c49cb9c7241c2f7b",
+      "description_damage_flags": [],
+      "unsupported_condition_flags": [],
+      "independently_verified": false
+    },
+    "category": "whole_passenger_car",
+    "eligibility_review": {
+      "status": "allowed",
+      "description_complete": true
+    },
+    "vehicle_key": "vin-sha256:a80ff0f0bf6db5f9b9093c9b5e28e7c73f6866a2bc6b9a0ec9250caae5dede00",
+    "vehicle_identity_verified": true,
+    "identity_review": {
+      "distinct_photos_reviewed": false
+    },
+    "photos": [
+      "https://cdn1.riastatic.com/photosnew/auto/photo/skoda_octavia__648881294s.webp",
+      "https://cdn1.riastatic.com/photosnew/auto/photo/skoda_octavia__648881290hd.webp",
+      "https://cdn1.riastatic.com/photosnew/auto/photo/skoda_octavia__648881289bx.webp",
+      "https://cdn1.riastatic.com/photosnew/auto/photo/skoda_octavia__648881292bx.webp",
+      "https://cdn1.riastatic.com/photosnew/auto/photo/skoda_octavia__648881293bx.webp"
+    ],
+    "reference_provenance": {
+      "role": "source_feasibility",
+      "reservation_role": "existing_reference_candidate_source_feasibility_not_admitted_reference",
+      "frozen_commit": "06ce469134feeb2309f93e4b71a4ae7ba25b0808",
+      "frozen_at": 1791227038,
+      "search_params": {
+        "category_id": 1,
+        "marka_id[0]": 70,
+        "model_id[0]": 652
+      }
+    },
+    "source_attribute_evidence": {
+      "basis": "public_ssr_pinia_and_visible_same_document",
+      "generation_label_sha256": "d43ffcc1ab3f069940c7574704bf71ed27574194da7cac49df0775f79e8c5e66",
+      "generation_id": 3133,
+      "generation_variant_basis": "corroborated_public_catalog_id",
+      "generation_dictionary": {
+        "version": "ria-public-generation-dictionary-v1",
+        "source_url": "https://auto.ria.com/car/skoda/octavia/",
+        "checked_at": 1791227407,
+        "body_sha256": "2399f37ef6c01e889099889e0585e1ef27d2c7747bdcc6f7091143cc1d0e5795",
+        "reserved_commit": "82e788fb886bb421bb60bff4f4ee44df4b9293b4",
+        "mapping": {
+          "II поколение/A5": {
+            "catalog_id": 3133,
+            "generation": "A5",
+            "generation_variant": "pre_FL",
+            "url": "https://auto.ria.com/car/skoda/octavia/a5/"
+          },
+          "II поколение/A5 (FL)": {
+            "catalog_id": 3607,
+            "generation": "A5",
+            "generation_variant": "FL",
+            "url": "https://auto.ria.com/car/skoda/octavia/a5-fl/"
+          }
+        },
+        "binding": "288f2029c5e313d37e908c16e224721518383791940e92fbff312d2c3992c2ad"
+      },
+      "technical_label": "Полностью неповрежденное",
+      "paint_label": "Неисправленные следы использования"
+    },
+    "ria_public_reference_evidence": {
+      "version": "olx-ria-public-reference-v1",
+      "method": "public_html",
+      "http_status": 200,
+      "body_sha256": "75dd7e3e44ad12c890ca0acdeddfb643fb1485354921477ea663df8b5ad0a531",
+      "body_bytes": 524193,
+      "reserved_commit": "06ce469134feeb2309f93e4b71a4ae7ba25b0808",
+      "paid_api_calls": 0,
+      "started_at": "2026-10-05T19:04:57.958461+00:00",
+      "completed_at": "2026-10-05T19:05:08.692885+00:00",
+      "binding": "3aaa45af2a6cf8369e95015aba506b4256f86ed9e5410970dc5bda1d3d1f11d9"
+    }
+  },
+  "admission_reasons": [
+    "ria_public_reference_split_unverified"
+  ],
+  "market_readiness": false,
+  "distinct_photos_reviewed": false,
+  "notes": [
+    "Provider/seller asking observation, not sale label.",
+    "Source feasibility role was reserved before I/O and is not an admitted reference.",
+    "Not compatible with 102hp or 105hp targets.",
+    "Catalog dictionary was acquired after detail price observation; each checked_at retained."
+  ]
+}

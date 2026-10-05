@@ -1,0 +1,113 @@
+{
+  "recorded_at": 1791229821,
+  "scope": "this_authorized_turn_only_not_a_reset_of_prior_daily_usage",
+  "source_gets": 12,
+  "public_ria_gets": 11,
+  "olx_gets": 1,
+  "actual_body_bytes": 7189083,
+  "paid_ria_calls": 0,
+  "fx_gets": 0,
+  "telegram_attempts": 0,
+  "retry_count": 0,
+  "http200": 12,
+  "source_hold": null,
+  "hourly_12_get_cap_exhausted": true,
+  "requests": [
+    {
+      "id": "40106586",
+      "url": "https://auto.ria.com/auto_skoda_octavia_40106586.html",
+      "bytes": 524193,
+      "started_at": "2026-10-05T19:04:57.958461+00:00",
+      "completed_at": "2026-10-05T19:05:08.692885+00:00",
+      "reserved_commit": "06ce469134feeb2309f93e4b71a4ae7ba25b0808"
+    },
+    {
+      "id": "936176691",
+      "url": "https://www.olx.ua/d/uk/obyavlenie/skoda-octavia-a5-1-6-tdi-2012-ID11m6k3.html",
+      "bytes": 1590038,
+      "started_at": "2026-10-05T19:06:28.776243+00:00",
+      "completed_at": "2026-10-05T19:06:36.681227+00:00",
+      "reserved_commit": "2d41c51d6c6549c39b110ee38d36da51ca9ef80c"
+    },
+    {
+      "id": null,
+      "url": "https://auto.ria.com/car/skoda/octavia/",
+      "bytes": 506539,
+      "started_at": "2026-10-05T19:09:56.998265+00:00",
+      "completed_at": "2026-10-05T19:10:07.070954+00:00",
+      "reserved_commit": "82e788fb886bb421bb60bff4f4ee44df4b9293b4"
+    },
+    {
+      "id": null,
+      "url": "https://auto.ria.com/car/skoda/octavia/a5-fl/",
+      "bytes": 466262,
+      "started_at": "2026-10-05T19:13:22.004784+00:00",
+      "completed_at": "2026-10-05T19:13:30.295358+00:00",
+      "reserved_commit": "03fbe7da20b3bb7d129a86235c6e60d97fe4ba04"
+    },
+    {
+      "id": null,
+      "url": "https://auto.ria.com/car/skoda/octavia/a5-fl/1-6d-mt/",
+      "bytes": 420853,
+      "started_at": "2026-10-05T19:17:37.630403+00:00",
+      "completed_at": "2026-10-05T19:17:46.087828+00:00",
+      "reserved_commit": "b27fa3c8e248c7fa11a54afa7c30a2b5e1e9faf0"
+    },
+    {
+      "id": null,
+      "url": "https://auto.ria.com/car/skoda/octavia/a5-fl/1-6d-mt/?page=2",
+      "bytes": 162340,
+      "started_at": "2026-10-05T19:21:28.603152+00:00",
+      "completed_at": "2026-10-05T19:21:36.338976+00:00",
+      "reserved_commit": "755a9565af178f42b78006b899dc8d8c19dd9726"
+    },
+    {
+      "id": "40219391",
+      "url": "https://auto.ria.com/auto_skoda_octavia_40219391.html",
+      "bytes": 623733,
+      "started_at": "2026-10-05T19:32:27.633112+00:00",
+      "completed_at": "2026-10-05T19:32:38.319614+00:00",
+      "reserved_commit": "71dffc0b4b4d2541bc2c88f08e88f762f9ce256f"
+    },
+    {
+      "id": "40019461",
+      "url": "https://auto.ria.com/auto_skoda_octavia_40019461.html",
+      "bytes": 590919,
+      "started_at": "2026-10-05T19:32:42.324437+00:00",
+      "completed_at": "2026-10-05T19:32:51.373958+00:00",
+      "reserved_commit": "71dffc0b4b4d2541bc2c88f08e88f762f9ce256f"
+    },
+    {
+      "id": "40133416",
+      "url": "https://auto.ria.com/auto_skoda_octavia_40133416.html",
+      "bytes": 575401,
+      "started_at": "2026-10-05T19:32:55.375064+00:00",
+      "completed_at": "2026-10-05T19:33:06.398640+00:00",
+      "reserved_commit": "71dffc0b4b4d2541bc2c88f08e88f762f9ce256f"
+    },
+    {
+      "id": "40391488",
+      "url": "https://auto.ria.com/auto_skoda_octavia_40391488.html",
+      "bytes": 572959,
+      "started_at": "2026-10-05T19:33:10.400475+00:00",
+      "completed_at": "2026-10-05T19:33:20.545291+00:00",
+      "reserved_commit": "71dffc0b4b4d2541bc2c88f08e88f762f9ce256f"
+    },
+    {
+      "id": "39809027",
+      "url": "https://auto.ria.com/auto_skoda_octavia_39809027.html",
+      "bytes": 584160,
+      "started_at": "2026-10-05T19:33:24.546402+00:00",
+      "completed_at": "2026-10-05T19:33:33.679813+00:00",
+      "reserved_commit": "71dffc0b4b4d2541bc2c88f08e88f762f9ce256f"
+    },
+    {
+      "id": "40343200",
+      "url": "https://auto.ria.com/auto_skoda_octavia_40343200.html",
+      "bytes": 571686,
+      "started_at": "2026-10-05T19:33:37.681463+00:00",
+      "completed_at": "2026-10-05T19:33:47.353922+00:00",
+      "reserved_commit": "71dffc0b4b4d2541bc2c88f08e88f762f9ce256f"
+    }
+  ]
+}

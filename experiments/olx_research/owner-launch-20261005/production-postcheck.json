@@ -1,0 +1,88 @@
+{
+  "log_id": "a3732da8-fcf9-4e0b-b016-7a95741638af",
+  "observed_at": "2026-10-05T19:46:56.217789761Z",
+  "configuration": {
+    "active_window_enabled": false,
+    "automobile_admin_copies_enabled": false,
+    "delivery_enabled": true,
+    "full_scan_enabled": false,
+    "html_shadow_configured": true,
+    "manual_payment_notices_enabled": true,
+    "monitor_enabled": true,
+    "provider_valuation_enabled": true,
+    "recent_publications_enabled": true,
+    "release": "2d81e13ab04077133eca0a668a575e2d571b6cd7",
+    "shared_distribution_enabled": true,
+    "strict_paid_sources": true,
+    "valuation_selection_status": "api_range_selection_native_parity_unverified"
+  },
+  "schedule": {
+    "active_period": "evening",
+    "budget_limited": false,
+    "enabled": true,
+    "estimate_basis": "one_page_per_poll_standard_24h_day",
+    "interval_seconds": 60,
+    "minimum_planning_limits": {
+      "daily": 5091,
+      "hourly": 480
+    },
+    "periods": [
+      {
+        "end": "08:00",
+        "interval_seconds": 3600,
+        "name": "night",
+        "requested_interval_seconds": 3600,
+        "start": "23:00"
+      },
+      {
+        "end": "18:00",
+        "interval_seconds": 110,
+        "name": "day",
+        "requested_interval_seconds": 110,
+        "start": "08:00"
+      },
+      {
+        "end": "23:00",
+        "interval_seconds": 60,
+        "name": "evening",
+        "requested_interval_seconds": 60,
+        "start": "18:00"
+      }
+    ],
+    "requested_interval_seconds": 60,
+    "requested_search_calls_per_day": 3818,
+    "timezone": "Europe/Kyiv"
+  },
+  "running": true,
+  "pending_jobs": {
+    "reserved_for_new_publications": 11
+  },
+  "delivery": {
+    "last_client_accepted_at": 1791229311.0602698,
+    "last_owner_accepted_at": 1791228595.6606562,
+    "receipt_basis": "telegram_api_acceptance",
+    "states_queued_last_hour": {
+      "sent": 26
+    },
+    "unattempted_admin_copies_remaining": 0
+  },
+  "limits": {
+    "daily": 90000,
+    "hourly": 4500,
+    "total": 1102160
+  },
+  "read_only": true,
+  "production_mutations": 0,
+  "telegram_calls_by_this_task": 0,
+  "paid_ria_calls_by_this_task": 0,
+  "olx_flags_not_refetched": true,
+  "owner": {
+    "current_confirmed_paid": true,
+    "ready": true,
+    "searches_enabled": 1,
+    "owner_approval_recorded": true,
+    "approval_actor_is_configured_owner": true,
+    "access_basis": "approved_manual_purchase_and_current_entitlement",
+    "basis": "source_pipeline_health label administrator is exactly settings.admin_telegram_id"
+  }
+}

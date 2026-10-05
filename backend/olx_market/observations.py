@@ -1,11 +1,86 @@
 """Additional source-declared evidence from complete already acquired HTML.
 No inferred generation by year. No contacts/VIN/description content exported.
 """
-import copy,hashlib,re,json
+import copy,hashlib,re,json,html
 from experiments.olx_offline.source_dates import ASSIGNMENT
 from experiments.olx_offline.html_snapshot import clean_url
 from experiments.olx_offline.html_snapshot import SearchParser
 from .vehicle_attributes import corroborate
+from .source_tracking import same_detail_url
+
+
+VARIANT_WORDS=r'(?:дорестайл\w*|до\s*рестайл\w*|pre[ -]?fl|fl|рестайл\w*|restyling|facelift)'
+OWN_VARIANT_WORDS=r'(?:дорестайл(?:інг|инг)?|до\s*рестайл(?:інг|инг)?|pre[ -]?fl|fl|рестайл(?:інг|инг)?|restyling|facelift)'
+
+
+def _description_variant(nodes,car):
+    """One complete, matching own-car claim; engine variants are not car variants.
+
+    The narrowly observed sale clause ties brand/model/family directly to the
+    variant. A different car, a later engine claim, or a negated/ambiguous claim
+    cannot supply a missing field. Full seller prose stays in memory.
+    """
+    desc=[n for n in nodes if n.closed and n.attrs.get('data-testid')=='ad_description']
+    scripts=[n for n in nodes if n.tag=='script' and n.closed and n.attrs.get('id')=='olx-init-config']
+    if len(desc)!=1 or len(scripts)!=1:return None,None,False
+    try:
+        script=''.join(v for v in scripts[0].children if isinstance(v,str))
+        assignments=list(ASSIGNMENT.finditer(script))
+        if len(assignments)!=1:raise ValueError()
+        state,_=json.JSONDecoder().raw_decode(script[assignments[0].end():])
+        if isinstance(state,str):state=json.loads(state)
+        ad=state['ad']['ad']
+        if (str(ad.get('id'))!=car.get('id') or not same_detail_url(ad.get('url'),car.get('url'))
+                or ad.get('isActive') is not True or ad.get('status')!='active'
+                or not isinstance(ad.get('description'),str)):raise ValueError()
+        text=' '.join(desc[0].text().split())
+        headings=[n.text() for n in desc[0].nodes() if n.tag in ('h2','h3','h4') and n.closed]
+        if headings and headings[0] in ('Опис','Описание') and text.startswith(headings[0]+' '):
+            text=text[len(headings[0]):].strip()
+        source=html.unescape(re.sub(r'<[^>]*>',' ',ad['description']))
+        if text!=' '.join(source.split()):raise ValueError()
+    except (ValueError,KeyError,TypeError,AttributeError):return None,None,False
+    variants=set();ambiguous=False
+    for clause in re.split(r'[.!?;\n]',source):
+        own=re.match(r'^\s*(?:продам|продаю)\s+(?:власну|свою|свій|мой|свой|собственную)\s+'
+                     r'(?:skoda|шкода)\s+(?:octavia|октавія|октавия)\s+[aа]\s?5\s+',clause,re.I)
+        if not own:continue
+        suffix=clause[own.end():].strip()
+        explicit=re.match(r'(?:не\s+|not\s+|без\s+)?'+OWN_VARIANT_WORDS+r'(?!\w)',suffix,re.I)
+        if not explicit:continue
+        # A restyled engine/version is not an explicit restyled vehicle.
+        following=suffix[explicit.end():].strip()
+        if re.match(r'(?:(?:версі\w*|верси\w*)\s+)?(?:двигун\w*|двигател\w*|engine)(?!\w)',following,re.I):continue
+        variant=octavia_variant(suffix)
+        if variant:variants.add(variant)
+        else:ambiguous=True
+    if not variants and not ambiguous:return None,None,False
+    proof={'basis':'explicit_own_car_complete_matching_description','independently_verified':False,
+           'description_sha256':hashlib.sha256(desc[0].text().encode()).hexdigest(),
+           'identity_basis':'matching_active_public_state_source_id_and_url'}
+    return (next(iter(variants)) if len(variants)==1 and not ambiguous else None,
+            proof,ambiguous or len(variants)>1)
+
+
+def _running_paint_condition(paint):
+    """Observed source enums only; an arbitrary nonempty label is not clean."""
+    paint=' '.join(paint.replace('\u200b','').split())
+    repair={
+        'Потрібно відновлення (рихтування, фарбування, заміна деталей, зварювання)',
+        'Требуется восстановление (рихтовка, покраска, замена деталей, сварка)',
+        'Требует восстановления (рихтовка, покраска, замена деталей, сварка)',
+        "Не відремонтовані сліди експлуатації (подряпини, вм'ятини і т.д.)",
+        'Не отремонтированные следы эксплуатации (царапины, вмятины и т.д.)',
+    }
+    running={
+        'Як нове, без видимих слідів експлуатації',
+        'Как новое, без видимых следов эксплуатации',
+        'Незначні сліди експлуатації (дрібні подряпини, сколи)',
+        'Незначительные следы эксплуатации (мелкие царапины, сколы)',
+        'Професійно відремонтовані сліди експлуатації',
+        'Профессионально отремонтированные следы эксплуатации',
+    }
+    return 'running_body_repair' if paint in repair else 'seller_declared_running' if paint in running else None
 
 
 def octavia_variant(text):
@@ -101,17 +176,28 @@ def enrich(data, parsed):
             car['generation']='A5'
             evidence['generation']={'basis':'seller_declared_title','independently_verified':False,
                                     'title_sha256':hashlib.sha256(title.encode()).hexdigest()}
-            variant=octavia_variant(title+' '+fields.get('Покоління',''))
+            car.pop('generation_variant',None)
+            visible_variant=title+' '+fields.get('Покоління','')
+            variant=octavia_variant(visible_variant)
+            described,description_proof,ambiguous=_description_variant(nodes,car)
+            visible_ambiguous=not variant and bool(re.search(r'(?<!\w)'+VARIANT_WORDS+r'(?!\w)',visible_variant,re.I))
+            if ambiguous or visible_ambiguous or (variant and described and variant!=described):
+                conflicts.append('generation_variant');variant=None
+            elif described and not variant:
+                variant=described
             if variant:
                 car['generation_variant']=variant
-                evidence['generation_variant']={'basis':'explicit_visible_seller_vocabulary',
+                evidence['generation_variant']=description_proof if described and not octavia_variant(visible_variant) else {'basis':'explicit_visible_seller_vocabulary',
                     'independently_verified':False,'title_sha256':hashlib.sha256(title.encode()).hexdigest()}
+                if description_proof and described==variant:
+                    evidence['generation_variant']['description_sha256']=description_proof['description_sha256']
         elif a5 and other:conflicts.append('generation')
     tech=fields.get('Технічний стан',''); paint=fields.get('Лакофарбове покриття','')
+    car.pop('research_condition',None)
     if tech and 'Технічний стан' not in conflicts and 'Лакофарбове покриття' not in conflicts:
         if re.search(r'не на ходу',tech,re.I):condition='not_running'
         elif re.search(r'На ходу, (?:технічно справна|технически исправна)',tech,re.I):
-            condition='running_body_repair' if paint.startswith(('Потрібно відновлення','Не відремонтовані','Требует восстановления','Не отремонтированные')) else 'seller_declared_running' if paint else None
+            condition=_running_paint_condition(paint)
         else:condition=None
         if condition:
             damage=description_damage(nodes)

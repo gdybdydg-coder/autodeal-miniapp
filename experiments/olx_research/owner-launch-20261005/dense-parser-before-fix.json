@@ -1,0 +1,194 @@
+{
+  "kind": "six_current_frozen_full_public_html_not_a_ready_market_profile",
+  "checked_at": 1791228891,
+  "attempted": 6,
+  "parsed": 2,
+  "admission_complete": 0,
+  "minimum": 8,
+  "independent_photo_reviews": 0,
+  "owner_authorized": true,
+  "client_authorized": false,
+  "technical_ready": false,
+  "telegram_attempts": 0,
+  "method_selected": null,
+  "frozen_total": 14,
+  "captured_reference": 1,
+  "captured_holdout": 1,
+  "frozen_controls": 3,
+  "estimated_controls": 0,
+  "evaluation": {
+    "split_seed": "olx-stage2323-v1",
+    "split_provenance": [
+      {
+        "seed": "olx-stage2323-v1",
+        "basis": "legacy_frozen_partition"
+      }
+    ],
+    "benchmark_kind": "withheld_asking_price_only",
+    "frozen_holdout_count": 3,
+    "loaded_holdout_count": 1,
+    "reference_count": 1,
+    "eligible_holdout_count": 0,
+    "estimated_holdout_count": 0,
+    "missing_holdout_count": 2,
+    "known_ineligible_holdout_count": 1,
+    "unestimated_eligible_holdout_count": 0,
+    "frozen_estimate_coverage": "0",
+    "loaded_estimate_coverage": "0",
+    "eligible_coverage": null,
+    "evaluation_denominators": {
+      "frozen_holdout_ads": 3,
+      "loaded_holdout_ads": 1,
+      "eligible_loaded_ads": 0,
+      "estimated_loaded_ads": 0,
+      "missing_frozen_ads": 2,
+      "known_ineligible_loaded_ads": 1,
+      "unestimated_eligible_loaded_ads": 0
+    },
+    "unknown_holdout_count": 1,
+    "metrics": {
+      "median": {
+        "evaluated": 0,
+        "mean_absolute_usd": null,
+        "mean_absolute_percent": null
+      },
+      "trimmed_mean": {
+        "evaluated": 0,
+        "mean_absolute_usd": null,
+        "mean_absolute_percent": null
+      },
+      "weighted_median": {
+        "evaluated": 0,
+        "mean_absolute_usd": null,
+        "mean_absolute_percent": null
+      }
+    },
+    "rows": [
+      {
+        "target_source": "auto_ria",
+        "target_id": "40133416",
+        "benchmark_kind": "withheld_asking_price_not_sale_or_fair_value",
+        "benchmark_usd": "7200",
+        "eligible": false,
+        "error_against_asking": {},
+        "comparison_group_ids": [],
+        "comparison_group_keys": [],
+        "same_comparable_group_for_all_methods": null,
+        "review": {
+          "assessment": {
+            "status": "profitability_unconfirmed",
+            "target_id": "40133416",
+            "reasons": [
+              "missing_engine_cc",
+              "missing_fuel",
+              "ria_public_attribute_dictionary_pending",
+              "ria_public_engine_cc_pending",
+              "ria_public_fuel_pending"
+            ],
+            "methods": {},
+            "reference_usd": null,
+            "sample": 0,
+            "independent_vehicles_verified": null,
+            "sample_unit": "distinct_ads_after_known_vehicle_dedup",
+            "real_world_accuracy_verified": false,
+            "price_basis": "corroborated_full_page_asking_display_not_completed_sale",
+            "seller_claims_independently_verified": false,
+            "recommended": null,
+            "extra_ria_margin_percent": "0",
+            "required_sample": 8,
+            "used_comparables": [],
+            "exclusions": {},
+            "excluded": [],
+            "selected_method": null,
+            "body_policy": {
+              "id": "skoda-octavia-a5-body-v1",
+              "source_body": "liftback",
+              "comparison_body": "liftback",
+              "sources": [
+                "https://www.skoda-storyboard.com/en/models/octavia/first-sketches-of-the-innovated-octavia-take-a-look/",
+                "https://www.skoda-storyboard.com/en/press-kits/skoda-octavia-press-kit/history-60-years-of-the-skoda-octavia/",
+                "https://cdn.skoda-storyboard.com/2023/03/230301_The-perfect-everyday-companion-25-years-of-the-Skoda-Octavia-Combi_06db1a55.pdf"
+              ],
+              "reviewed_date": "2026-10-05",
+              "physical_body_verified": false
+            }
+          },
+          "status": "insufficient",
+          "minimum_full_sample": 8,
+          "max_allowed_leave_one_shift_percent": "5",
+          "leave_one_out": [],
+          "methods": {},
+          "physical_independence_verified": false
+        }
+      }
+    ],
+    "sale_price_accuracy_verified": false,
+    "profitable_labels": 0,
+    "false_positive": null,
+    "false_negative": null,
+    "winner_selected": null,
+    "unknown_crossposts_may_remain": true
+  },
+  "rows": [
+    {
+      "id": "40219391",
+      "role": "holdout",
+      "adapter_error": "ria_public_fuel_attribute_conflict"
+    },
+    {
+      "id": "40019461",
+      "role": "holdout",
+      "adapter_error": "ria_public_fuel_attribute_conflict"
+    },
+    {
+      "source": "auto_ria",
+      "id": "40133416",
+      "role": "holdout",
+      "source_admission_reasons": [
+        "ria_public_attribute_dictionary_pending",
+        "ria_public_engine_cc_pending",
+        "ria_public_fuel_pending"
+      ],
+      "asking_price": "7200",
+      "currency": "USD",
+      "year": 2011,
+      "mileage_km": 286000,
+      "body": "liftback",
+      "drive_type": "front",
+      "power_hp": 105,
+      "condition": "seller_declared_running",
+      "vin_key_corroborated": true,
+      "photos_reviewed": false
+    },
+    {
+      "id": "40391488",
+      "role": "reference",
+      "adapter_error": "ria_public_fuel_attribute_conflict"
+    },
+    {
+      "id": "39809027",
+      "role": "reference",
+      "adapter_error": "ria_public_fuel_attribute_conflict"
+    },
+    {
+      "source": "auto_ria",
+      "id": "40343200",
+      "role": "reference",
+      "source_admission_reasons": [
+        "ria_public_attribute_dictionary_pending",
+        "ria_public_engine_cc_pending",
+        "ria_public_fuel_pending"
+      ],
+      "asking_price": "7800",
+      "currency": "USD",
+      "year": 2010,
+      "mileage_km": 267000,
+      "body": "liftback",
+      "drive_type": "front",
+      "power_hp": 105,
+      "condition": "seller_declared_running",
+      "vin_key_corroborated": true,
+      "photos_reviewed": false
+    }
+  ]
+}

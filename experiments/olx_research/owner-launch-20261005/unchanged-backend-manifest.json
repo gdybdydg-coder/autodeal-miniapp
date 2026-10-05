@@ -1,0 +1,730 @@
+{
+  "basis": "direct live_commit to final research working tree comparison of every existing backend Python file",
+  "deployed_commit": "2d81e13ab04077133eca0a668a575e2d571b6cd7",
+  "unchanged_count": 178,
+  "changed_existing_olx_only": [
+    "backend/olx_market/evaluation.py",
+    "backend/olx_market/observations.py",
+    "backend/olx_market/ria_reference.py",
+    "backend/olx_market/valuation.py",
+    "backend/olx_owner_feed.py"
+  ],
+  "new_runtime_olx_only": [
+    "backend/olx_market/ria_public_reference.py",
+    "backend/olx_market/identity_review.py"
+  ],
+  "unchanged": [
+    {
+      "path": "backend/__init__.py",
+      "sha256": "b9877ab7d8d9b13480a62e37a55fb9ef9c9f178f5e35287c67597b6d2769b02e"
+    },
+    {
+      "path": "backend/active_window.py",
+      "sha256": "c41313e816ca3180508c04356a7a7425f9e03c0f1ff5c203e049c26d523faca7"
+    },
+    {
+      "path": "backend/api_attempt_audit.py",
+      "sha256": "c351e5bbfc63ce130b9d396e353657443522524920e65da2389d615524800ec5"
+    },
+    {
+      "path": "backend/app.py",
+      "sha256": "ffeb0083c7f9f0c4f23eb7144adfc30d48c98b1af90162a0dfe83b593ddab6c0"
+    },
+    {
+      "path": "backend/auth.py",
+      "sha256": "ce05c4d4ff9c3daa4dfcdb40f95a9b4a29d34abf39993dfee67bba857456a2c5"
+    },
+    {
+      "path": "backend/auto_ria.py",
+      "sha256": "2c85ca0f9e3be4e9901d6ee795cf4223d78f295c415a877ec5fe5479be0d7f4b"
+    },
+    {
+      "path": "backend/billing.py",
+      "sha256": "eb9e0c32dfbfee4fa40bc25931d187726c0579a188cf8709304e963fbaf33289"
+    },
+    {
+      "path": "backend/billing_campaign.py",
+      "sha256": "2fc00912fbb47bd4474463166e61e0387d34de25f7b09c2128f433f7669c6f55"
+    },
+    {
+      "path": "backend/billing_models.py",
+      "sha256": "d8b521b94224aee77e23837de1bcc9696685391d4852dc3ad8c744de476f84a5"
+    },
+    {
+      "path": "backend/bot_commands.py",
+      "sha256": "b101e8812356375b7bbaba1f3512888c621bd709c5bd935175cc6a8ab5f05731"
+    },
+    {
+      "path": "backend/compatible_searches.py",
+      "sha256": "1dcd254cbf7b980d10bc414d806212d3157b79e1cf1806f28c9f5e38ddc8a7af"
+    },
+    {
+      "path": "backend/delivery_cohort_audit.py",
+      "sha256": "a7b5e880ff42c58cd305ac6b69b12ba10c4073688a2723d294abb862a6693cf1"
+    },
+    {
+      "path": "backend/delivery_diagnostic.py",
+      "sha256": "9bb620460a55785aba3246b831a73ad589866e08dfaa217231423739a72f0454"
+    },
+    {
+      "path": "backend/failed_delivery_recovery.py",
+      "sha256": "9241cd4c3680b634962c5194a6329eea824798ee738dc6ffaad764939132a402"
+    },
+    {
+      "path": "backend/full_scan.py",
+      "sha256": "c0f1c8eb4e3f2b63297cf7634f638fdaf1055533f64812d455f5db81cb7985cd"
+    },
+    {
+      "path": "backend/html_shadow.py",
+      "sha256": "129c6b2ef60fcc266e21b69d51b5d7450712454c431e98f52752aa2be0d3c12a"
+    },
+    {
+      "path": "backend/launch.py",
+      "sha256": "f812daafac1ddf96671f40ee750c0c9d8f45106edb3ec3378afd4a57b61b88cd"
+    },
+    {
+      "path": "backend/listing_check.py",
+      "sha256": "bdb92fcc77981f7591aa26e687f2ab4bc5f6a09756c1adcf9d3d53344698c3ab"
+    },
+    {
+      "path": "backend/manual_access_audit.py",
+      "sha256": "3298a279b0b90c9319ff4b88518e8b802d0073242f5a1c5182fdb1e1d27ddcb8"
+    },
+    {
+      "path": "backend/manual_checkout.py",
+      "sha256": "350d494d355eec252f4d137d45331980a7b3753ad19b03403786edbb0c79a454"
+    },
+    {
+      "path": "backend/manual_launch.py",
+      "sha256": "cbb81c8ae5ca774eacf8fb02ccb8ae0da4a8dea7a9dcda2b7669a284d99586b5"
+    },
+    {
+      "path": "backend/manual_payment_models.py",
+      "sha256": "cf4d162eff9d4a6333fd90b97e561850214f50d3200e9a6692be6bcf15a1e431"
+    },
+    {
+      "path": "backend/manual_payment_routes.py",
+      "sha256": "760b80c37df50f2e8ed0a49d38b250e8acba58e9da706b878e4c919767d4afa0"
+    },
+    {
+      "path": "backend/manual_payments.py",
+      "sha256": "db3de380629b20d5347a473558da66823d907b897ef41b0e71d5352bf4225939"
+    },
+    {
+      "path": "backend/manual_receipt_proxy.py",
+      "sha256": "ce5e28233175d3223586c92ab0c5744d217d1f89a71ba2293050ec99a4b84048"
+    },
+    {
+      "path": "backend/manual_receipts.py",
+      "sha256": "dc7dbf955fdf21346b3f7e2aaccc0f9f87ca82410cd17a599a7f179d75f65752"
+    },
+    {
+      "path": "backend/manual_repeat_notice.py",
+      "sha256": "de247b854ac0a9b9413b9993573a4089393d2f219941a7aa9fb0601a783b907d"
+    },
+    {
+      "path": "backend/manual_repeat_preflight.py",
+      "sha256": "8af47e9c0cea871bb3143fb3c08887eaf31bc4e215966d9116a70e48b0045182"
+    },
+    {
+      "path": "backend/market_cache.py",
+      "sha256": "8ee842852ee20d8aeb33bb99a378f342c61a3b0872138553a25f1fbcb28bcafd"
+    },
+    {
+      "path": "backend/models.py",
+      "sha256": "7770287aa38313bd6c7a24301f96c6e344ed735c6958243841772f6272d8c482"
+    },
+    {
+      "path": "backend/monitor.py",
+      "sha256": "f15f3eb36072d240f301f314347e90aef0d736e5d0135b297497ef6a9256462a"
+    },
+    {
+      "path": "backend/notification_diagnostic.py",
+      "sha256": "ae01382234760d5428cccdf7cda3a1feb971b38dcb02c4d2ba62a3d3a8559bf5"
+    },
+    {
+      "path": "backend/notification_recovery.py",
+      "sha256": "455811916ca7ae0a3d0623173b26d63b8656015005dc3638f528efd95f94b30f"
+    },
+    {
+      "path": "backend/olx_market/__init__.py",
+      "sha256": "cdbd294c87201fdd16e1dcf1ea2da0821568e4622984a08e2d144d77880ed98b"
+    },
+    {
+      "path": "backend/olx_market/body_policy.py",
+      "sha256": "f3c3e5f63546d6454e734babab0af6c6212d5cf4689e2e680cf3699bf499d770"
+    },
+    {
+      "path": "backend/olx_market/candidates.py",
+      "sha256": "83fa6d70fec101f9d7ec1e0fb76c493f6f2f00d2035026263577e177455aa4d6"
+    },
+    {
+      "path": "backend/olx_market/fx_policy.py",
+      "sha256": "cda409abb77c46c111d85fabbabcf26a4c119084150c23e80cf7c5d6637eb2db"
+    },
+    {
+      "path": "backend/olx_market/ria_provider.py",
+      "sha256": "b288eb5667e6c0f8c636766c336649389c27525b2afb6c450a5a12a702aa5b4f"
+    },
+    {
+      "path": "backend/olx_market/source_tracking.py",
+      "sha256": "fab6a4c9e8d7b3850ed7ca024e17b77252a7e426dbd90f029cb1e6c162980b86"
+    },
+    {
+      "path": "backend/olx_market/vehicle_attributes.py",
+      "sha256": "b27c634c99ef017776222a305276229e971a7c155fd470403a1cd8dae9932c74"
+    },
+    {
+      "path": "backend/olx_owner_batch.py",
+      "sha256": "aa40ba097a2e4b64a8663aceed77ad105d4bcfafb624f5c9f2a54aa608487142"
+    },
+    {
+      "path": "backend/olx_owner_canary.py",
+      "sha256": "48ca547656815ed4ec24c4505f6a975c0ea961442dbf2d79a9370a91d21b6335"
+    },
+    {
+      "path": "backend/olx_ria_probe.py",
+      "sha256": "cd5e34ce573aa14d6b8b6c6dfd25d73dcd4950844bd7d6f76c3013c85f08f19f"
+    },
+    {
+      "path": "backend/olx_test_adapter.py",
+      "sha256": "b9d299220ed8a831d02d09d8991bbd871c765a93d5726bba5d06114ff13221b0"
+    },
+    {
+      "path": "backend/operational_stats.py",
+      "sha256": "296f6bf9f11e2e4c77928ea09824d63e0bbfb10cd346a3b8755ba62a268c347c"
+    },
+    {
+      "path": "backend/owner_alerts.py",
+      "sha256": "3ab1be013f2fc887b1bf9ba75e940bb484692b477f41cc39bbabace2de8c48f0"
+    },
+    {
+      "path": "backend/owner_car_notifications.py",
+      "sha256": "2cc3e7a123bcc393b9ceca717623b7f46b17f11c0d1ca7bdc983396cb7133668"
+    },
+    {
+      "path": "backend/owner_trace.py",
+      "sha256": "49e50d19dda4528c01145e0add2c5382b519992abcc356ff440a529429ac54d6"
+    },
+    {
+      "path": "backend/paid_owner_restoration.py",
+      "sha256": "b8b56927f7e15995cdf415e8e8b0f581d1fc342bc791d497aba388972d4e10d4"
+    },
+    {
+      "path": "backend/paid_source_access.py",
+      "sha256": "279ce419e93a07ebdc4fca73599bc3e7f8bc754f6486774d2f2e4c2e95835bea"
+    },
+    {
+      "path": "backend/peer_cache.py",
+      "sha256": "30d5f149e0dc4d2c006a299a02133f20df9b58f97258ba8ce789fc123488f876"
+    },
+    {
+      "path": "backend/photo_repair.py",
+      "sha256": "c61081c6fa11e772aaf5ae36c963ea3d7f8bde4207fcfa1df86f570aa051563e"
+    },
+    {
+      "path": "backend/poll_schedule.py",
+      "sha256": "ab765dd1ecdcac7ad23e70d94542e0d00260a727bc3e2ae14e34ddbed73153e9"
+    },
+    {
+      "path": "backend/purchase_stats.py",
+      "sha256": "aa943f77ea52b907d35d30f4027ef6e0dfa9429617d42ccf5e16317aa78172c0"
+    },
+    {
+      "path": "backend/quota_management.py",
+      "sha256": "4c0977cc1e8f682c7dc3820868ab79fa096cccacc057ee35489db3971065df18"
+    },
+    {
+      "path": "backend/recent_publications.py",
+      "sha256": "5437ee5df3324f22d9775867be6c217388ade20e2b9818051048bdb66cba4a9b"
+    },
+    {
+      "path": "backend/reference_valuation.py",
+      "sha256": "4e39be44a8c8c82f04871a6a8ee48632787bdb87dca33ee6b608e2a2d3963f26"
+    },
+    {
+      "path": "backend/ria_ai_price.py",
+      "sha256": "32220af50a960319861ac831dcec07c1105cce4c54ba0cb91f27d0f578566e82"
+    },
+    {
+      "path": "backend/ria_budget.py",
+      "sha256": "744b221e2ddbf97915c96229fd3c40674e44d0696d274bb6cfd757385b79b519"
+    },
+    {
+      "path": "backend/ria_market_range.py",
+      "sha256": "095425a62b4bb5bdacf0f42da11a5306c2ddb6247ffe4fbf6956ea2ebb26ab39"
+    },
+    {
+      "path": "backend/ria_rollout.py",
+      "sha256": "c54924063a13eb6428280ffc0c05040bf26ffcad58f8fc927af4e9e4ce5b498a"
+    },
+    {
+      "path": "backend/ria_search.py",
+      "sha256": "6265ad505c1ab877c8dbe70d3ee37779d8f70cdf48fbff5059ca7345792157e0"
+    },
+    {
+      "path": "backend/ria_source_comparison.py",
+      "sha256": "cef5cd0e21d1d5d1cbd6e6d9c21f7a50e98f1b2137b2aba798a794fed5a16df0"
+    },
+    {
+      "path": "backend/ria_validation.py",
+      "sha256": "f9e5048023991ef2af84c768bef279d939eaebea241849953dd202d363de4855"
+    },
+    {
+      "path": "backend/shared_distribution.py",
+      "sha256": "d777c558711b995929df5851ed8b5709afb9ee16f82c33be32e19b75e0318e1c"
+    },
+    {
+      "path": "backend/source_pipeline_health.py",
+      "sha256": "5eec6b1daae8834f1355325b5bb8ff1f1bbe7ff139480ec6cdafac32ae4a2a29"
+    },
+    {
+      "path": "backend/stars_test.py",
+      "sha256": "c9fcf2b80126195e3a43604f2faaeb5d9a7172cefb08109cfdce015382262e1a"
+    },
+    {
+      "path": "backend/subscription_preview.py",
+      "sha256": "b52fd406d93eef4866084d79e8f910d45101ddd624f50210f16c5dc4cd23b1f4"
+    },
+    {
+      "path": "backend/subscription_promotion.py",
+      "sha256": "e8dbba5f58754d39c6dbfaab6ea0196da3dc2181417488c390f098c8f229701f"
+    },
+    {
+      "path": "backend/tariff_reminder_audience.py",
+      "sha256": "37f01f33adcc839d5de64db662bf69f8a0cb517f6c3faba6a57d1d167bee3d5d"
+    },
+    {
+      "path": "backend/tariff_reminder_audit.py",
+      "sha256": "13f6da26da2213eda2102fa5bfeb9cd03f5db9f5c9d501fea4e6d2046d90be63"
+    },
+    {
+      "path": "backend/tariff_reminder_commands.py",
+      "sha256": "661718886c64033959e4c0e8e865c421cc639a7dd51a2c2b5b663f3554b0e828"
+    },
+    {
+      "path": "backend/tariff_reminders.py",
+      "sha256": "fc19c27c33e484f56e5686bfdb90fade9a3ca152246b517d8a5ad298ee52a14e"
+    },
+    {
+      "path": "backend/telegram_photo.py",
+      "sha256": "a0f3e50fbc70b2a77a98a77424613ef1f0992e294ec69e16917fcc0a1b3e992a"
+    },
+    {
+      "path": "backend/telegram_setup.py",
+      "sha256": "b5cc824958fd4984a910321557d014af68f90e50dcdf409a181d8750819b44e1"
+    },
+    {
+      "path": "backend/tests/conftest.py",
+      "sha256": "efdddf14698e16e31ad146d0d23a357113228c2bfddfa6da379fe1fa0fe181e4"
+    },
+    {
+      "path": "backend/tests/ria_cost_replay.py",
+      "sha256": "eb6ba654c6654c667167085ce89a5709a9780492abadd0e8abad609c450c9479"
+    },
+    {
+      "path": "backend/tests/test_active_paid_integration.py",
+      "sha256": "04f3a276df5f6452b092f3051b8ec5e587b63166c7b7d6609b16428bf94335e3"
+    },
+    {
+      "path": "backend/tests/test_active_window.py",
+      "sha256": "5039cef05b87b780030b6d32f90b6ac963d667b520cd699be7d0637311bdad1a"
+    },
+    {
+      "path": "backend/tests/test_api_access_cost.py",
+      "sha256": "c46020cd3c3dfda348d7f029b547152eabb8f210041486201b37c8fd9265e15b"
+    },
+    {
+      "path": "backend/tests/test_api_attempt_accounting.py",
+      "sha256": "663647918ead5e3d064fe4d709ed30ccc4dd198e06dd43a2d93aca729bd34519"
+    },
+    {
+      "path": "backend/tests/test_api_retry_cost.py",
+      "sha256": "9a119f9df7e24a92614f4446ccae8976e06bf16188a6c3de813fbe0170d5945d"
+    },
+    {
+      "path": "backend/tests/test_api_rollback_delivery.py",
+      "sha256": "e73d96dcf9812bbb4f60b09a27508886de9f8705dbc2eb7b33688eafe722e416"
+    },
+    {
+      "path": "backend/tests/test_auto_ria.py",
+      "sha256": "d8b7ac85ab2ebd044a11ba6f6ac61fde0996269f84c0be85be7cad45b5327ac3"
+    },
+    {
+      "path": "backend/tests/test_backend.py",
+      "sha256": "d9435f894f50d448f27c1ccdf06ea2cd7c6c4adc5cb831f26df22c807c7d7c30"
+    },
+    {
+      "path": "backend/tests/test_billing_launch.py",
+      "sha256": "aaae2d612e2f172849b0b9a44be42b57d55f465054be9919e1f90be5af6becfa"
+    },
+    {
+      "path": "backend/tests/test_bot_commands.py",
+      "sha256": "71b76199931842995f91761194e25e8795e3f35f765e48b59578b7065356a381"
+    },
+    {
+      "path": "backend/tests/test_capacity.py",
+      "sha256": "1d8fb71008993643f01ceb18d0f6f3dbcfc8a8fc5044d0d5d79e2cec08c34968"
+    },
+    {
+      "path": "backend/tests/test_car_card_copy.py",
+      "sha256": "4fc5e546368727e3db1fc6fdf594157832d6673ef894675fe8876345b4a5d2d6"
+    },
+    {
+      "path": "backend/tests/test_catalog_access_cost.py",
+      "sha256": "6776f3bdced2710d1423d21ac5ceac82bdb907c2ee4be831dca437782bc78a88"
+    },
+    {
+      "path": "backend/tests/test_closed_pipeline_windows.py",
+      "sha256": "ad1a176d2896b8c6672b9b5e7bc1feb7669ed2179da7e3de263861e0b767523d"
+    },
+    {
+      "path": "backend/tests/test_compatible_searches.py",
+      "sha256": "00c8da566799a4642c53dd254e0f820f982c197fb67f5e221f7d16754ca33dff"
+    },
+    {
+      "path": "backend/tests/test_confirmed_deals.py",
+      "sha256": "226179363c5a00ed9ab887f613785ce6c6a1452f4d908d67b9fe43ab08c575f3"
+    },
+    {
+      "path": "backend/tests/test_conservative_valuation.py",
+      "sha256": "b5ff8c16a14996ed2902fb6e4a682a54d0995effbe88cad8d3bc5842d342dd27"
+    },
+    {
+      "path": "backend/tests/test_delivery_cohort_audit.py",
+      "sha256": "c860dc9adf83a5b5573e82dc1e98c75cc8c6ef0edbf5f5487ae2a2be66e0b143"
+    },
+    {
+      "path": "backend/tests/test_delivery_fallback.py",
+      "sha256": "8030a8bb93e069f950e92d683107a47b2b3b30c53a1f82ce1ad340e856e94db0"
+    },
+    {
+      "path": "backend/tests/test_diagnostic_retry.py",
+      "sha256": "cc377da0cffbe753d849f19353f684b9c6a21f5d0ba03124ab69f390e17d954b"
+    },
+    {
+      "path": "backend/tests/test_discount.py",
+      "sha256": "b2e4a55fee21e4cffdac241cf6a2a978b08881415ed322aed73dbda54018b56e"
+    },
+    {
+      "path": "backend/tests/test_discovery_catchup.py",
+      "sha256": "7511f0ea2cd0b53c5c8e2b88b606a7cf6cc116b2536d706346fc9be12337ac66"
+    },
+    {
+      "path": "backend/tests/test_discovery_cycle_cost.py",
+      "sha256": "7a6bfc30c7ef710229504e2c94c601e58f81b3e1b0a83bfbf8e08bcd6d8041d2"
+    },
+    {
+      "path": "backend/tests/test_failed_delivery_recovery.py",
+      "sha256": "5d360580b6830e0b1cbc91e2fa98d186dffb4818d507ef9b7fb15147ce1ccab6"
+    },
+    {
+      "path": "backend/tests/test_full_scan.py",
+      "sha256": "a797a82bb2e98856ca689251d7318c865e2e9de992a2d3197c01acd53ba8524f"
+    },
+    {
+      "path": "backend/tests/test_html_shadow.py",
+      "sha256": "3fbbedeefa305aada2b1a438a4fd8e2742515349f77bba9a4961bc81934b3f1e"
+    },
+    {
+      "path": "backend/tests/test_info_terminal_http.py",
+      "sha256": "bc266f9f7066a20144f1dba4781fd087803bc3133e1df918cbe49799d47b88a4"
+    },
+    {
+      "path": "backend/tests/test_informational_alerts.py",
+      "sha256": "db113a107ffc700822f5fb45679520323b861791240040929ffeed5737ddff24"
+    },
+    {
+      "path": "backend/tests/test_launch.py",
+      "sha256": "4e29a503a89d2001556f3efbdc44bc6a9eacca1289c499c83e245c7530ec871b"
+    },
+    {
+      "path": "backend/tests/test_listing_check.py",
+      "sha256": "3117eddd3c05a7566ec90c873fc97abe5bc5fab9a59777ce3ed7b27437e43ae3"
+    },
+    {
+      "path": "backend/tests/test_lower_price_reference.py",
+      "sha256": "8b7bacd3020721075935d5197455647a5bc5bb84c3cf718e21d84f5aba039d26"
+    },
+    {
+      "path": "backend/tests/test_manual_access_audit.py",
+      "sha256": "7bbb53070ee9dacc0ad9a966ae122339980beb2b5782b2605d97b5a80193b557"
+    },
+    {
+      "path": "backend/tests/test_manual_checkout.py",
+      "sha256": "4a10ff5d196d50c9f76a2ca64cda910819b9414f63e78a0d2c5b5c60384f7c90"
+    },
+    {
+      "path": "backend/tests/test_manual_payments.py",
+      "sha256": "b14f57c7496688e7c3759420d7e6b478eeaa4eac365503fc8cba9fe2d24b1816"
+    },
+    {
+      "path": "backend/tests/test_manual_receipt_proxy.py",
+      "sha256": "c0df1cd91cfec2862372f2491adab552150d8a634f7624115978a208b6866d11"
+    },
+    {
+      "path": "backend/tests/test_manual_receipts.py",
+      "sha256": "f969ad0e095db8a5d1a00b66ab6cccebeed7b2bf1e58d88562b0fd6d00a80e7d"
+    },
+    {
+      "path": "backend/tests/test_manual_repeat_notice.py",
+      "sha256": "9f0a6efbbf5d9ecbd29092e4489a2f35e4a1e62ff6c5a5cbe0cde63147a743eb"
+    },
+    {
+      "path": "backend/tests/test_manual_repeat_preflight.py",
+      "sha256": "be1045777a867729d44162113698b7cf349be4a44985178e90de4893e9367b1b"
+    },
+    {
+      "path": "backend/tests/test_market_cache.py",
+      "sha256": "481e78b1910314c7daf994aa422b9cb709d921981d3dfcd586e57a621bf5a44d"
+    },
+    {
+      "path": "backend/tests/test_modification_resolution.py",
+      "sha256": "c7e82046dfc56dba8acf947f350073824206c6a009ff6eca3137f151e6908b99"
+    },
+    {
+      "path": "backend/tests/test_monitor.py",
+      "sha256": "7c6194763f0561377e586fb87ff2ef1198dc35e56d0cdb80c78bf16ed990c78e"
+    },
+    {
+      "path": "backend/tests/test_native_range_pending.py",
+      "sha256": "6620bb3d5dc23d319e916610ad716b258f21393154aa9ce9d629b29680a5ffa4"
+    },
+    {
+      "path": "backend/tests/test_native_range_trust.py",
+      "sha256": "de024caf6fc7c3fa7ab8d5910970ddf96cd99a04d0498073c8e3b5d0db0c75c7"
+    },
+    {
+      "path": "backend/tests/test_notification_diagnostic.py",
+      "sha256": "f85f7acd82807fdcdfb42b2053617141c0f1ed0822a388415dcd95d9312832d0"
+    },
+    {
+      "path": "backend/tests/test_notification_recovery.py",
+      "sha256": "0d01944f10fe645ff1099566371ec5d3c0e285fbb09b2aef3adbaf8d228fb925"
+    },
+    {
+      "path": "backend/tests/test_notifications.py",
+      "sha256": "b3cae61b8b33e833f58c451d0e1ea2f58a0e0f79abe9e1fc9ad073c58f3dd987"
+    },
+    {
+      "path": "backend/tests/test_offline_network.py",
+      "sha256": "cb40af1ecee5cc4be6920f75f01141a2f28c8ee5202cdf8508a4fe568bfc80f4"
+    },
+    {
+      "path": "backend/tests/test_olx_condition_evidence.py",
+      "sha256": "a4a189f8885e29297544b84147ff9ba03a117b4e7296331fd9ba75cf30592820"
+    },
+    {
+      "path": "backend/tests/test_olx_isolated_integration.py",
+      "sha256": "24c187cbda1b60b1b002583aa6b7205010c19162cedab940d43ca4e9c16a6576"
+    },
+    {
+      "path": "backend/tests/test_olx_owner_batch.py",
+      "sha256": "cf133bb34e497a8a3c0efc45518f9de2f38d098ba85bb8f709d6ac39f503fd5c"
+    },
+    {
+      "path": "backend/tests/test_olx_owner_canary.py",
+      "sha256": "90e17b8bb8d5229748032d574064a08f7b13f9ec84eb6db1f902bc7f7da0ac55"
+    },
+    {
+      "path": "backend/tests/test_olx_owner_feed.py",
+      "sha256": "12d9a4af4f77f995924861eca429e55b8eef541f18d7400ca184d5193bcadd6c"
+    },
+    {
+      "path": "backend/tests/test_olx_ria_probe.py",
+      "sha256": "f1b2c510a5ff12c8d5ee4677c5a034ea2c6f1a3a560a2ae7627adc0c1b206db8"
+    },
+    {
+      "path": "backend/tests/test_olx_ria_reference.py",
+      "sha256": "dea445b07ecf4d4be128f3649eb83781c0b61d6ffce0b4807b7514f880220adc"
+    },
+    {
+      "path": "backend/tests/test_operational_stats.py",
+      "sha256": "e517e9426de52d99ea11c368a54e3dd22cd294cc05f334a08525ce770071ac8c"
+    },
+    {
+      "path": "backend/tests/test_optional_listing_details.py",
+      "sha256": "536563eef750d644fc0fc246d071c04ffeaf78736ec1f1b65ce7aac62e8d6b38"
+    },
+    {
+      "path": "backend/tests/test_owner_alerts.py",
+      "sha256": "0894957e3e81c69796efeb43265ad3389d28679f3dedff9aa3841b4626d4080b"
+    },
+    {
+      "path": "backend/tests/test_owner_car_notifications.py",
+      "sha256": "2ee8e8be79c50dc5a45ddbaf343bf09c84d83cc6f01d073e6f748ec27e141bc4"
+    },
+    {
+      "path": "backend/tests/test_owner_trace.py",
+      "sha256": "b2fce4700f7abcb35b52155686c59f7b551e37fc86e0709ee14af26cf0652e90"
+    },
+    {
+      "path": "backend/tests/test_pagination.py",
+      "sha256": "c116da1fa4f3d476396862e3e6a77df4d470ba2606ebd697a9cbb68b908e3684"
+    },
+    {
+      "path": "backend/tests/test_paid_access_diagnostics.py",
+      "sha256": "3d1360d5bdf88422defb6cbe107d65c5d22f1e4f4360a3365e919d2ac717ab62"
+    },
+    {
+      "path": "backend/tests/test_paid_delivery_regressions_20261004.py",
+      "sha256": "a1fa6496feb42b62dd5789fe742f4ee39308025aa6645f267a97dc662ce74d02"
+    },
+    {
+      "path": "backend/tests/test_paid_discovery_recovery.py",
+      "sha256": "9bd11ffa3a08f09e2f6fd59877368119d3372e2a1d8596fb051de3a73eca5b2d"
+    },
+    {
+      "path": "backend/tests/test_paid_owner_access.py",
+      "sha256": "6aa5a6b50ee8fe73d49f0c122289f6aeb4ca90e36429a3a02d83b43767942655"
+    },
+    {
+      "path": "backend/tests/test_paid_owner_restoration.py",
+      "sha256": "3dd30045192a72d4c04922e16b4b207f69d74b31b8d41dc783baf342c0d8024a"
+    },
+    {
+      "path": "backend/tests/test_paid_source_boundaries.py",
+      "sha256": "2646d2382724667feb7c5d6c971427471b27d306beab3469ec1db5b817c90a36"
+    },
+    {
+      "path": "backend/tests/test_paid_sources_production.py",
+      "sha256": "51c573e4b0e36063b2b6f88e44dcc1e6f80d288158d76d6b074c35200e6ee060"
+    },
+    {
+      "path": "backend/tests/test_parallel_discovery.py",
+      "sha256": "7158567d050dd9ba91173ba088e0612134d18b1091cfe27aad076e7607833b85"
+    },
+    {
+      "path": "backend/tests/test_parallel_monitor.py",
+      "sha256": "db385b0e5c8253138407cd477ea6ee67e3696a1800d0e3c33cdfab2e791a9bde"
+    },
+    {
+      "path": "backend/tests/test_photo_repair.py",
+      "sha256": "8ae0e7534e142fa86a6493f8ba049d2e9452e62492515ae8ef7766e8b3900f13"
+    },
+    {
+      "path": "backend/tests/test_photo_repair_access_cost.py",
+      "sha256": "d2ba5c6a9953d79585a9cdaf6dfe98551ce7ceb31e67a80de17388c503670c1a"
+    },
+    {
+      "path": "backend/tests/test_poll_schedule.py",
+      "sha256": "f0c2ebc51a77bff93ad7352d9debe3d9f4e23231a6157e897b7d71f7c6d0afd8"
+    },
+    {
+      "path": "backend/tests/test_publication_budget_wait.py",
+      "sha256": "0c3bee718910aa6a9d96fa6298c436bff167db9cdf77958912769e052a052eac"
+    },
+    {
+      "path": "backend/tests/test_purchase_stats.py",
+      "sha256": "7d552940fe905d09db7259d1cce9f8ccc447719b8266bfad3ab99e6e8da4f150"
+    },
+    {
+      "path": "backend/tests/test_quota_management.py",
+      "sha256": "338896baab3a82c21970063bc357baf384e17500cc181af1fd9c2e222ed89db1"
+    },
+    {
+      "path": "backend/tests/test_quota_resume.py",
+      "sha256": "1772d96a31f9e884106baa36323291a1d565467b31a0e047fc1406da8ca560a6"
+    },
+    {
+      "path": "backend/tests/test_recent_publications.py",
+      "sha256": "06cb770400edf13911fdde3e9d2315f9ba50e854cb4f351fc4c4adee39904e8c"
+    },
+    {
+      "path": "backend/tests/test_reference_valuation.py",
+      "sha256": "b3733f88499e62cece1750aa557bf06da5208ad03094f533ea2a1a4fb7c9ab9a"
+    },
+    {
+      "path": "backend/tests/test_regions.py",
+      "sha256": "210ceefecf4714d8d557050044086eb7ad2402d23fac13aff47ffc5a577011cc"
+    },
+    {
+      "path": "backend/tests/test_reminder_current_access.py",
+      "sha256": "95d92632136ccac1a5e82663539599b64467775948db02e3356df81bb1fdc2ef"
+    },
+    {
+      "path": "backend/tests/test_repair_condition_alerts.py",
+      "sha256": "2e40fb27ef67e72b1a1ed841ddd6a4d03b8325b4fbc8c2c6b796a23dd22abb18"
+    },
+    {
+      "path": "backend/tests/test_retained_valuation_replay.py",
+      "sha256": "037713c235f4b43153b5b04264ca99616a448779a850bbf077cfe684ff22f496"
+    },
+    {
+      "path": "backend/tests/test_ria_ai_price.py",
+      "sha256": "bf284548a0ff26e9f94db2d8015e0ea5ef62ad3ccb46e0ca40f93478ba3229db"
+    },
+    {
+      "path": "backend/tests/test_ria_market_range.py",
+      "sha256": "3e558415b933d93bb6259a64ba4860f0c5199e4add0786c993c4399ab09522ec"
+    },
+    {
+      "path": "backend/tests/test_ria_search.py",
+      "sha256": "ff2ad77da4a375f1aaa951f3423890a7882163a9b049f9c61c51ffd0f63d0e77"
+    },
+    {
+      "path": "backend/tests/test_ria_source_comparison.py",
+      "sha256": "514fd007fa7fc9b640ece2debfaf9a6b317a929f1ebdbe2ae41a4a351216142b"
+    },
+    {
+      "path": "backend/tests/test_ria_source_comparison_transport.py",
+      "sha256": "85b6a8e3f4868fc8a57e3d2dbdee5972f3711692a4f6d6578f5023d5f096c053"
+    },
+    {
+      "path": "backend/tests/test_shared_distribution.py",
+      "sha256": "24e4bf6b2b19596eb7f9a5e5b86d6de49161c994afb0994132d266afb8f0f636"
+    },
+    {
+      "path": "backend/tests/test_stars_test.py",
+      "sha256": "8c2435eaa03e9506a50917d180c7cb8dc60428d868bcb07664042654bdbc7e67"
+    },
+    {
+      "path": "backend/tests/test_subscription_preview.py",
+      "sha256": "4c6453cd4469859e2ea943f94c0858285ed050cff7b0d15461847eacb56fbf15"
+    },
+    {
+      "path": "backend/tests/test_subscription_promotion.py",
+      "sha256": "9b4970fd6baad7585a34607f24afe8bdf01526d383a9871e8d100255b44805dc"
+    },
+    {
+      "path": "backend/tests/test_tariff_reminder_audience.py",
+      "sha256": "66e005a2f233b8f9d3942c39fb4dfacb3817be9db395184a4ec1c84911ef41cc"
+    },
+    {
+      "path": "backend/tests/test_tariff_reminder_audit.py",
+      "sha256": "a0232ad527f74624b4a6631fec769fedc86dc26b0b61fcb0896a58dd376458ba"
+    },
+    {
+      "path": "backend/tests/test_tariff_reminder_commands.py",
+      "sha256": "0c4fe8df5f003ddb80dd0a7c0ff34289f0fe35b5879fbcf25b720cd7fa321319"
+    },
+    {
+      "path": "backend/tests/test_tariff_reminders.py",
+      "sha256": "61182cc40cd2ef05a8fb879d178b73c927a4b0fdc2fb21deca8300ff1bc57eed"
+    },
+    {
+      "path": "backend/tests/test_telegram_photo.py",
+      "sha256": "d6ad966c50a1cf25858cf7518df240edbf9960245466710633d39bf7658c3a0d"
+    },
+    {
+      "path": "backend/tests/test_valuation.py",
+      "sha256": "c30c657be3667143687e2949edc032ed0cf28bd30a91bcfae60000f5475f2e97"
+    },
+    {
+      "path": "backend/tests/test_valuation_audit.py",
+      "sha256": "86483a6181bcf38037a67242a36d724bd77db2e2498b6d06c9065fa0dfc04540"
+    },
+    {
+      "path": "backend/valuation.py",
+      "sha256": "5cdd05ade7ba4f444893f7ce334ecef4f1cac2b3f7fe696f40e8d8be57f48a61"
+    },
+    {
+      "path": "backend/valuation_audit.py",
+      "sha256": "11f219cdddeff7a9bfd02303cae75731baccc96956fd218da9d90137c5acd9d0"
+    },
+    {
+      "path": "backend/worker.py",
+      "sha256": "e173a0c723b4a4a4818bc92e7286db77c84694badf51e4ee04f19a3e1794ccbc"
+    }
+  ]
+}

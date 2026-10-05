@@ -71,12 +71,17 @@
     "backend/olx_market/ria_reference.py",
     "backend/olx_market/evaluation.py",
     "backend/olx_market/valuation.py",
-    "backend/olx_owner_feed.py"
+    "backend/olx_owner_feed.py",
+    "backend/olx_market/observations.py",
+    "backend/olx_market/ria_public_reference.py"
   ],
   "ria_configuration_and_state_changes": false,
   "unknown_telegram_outcome_policy": "persist_uncertain_and_never_automatic_resend_or_photo_to_text_fallback",
   "rollback": "disable_only_new_OLX_flag_or_olx_stop_preserve_OLX_ledger_and_all_payment_search_RIA_history",
   "future_profile_split_key_format": "source_id_v1",
   "future_reference_adapter_version": "olx-ria-reference-v2",
-  "authorization_receipt": "../owner-launch-20261005/authorization.json"
+  "authorization_receipt": "../owner-launch-20261005/authorization.json",
+  "future_public_reference_adapter_version": "olx-ria-public-reference-v1",
+  "identity_review_module": "prepared_offline_only_not_wired_or_selected_for_deployment",
+  "current_evidence": "../owner-launch-20261005/dense-current-evaluation.json"
 }

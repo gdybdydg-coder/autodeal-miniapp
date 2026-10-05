@@ -1,0 +1,77 @@
+{
+  "owner_authorized": true,
+  "client_authorized": false,
+  "technical_ready": false,
+  "profile_created": false,
+  "default_off_deployment_performed": false,
+  "activation_performed": false,
+  "production_mutations": 0,
+  "paid_ria_calls": 0,
+  "telegram_attempts": 0,
+  "confirmed_telegram_receipts": [],
+  "tests": {
+    "backend_olx_offline_paid_boundaries": {
+      "passed": 566,
+      "subtests": 150,
+      "seconds": 47.23
+    },
+    "pure_prior_ria_evaluation": {
+      "passed": 20,
+      "subtests": 8,
+      "seconds": 0.71
+    },
+    "new_pure_public_identity_description_dispatch": {
+      "passed": 77,
+      "subtests": 135,
+      "seconds": 0.61
+    },
+    "saved_real_prelaunch": {
+      "passed": 2,
+      "seconds": 0.04
+    },
+    "unique_total": 665,
+    "subtests_total": 293
+  },
+  "isolation": "network barrier before project imports; no production app/.env/database imported by new pure suites; existing backend tests use isolated fixture SQLite",
+  "confirmed_defects_fixed": [
+    {
+      "name": "OLX explicit own-car description FL omitted",
+      "evidence": "saved real931146600 and SHA-guarded regression"
+    },
+    {
+      "name": "OLX Russian paint repair label omitted",
+      "evidence": "saved real936181092 and SHA-guarded regression"
+    },
+    {
+      "name": "public RIA engine-label third component and fuel-only parsing",
+      "evidence": "same six captured full cards parse2/6 before,6/6 after; unknown engine remains unknown"
+    },
+    {
+      "name": "public RIA component-before-repair description order",
+      "evidence": "two tests reproduce five erroneous running admissions then repaired; seven affirmative and eight negative/historical subcases"
+    }
+  ],
+  "harness_failure_resolved": "combining paid-adapter tests importing ria_search with no-RIA-import pure tests violates harness contract; separate processes, no weakened assertion",
+  "warning": "one existing Starlette/httpx TestClient deprecation warning",
+  "new_permission_pending": false,
+  "market": {
+    "historical_saved_replay": {
+      "loaded": 74,
+      "estimates": 0,
+      "max_comparable_ads": 3,
+      "live_availability_proved": false
+    },
+    "new_frozen_public_packet": {
+      "parsed": 6,
+      "source_complete": 3,
+      "source_complete_reference": 1,
+      "source_complete_holdout": 2,
+      "compatible_control_reference_max": 0,
+      "estimated_controls": 0,
+      "frozen_controls": 3,
+      "minimum": 8,
+      "photo_reviews": 0,
+      "method_selected": null
+    }
+  }
+}

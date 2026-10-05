@@ -1,0 +1,422 @@
+{
+  "kind": "six_current_frozen_full_public_html_not_a_ready_market_profile",
+  "checked_at": 1791229644,
+  "attempted": 6,
+  "parsed": 6,
+  "source_admission_complete": 3,
+  "source_complete_reference": 1,
+  "source_complete_holdout": 2,
+  "minimum": 8,
+  "independent_photo_reviews": 0,
+  "owner_authorized": true,
+  "client_authorized": false,
+  "technical_ready": false,
+  "telegram_attempts": 0,
+  "method_selected": null,
+  "frozen_total": 14,
+  "captured_reference": 3,
+  "captured_holdout": 3,
+  "frozen_controls": 3,
+  "estimated_controls": 0,
+  "max_compatible_control_references": 0,
+  "evaluation": {
+    "split_seed": "owner-public-dense-price-blind-v1",
+    "split_provenance": [
+      {
+        "seed": "owner-public-dense-price-blind-v1",
+        "basis": "explicit_frozen_price_blind_before_full_card_prices",
+        "commit": "d408c0eeeb85ff70f1a16a427c96a50c9b048c1f",
+        "frozen_at": 1791228634
+      }
+    ],
+    "benchmark_kind": "withheld_asking_price_only",
+    "frozen_holdout_count": 3,
+    "loaded_holdout_count": 3,
+    "reference_count": 3,
+    "eligible_holdout_count": 2,
+    "estimated_holdout_count": 0,
+    "missing_holdout_count": 0,
+    "known_ineligible_holdout_count": 1,
+    "unestimated_eligible_holdout_count": 2,
+    "frozen_estimate_coverage": "0",
+    "loaded_estimate_coverage": "0",
+    "eligible_coverage": "0",
+    "evaluation_denominators": {
+      "frozen_holdout_ads": 3,
+      "loaded_holdout_ads": 3,
+      "eligible_loaded_ads": 2,
+      "estimated_loaded_ads": 0,
+      "missing_frozen_ads": 0,
+      "known_ineligible_loaded_ads": 1,
+      "unestimated_eligible_loaded_ads": 2
+    },
+    "unknown_holdout_count": 3,
+    "metrics": {
+      "median": {
+        "evaluated": 0,
+        "mean_absolute_usd": null,
+        "mean_absolute_percent": null
+      },
+      "trimmed_mean": {
+        "evaluated": 0,
+        "mean_absolute_usd": null,
+        "mean_absolute_percent": null
+      },
+      "weighted_median": {
+        "evaluated": 0,
+        "mean_absolute_usd": null,
+        "mean_absolute_percent": null
+      }
+    },
+    "rows": [
+      {
+        "target_source": "auto_ria",
+        "target_id": "40219391",
+        "benchmark_kind": "withheld_asking_price_not_sale_or_fair_value",
+        "benchmark_usd": "8500",
+        "eligible": true,
+        "error_against_asking": {},
+        "comparison_group_ids": [],
+        "comparison_group_keys": [],
+        "same_comparable_group_for_all_methods": null,
+        "review": {
+          "assessment": {
+            "status": "profitability_unconfirmed",
+            "target_id": "40219391",
+            "reasons": [
+              "insufficient_comparables"
+            ],
+            "methods": {},
+            "reference_usd": null,
+            "sample": 0,
+            "independent_vehicles_verified": 0,
+            "sample_unit": "distinct_ads_after_known_vehicle_dedup",
+            "real_world_accuracy_verified": false,
+            "price_basis": "corroborated_full_page_asking_display_not_completed_sale",
+            "seller_claims_independently_verified": false,
+            "recommended": null,
+            "extra_ria_margin_percent": "0",
+            "required_sample": 8,
+            "used_comparables": [],
+            "exclusions": {
+              "mismatch_mileage": 1,
+              "known_vehicle_current_evidence_invalid": 2,
+              "missing_engine_cc": 1,
+              "ria_public_engine_cc_pending": 1,
+              "condition_unconfirmed": 1,
+              "ria_public_research_condition_pending": 1
+            },
+            "excluded": [
+              {
+                "id": "39809027",
+                "reasons": [
+                  "mismatch_mileage"
+                ]
+              },
+              {
+                "id": "40343200",
+                "reasons": [
+                  "known_vehicle_current_evidence_invalid",
+                  "missing_engine_cc",
+                  "ria_public_engine_cc_pending"
+                ]
+              },
+              {
+                "id": "40391488",
+                "reasons": [
+                  "condition_unconfirmed",
+                  "known_vehicle_current_evidence_invalid",
+                  "ria_public_research_condition_pending"
+                ]
+              }
+            ],
+            "selected_method": null,
+            "body_policy": {
+              "id": "skoda-octavia-a5-body-v1",
+              "source_body": "liftback",
+              "comparison_body": "liftback",
+              "sources": [
+                "https://www.skoda-storyboard.com/en/models/octavia/first-sketches-of-the-innovated-octavia-take-a-look/",
+                "https://www.skoda-storyboard.com/en/press-kits/skoda-octavia-press-kit/history-60-years-of-the-skoda-octavia/",
+                "https://cdn.skoda-storyboard.com/2023/03/230301_The-perfect-everyday-companion-25-years-of-the-Skoda-Octavia-Combi_06db1a55.pdf"
+              ],
+              "reviewed_date": "2026-10-05",
+              "physical_body_verified": false
+            }
+          },
+          "status": "insufficient",
+          "minimum_full_sample": 8,
+          "max_allowed_leave_one_shift_percent": "5",
+          "leave_one_out": [],
+          "methods": {},
+          "physical_independence_verified": false
+        }
+      },
+      {
+        "target_source": "auto_ria",
+        "target_id": "40019461",
+        "benchmark_kind": "withheld_asking_price_not_sale_or_fair_value",
+        "benchmark_usd": "5000",
+        "eligible": true,
+        "error_against_asking": {},
+        "comparison_group_ids": [],
+        "comparison_group_keys": [],
+        "same_comparable_group_for_all_methods": null,
+        "review": {
+          "assessment": {
+            "status": "profitability_unconfirmed",
+            "target_id": "40019461",
+            "reasons": [
+              "insufficient_comparables"
+            ],
+            "methods": {},
+            "reference_usd": null,
+            "sample": 0,
+            "independent_vehicles_verified": 0,
+            "sample_unit": "distinct_ads_after_known_vehicle_dedup",
+            "real_world_accuracy_verified": false,
+            "price_basis": "corroborated_full_page_asking_display_not_completed_sale",
+            "seller_claims_independently_verified": false,
+            "recommended": null,
+            "extra_ria_margin_percent": "0",
+            "required_sample": 8,
+            "used_comparables": [],
+            "exclusions": {
+              "mismatch_condition": 1,
+              "known_vehicle_current_evidence_invalid": 2,
+              "missing_engine_cc": 1,
+              "ria_public_engine_cc_pending": 1,
+              "condition_unconfirmed": 1,
+              "ria_public_research_condition_pending": 1
+            },
+            "excluded": [
+              {
+                "id": "39809027",
+                "reasons": [
+                  "mismatch_condition"
+                ]
+              },
+              {
+                "id": "40343200",
+                "reasons": [
+                  "known_vehicle_current_evidence_invalid",
+                  "missing_engine_cc",
+                  "ria_public_engine_cc_pending"
+                ]
+              },
+              {
+                "id": "40391488",
+                "reasons": [
+                  "condition_unconfirmed",
+                  "known_vehicle_current_evidence_invalid",
+                  "ria_public_research_condition_pending"
+                ]
+              }
+            ],
+            "selected_method": null,
+            "body_policy": {
+              "id": "skoda-octavia-a5-body-v1",
+              "source_body": "liftback",
+              "comparison_body": "liftback",
+              "sources": [
+                "https://www.skoda-storyboard.com/en/models/octavia/first-sketches-of-the-innovated-octavia-take-a-look/",
+                "https://www.skoda-storyboard.com/en/press-kits/skoda-octavia-press-kit/history-60-years-of-the-skoda-octavia/",
+                "https://cdn.skoda-storyboard.com/2023/03/230301_The-perfect-everyday-companion-25-years-of-the-Skoda-Octavia-Combi_06db1a55.pdf"
+              ],
+              "reviewed_date": "2026-10-05",
+              "physical_body_verified": false
+            }
+          },
+          "status": "insufficient",
+          "minimum_full_sample": 8,
+          "max_allowed_leave_one_shift_percent": "5",
+          "leave_one_out": [],
+          "methods": {},
+          "physical_independence_verified": false
+        }
+      },
+      {
+        "target_source": "auto_ria",
+        "target_id": "40133416",
+        "benchmark_kind": "withheld_asking_price_not_sale_or_fair_value",
+        "benchmark_usd": "7200",
+        "eligible": false,
+        "error_against_asking": {},
+        "comparison_group_ids": [],
+        "comparison_group_keys": [],
+        "same_comparable_group_for_all_methods": null,
+        "review": {
+          "assessment": {
+            "status": "profitability_unconfirmed",
+            "target_id": "40133416",
+            "reasons": [
+              "missing_engine_cc",
+              "ria_public_engine_cc_pending"
+            ],
+            "methods": {},
+            "reference_usd": null,
+            "sample": 0,
+            "independent_vehicles_verified": null,
+            "sample_unit": "distinct_ads_after_known_vehicle_dedup",
+            "real_world_accuracy_verified": false,
+            "price_basis": "corroborated_full_page_asking_display_not_completed_sale",
+            "seller_claims_independently_verified": false,
+            "recommended": null,
+            "extra_ria_margin_percent": "0",
+            "required_sample": 8,
+            "used_comparables": [],
+            "exclusions": {},
+            "excluded": [],
+            "selected_method": null,
+            "body_policy": {
+              "id": "skoda-octavia-a5-body-v1",
+              "source_body": "liftback",
+              "comparison_body": "liftback",
+              "sources": [
+                "https://www.skoda-storyboard.com/en/models/octavia/first-sketches-of-the-innovated-octavia-take-a-look/",
+                "https://www.skoda-storyboard.com/en/press-kits/skoda-octavia-press-kit/history-60-years-of-the-skoda-octavia/",
+                "https://cdn.skoda-storyboard.com/2023/03/230301_The-perfect-everyday-companion-25-years-of-the-Skoda-Octavia-Combi_06db1a55.pdf"
+              ],
+              "reviewed_date": "2026-10-05",
+              "physical_body_verified": false
+            }
+          },
+          "status": "insufficient",
+          "minimum_full_sample": 8,
+          "max_allowed_leave_one_shift_percent": "5",
+          "leave_one_out": [],
+          "methods": {},
+          "physical_independence_verified": false
+        }
+      }
+    ],
+    "sale_price_accuracy_verified": false,
+    "profitable_labels": 0,
+    "false_positive": null,
+    "false_negative": null,
+    "winner_selected": null,
+    "unknown_crossposts_may_remain": true
+  },
+  "rows": [
+    {
+      "source": "auto_ria",
+      "id": "40219391",
+      "role": "holdout",
+      "source_admission_reasons": [],
+      "asking_price": "8500",
+      "currency": "USD",
+      "year": 2011,
+      "mileage_km": 271000,
+      "body": "liftback",
+      "fuel": "diesel",
+      "engine_cc": 1600,
+      "drive_type": "front",
+      "power_hp": 105,
+      "generation_variant": "FL",
+      "condition": "seller_declared_running",
+      "vin_key_corroborated": true,
+      "photos_reviewed": false
+    },
+    {
+      "source": "auto_ria",
+      "id": "40019461",
+      "role": "holdout",
+      "source_admission_reasons": [],
+      "asking_price": "5000",
+      "currency": "USD",
+      "year": 2011,
+      "mileage_km": 285000,
+      "body": "liftback",
+      "fuel": "diesel",
+      "engine_cc": 1600,
+      "drive_type": "front",
+      "power_hp": 105,
+      "generation_variant": "FL",
+      "condition": "running_reported_damage:body_dents",
+      "vin_key_corroborated": true,
+      "photos_reviewed": false
+    },
+    {
+      "source": "auto_ria",
+      "id": "40133416",
+      "role": "holdout",
+      "source_admission_reasons": [
+        "ria_public_engine_cc_pending"
+      ],
+      "asking_price": "7200",
+      "currency": "USD",
+      "year": 2011,
+      "mileage_km": 286000,
+      "body": "liftback",
+      "fuel": "diesel",
+      "engine_cc": null,
+      "drive_type": "front",
+      "power_hp": 105,
+      "generation_variant": "FL",
+      "condition": "seller_declared_running",
+      "vin_key_corroborated": true,
+      "photos_reviewed": false
+    },
+    {
+      "source": "auto_ria",
+      "id": "40391488",
+      "role": "reference",
+      "source_admission_reasons": [
+        "ria_public_research_condition_pending"
+      ],
+      "asking_price": "5350",
+      "currency": "USD",
+      "year": 2011,
+      "mileage_km": 298000,
+      "body": "liftback",
+      "fuel": "diesel",
+      "engine_cc": 1600,
+      "drive_type": "front",
+      "power_hp": 105,
+      "generation_variant": "FL",
+      "condition": null,
+      "vin_key_corroborated": true,
+      "photos_reviewed": false
+    },
+    {
+      "source": "auto_ria",
+      "id": "39809027",
+      "role": "reference",
+      "source_admission_reasons": [],
+      "asking_price": "7400",
+      "currency": "USD",
+      "year": 2010,
+      "mileage_km": 305000,
+      "body": "liftback",
+      "fuel": "diesel",
+      "engine_cc": 1600,
+      "drive_type": "front",
+      "power_hp": 105,
+      "generation_variant": "FL",
+      "condition": "seller_declared_running",
+      "vin_key_corroborated": true,
+      "photos_reviewed": false
+    },
+    {
+      "source": "auto_ria",
+      "id": "40343200",
+      "role": "reference",
+      "source_admission_reasons": [
+        "ria_public_engine_cc_pending"
+      ],
+      "asking_price": "7800",
+      "currency": "USD",
+      "year": 2010,
+      "mileage_km": 267000,
+      "body": "liftback",
+      "fuel": "diesel",
+      "engine_cc": null,
+      "drive_type": "front",
+      "power_hp": 105,
+      "generation_variant": "FL",
+      "condition": "seller_declared_running",
+      "vin_key_corroborated": true,
+      "photos_reviewed": false
+    }
+  ]
+}

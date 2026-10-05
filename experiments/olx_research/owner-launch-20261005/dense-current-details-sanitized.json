@@ -1,0 +1,646 @@
+[
+  {
+    "source": "auto_ria",
+    "id": "40219391",
+    "url": "https://auto.ria.com/auto_skoda_octavia_40219391.html",
+    "price": "8500",
+    "currency": "USD",
+    "brand": "Skoda",
+    "model": "Octavia",
+    "generation": "A5",
+    "generation_variant": "FL",
+    "body": "liftback",
+    "fuel": "diesel",
+    "fuel_subtype": null,
+    "transmission": "manual",
+    "drive_type": "front",
+    "engine_cc": 1600,
+    "power_hp": 105,
+    "year": 2011,
+    "mileage_km": 271000,
+    "research_condition": "seller_declared_running",
+    "checked_at": 1791228758,
+    "modification": null,
+    "source_modification_evidence": {
+      "policy": "explicit_provider_engine_code-v1",
+      "catalog_id": null,
+      "label_sha256": "15dddbe1bacc14a902ba4b987f05db4ba7499b237107efb817f77444a63c683a",
+      "basis": "engine_code_not_explicit"
+    },
+    "condition_evidence": {
+      "basis": "corroborated_complete_public_description_and_technical_label",
+      "description_sha256": "dcd3724d95f4fd60764a02a32f087e6f56cd30dc24cc30a602783c1ea6a4b12f",
+      "description_damage_flags": [],
+      "unsupported_condition_flags": [],
+      "independently_verified": false
+    },
+    "category": "whole_passenger_car",
+    "eligibility_review": {
+      "status": "allowed",
+      "description_complete": true
+    },
+    "vehicle_key": "vin-sha256:8d1356d9179aa068f5fe46d84a27f609dad152c2a4cc0829699d123615fd8925",
+    "vehicle_identity_verified": true,
+    "identity_review": {
+      "distinct_photos_reviewed": false
+    },
+    "photos": [
+      "https://cdn0.riastatic.com/photosnew/auto/photo/skoda_octavia__651894705s.webp",
+      "https://cdn0.riastatic.com/photosnew/auto/photo/skoda_octavia__651894704hd.webp",
+      "https://cdn0.riastatic.com/photosnew/auto/photo/skoda_octavia__651894699bx.webp",
+      "https://cdn0.riastatic.com/photosnew/auto/photo/skoda_octavia__651894701bx.webp",
+      "https://cdn0.riastatic.com/photosnew/auto/photo/skoda_octavia__651894703bx.webp"
+    ],
+    "reference_provenance": {
+      "role": "holdout",
+      "frozen_commit": "d408c0eeeb85ff70f1a16a427c96a50c9b048c1f",
+      "frozen_at": 1791228634,
+      "search_params": {
+        "category_id": 1,
+        "marka_id[0]": 70,
+        "model_id[0]": 652
+      }
+    },
+    "source_attribute_evidence": {
+      "basis": "public_ssr_pinia_and_visible_same_document",
+      "generation_label_sha256": "15dddbe1bacc14a902ba4b987f05db4ba7499b237107efb817f77444a63c683a",
+      "generation_id": 3607,
+      "generation_variant_basis": "corroborated_public_catalog_id",
+      "generation_dictionary": {
+        "version": "ria-public-generation-dictionary-v1",
+        "source_url": "https://auto.ria.com/car/skoda/octavia/",
+        "checked_at": 1791227407,
+        "body_sha256": "2399f37ef6c01e889099889e0585e1ef27d2c7747bdcc6f7091143cc1d0e5795",
+        "reserved_commit": "82e788fb886bb421bb60bff4f4ee44df4b9293b4",
+        "mapping": {
+          "II поколение/A5": {
+            "catalog_id": 3133,
+            "generation": "A5",
+            "generation_variant": "pre_FL",
+            "url": "https://auto.ria.com/car/skoda/octavia/a5/"
+          },
+          "II поколение/A5 (FL)": {
+            "catalog_id": 3607,
+            "generation": "A5",
+            "generation_variant": "FL",
+            "url": "https://auto.ria.com/car/skoda/octavia/a5-fl/"
+          }
+        },
+        "binding": "288f2029c5e313d37e908c16e224721518383791940e92fbff312d2c3992c2ad"
+      },
+      "technical_label": "Полностью неповрежденное",
+      "paint_label": "Как новое",
+      "visible_power_hp": "105",
+      "visible_power_kw": "77",
+      "power_consistency_policy": "round_explicit_hp_to_source_catalog_integer-v1",
+      "engine_volume_basis": "explicit_visible_engine_volume"
+    },
+    "ria_public_reference_evidence": {
+      "version": "olx-ria-public-reference-v1",
+      "method": "public_html",
+      "http_status": 200,
+      "body_sha256": "c88f6ba6115f3f5ce05f48134deb148eb47b7fe13a20859eb3d3a4f734a7ec22",
+      "body_bytes": 623733,
+      "reserved_commit": "71dffc0b4b4d2541bc2c88f08e88f762f9ce256f",
+      "paid_api_calls": 0,
+      "started_at": "2026-10-05T19:32:27.633112+00:00",
+      "completed_at": "2026-10-05T19:32:38.319614+00:00",
+      "binding": "46340b73baa67b8c3d48365132584b3c4f0e9fd0f613e9c70a8be20484d97ffe"
+    }
+  },
+  {
+    "source": "auto_ria",
+    "id": "40019461",
+    "url": "https://auto.ria.com/auto_skoda_octavia_40019461.html",
+    "price": "5000",
+    "currency": "USD",
+    "brand": "Skoda",
+    "model": "Octavia",
+    "generation": "A5",
+    "generation_variant": "FL",
+    "body": "liftback",
+    "fuel": "diesel",
+    "fuel_subtype": null,
+    "transmission": "manual",
+    "drive_type": "front",
+    "engine_cc": 1600,
+    "power_hp": 105,
+    "year": 2011,
+    "mileage_km": 285000,
+    "research_condition": "running_reported_damage:body_dents",
+    "checked_at": 1791228771,
+    "modification": null,
+    "source_modification_evidence": {
+      "policy": "explicit_provider_engine_code-v1",
+      "catalog_id": null,
+      "label_sha256": "15dddbe1bacc14a902ba4b987f05db4ba7499b237107efb817f77444a63c683a",
+      "basis": "engine_code_not_explicit"
+    },
+    "condition_evidence": {
+      "basis": "corroborated_complete_public_description_and_technical_label",
+      "description_sha256": "1d6b3bbb2d7912fa25395487d9cf8b5a6c73f0f6ad6625ab1732343d7840195b",
+      "description_damage_flags": [
+        "body_dents"
+      ],
+      "unsupported_condition_flags": [],
+      "independently_verified": false
+    },
+    "category": "whole_passenger_car",
+    "eligibility_review": {
+      "status": "allowed",
+      "description_complete": true
+    },
+    "vehicle_key": "vin-sha256:d358888dc27256d8872010c772ac96e0d1d8e87bb30b6b38c4a2af37ec4148d5",
+    "vehicle_identity_verified": true,
+    "identity_review": {
+      "distinct_photos_reviewed": false
+    },
+    "photos": [],
+    "reference_provenance": {
+      "role": "holdout",
+      "frozen_commit": "d408c0eeeb85ff70f1a16a427c96a50c9b048c1f",
+      "frozen_at": 1791228634,
+      "search_params": {
+        "category_id": 1,
+        "marka_id[0]": 70,
+        "model_id[0]": 652
+      }
+    },
+    "source_attribute_evidence": {
+      "basis": "public_ssr_pinia_and_visible_same_document",
+      "generation_label_sha256": "15dddbe1bacc14a902ba4b987f05db4ba7499b237107efb817f77444a63c683a",
+      "generation_id": 3607,
+      "generation_variant_basis": "corroborated_public_catalog_id",
+      "generation_dictionary": {
+        "version": "ria-public-generation-dictionary-v1",
+        "source_url": "https://auto.ria.com/car/skoda/octavia/",
+        "checked_at": 1791227407,
+        "body_sha256": "2399f37ef6c01e889099889e0585e1ef27d2c7747bdcc6f7091143cc1d0e5795",
+        "reserved_commit": "82e788fb886bb421bb60bff4f4ee44df4b9293b4",
+        "mapping": {
+          "II поколение/A5": {
+            "catalog_id": 3133,
+            "generation": "A5",
+            "generation_variant": "pre_FL",
+            "url": "https://auto.ria.com/car/skoda/octavia/a5/"
+          },
+          "II поколение/A5 (FL)": {
+            "catalog_id": 3607,
+            "generation": "A5",
+            "generation_variant": "FL",
+            "url": "https://auto.ria.com/car/skoda/octavia/a5-fl/"
+          }
+        },
+        "binding": "288f2029c5e313d37e908c16e224721518383791940e92fbff312d2c3992c2ad"
+      },
+      "technical_label": "Полностью неповрежденное",
+      "paint_label": "Неисправленные следы использования",
+      "visible_power_hp": "105",
+      "visible_power_kw": "77",
+      "power_consistency_policy": "round_explicit_hp_to_source_catalog_integer-v1",
+      "engine_volume_basis": "explicit_visible_engine_volume"
+    },
+    "ria_public_reference_evidence": {
+      "version": "olx-ria-public-reference-v1",
+      "method": "public_html",
+      "http_status": 200,
+      "body_sha256": "bae02491e53d69d786c02da53efc61ce712d622b953337e202090da525aba4b7",
+      "body_bytes": 590919,
+      "reserved_commit": "71dffc0b4b4d2541bc2c88f08e88f762f9ce256f",
+      "paid_api_calls": 0,
+      "started_at": "2026-10-05T19:32:42.324437+00:00",
+      "completed_at": "2026-10-05T19:32:51.373958+00:00",
+      "binding": "4b36e4a67f25b8ec70f0a98a723e4873f1135d578f4eb75abf314fdeabaa00da"
+    }
+  },
+  {
+    "source": "auto_ria",
+    "id": "40133416",
+    "url": "https://auto.ria.com/auto_skoda_octavia_40133416.html",
+    "price": "7200",
+    "currency": "USD",
+    "brand": "Skoda",
+    "model": "Octavia",
+    "generation": "A5",
+    "generation_variant": "FL",
+    "body": "liftback",
+    "fuel": "diesel",
+    "fuel_subtype": null,
+    "transmission": "manual",
+    "drive_type": "front",
+    "engine_cc": null,
+    "power_hp": 105,
+    "year": 2011,
+    "mileage_km": 286000,
+    "research_condition": "seller_declared_running",
+    "checked_at": 1791228786,
+    "modification": null,
+    "source_modification_evidence": {
+      "policy": "explicit_provider_engine_code-v1",
+      "catalog_id": null,
+      "label_sha256": "15dddbe1bacc14a902ba4b987f05db4ba7499b237107efb817f77444a63c683a",
+      "basis": "engine_code_not_explicit"
+    },
+    "condition_evidence": {
+      "basis": "corroborated_complete_public_description_and_technical_label",
+      "description_sha256": "6c905dbe70074ed7932a040046dba7f03b9f3aacc2b82965b3b8b1286e873481",
+      "description_damage_flags": [],
+      "unsupported_condition_flags": [],
+      "independently_verified": false
+    },
+    "category": "whole_passenger_car",
+    "eligibility_review": {
+      "status": "allowed",
+      "description_complete": true
+    },
+    "vehicle_key": "vin-sha256:d8cf5c75aed8ff09f172d2410d6d2195657e270cd1bb11787002d0495930b3ce",
+    "vehicle_identity_verified": true,
+    "identity_review": {
+      "distinct_photos_reviewed": false
+    },
+    "photos": [
+      "https://cdn3.riastatic.com/photosnew/auto/photo/skoda_octavia__649598879s.webp",
+      "https://cdn3.riastatic.com/photosnew/auto/photo/skoda_octavia__649599077hd.webp",
+      "https://cdn3.riastatic.com/photosnew/auto/photo/skoda_octavia__649599078bx.webp",
+      "https://cdn3.riastatic.com/photosnew/auto/photo/skoda_octavia__649599085bx.webp",
+      "https://cdn3.riastatic.com/photosnew/auto/photo/skoda_octavia__649599087bx.webp"
+    ],
+    "reference_provenance": {
+      "role": "holdout",
+      "frozen_commit": "d408c0eeeb85ff70f1a16a427c96a50c9b048c1f",
+      "frozen_at": 1791228634,
+      "search_params": {
+        "category_id": 1,
+        "marka_id[0]": 70,
+        "model_id[0]": 652
+      }
+    },
+    "source_attribute_evidence": {
+      "basis": "public_ssr_pinia_and_visible_same_document",
+      "generation_label_sha256": "15dddbe1bacc14a902ba4b987f05db4ba7499b237107efb817f77444a63c683a",
+      "generation_id": 3607,
+      "generation_variant_basis": "corroborated_public_catalog_id",
+      "generation_dictionary": {
+        "version": "ria-public-generation-dictionary-v1",
+        "source_url": "https://auto.ria.com/car/skoda/octavia/",
+        "checked_at": 1791227407,
+        "body_sha256": "2399f37ef6c01e889099889e0585e1ef27d2c7747bdcc6f7091143cc1d0e5795",
+        "reserved_commit": "82e788fb886bb421bb60bff4f4ee44df4b9293b4",
+        "mapping": {
+          "II поколение/A5": {
+            "catalog_id": 3133,
+            "generation": "A5",
+            "generation_variant": "pre_FL",
+            "url": "https://auto.ria.com/car/skoda/octavia/a5/"
+          },
+          "II поколение/A5 (FL)": {
+            "catalog_id": 3607,
+            "generation": "A5",
+            "generation_variant": "FL",
+            "url": "https://auto.ria.com/car/skoda/octavia/a5-fl/"
+          }
+        },
+        "binding": "288f2029c5e313d37e908c16e224721518383791940e92fbff312d2c3992c2ad"
+      },
+      "technical_label": "Полностью неповрежденное",
+      "paint_label": "Как новое",
+      "visible_power_hp": null,
+      "visible_power_kw": null,
+      "power_consistency_policy": "round_explicit_hp_to_source_catalog_integer-v1",
+      "engine_volume_basis": "engine_volume_not_explicit"
+    },
+    "ria_public_reference_evidence": {
+      "version": "olx-ria-public-reference-v1",
+      "method": "public_html",
+      "http_status": 200,
+      "body_sha256": "7a67f86f4b53f365835ad3481132e7d345ebf83766deda0c25fa69c10aca5d6e",
+      "body_bytes": 575401,
+      "reserved_commit": "71dffc0b4b4d2541bc2c88f08e88f762f9ce256f",
+      "paid_api_calls": 0,
+      "started_at": "2026-10-05T19:32:55.375064+00:00",
+      "completed_at": "2026-10-05T19:33:06.398640+00:00",
+      "binding": "545ba6d8d73fd46cb23a1fa1f5c6fd46321057f0416d8096b2466698f5db292c"
+    }
+  },
+  {
+    "source": "auto_ria",
+    "id": "40391488",
+    "url": "https://auto.ria.com/auto_skoda_octavia_40391488.html",
+    "price": "5350",
+    "currency": "USD",
+    "brand": "Skoda",
+    "model": "Octavia",
+    "generation": "A5",
+    "generation_variant": "FL",
+    "body": "liftback",
+    "fuel": "diesel",
+    "fuel_subtype": null,
+    "transmission": "manual",
+    "drive_type": "front",
+    "engine_cc": 1600,
+    "power_hp": 105,
+    "year": 2011,
+    "mileage_km": 298000,
+    "research_condition": null,
+    "checked_at": 1791228800,
+    "modification": null,
+    "source_modification_evidence": {
+      "policy": "explicit_provider_engine_code-v1",
+      "catalog_id": null,
+      "label_sha256": "15dddbe1bacc14a902ba4b987f05db4ba7499b237107efb817f77444a63c683a",
+      "basis": "engine_code_not_explicit"
+    },
+    "condition_evidence": {
+      "basis": "corroborated_complete_public_description_and_technical_label",
+      "description_sha256": "8b2ddc4f5e1b8315480edf10241c94807069c2d84238a459534d13a32dbfd551",
+      "description_damage_flags": [],
+      "unsupported_condition_flags": [],
+      "independently_verified": false
+    },
+    "category": "whole_passenger_car",
+    "eligibility_review": {
+      "status": "allowed",
+      "description_complete": true
+    },
+    "vehicle_key": "vin-sha256:4dfaceb44f37f207465f3fc873cd5d36cc9857677a31ad54edb04ec4c2dfe6fc",
+    "vehicle_identity_verified": true,
+    "identity_review": {
+      "distinct_photos_reviewed": false
+    },
+    "photos": [
+      "https://cdn0.riastatic.com/photosnew/auto/photo/skoda_octavia__656623790s.webp",
+      "https://cdn3.riastatic.com/photosnew/auto/photo/skoda_octavia__656623788hd.webp",
+      "https://cdn4.riastatic.com/photosnew/auto/photo/skoda_octavia__656623794bx.webp",
+      "https://cdn2.riastatic.com/photosnew/auto/photo/skoda_octavia__656623797bx.webp",
+      "https://cdn4.riastatic.com/photosnew/auto/photo/skoda_octavia__656623799bx.webp"
+    ],
+    "reference_provenance": {
+      "role": "reference",
+      "frozen_commit": "d408c0eeeb85ff70f1a16a427c96a50c9b048c1f",
+      "frozen_at": 1791228634,
+      "search_params": {
+        "category_id": 1,
+        "marka_id[0]": 70,
+        "model_id[0]": 652
+      }
+    },
+    "source_attribute_evidence": {
+      "basis": "public_ssr_pinia_and_visible_same_document",
+      "generation_label_sha256": "15dddbe1bacc14a902ba4b987f05db4ba7499b237107efb817f77444a63c683a",
+      "generation_id": 3607,
+      "generation_variant_basis": "corroborated_public_catalog_id",
+      "generation_dictionary": {
+        "version": "ria-public-generation-dictionary-v1",
+        "source_url": "https://auto.ria.com/car/skoda/octavia/",
+        "checked_at": 1791227407,
+        "body_sha256": "2399f37ef6c01e889099889e0585e1ef27d2c7747bdcc6f7091143cc1d0e5795",
+        "reserved_commit": "82e788fb886bb421bb60bff4f4ee44df4b9293b4",
+        "mapping": {
+          "II поколение/A5": {
+            "catalog_id": 3133,
+            "generation": "A5",
+            "generation_variant": "pre_FL",
+            "url": "https://auto.ria.com/car/skoda/octavia/a5/"
+          },
+          "II поколение/A5 (FL)": {
+            "catalog_id": 3607,
+            "generation": "A5",
+            "generation_variant": "FL",
+            "url": "https://auto.ria.com/car/skoda/octavia/a5-fl/"
+          }
+        },
+        "binding": "288f2029c5e313d37e908c16e224721518383791940e92fbff312d2c3992c2ad"
+      },
+      "technical_label": "",
+      "paint_label": "Неисправленные следы использования",
+      "visible_power_hp": "105",
+      "visible_power_kw": "77",
+      "power_consistency_policy": "round_explicit_hp_to_source_catalog_integer-v1",
+      "engine_volume_basis": "explicit_visible_engine_volume"
+    },
+    "ria_public_reference_evidence": {
+      "version": "olx-ria-public-reference-v1",
+      "method": "public_html",
+      "http_status": 200,
+      "body_sha256": "ac85733fbb4602e583f4d5edbf3fc24b84e988ae2bec10d5c0553b08cfb44b57",
+      "body_bytes": 572959,
+      "reserved_commit": "71dffc0b4b4d2541bc2c88f08e88f762f9ce256f",
+      "paid_api_calls": 0,
+      "started_at": "2026-10-05T19:33:10.400475+00:00",
+      "completed_at": "2026-10-05T19:33:20.545291+00:00",
+      "binding": "8e42c87e61f69c7abc0e162a9ed7a679248d293f0f8e1fa16e26c2c2631385b3"
+    }
+  },
+  {
+    "source": "auto_ria",
+    "id": "39809027",
+    "url": "https://auto.ria.com/auto_skoda_octavia_39809027.html",
+    "price": "7400",
+    "currency": "USD",
+    "brand": "Skoda",
+    "model": "Octavia",
+    "generation": "A5",
+    "generation_variant": "FL",
+    "body": "liftback",
+    "fuel": "diesel",
+    "fuel_subtype": null,
+    "transmission": "manual",
+    "drive_type": "front",
+    "engine_cc": 1600,
+    "power_hp": 105,
+    "year": 2010,
+    "mileage_km": 305000,
+    "research_condition": "seller_declared_running",
+    "checked_at": 1791228813,
+    "modification": null,
+    "source_modification_evidence": {
+      "policy": "explicit_provider_engine_code-v1",
+      "catalog_id": null,
+      "label_sha256": "15dddbe1bacc14a902ba4b987f05db4ba7499b237107efb817f77444a63c683a",
+      "basis": "engine_code_not_explicit"
+    },
+    "condition_evidence": {
+      "basis": "corroborated_complete_public_description_and_technical_label",
+      "description_sha256": "c0140d8085dcaf705040277a3362869cf5769895f614995f53e25226e86b8e85",
+      "description_damage_flags": [],
+      "unsupported_condition_flags": [],
+      "independently_verified": false
+    },
+    "category": "whole_passenger_car",
+    "eligibility_review": {
+      "status": "allowed",
+      "description_complete": true
+    },
+    "vehicle_key": "vin-sha256:91ef3c187a548a3394fefa5aa8ba9828a54d072892d351d6fb1aade7e8ca6520",
+    "vehicle_identity_verified": true,
+    "identity_review": {
+      "distinct_photos_reviewed": false
+    },
+    "photos": [
+      "https://cdn2.riastatic.com/photosnew/auto/photo/skoda_octavia__640692440s.webp",
+      "https://cdn2.riastatic.com/photosnew/auto/photo/skoda_octavia__640692441hd.webp",
+      "https://cdn2.riastatic.com/photosnew/auto/photo/skoda_octavia__640692442bx.webp",
+      "https://cdn2.riastatic.com/photosnew/auto/photo/skoda_octavia__640692567bx.webp",
+      "https://cdn2.riastatic.com/photosnew/auto/photo/skoda_octavia__640692568bx.webp"
+    ],
+    "reference_provenance": {
+      "role": "reference",
+      "frozen_commit": "d408c0eeeb85ff70f1a16a427c96a50c9b048c1f",
+      "frozen_at": 1791228634,
+      "search_params": {
+        "category_id": 1,
+        "marka_id[0]": 70,
+        "model_id[0]": 652
+      }
+    },
+    "source_attribute_evidence": {
+      "basis": "public_ssr_pinia_and_visible_same_document",
+      "generation_label_sha256": "15dddbe1bacc14a902ba4b987f05db4ba7499b237107efb817f77444a63c683a",
+      "generation_id": 3607,
+      "generation_variant_basis": "corroborated_public_catalog_id",
+      "generation_dictionary": {
+        "version": "ria-public-generation-dictionary-v1",
+        "source_url": "https://auto.ria.com/car/skoda/octavia/",
+        "checked_at": 1791227407,
+        "body_sha256": "2399f37ef6c01e889099889e0585e1ef27d2c7747bdcc6f7091143cc1d0e5795",
+        "reserved_commit": "82e788fb886bb421bb60bff4f4ee44df4b9293b4",
+        "mapping": {
+          "II поколение/A5": {
+            "catalog_id": 3133,
+            "generation": "A5",
+            "generation_variant": "pre_FL",
+            "url": "https://auto.ria.com/car/skoda/octavia/a5/"
+          },
+          "II поколение/A5 (FL)": {
+            "catalog_id": 3607,
+            "generation": "A5",
+            "generation_variant": "FL",
+            "url": "https://auto.ria.com/car/skoda/octavia/a5-fl/"
+          }
+        },
+        "binding": "288f2029c5e313d37e908c16e224721518383791940e92fbff312d2c3992c2ad"
+      },
+      "technical_label": "Полностью неповрежденное",
+      "paint_label": "Неисправленные следы использования",
+      "visible_power_hp": "104.72",
+      "visible_power_kw": "77",
+      "power_consistency_policy": "round_explicit_hp_to_source_catalog_integer-v1",
+      "engine_volume_basis": "explicit_visible_engine_volume"
+    },
+    "ria_public_reference_evidence": {
+      "version": "olx-ria-public-reference-v1",
+      "method": "public_html",
+      "http_status": 200,
+      "body_sha256": "2e03e1ea6ed7bd0f4b751560c1c5f77529bfd650523e6558ac9719b680e84d3d",
+      "body_bytes": 584160,
+      "reserved_commit": "71dffc0b4b4d2541bc2c88f08e88f762f9ce256f",
+      "paid_api_calls": 0,
+      "started_at": "2026-10-05T19:33:24.546402+00:00",
+      "completed_at": "2026-10-05T19:33:33.679813+00:00",
+      "binding": "439f02b9c7b8d5c2f6cbbf0ba448df1b411af224e9a50fce2162098f7428c3f4"
+    }
+  },
+  {
+    "source": "auto_ria",
+    "id": "40343200",
+    "url": "https://auto.ria.com/auto_skoda_octavia_40343200.html",
+    "price": "7800",
+    "currency": "USD",
+    "brand": "Skoda",
+    "model": "Octavia",
+    "generation": "A5",
+    "generation_variant": "FL",
+    "body": "liftback",
+    "fuel": "diesel",
+    "fuel_subtype": null,
+    "transmission": "manual",
+    "drive_type": "front",
+    "engine_cc": null,
+    "power_hp": 105,
+    "year": 2010,
+    "mileage_km": 267000,
+    "research_condition": "seller_declared_running",
+    "checked_at": 1791228827,
+    "modification": null,
+    "source_modification_evidence": {
+      "policy": "explicit_provider_engine_code-v1",
+      "catalog_id": null,
+      "label_sha256": "15dddbe1bacc14a902ba4b987f05db4ba7499b237107efb817f77444a63c683a",
+      "basis": "engine_code_not_explicit"
+    },
+    "condition_evidence": {
+      "basis": "corroborated_complete_public_description_and_technical_label",
+      "description_sha256": "ca51c0527112d82b731d95b9ab6b034f9d923d5d930bf05786b60520e01d6e22",
+      "description_damage_flags": [],
+      "unsupported_condition_flags": [],
+      "independently_verified": false
+    },
+    "category": "whole_passenger_car",
+    "eligibility_review": {
+      "status": "allowed",
+      "description_complete": true
+    },
+    "vehicle_key": "vin-sha256:aaca3176411ad478dd509863b7cd87941bf1feb326dc728f8e4fb5fb58621755",
+    "vehicle_identity_verified": true,
+    "identity_review": {
+      "distinct_photos_reviewed": false
+    },
+    "photos": [],
+    "reference_provenance": {
+      "role": "reference",
+      "frozen_commit": "d408c0eeeb85ff70f1a16a427c96a50c9b048c1f",
+      "frozen_at": 1791228634,
+      "search_params": {
+        "category_id": 1,
+        "marka_id[0]": 70,
+        "model_id[0]": 652
+      }
+    },
+    "source_attribute_evidence": {
+      "basis": "public_ssr_pinia_and_visible_same_document",
+      "generation_label_sha256": "15dddbe1bacc14a902ba4b987f05db4ba7499b237107efb817f77444a63c683a",
+      "generation_id": 3607,
+      "generation_variant_basis": "corroborated_public_catalog_id",
+      "generation_dictionary": {
+        "version": "ria-public-generation-dictionary-v1",
+        "source_url": "https://auto.ria.com/car/skoda/octavia/",
+        "checked_at": 1791227407,
+        "body_sha256": "2399f37ef6c01e889099889e0585e1ef27d2c7747bdcc6f7091143cc1d0e5795",
+        "reserved_commit": "82e788fb886bb421bb60bff4f4ee44df4b9293b4",
+        "mapping": {
+          "II поколение/A5": {
+            "catalog_id": 3133,
+            "generation": "A5",
+            "generation_variant": "pre_FL",
+            "url": "https://auto.ria.com/car/skoda/octavia/a5/"
+          },
+          "II поколение/A5 (FL)": {
+            "catalog_id": 3607,
+            "generation": "A5",
+            "generation_variant": "FL",
+            "url": "https://auto.ria.com/car/skoda/octavia/a5-fl/"
+          }
+        },
+        "binding": "288f2029c5e313d37e908c16e224721518383791940e92fbff312d2c3992c2ad"
+      },
+      "technical_label": "Полностью неповрежденное",
+      "paint_label": "Профессионально исправленные следы использования",
+      "visible_power_hp": null,
+      "visible_power_kw": null,
+      "power_consistency_policy": "round_explicit_hp_to_source_catalog_integer-v1",
+      "engine_volume_basis": "engine_volume_not_explicit"
+    },
+    "ria_public_reference_evidence": {
+      "version": "olx-ria-public-reference-v1",
+      "method": "public_html",
+      "http_status": 200,
+      "body_sha256": "212c0b4d1c0681b7d739e2a5c0169c6cb37182f2b5cbf9e8a31f0a4ce913c03a",
+      "body_bytes": 571686,
+      "reserved_commit": "71dffc0b4b4d2541bc2c88f08e88f762f9ce256f",
+      "paid_api_calls": 0,
+      "started_at": "2026-10-05T19:33:37.681463+00:00",
+      "completed_at": "2026-10-05T19:33:47.353922+00:00",
+      "binding": "7e19ddeed7c1b364e440aec81f2cb7b47b4989503ddf04f8974dfb36022ff167"
+    }
+  }
+]

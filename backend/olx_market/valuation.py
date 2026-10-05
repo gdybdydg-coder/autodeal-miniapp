@@ -17,8 +17,16 @@ FIELDS=('brand','model','generation','body','fuel','transmission','engine_cc','d
 
 def screened(car,quote,now):
     if car.get('source')=='auto_ria':
-        from .ria_reference import reasons as ria_reasons
-        reasons=ria_reasons(car)
+        # Public full-page observations have their own receipt; they never
+        # inherit a paid auto/info proof or silently fall back to one.
+        if 'ria_public_reference_evidence' in car:
+            from .ria_public_reference import reasons as public_reasons
+            reasons=public_reasons(car,now)
+            if 'ria_reference_evidence' in car:
+                reasons.append('ria_reference_channels_ambiguous')
+        else:
+            from .ria_reference import reasons as ria_reasons
+            reasons=ria_reasons(car)
     else:reasons=asking_price_reasons(car)
     if car.get('source') not in ('olx','auto_ria') or not isinstance(car.get('id'),str):reasons.append('identity_invalid')
     for k in FIELDS:
