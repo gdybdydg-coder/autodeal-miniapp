@@ -1,0 +1,21 @@
+{
+  "tests": 12,
+  "passed": 12,
+  "synthetic_tests": 11,
+  "saved_real_tests": 1,
+  "duration_seconds": 0.029,
+  "network_fence_before_imports": true,
+  "live_provider_tests": 0,
+  "paid_ria_calls": 0,
+  "olx_gets": 0,
+  "olx_telegram_calls": 0,
+  "technical_ready": false,
+  "runtime_commit": "3a5586a5259e62b371754502e72ae1625d7db25f",
+  "production_changes": 0,
+  "blockers": [
+    "separate_paid_ria_budget_unagreed",
+    "official_dictionary_mapping_pending",
+    "live_parameter_response_pending",
+    "independent_compatible_references_and_controls_pending"
+  ]
+}
