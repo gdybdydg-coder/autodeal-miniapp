@@ -1,0 +1,935 @@
+[
+  {
+    "source": "olx",
+    "id": "852826578",
+    "url": "https://www.olx.ua/d/obyavlenie/skoda-octavia-a5-fl-1-6-tdi-IDWIn9o.html",
+    "price": "7500",
+    "currency": "USD",
+    "brand": "Skoda",
+    "model": "Octavia",
+    "generation": "A5",
+    "body": "liftback",
+    "fuel": "diesel",
+    "transmission": "manual",
+    "engine_cc": 1600,
+    "drive_type": "front",
+    "power_hp": 105,
+    "modification": null,
+    "year": 2012,
+    "mileage_km": 270000,
+    "category": "whole_passenger_car",
+    "checked_at": 1791184210,
+    "region": "Львовская область",
+    "locality": "Львов",
+    "field_conflicts": [],
+    "research_field_conflicts": [],
+    "price_conflicts": [],
+    "price_review": {
+      "status": "needs_review",
+      "reasons": [
+        "full_price_unconfirmed"
+      ],
+      "version": "price-review-v1",
+      "text_is_not_proof": true
+    },
+    "observed_asking_display": {
+      "status": "corroborated_display",
+      "reasons": [],
+      "amount": "7500",
+      "currency": "USD",
+      "basis": "complete_visible_detail_and_matching_public_state",
+      "original_seller_currency_verified": false,
+      "full_price_verified": false,
+      "description_reviewed_in_full": true,
+      "limits": [
+        "original_seller_currency_unverified",
+        "first_publication_unverified",
+        "asking_amount_is_not_a_completed_sale_price"
+      ],
+      "state_regular_price": {
+        "amount": "337222",
+        "currency": "UAH"
+      }
+    },
+    "vehicle_key": null,
+    "eligibility_review": {
+      "status": "allowed",
+      "reasons": [
+        "customs_cleared_declared",
+        "no_forbidden_offer_evidence"
+      ],
+      "customs_status": "cleared_declared",
+      "description_complete": true,
+      "version": "olx-eligibility-v2"
+    }
+  },
+  {
+    "source": "olx",
+    "id": "892218290",
+    "url": "https://www.olx.ua/d/obyavlenie/avtomobl-skoda-oktavia-a5-IDYnEJA.html",
+    "price": "7100",
+    "currency": "USD",
+    "brand": "Skoda",
+    "model": "Octavia",
+    "generation": "A5",
+    "body": "wagon",
+    "fuel": "diesel",
+    "transmission": "manual",
+    "engine_cc": 1600,
+    "drive_type": "front",
+    "power_hp": null,
+    "modification": null,
+    "year": 2010,
+    "mileage_km": 254000,
+    "research_condition": "seller_declared_running",
+    "category": "whole_passenger_car",
+    "checked_at": 1791184248,
+    "region": "Винницкая область",
+    "locality": "Тульчин",
+    "field_conflicts": [],
+    "research_field_conflicts": [],
+    "price_conflicts": [],
+    "price_review": {
+      "status": "needs_review",
+      "reasons": [
+        "full_price_unconfirmed"
+      ],
+      "version": "price-review-v1",
+      "text_is_not_proof": true
+    },
+    "observed_asking_display": {
+      "status": "corroborated_display",
+      "reasons": [],
+      "amount": "7100",
+      "currency": "USD",
+      "basis": "complete_visible_detail_and_matching_public_state",
+      "original_seller_currency_verified": false,
+      "full_price_verified": false,
+      "description_reviewed_in_full": true,
+      "limits": [
+        "original_seller_currency_unverified",
+        "first_publication_unverified",
+        "asking_amount_is_not_a_completed_sale_price"
+      ],
+      "state_regular_price": {
+        "amount": "319237",
+        "currency": "UAH"
+      }
+    },
+    "vehicle_key": null,
+    "eligibility_review": {
+      "status": "allowed",
+      "reasons": [
+        "customs_cleared_declared",
+        "no_forbidden_offer_evidence"
+      ],
+      "customs_status": "cleared_declared",
+      "description_complete": true,
+      "version": "olx-eligibility-v2"
+    }
+  },
+  {
+    "source": "olx",
+    "id": "917982649",
+    "url": "https://www.olx.ua/d/obyavlenie/prodam-shkodu-oktavia-a5-full-1-6-dizel-ID107LdL.html",
+    "price": "7800",
+    "currency": "USD",
+    "brand": "Skoda",
+    "model": "Octavia",
+    "generation": "A5",
+    "body": "wagon",
+    "fuel": "diesel",
+    "transmission": "manual",
+    "engine_cc": 1600,
+    "drive_type": "front",
+    "power_hp": null,
+    "modification": null,
+    "year": 2012,
+    "mileage_km": 260000,
+    "research_condition": "seller_declared_running",
+    "category": "whole_passenger_car",
+    "checked_at": 1791184258,
+    "region": "Днепропетровская область",
+    "locality": "Кривой Рог",
+    "field_conflicts": [],
+    "research_field_conflicts": [],
+    "price_conflicts": [],
+    "price_review": {
+      "status": "needs_review",
+      "reasons": [
+        "full_price_unconfirmed"
+      ],
+      "version": "price-review-v1",
+      "text_is_not_proof": true
+    },
+    "observed_asking_display": {
+      "status": "corroborated_display",
+      "reasons": [],
+      "amount": "7800",
+      "currency": "USD",
+      "basis": "complete_visible_detail_and_matching_public_state",
+      "original_seller_currency_verified": false,
+      "full_price_verified": false,
+      "description_reviewed_in_full": true,
+      "limits": [
+        "original_seller_currency_unverified",
+        "first_publication_unverified",
+        "asking_amount_is_not_a_completed_sale_price"
+      ],
+      "state_regular_price": {
+        "amount": "350711",
+        "currency": "UAH"
+      }
+    },
+    "vehicle_key": null,
+    "eligibility_review": {
+      "status": "allowed",
+      "reasons": [
+        "customs_cleared_declared",
+        "no_forbidden_offer_evidence"
+      ],
+      "customs_status": "cleared_declared",
+      "description_complete": true,
+      "version": "olx-eligibility-v2"
+    }
+  },
+  {
+    "source": "olx",
+    "id": "920786921",
+    "url": "https://www.olx.ua/d/obyavlenie/skoda-octavia-a5-fl-ID10jvJX.html",
+    "price": "7299",
+    "currency": "USD",
+    "brand": "Skoda",
+    "model": "Octavia",
+    "generation": "A5",
+    "body": "wagon",
+    "fuel": "diesel",
+    "transmission": "manual",
+    "engine_cc": 1600,
+    "drive_type": "front",
+    "power_hp": 105,
+    "modification": null,
+    "year": 2010,
+    "mileage_km": 242000,
+    "research_condition": "seller_declared_running",
+    "category": "whole_passenger_car",
+    "checked_at": 1791184133,
+    "region": "Волынская область",
+    "locality": "Луцк",
+    "field_conflicts": [],
+    "research_field_conflicts": [],
+    "price_conflicts": [],
+    "price_review": {
+      "status": "needs_review",
+      "reasons": [
+        "full_price_unconfirmed"
+      ],
+      "version": "price-review-v1",
+      "text_is_not_proof": true
+    },
+    "observed_asking_display": {
+      "status": "corroborated_display",
+      "reasons": [],
+      "amount": "7299",
+      "currency": "USD",
+      "basis": "complete_visible_detail_and_matching_public_state",
+      "original_seller_currency_verified": false,
+      "full_price_verified": false,
+      "description_reviewed_in_full": true,
+      "limits": [
+        "original_seller_currency_unverified",
+        "first_publication_unverified",
+        "asking_amount_is_not_a_completed_sale_price"
+      ],
+      "state_regular_price": {
+        "amount": "328184",
+        "currency": "UAH"
+      }
+    },
+    "vehicle_key": "vin-sha256:e546146903dc01e4325b89dddbe67245c2ac5f2d4f665a718a861b9b1be01190",
+    "eligibility_review": {
+      "status": "allowed",
+      "reasons": [
+        "customs_cleared_declared",
+        "no_forbidden_offer_evidence"
+      ],
+      "customs_status": "cleared_declared",
+      "description_complete": true,
+      "version": "olx-eligibility-v2"
+    }
+  },
+  {
+    "source": "olx",
+    "id": "931146600",
+    "url": "https://www.olx.ua/d/obyavlenie/prodam-shkodu-a5-restalng-ID110ZLy.html",
+    "price": "6400",
+    "currency": "USD",
+    "brand": "Skoda",
+    "model": "Octavia",
+    "generation": "A5",
+    "body": "wagon",
+    "fuel": "diesel",
+    "transmission": "manual",
+    "engine_cc": 1600,
+    "drive_type": "front",
+    "power_hp": 105,
+    "modification": null,
+    "year": 2010,
+    "mileage_km": 272000,
+    "research_condition": "seller_declared_running",
+    "category": "whole_passenger_car",
+    "checked_at": 1791184162,
+    "region": "Львовская область",
+    "locality": "Львов",
+    "field_conflicts": [],
+    "research_field_conflicts": [],
+    "price_conflicts": [],
+    "price_review": {
+      "status": "needs_review",
+      "reasons": [
+        "full_price_unconfirmed"
+      ],
+      "version": "price-review-v1",
+      "text_is_not_proof": true
+    },
+    "observed_asking_display": {
+      "status": "corroborated_display",
+      "reasons": [],
+      "amount": "6400",
+      "currency": "USD",
+      "basis": "complete_visible_detail_and_matching_public_state",
+      "original_seller_currency_verified": false,
+      "full_price_verified": false,
+      "description_reviewed_in_full": true,
+      "limits": [
+        "original_seller_currency_unverified",
+        "first_publication_unverified",
+        "asking_amount_is_not_a_completed_sale_price"
+      ],
+      "state_regular_price": {
+        "amount": "287763",
+        "currency": "UAH"
+      }
+    },
+    "vehicle_key": null,
+    "eligibility_review": {
+      "status": "allowed",
+      "reasons": [
+        "customs_cleared_declared",
+        "no_forbidden_offer_evidence"
+      ],
+      "customs_status": "cleared_declared",
+      "description_complete": true,
+      "version": "olx-eligibility-v2"
+    }
+  },
+  {
+    "source": "olx",
+    "id": "932654807",
+    "url": "https://www.olx.ua/d/obyavlenie/skoda-a5-2012-rk-dizel-dvigun-1-6-ID117k7t.html",
+    "price": "7600",
+    "currency": "USD",
+    "brand": "Skoda",
+    "model": "Octavia",
+    "generation": "A5",
+    "body": "wagon",
+    "fuel": "diesel",
+    "transmission": "manual",
+    "engine_cc": 1600,
+    "drive_type": "front",
+    "power_hp": 105,
+    "modification": "1.6 тdi",
+    "year": 2012,
+    "mileage_km": 273000,
+    "category": "whole_passenger_car",
+    "checked_at": 1791184239,
+    "region": "Ровенская область",
+    "locality": "Костополь",
+    "field_conflicts": [],
+    "research_field_conflicts": [],
+    "price_conflicts": [],
+    "price_review": {
+      "status": "needs_review",
+      "reasons": [
+        "full_price_unconfirmed"
+      ],
+      "version": "price-review-v1",
+      "text_is_not_proof": true
+    },
+    "observed_asking_display": {
+      "status": "corroborated_display",
+      "reasons": [],
+      "amount": "7600",
+      "currency": "USD",
+      "basis": "complete_visible_detail_and_matching_public_state",
+      "original_seller_currency_verified": false,
+      "full_price_verified": false,
+      "description_reviewed_in_full": true,
+      "limits": [
+        "original_seller_currency_unverified",
+        "first_publication_unverified",
+        "asking_amount_is_not_a_completed_sale_price"
+      ],
+      "state_regular_price": {
+        "amount": "341718",
+        "currency": "UAH"
+      }
+    },
+    "vehicle_key": null,
+    "eligibility_review": {
+      "status": "allowed",
+      "reasons": [
+        "customs_cleared_declared",
+        "no_forbidden_offer_evidence"
+      ],
+      "customs_status": "cleared_declared",
+      "description_complete": true,
+      "version": "olx-eligibility-v2"
+    }
+  },
+  {
+    "source": "olx",
+    "id": "933483565",
+    "url": "https://www.olx.ua/d/obyavlenie/octavia-a5-2010-1-6-ID11aNIx.html",
+    "price": "7500",
+    "currency": "USD",
+    "brand": "Skoda",
+    "model": "Octavia",
+    "generation": "A5",
+    "body": "wagon",
+    "fuel": "diesel",
+    "transmission": "manual",
+    "engine_cc": 1600,
+    "drive_type": "front",
+    "power_hp": 105,
+    "modification": null,
+    "year": 2010,
+    "mileage_km": 264000,
+    "research_condition": "seller_declared_running",
+    "category": "whole_passenger_car",
+    "checked_at": 1791184230,
+    "region": "Львовская область",
+    "locality": "Стрый",
+    "field_conflicts": [],
+    "research_field_conflicts": [],
+    "price_conflicts": [],
+    "price_review": {
+      "status": "needs_review",
+      "reasons": [
+        "full_price_unconfirmed"
+      ],
+      "version": "price-review-v1",
+      "text_is_not_proof": true
+    },
+    "observed_asking_display": {
+      "status": "corroborated_display",
+      "reasons": [],
+      "amount": "7500",
+      "currency": "USD",
+      "basis": "complete_visible_detail_and_matching_public_state",
+      "original_seller_currency_verified": false,
+      "full_price_verified": false,
+      "description_reviewed_in_full": true,
+      "limits": [
+        "original_seller_currency_unverified",
+        "first_publication_unverified",
+        "asking_amount_is_not_a_completed_sale_price"
+      ],
+      "state_regular_price": {
+        "amount": "337222",
+        "currency": "UAH"
+      }
+    },
+    "vehicle_key": null,
+    "eligibility_review": {
+      "status": "allowed",
+      "reasons": [
+        "customs_cleared_declared",
+        "no_forbidden_offer_evidence"
+      ],
+      "customs_status": "cleared_declared",
+      "description_complete": true,
+      "version": "olx-eligibility-v2"
+    }
+  },
+  {
+    "source": "olx",
+    "id": "935196654",
+    "url": "https://www.olx.ua/d/obyavlenie/prodam-skoda-octavia-a5-universal-1-6-turbo-dizel-ID11hZn0.html",
+    "price": "6700",
+    "currency": "USD",
+    "brand": "Skoda",
+    "model": "Octavia",
+    "generation": "A5",
+    "body": "wagon",
+    "fuel": "diesel",
+    "transmission": "manual",
+    "engine_cc": 1600,
+    "drive_type": "front",
+    "power_hp": null,
+    "modification": null,
+    "year": 2010,
+    "mileage_km": 270000,
+    "research_condition": "running_body_repair",
+    "category": "whole_passenger_car",
+    "checked_at": 1791184182,
+    "region": "Хмельницкая область",
+    "locality": "Хмельницкий",
+    "field_conflicts": [],
+    "research_field_conflicts": [],
+    "price_conflicts": [],
+    "price_review": {
+      "status": "needs_review",
+      "reasons": [
+        "full_price_unconfirmed"
+      ],
+      "version": "price-review-v1",
+      "text_is_not_proof": true
+    },
+    "observed_asking_display": {
+      "status": "corroborated_display",
+      "reasons": [],
+      "amount": "6700",
+      "currency": "USD",
+      "basis": "complete_visible_detail_and_matching_public_state",
+      "original_seller_currency_verified": false,
+      "full_price_verified": false,
+      "description_reviewed_in_full": true,
+      "limits": [
+        "original_seller_currency_unverified",
+        "first_publication_unverified",
+        "asking_amount_is_not_a_completed_sale_price"
+      ],
+      "state_regular_price": {
+        "amount": "301251",
+        "currency": "UAH"
+      }
+    },
+    "vehicle_key": null,
+    "eligibility_review": {
+      "status": "allowed",
+      "reasons": [
+        "customs_cleared_declared",
+        "no_forbidden_offer_evidence"
+      ],
+      "customs_status": "cleared_declared",
+      "description_complete": true,
+      "version": "olx-eligibility-v2"
+    }
+  },
+  {
+    "source": "olx",
+    "id": "935707774",
+    "url": "https://www.olx.ua/d/obyavlenie/prodam-skoda-octavia-a5-rest-1-6-tdi-ID11k8kS.html",
+    "price": "7200",
+    "currency": "USD",
+    "brand": "Skoda",
+    "model": "Octavia",
+    "generation": "A5",
+    "body": "wagon",
+    "fuel": "diesel",
+    "transmission": "manual",
+    "engine_cc": 1600,
+    "drive_type": "front",
+    "power_hp": 105,
+    "modification": null,
+    "year": 2012,
+    "mileage_km": 240000,
+    "research_condition": "seller_declared_running",
+    "category": "whole_passenger_car",
+    "checked_at": 1791184191,
+    "region": "Полтавская область",
+    "locality": "Миргород",
+    "field_conflicts": [],
+    "research_field_conflicts": [],
+    "price_conflicts": [],
+    "price_review": {
+      "status": "needs_review",
+      "reasons": [
+        "full_price_unconfirmed"
+      ],
+      "version": "price-review-v1",
+      "text_is_not_proof": true
+    },
+    "observed_asking_display": {
+      "status": "needs_review",
+      "reasons": [
+        "ordinary_sale_not_corroborated",
+        "visible_sale_terms_missing_or_conflicting"
+      ],
+      "amount": "7200",
+      "currency": "USD",
+      "basis": "complete_visible_detail_and_matching_public_state",
+      "original_seller_currency_verified": false,
+      "full_price_verified": false,
+      "description_reviewed_in_full": true,
+      "limits": [
+        "original_seller_currency_unverified",
+        "first_publication_unverified",
+        "asking_amount_is_not_a_completed_sale_price"
+      ],
+      "state_regular_price": {
+        "amount": "323733",
+        "currency": "UAH"
+      }
+    },
+    "research_asking_display": {
+      "status": "corroborated_display",
+      "reasons": [],
+      "amount": "7200",
+      "currency": "USD",
+      "basis": "regular_sale_with_optional_exchange_corroborated",
+      "original_seller_currency_verified": false,
+      "full_price_verified": false,
+      "description_reviewed_in_full": true,
+      "limits": [
+        "original_seller_currency_unverified",
+        "first_publication_unverified",
+        "asking_amount_is_not_a_completed_sale_price"
+      ],
+      "state_regular_price": {
+        "amount": "323733",
+        "currency": "UAH"
+      },
+      "previous_reasons": [
+        "ordinary_sale_not_corroborated",
+        "visible_sale_terms_missing_or_conflicting"
+      ]
+    },
+    "vehicle_key": null,
+    "eligibility_review": {
+      "status": "allowed",
+      "reasons": [
+        "customs_cleared_declared",
+        "no_forbidden_offer_evidence"
+      ],
+      "customs_status": "cleared_declared",
+      "description_complete": true,
+      "version": "olx-eligibility-v2"
+    }
+  },
+  {
+    "source": "olx",
+    "id": "936176647",
+    "url": "https://www.olx.ua/d/obyavlenie/skoda-octavia-a5-fl-ID11m6jl.html",
+    "price": "6600",
+    "currency": "USD",
+    "brand": "Skoda",
+    "model": "Octavia",
+    "generation": "A5",
+    "body": "wagon",
+    "fuel": "diesel",
+    "transmission": "manual",
+    "engine_cc": 1600,
+    "drive_type": "front",
+    "power_hp": 105,
+    "modification": null,
+    "year": 2010,
+    "mileage_km": 274000,
+    "research_condition": "seller_declared_running",
+    "category": "whole_passenger_car",
+    "checked_at": 1791184172,
+    "region": "Черниговская область",
+    "locality": "Мена",
+    "field_conflicts": [],
+    "research_field_conflicts": [],
+    "price_conflicts": [],
+    "price_review": {
+      "status": "needs_review",
+      "reasons": [
+        "full_price_unconfirmed"
+      ],
+      "version": "price-review-v1",
+      "text_is_not_proof": true
+    },
+    "observed_asking_display": {
+      "status": "corroborated_display",
+      "reasons": [],
+      "amount": "6600",
+      "currency": "USD",
+      "basis": "complete_visible_detail_and_matching_public_state",
+      "original_seller_currency_verified": false,
+      "full_price_verified": false,
+      "description_reviewed_in_full": true,
+      "limits": [
+        "original_seller_currency_unverified",
+        "first_publication_unverified",
+        "asking_amount_is_not_a_completed_sale_price"
+      ],
+      "state_regular_price": {
+        "amount": "296755",
+        "currency": "UAH"
+      }
+    },
+    "vehicle_key": null,
+    "eligibility_review": {
+      "status": "allowed",
+      "reasons": [
+        "customs_cleared_declared",
+        "no_forbidden_offer_evidence"
+      ],
+      "customs_status": "cleared_declared",
+      "description_complete": true,
+      "version": "olx-eligibility-v2"
+    }
+  },
+  {
+    "source": "olx",
+    "id": "936197359",
+    "url": "https://www.olx.ua/d/obyavlenie/prodam-avto-skoda-octavia-a5-1-6-tdi-garniy-stan-ID11mbHp.html",
+    "price": "7300",
+    "currency": "USD",
+    "brand": "Skoda",
+    "model": "Octavia",
+    "generation": "A5",
+    "body": "wagon",
+    "fuel": "diesel",
+    "transmission": "manual",
+    "engine_cc": 1600,
+    "drive_type": "front",
+    "power_hp": null,
+    "modification": null,
+    "year": 2010,
+    "mileage_km": 238000,
+    "research_condition": "seller_declared_running",
+    "category": "whole_passenger_car",
+    "checked_at": 1791184142,
+    "region": "Одесская область",
+    "locality": "Подольск",
+    "field_conflicts": [],
+    "research_field_conflicts": [],
+    "price_conflicts": [],
+    "price_review": {
+      "status": "needs_review",
+      "reasons": [
+        "full_price_unconfirmed"
+      ],
+      "version": "price-review-v1",
+      "text_is_not_proof": true
+    },
+    "observed_asking_display": {
+      "status": "corroborated_display",
+      "reasons": [],
+      "amount": "7300",
+      "currency": "USD",
+      "basis": "complete_visible_detail_and_matching_public_state",
+      "original_seller_currency_verified": false,
+      "full_price_verified": false,
+      "description_reviewed_in_full": true,
+      "limits": [
+        "original_seller_currency_unverified",
+        "first_publication_unverified",
+        "asking_amount_is_not_a_completed_sale_price"
+      ],
+      "state_regular_price": {
+        "amount": "328229",
+        "currency": "UAH"
+      }
+    },
+    "vehicle_key": null,
+    "eligibility_review": {
+      "status": "allowed",
+      "reasons": [
+        "customs_cleared_declared",
+        "no_forbidden_offer_evidence"
+      ],
+      "customs_status": "cleared_declared",
+      "description_complete": true,
+      "version": "olx-eligibility-v2"
+    }
+  },
+  {
+    "source": "olx",
+    "id": "936372176",
+    "url": "https://www.olx.ua/d/obyavlenie/prodam-avtomobl-skoda-a5-ID11mWb2.html",
+    "price": "8700",
+    "currency": "USD",
+    "brand": "Skoda",
+    "model": "Octavia",
+    "generation": "A5",
+    "body": "wagon",
+    "fuel": "diesel",
+    "transmission": "manual",
+    "engine_cc": 1600,
+    "drive_type": "front",
+    "power_hp": null,
+    "modification": null,
+    "year": 2012,
+    "mileage_km": 280000,
+    "category": "whole_passenger_car",
+    "checked_at": 1791184202,
+    "region": "Полтавская область",
+    "locality": "Полтава",
+    "field_conflicts": [],
+    "research_field_conflicts": [],
+    "price_conflicts": [],
+    "price_review": {
+      "status": "needs_review",
+      "reasons": [
+        "full_price_unconfirmed"
+      ],
+      "version": "price-review-v1",
+      "text_is_not_proof": true
+    },
+    "observed_asking_display": {
+      "status": "corroborated_display",
+      "reasons": [],
+      "amount": "8700",
+      "currency": "USD",
+      "basis": "complete_visible_detail_and_matching_public_state",
+      "original_seller_currency_verified": false,
+      "full_price_verified": false,
+      "description_reviewed_in_full": true,
+      "limits": [
+        "original_seller_currency_unverified",
+        "first_publication_unverified",
+        "asking_amount_is_not_a_completed_sale_price"
+      ],
+      "state_regular_price": {
+        "amount": "391177",
+        "currency": "UAH"
+      }
+    },
+    "vehicle_key": null,
+    "eligibility_review": {
+      "status": "allowed",
+      "reasons": [
+        "customs_cleared_declared",
+        "no_forbidden_offer_evidence"
+      ],
+      "customs_status": "cleared_declared",
+      "description_complete": true,
+      "version": "olx-eligibility-v2"
+    }
+  },
+  {
+    "source": "olx",
+    "id": "936415277",
+    "url": "https://www.olx.ua/d/obyavlenie/skoda-octavia-a5-2012-ID11n6od.html",
+    "price": "6800",
+    "currency": "USD",
+    "brand": "Skoda",
+    "model": "Octavia",
+    "generation": "A5",
+    "body": "wagon",
+    "fuel": "diesel",
+    "transmission": "manual",
+    "engine_cc": 1600,
+    "drive_type": "front",
+    "power_hp": null,
+    "modification": null,
+    "year": 2012,
+    "mileage_km": 261000,
+    "research_condition": "seller_declared_running",
+    "category": "whole_passenger_car",
+    "checked_at": 1791184221,
+    "region": "Черкасская область",
+    "locality": "Умань",
+    "field_conflicts": [],
+    "research_field_conflicts": [],
+    "price_conflicts": [],
+    "price_review": {
+      "status": "needs_review",
+      "reasons": [
+        "full_price_unconfirmed"
+      ],
+      "version": "price-review-v1",
+      "text_is_not_proof": true
+    },
+    "observed_asking_display": {
+      "status": "corroborated_display",
+      "reasons": [],
+      "amount": "6800",
+      "currency": "USD",
+      "basis": "complete_visible_detail_and_matching_public_state",
+      "original_seller_currency_verified": false,
+      "full_price_verified": false,
+      "description_reviewed_in_full": true,
+      "limits": [
+        "original_seller_currency_unverified",
+        "first_publication_unverified",
+        "asking_amount_is_not_a_completed_sale_price"
+      ],
+      "state_regular_price": {
+        "amount": "305748",
+        "currency": "UAH"
+      }
+    },
+    "vehicle_key": null,
+    "eligibility_review": {
+      "status": "allowed",
+      "reasons": [
+        "customs_cleared_declared",
+        "no_forbidden_offer_evidence"
+      ],
+      "customs_status": "cleared_declared",
+      "description_complete": true,
+      "version": "olx-eligibility-v2"
+    }
+  },
+  {
+    "source": "olx",
+    "id": "936658970",
+    "url": "https://www.olx.ua/d/obyavlenie/skoda-octavia-a5-1-6-tdi-ID11o7MK.html",
+    "price": "6500",
+    "currency": "USD",
+    "brand": "Skoda",
+    "model": "Octavia",
+    "generation": "A5",
+    "body": "wagon",
+    "fuel": "diesel",
+    "transmission": "manual",
+    "engine_cc": 1600,
+    "drive_type": "front",
+    "power_hp": 105,
+    "modification": null,
+    "year": 2010,
+    "mileage_km": 270000,
+    "research_condition": "seller_declared_running",
+    "category": "whole_passenger_car",
+    "checked_at": 1791184153,
+    "region": "Хмельницкая область",
+    "locality": "Хмельницкий",
+    "field_conflicts": [],
+    "research_field_conflicts": [],
+    "price_conflicts": [],
+    "price_review": {
+      "status": "needs_review",
+      "reasons": [
+        "full_price_unconfirmed"
+      ],
+      "version": "price-review-v1",
+      "text_is_not_proof": true
+    },
+    "observed_asking_display": {
+      "status": "corroborated_display",
+      "reasons": [],
+      "amount": "6500",
+      "currency": "USD",
+      "basis": "complete_visible_detail_and_matching_public_state",
+      "original_seller_currency_verified": false,
+      "full_price_verified": false,
+      "description_reviewed_in_full": true,
+      "limits": [
+        "original_seller_currency_unverified",
+        "first_publication_unverified",
+        "asking_amount_is_not_a_completed_sale_price"
+      ],
+      "state_regular_price": {
+        "amount": "292259",
+        "currency": "UAH"
+      }
+    },
+    "vehicle_key": null,
+    "eligibility_review": {
+      "status": "allowed",
+      "reasons": [
+        "customs_cleared_declared",
+        "no_forbidden_offer_evidence"
+      ],
+      "customs_status": "cleared_declared",
+      "description_complete": true,
+      "version": "olx-eligibility-v2"
+    }
+  }
+]

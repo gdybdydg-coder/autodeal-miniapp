@@ -1,0 +1,50 @@
+{
+  "reservation_commit": "a9d23693c25fa265bf54e2df2ffcc256969b4c37",
+  "calls": [
+    {
+      "kind": "olx_search",
+      "url": "https://www.olx.ua/transport/legkovye-avtomobili/q-skoda%20octavia%20a5%2016%20tdi/",
+      "cap": 4194304,
+      "state": "finished",
+      "started_at": 1791183756.6234477,
+      "http": 200,
+      "curl_exit": 0,
+      "bytes": 3624200,
+      "finished_at": 1791183765.8829706,
+      "sha256": "01a90391bbfe5f94b3c2d69fa7eba6aa501f4e76ed5b8c5c62901d32b8e0d906",
+      "parsed": true
+    },
+    {
+      "kind": "fx",
+      "url": "https://api.privatbank.ua/p24api/exchange_rates?json&date=05.10.2026",
+      "cap": 262144,
+      "state": "finished",
+      "started_at": 1791183769.9444377,
+      "http": 200,
+      "curl_exit": 0,
+      "bytes": 2836,
+      "finished_at": 1791183777.6074915,
+      "sha256": "2891deec597f6854f881ea31385471e22febfd817d846da254fb1d5de8797da0",
+      "quote": {
+        "rate": "44.9857000",
+        "source": "https://api.privatbank.ua/p24api/exchange_rates?json&date=05.10.2026",
+        "kind": "nbu_official",
+        "effective_date": "2026-10-05",
+        "fetched_at": "2026-10-05T07:02:57.607491+00:00",
+        "published_at": null,
+        "buy": null,
+        "sell": null,
+        "eur_rate": null,
+        "eur_units": null,
+        "units": "UAH per 1 USD",
+        "policy": "olx-research-fx-v1",
+        "transaction_channel": "official_reference_not_transaction_rate"
+      }
+    }
+  ],
+  "olx_source_hold": null,
+  "no_telegram": true,
+  "paid_ria_calls": 0,
+  "started_at": 1791183756.6234415,
+  "finished_at": 1791183777.6082768
+}

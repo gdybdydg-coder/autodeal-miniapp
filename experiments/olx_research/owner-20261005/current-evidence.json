@@ -1,0 +1,447 @@
+{
+  "checked_at": 1791184499,
+  "dataset_kind": "saved_real_fresh_details_not_telegram",
+  "previous_unique": 71,
+  "fresh_detail_gets": 14,
+  "new_unique": 1,
+  "combined_unique": 72,
+  "estimated": 0,
+  "max_comparables": 4,
+  "fresh_estimated": 0,
+  "fresh_known_power": 8,
+  "fresh_vin_claims": 1,
+  "independence_manually_verified": 0,
+  "frozen_holdout": 3,
+  "eligible_holdout": 2,
+  "estimated_holdout": 0,
+  "max_holdout_comparables": 3,
+  "selected_method": null,
+  "sale_price_labels": 0,
+  "asking_error_metrics": {
+    "median": {
+      "evaluated": 0,
+      "mean_absolute_usd": null,
+      "mean_absolute_percent": null
+    },
+    "trimmed_mean": {
+      "evaluated": 0,
+      "mean_absolute_usd": null,
+      "mean_absolute_percent": null
+    },
+    "weighted_median": {
+      "evaluated": 0,
+      "mean_absolute_usd": null,
+      "mean_absolute_percent": null
+    }
+  },
+  "telegram_calls": 0,
+  "telegram_receipts": [],
+  "client_authorized": false,
+  "owner_authorized": true,
+  "technical_ready": false,
+  "runtime_enabled": false,
+  "status": "insufficient_verified_analogs_and_controls",
+  "quote": {
+    "rate": "44.9857000",
+    "source": "https://api.privatbank.ua/p24api/exchange_rates?json&date=05.10.2026",
+    "kind": "nbu_official",
+    "effective_date": "2026-10-05",
+    "fetched_at": "2026-10-05T07:02:57.607491+00:00",
+    "published_at": null,
+    "buy": null,
+    "sell": null,
+    "eur_rate": null,
+    "eur_units": null,
+    "units": "UAH per 1 USD",
+    "policy": "olx-research-fx-v1",
+    "transaction_channel": "official_reference_not_transaction_rate"
+  },
+  "fresh_rows": [
+    {
+      "id": "852826578",
+      "url": "https://www.olx.ua/d/obyavlenie/skoda-octavia-a5-fl-1-6-tdi-IDWIn9o.html",
+      "checked_at": 1791184210,
+      "asking_usd": "7500",
+      "owner_filter": {
+        "match": false,
+        "reasons": [
+          "filter_price_max",
+          "filter_region"
+        ],
+        "unknown": []
+      },
+      "valuation_status": "profitability_unconfirmed",
+      "market_reference": null,
+      "comparables": 0,
+      "reasons": [
+        "condition_unconfirmed"
+      ],
+      "screen_reasons": [
+        "condition_unconfirmed"
+      ],
+      "body": "liftback",
+      "year": 2012,
+      "mileage_km": 270000,
+      "power_hp": 105,
+      "vin_derived_claim_present": false,
+      "physical_identity_verified": false
+    },
+    {
+      "id": "892218290",
+      "url": "https://www.olx.ua/d/obyavlenie/avtomobl-skoda-oktavia-a5-IDYnEJA.html",
+      "checked_at": 1791184248,
+      "asking_usd": "7100",
+      "owner_filter": {
+        "match": false,
+        "reasons": [
+          "filter_price_max"
+        ],
+        "unknown": []
+      },
+      "valuation_status": "profitability_unconfirmed",
+      "market_reference": null,
+      "comparables": 0,
+      "reasons": [
+        "missing_power_hp"
+      ],
+      "screen_reasons": [
+        "missing_power_hp"
+      ],
+      "body": "wagon",
+      "year": 2010,
+      "mileage_km": 254000,
+      "power_hp": null,
+      "vin_derived_claim_present": false,
+      "physical_identity_verified": false
+    },
+    {
+      "id": "917982649",
+      "url": "https://www.olx.ua/d/obyavlenie/prodam-shkodu-oktavia-a5-full-1-6-dizel-ID107LdL.html",
+      "checked_at": 1791184258,
+      "asking_usd": "7800",
+      "owner_filter": {
+        "match": false,
+        "reasons": [
+          "filter_price_max",
+          "filter_region"
+        ],
+        "unknown": []
+      },
+      "valuation_status": "profitability_unconfirmed",
+      "market_reference": null,
+      "comparables": 0,
+      "reasons": [
+        "missing_power_hp"
+      ],
+      "screen_reasons": [
+        "missing_power_hp"
+      ],
+      "body": "wagon",
+      "year": 2012,
+      "mileage_km": 260000,
+      "power_hp": null,
+      "vin_derived_claim_present": false,
+      "physical_identity_verified": false
+    },
+    {
+      "id": "920786921",
+      "url": "https://www.olx.ua/d/obyavlenie/skoda-octavia-a5-fl-ID10jvJX.html",
+      "checked_at": 1791184133,
+      "asking_usd": "7299",
+      "owner_filter": {
+        "match": false,
+        "reasons": [
+          "filter_price_max",
+          "filter_region"
+        ],
+        "unknown": []
+      },
+      "valuation_status": "profitability_unconfirmed",
+      "market_reference": null,
+      "comparables": 3,
+      "reasons": [
+        "insufficient_comparables"
+      ],
+      "screen_reasons": [],
+      "body": "wagon",
+      "year": 2010,
+      "mileage_km": 242000,
+      "power_hp": 105,
+      "vin_derived_claim_present": true,
+      "physical_identity_verified": false
+    },
+    {
+      "id": "931146600",
+      "url": "https://www.olx.ua/d/obyavlenie/prodam-shkodu-a5-restalng-ID110ZLy.html",
+      "checked_at": 1791184162,
+      "asking_usd": "6400",
+      "owner_filter": {
+        "match": false,
+        "reasons": [
+          "filter_region"
+        ],
+        "unknown": []
+      },
+      "valuation_status": "profitability_unconfirmed",
+      "market_reference": null,
+      "comparables": 4,
+      "reasons": [
+        "insufficient_comparables"
+      ],
+      "screen_reasons": [],
+      "body": "wagon",
+      "year": 2010,
+      "mileage_km": 272000,
+      "power_hp": 105,
+      "vin_derived_claim_present": false,
+      "physical_identity_verified": false
+    },
+    {
+      "id": "932654807",
+      "url": "https://www.olx.ua/d/obyavlenie/skoda-a5-2012-rk-dizel-dvigun-1-6-ID117k7t.html",
+      "checked_at": 1791184239,
+      "asking_usd": "7600",
+      "owner_filter": {
+        "match": false,
+        "reasons": [
+          "filter_price_max",
+          "filter_region"
+        ],
+        "unknown": []
+      },
+      "valuation_status": "profitability_unconfirmed",
+      "market_reference": null,
+      "comparables": 0,
+      "reasons": [
+        "condition_unconfirmed"
+      ],
+      "screen_reasons": [
+        "condition_unconfirmed"
+      ],
+      "body": "wagon",
+      "year": 2012,
+      "mileage_km": 273000,
+      "power_hp": 105,
+      "vin_derived_claim_present": false,
+      "physical_identity_verified": false
+    },
+    {
+      "id": "933483565",
+      "url": "https://www.olx.ua/d/obyavlenie/octavia-a5-2010-1-6-ID11aNIx.html",
+      "checked_at": 1791184230,
+      "asking_usd": "7500",
+      "owner_filter": {
+        "match": false,
+        "reasons": [
+          "filter_price_max",
+          "filter_region"
+        ],
+        "unknown": []
+      },
+      "valuation_status": "profitability_unconfirmed",
+      "market_reference": null,
+      "comparables": 4,
+      "reasons": [
+        "insufficient_comparables"
+      ],
+      "screen_reasons": [],
+      "body": "wagon",
+      "year": 2010,
+      "mileage_km": 264000,
+      "power_hp": 105,
+      "vin_derived_claim_present": false,
+      "physical_identity_verified": false
+    },
+    {
+      "id": "935196654",
+      "url": "https://www.olx.ua/d/obyavlenie/prodam-skoda-octavia-a5-universal-1-6-turbo-dizel-ID11hZn0.html",
+      "checked_at": 1791184182,
+      "asking_usd": "6700",
+      "owner_filter": {
+        "match": true,
+        "reasons": [],
+        "unknown": []
+      },
+      "valuation_status": "profitability_unconfirmed",
+      "market_reference": null,
+      "comparables": 0,
+      "reasons": [
+        "missing_power_hp"
+      ],
+      "screen_reasons": [
+        "missing_power_hp"
+      ],
+      "body": "wagon",
+      "year": 2010,
+      "mileage_km": 270000,
+      "power_hp": null,
+      "vin_derived_claim_present": false,
+      "physical_identity_verified": false
+    },
+    {
+      "id": "935707774",
+      "url": "https://www.olx.ua/d/obyavlenie/prodam-skoda-octavia-a5-rest-1-6-tdi-ID11k8kS.html",
+      "checked_at": 1791184191,
+      "asking_usd": "7200",
+      "owner_filter": {
+        "match": false,
+        "reasons": [
+          "filter_price_max",
+          "filter_region"
+        ],
+        "unknown": []
+      },
+      "valuation_status": "profitability_unconfirmed",
+      "market_reference": null,
+      "comparables": 0,
+      "reasons": [
+        "insufficient_comparables"
+      ],
+      "screen_reasons": [],
+      "body": "wagon",
+      "year": 2012,
+      "mileage_km": 240000,
+      "power_hp": 105,
+      "vin_derived_claim_present": false,
+      "physical_identity_verified": false
+    },
+    {
+      "id": "936176647",
+      "url": "https://www.olx.ua/d/obyavlenie/skoda-octavia-a5-fl-ID11m6jl.html",
+      "checked_at": 1791184172,
+      "asking_usd": "6600",
+      "owner_filter": {
+        "match": false,
+        "reasons": [
+          "filter_region"
+        ],
+        "unknown": []
+      },
+      "valuation_status": "profitability_unconfirmed",
+      "market_reference": null,
+      "comparables": 3,
+      "reasons": [
+        "insufficient_comparables"
+      ],
+      "screen_reasons": [],
+      "body": "wagon",
+      "year": 2010,
+      "mileage_km": 274000,
+      "power_hp": 105,
+      "vin_derived_claim_present": false,
+      "physical_identity_verified": false
+    },
+    {
+      "id": "936197359",
+      "url": "https://www.olx.ua/d/obyavlenie/prodam-avto-skoda-octavia-a5-1-6-tdi-garniy-stan-ID11mbHp.html",
+      "checked_at": 1791184142,
+      "asking_usd": "7300",
+      "owner_filter": {
+        "match": false,
+        "reasons": [
+          "filter_price_max",
+          "filter_region"
+        ],
+        "unknown": []
+      },
+      "valuation_status": "profitability_unconfirmed",
+      "market_reference": null,
+      "comparables": 0,
+      "reasons": [
+        "missing_power_hp"
+      ],
+      "screen_reasons": [
+        "missing_power_hp"
+      ],
+      "body": "wagon",
+      "year": 2010,
+      "mileage_km": 238000,
+      "power_hp": null,
+      "vin_derived_claim_present": false,
+      "physical_identity_verified": false
+    },
+    {
+      "id": "936372176",
+      "url": "https://www.olx.ua/d/obyavlenie/prodam-avtomobl-skoda-a5-ID11mWb2.html",
+      "checked_at": 1791184202,
+      "asking_usd": "8700",
+      "owner_filter": {
+        "match": false,
+        "reasons": [
+          "filter_price_max",
+          "filter_region"
+        ],
+        "unknown": []
+      },
+      "valuation_status": "profitability_unconfirmed",
+      "market_reference": null,
+      "comparables": 0,
+      "reasons": [
+        "condition_unconfirmed",
+        "missing_power_hp"
+      ],
+      "screen_reasons": [
+        "condition_unconfirmed",
+        "missing_power_hp"
+      ],
+      "body": "wagon",
+      "year": 2012,
+      "mileage_km": 280000,
+      "power_hp": null,
+      "vin_derived_claim_present": false,
+      "physical_identity_verified": false
+    },
+    {
+      "id": "936415277",
+      "url": "https://www.olx.ua/d/obyavlenie/skoda-octavia-a5-2012-ID11n6od.html",
+      "checked_at": 1791184221,
+      "asking_usd": "6800",
+      "owner_filter": {
+        "match": false,
+        "reasons": [
+          "filter_region"
+        ],
+        "unknown": []
+      },
+      "valuation_status": "profitability_unconfirmed",
+      "market_reference": null,
+      "comparables": 0,
+      "reasons": [
+        "missing_power_hp"
+      ],
+      "screen_reasons": [
+        "missing_power_hp"
+      ],
+      "body": "wagon",
+      "year": 2012,
+      "mileage_km": 261000,
+      "power_hp": null,
+      "vin_derived_claim_present": false,
+      "physical_identity_verified": false
+    },
+    {
+      "id": "936658970",
+      "url": "https://www.olx.ua/d/obyavlenie/skoda-octavia-a5-1-6-tdi-ID11o7MK.html",
+      "checked_at": 1791184153,
+      "asking_usd": "6500",
+      "owner_filter": {
+        "match": true,
+        "reasons": [],
+        "unknown": []
+      },
+      "valuation_status": "profitability_unconfirmed",
+      "market_reference": null,
+      "comparables": 4,
+      "reasons": [
+        "insufficient_comparables"
+      ],
+      "screen_reasons": [],
+      "body": "wagon",
+      "year": 2010,
+      "mileage_km": 270000,
+      "power_hp": 105,
+      "vin_derived_claim_present": false,
+      "physical_identity_verified": false
+    }
+  ]
+}

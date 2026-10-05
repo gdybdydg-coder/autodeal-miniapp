@@ -235,3 +235,38 @@ def test_observed_olx_russian_region_names_match_saved_ukrainian_regions(live,ac
     c=synthetic_car(live,region=actual)
     f={'region':['вінницька','тернопільська','хмельницька','чернівецька']}
     assert filter_reasons(c,f,None,live.clock[0])['match']
+
+def test_region_translation_does_not_expand_saved_geography(live):
+    from backend.olx_market.candidates import filter_reasons
+    f={'region':['вінницька','тернопільська','хмельницька','чернівецька']}
+    assert not filter_reasons(synthetic_car(live,region='Львовская область'),f,None,live.clock[0])['match']
+    assert filter_reasons(synthetic_car(live,region=None),f,None,live.clock[0])['unknown']==['missing_region']
+
+
+def test_independent_claim_get_caps_and_three_attempt_cap(live):
+    token,state=owned_cycle(live)
+    assert feed.claim(live.engine) is None
+    for _ in range(feed.MAX_HOURLY_GETS):assert feed.reserve_get(live.engine,live.settings,token,state)
+    assert not feed.reserve_get(live.engine,live.settings,token,state)
+    with Session(live.engine) as db:
+        s=db.get(SourceProbe,feed.STATE)
+        assert s.requests==12 and s.result['day_bytes']==12*feed.DETAIL_CAP
+        s.result={**s.result,'attempts':3};db.commit()
+    p=synthetic_profile(live)
+    assert not feed.send_card(live.engine,live.settings,token,state,synthetic_car(live),p,lambda *a,**kw:pytest.fail('packet exceeded'))
+
+
+@pytest.mark.parametrize('hour,expected',[(0,3600),(7,3600),(8,600),(22,600),(23,3600)])
+def test_olx_own_night_interval(hour,expected):
+    from zoneinfo import ZoneInfo
+    at=datetime(2026,10,5,hour,tzinfo=ZoneInfo('Europe/Kyiv')).timestamp()
+    assert feed.interval(at)==expected
+
+def test_disabled_new_status_never_reports_old_sample_as_new_delivery(live):
+    live.settings=replace(live.settings,olx_owner_feed_enabled=False)
+    event={'message':{'chat':{'id':900,'type':'private'},'from':{'id':900},'text':'/olx_status'}}
+    reply=feed.handle(live.engine,live.settings,event)
+    assert 'Перевірена оцінка готова: ні' in reply['text']
+    assert 'Підтверджено Telegram: 0' in reply['text']
+    assert 'Стан: вимкнено' in reply['text']
+    with Session(live.engine) as db:assert db.get(SourceProbe,feed.STATE) is None
