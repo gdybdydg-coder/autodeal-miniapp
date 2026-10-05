@@ -1,0 +1,37 @@
+{
+  "version": 1,
+  "status": "reserved",
+  "hypothesis": "First broad A5 diesel page has only4 engine1600/manual/year2009-2012/mileage240-300k cards, all already known. Four source-observed subsequent pages may contain eligible uncollected ads omitted by title query; full attrs remain unverified. Do not repeat known detail IDs or select by cheapness.",
+  "requests": [
+    {
+      "kind": "olx_search_enable_pagination",
+      "url": "https://www.olx.ua/transport/legkovye-avtomobili/skoda/q-skoda-octavia-a5-%D0%B4%D0%B8%D0%B7%D0%B5%D0%BB%D1%8C/?page=2",
+      "cap": 4194304,
+      "observed_via": "exact public pagination links from enable-search HTTP200"
+    },
+    {
+      "kind": "olx_search_enable_pagination",
+      "url": "https://www.olx.ua/transport/legkovye-avtomobili/skoda/q-skoda-octavia-a5-%D0%B4%D0%B8%D0%B7%D0%B5%D0%BB%D1%8C/?page=3",
+      "cap": 4194304,
+      "observed_via": "exact public pagination links from enable-search HTTP200"
+    },
+    {
+      "kind": "olx_search_enable_pagination",
+      "url": "https://www.olx.ua/transport/legkovye-avtomobili/skoda/q-skoda-octavia-a5-%D0%B4%D0%B8%D0%B7%D0%B5%D0%BB%D1%8C/?page=4",
+      "cap": 4194304,
+      "observed_via": "exact public pagination links from enable-search HTTP200"
+    },
+    {
+      "kind": "olx_search_enable_pagination",
+      "url": "https://www.olx.ua/transport/legkovye-avtomobili/skoda/q-skoda-octavia-a5-%D0%B4%D0%B8%D0%B7%D0%B5%D0%BB%D1%8C/?page=5",
+      "cap": 4194304,
+      "observed_via": "exact public pagination links from enable-search HTTP200"
+    }
+  ],
+  "no_telegram": true,
+  "no_paid_ria": true,
+  "retry_cap": 0,
+  "spacing_seconds": 4,
+  "timeout_seconds": 20,
+  "packet_deadline_seconds": 600
+}

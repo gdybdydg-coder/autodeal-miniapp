@@ -1,0 +1,58 @@
+{
+  "reservation_commit": "ca6039f8207a58c2258586d647e65680aadd9931",
+  "calls": [
+    {
+      "kind": "olx_search_enable",
+      "url": "https://www.olx.ua/transport/legkovye-avtomobili/skoda/q-skoda-octavia-a5-%D0%B4%D0%B8%D0%B7%D0%B5%D0%BB%D1%8C/",
+      "cap": 4194304,
+      "observed_via": "turn44search8 official OLX public indexed broad A5 diesel listing",
+      "hypothesis": "Previous exact TDI-title search missed cars advertised as A5 diesel or Combi; broad public diesel query may expose more explicitly matching 1600/manual/2009-2012/240-300k cards. Characteristics density only; do not mix engines, fill power, or repeat old GETs.",
+      "started_at": 1791190012.8258708,
+      "state": "finished",
+      "http": 200,
+      "curl_exit": 0,
+      "bytes": 3870671,
+      "finished_at": 1791190021.57907,
+      "sha256": "1aa41a29292d5c4b395cd092183d43c681f8023faf83e906c1b9cbefe8f52e98",
+      "parsed": true,
+      "summary": {
+        "fetched_at": 1791190021,
+        "bytes_parsed": 3870671,
+        "download_truncated": false,
+        "closed_cards": 51,
+        "unique_cards": 47,
+        "duplicate_cards": 4,
+        "rejected_cards": 0,
+        "jsonld_offer_count": 20,
+        "jsonld_urls_in_cards": 20,
+        "cards_absent_from_jsonld": 27,
+        "cards_with_photo_urls": 21,
+        "observed_pagination_links": [
+          "/transport/legkovye-avtomobili/skoda/q-skoda-octavia-a5-дизель/?page=2",
+          "/transport/legkovye-avtomobili/skoda/q-skoda-octavia-a5-дизель/?page=3",
+          "/transport/legkovye-avtomobili/skoda/q-skoda-octavia-a5-дизель/?page=4",
+          "/transport/legkovye-avtomobili/skoda/q-skoda-octavia-a5-дизель/?page=5"
+        ],
+        "observed_sort": {
+          "value": "relevance:desc",
+          "label": "Рекомендованное вам"
+        },
+        "placement_counts": {
+          "promoted": 10,
+          "organic": 37,
+          "unknown": 0
+        },
+        "publication_verified": 0,
+        "whole_car_category_verified": 0,
+        "full_price_verified": 0,
+        "collection_complete": false,
+        "ready_for_delivery": false,
+        "attribute_locale_adapter": "explicit_uk_ru_spans_v1"
+      }
+    }
+  ],
+  "source_hold": null,
+  "no_telegram": true,
+  "paid_ria_calls": 0,
+  "retry_count": 0
+}
