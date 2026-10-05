@@ -171,3 +171,72 @@ def test_reviewed_gas_correction_reuses_spent_ledger_and_never_defaults_fuel(liv
         assert 'fuel_subtype_mapping' in r.result['observations'][0]['missing_criteria']
     probe.run_once(live.engine,live.settings,live.plan,fetch=fetch)
     assert len(calls)==8
+
+
+def seed_phase2(live):
+    assert probe.initialize(live.engine,live.settings,live.plan)
+    with Session(live.engine) as db:
+        row=db.get(SourceProbe,probe.STATE)
+        row.status='completed_observations_not_admitted'
+        row.requests=9
+        row.result={**row.result,'phase':2,'error':None,
+            'calls':[{'kind':'dictionary'} for _ in range(7)]+[{'kind':'ai'} for _ in range(2)]}
+        db.commit()
+    live.plan.update(phase=3,reference_search={'marka_id[0]':70,'model_id[0]':652})
+
+
+def test_reference_audit_freezes_controls_and_preserves_budget_no_sender(live,monkeypatch):
+    from backend import ria_search
+    seed_phase2(live)
+    calls=[]
+    def fetch(settings,path,body,params):
+        calls.append((path,params))
+        if path=='auto/search':
+            return 200,{'result':{'search_result':{'ids':['1001','1002','1003','1004'],'count':4}}},25
+        with Session(live.engine) as db:
+            row=db.get(SourceProbe,probe.STATE)
+            assert row.result['reference_membership']['control_ids']==['1001','1002','1003']
+            assert row.result['calls'][-1]['params']==params
+        return 200,{'autoData':{'VIN':'NEVER','power':102,'driveId':2},'VIN':'NEVER'},20
+    monkeypatch.setattr(ria_search,'parse_car',lambda data,sid:{'id':sid,'price':5100,'year':2005,
+        'brand_id':70,'model_id':652,'generation_id':3133,'body_id':2,'fuel_id':4,'gear_id':1,
+        'engine_cc':1600,'category_id':1,'mileage':254000,'vehicle_key':'derived:test',
+        'comparable_condition':True,'condition_exclusions':[]})
+    r=probe.run_once(live.engine,live.settings,live.plan,fetch=fetch,
+        olx_fetch=lambda *a:pytest.fail('No new OLX I/O'))
+    assert r['ria_calls']==14 and r['ai_calls']==2 and r['telegram_calls']==0
+    assert r['status']=='completed_reference_audit_not_admitted'
+    with Session(live.engine) as db:
+        row=db.get(SourceProbe,probe.STATE)
+        assert 'NEVER' not in str(row.result)
+        assert row.result['reference_details'][3]['role']=='reference_candidate'
+        assert row.result['reference_details'][0]['mismatches']==[]
+        assert row.result['reference_details'][0]['unknown_critical']
+    assert probe.run_once(live.engine,live.settings,live.plan,fetch=fetch) is None
+    assert len(calls)==5
+
+
+@pytest.mark.parametrize('status',['source_hold','checking','technical_hold'])
+def test_phase3_never_replays_failed_or_unfinished_state(live,status):
+    seed_phase2(live)
+    with Session(live.engine) as db:db.get(SourceProbe,probe.STATE).status=status;db.commit()
+    assert probe.run_once(live.engine,live.settings,live.plan,
+        fetch=lambda *a:pytest.fail('Failed phase must stay held')) is None
+
+
+def test_late_phase_cannot_create_new_empty_ledger(live):
+    live.plan['phase']=3
+    assert probe.run_once(live.engine,live.settings,live.plan,
+        fetch=lambda *a:pytest.fail('No new ledger')) is None
+
+
+def test_stop_after_reference_search_prevents_detail_call(live):
+    seed_phase2(live)
+    calls=[]
+    def fetch(*args):
+        calls.append(args[1])
+        with Session(live.engine) as db:db.get(User,900).ready=False;db.commit()
+        return 200,{'result':{'search_result':{'ids':['1001'],'count':1}}},25
+    r=probe.run_once(live.engine,live.settings,live.plan,fetch=fetch)
+    assert r['ria_calls']==10 and len(calls)==1
+    assert r['error']=='owner_access_or_stop_blocked'
