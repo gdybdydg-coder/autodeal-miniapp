@@ -8,6 +8,34 @@ from experiments.olx_offline.html_snapshot import SearchParser
 from .vehicle_attributes import corroborate
 
 
+def description_damage(nodes):
+    """High precision visible claims; no repair-cost or physical-condition inference.
+
+    Only complete descriptions are used. Negations and explicitly completed
+    repairs are excluded. Distinct remaining damage types form distinct cohorts.
+    Text and contacts stay in memory; only codes and a digest survive.
+    """
+    descriptions=[n for n in nodes if n.attrs.get('data-testid')=='ad_description']
+    if len(descriptions)!=1 or not descriptions[0].closed:return []
+    text=descriptions[0].text().casefold().replace('’',"'").replace('`',"'")
+    flags=set()
+    for clause in re.split(r'[.!?;,\n]',text):
+        matches=[]
+        if re.search(r'лобов\w*|вітров\w*',clause):
+            matches+= [('windshield_crack',m) for m in re.finditer(r'тріщин\w*|трещин\w*',clause)]
+        matches+= [('body_dents',m) for m in re.finditer(r"вм'?ят(?:ин|і?н|инки)\w*",clause)]
+        for kind,match in matches:
+            before=clause[max(0,match.start()-45):match.start()]
+            if re.search(r'(?:без|немає|нема|нет|не\s+має|не\s+було)\s+(?:\w+\s+){0,3}$',before):continue
+            if re.search(r'(?:була|були|было|были|раніше|ранее)\s+(?:\w+\s+){0,3}$',before):continue
+            completed=list(re.finditer(r'замінено|заменено|відремонтован\w*|отремонтирован\w*|усунен\w*|устранен\w*|устранён\w*|устранены|прибран\w*|виправлен\w*',clause))
+            # A negated repair ("не відремонтовані") still describes damage.
+            completed=[m for m in completed if not re.search(r'не\s+$',clause[max(0,m.start()-5):m.start()])]
+            if completed and not re.search(r'залишил\w*|остал\w*|досі|сейчас',clause):continue
+            flags.add(kind)
+    return sorted(flags)
+
+
 def enrich(data, parsed):
     out=copy.deepcopy(parsed); car=out['listing']
     if out['summary']['download_truncated']:return out
@@ -69,9 +97,17 @@ def enrich(data, parsed):
             condition='running_body_repair' if paint.startswith(('Потрібно відновлення','Не відремонтовані','Требует восстановления','Не отремонтированные')) else 'seller_declared_running' if paint else None
         else:condition=None
         if condition:
+            damage=description_damage(nodes)
+            if damage and condition in ('seller_declared_running','running_body_repair'):
+                condition=('running_reported_damage' if condition=='seller_declared_running' else condition)+':'+'+'.join(damage)
             car['research_condition']=condition
             evidence['condition']={'basis':'visible_source_attributes','technical':tech,'paint':paint,
                                    'independently_verified':False}
+            if damage:
+                evidence['condition']['description_damage_flags']=damage
+                evidence['condition']['description_basis']='complete_visible_seller_claim_not_physical_review'
+                description=next(n.text() for n in nodes if n.attrs.get('data-testid')=='ad_description')
+                evidence['condition']['description_sha256']=hashlib.sha256(description.encode()).hexdigest()
     car['research_evidence']=evidence
     car['research_field_conflicts']=conflicts
     car.update(corroborate(nodes,car))

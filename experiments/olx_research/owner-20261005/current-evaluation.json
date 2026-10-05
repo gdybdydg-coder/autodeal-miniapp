@@ -231,11 +231,7 @@
       "benchmark_usd": "6500",
       "eligible": true,
       "error_against_asking": {},
-      "comparison_group_ids": [
-        "931146600",
-        "933483565",
-        "936176647"
-      ],
+      "comparison_group_ids": [],
       "same_comparable_group_for_all_methods": null,
       "review": {
         "assessment": {
@@ -246,7 +242,7 @@
           ],
           "methods": {},
           "reference_usd": null,
-          "sample": 3,
+          "sample": 0,
           "independent_vehicles_verified": null,
           "sample_unit": "distinct_ads_after_known_vehicle_dedup",
           "real_world_accuracy_verified": false,
@@ -255,29 +251,11 @@
           "recommended": null,
           "extra_ria_margin_percent": "0",
           "required_sample": 8,
-          "used_comparables": [
-            {
-              "id": "931146600",
-              "asking_usd": "6400",
-              "checked_at": 1791184162,
-              "fx_basis": null
-            },
-            {
-              "id": "933483565",
-              "asking_usd": "7500",
-              "checked_at": 1791184230,
-              "fx_basis": null
-            },
-            {
-              "id": "936176647",
-              "asking_usd": "6600",
-              "checked_at": 1791184172,
-              "fx_basis": null
-            }
-          ],
+          "used_comparables": [],
           "exclusions": {
             "condition_unconfirmed": 3,
             "missing_power_hp": 5,
+            "mismatch_condition": 4,
             "mismatch_year": 1
           },
           "excluded": [
@@ -300,9 +278,21 @@
               ]
             },
             {
+              "id": "931146600",
+              "reasons": [
+                "mismatch_condition"
+              ]
+            },
+            {
               "id": "932654807",
               "reasons": [
                 "condition_unconfirmed"
+              ]
+            },
+            {
+              "id": "933483565",
+              "reasons": [
+                "mismatch_condition"
               ]
             },
             {
@@ -314,7 +304,14 @@
             {
               "id": "935707774",
               "reasons": [
+                "mismatch_condition",
                 "mismatch_year"
+              ]
+            },
+            {
+              "id": "936176647",
+              "reasons": [
+                "mismatch_condition"
               ]
             },
             {

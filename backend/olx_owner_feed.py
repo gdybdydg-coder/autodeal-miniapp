@@ -232,6 +232,12 @@ def caption(car,price,assessment,method):
     if car.get('transmission'):attrs.append(gearbox.get(car['transmission'],car['transmission']))
     if car.get('engine_cc') is not None:attrs.append(str(car['engine_cc'])+' см³')
     if car.get('mileage_km') is not None:attrs.append(money(car['mileage_km'])+' км')
+    condition=car.get('research_condition','')
+    if condition.startswith('running_reported_damage:') or condition.startswith('running_body_repair:'):
+        labels={'body_dents':'вм’ятини кузова','windshield_crack':'тріщина лобового скла'}
+        attrs.append('за описом: '+', '.join(labels[k] for k in condition.partition(':')[2].split('+') if k in labels))
+    elif condition=='running_body_repair':attrs.append('за описом потрібен ремонт кузова')
+    elif condition=='not_running':attrs.append('за описом не на ходу')
     return '\n'.join(['🟠 <b>OLX • тест лише для власника</b>',
         '🚘 <b>'+escape(' '.join(str(car[k]) for k in ('brand','model','year') if car.get(k)))+'</b>',
         '💵 Ціна: '+('≈ ' if price.get('fx') else '')+money(asking)+' USD',

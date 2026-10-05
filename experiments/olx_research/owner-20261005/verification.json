@@ -1,0 +1,46 @@
+{
+  "dataset_kind": "offline_saved_real_and_synthetic_separate",
+  "backend": {
+    "passed": 2057,
+    "elapsed_seconds": 318.24,
+    "network_guard": "backend/tests/conftest.py before collection"
+  },
+  "offline": {
+    "passed": 282,
+    "elapsed_seconds": 0.672,
+    "network_guard": "verify_offline before unittest discovery"
+  },
+  "saved_real": {
+    "passed": 3,
+    "elapsed_seconds": 0.05,
+    "network_guard": "scoped conftest before imports"
+  },
+  "owner_condition_targeted": {
+    "passed": 57,
+    "elapsed_seconds": 2.26,
+    "overlap": "included in backend2057"
+  },
+  "condition_reproduction": {
+    "failed": 5,
+    "passed": 5
+  },
+  "condition_after_fix": {
+    "passed": 10
+  },
+  "earlier_combined_regression": {
+    "passed": 2327,
+    "subtests_passed": 150,
+    "elapsed_seconds": 325.92
+  },
+  "telegram_live_calls": 0,
+  "condition_code_commit": "3a5586a5259e62b371754502e72ae1625d7db25f",
+  "deployment_verified": true,
+  "main_branch_updated": true,
+  "deployment_id": "dep-db1lklm0tbcc73bee2rg",
+  "live_at": "2026-10-05T08:06:56.179154Z",
+  "health_release": "3a5586a5259e62b371754502e72ae1625d7db25f",
+  "OLX_runtime_enabled": false,
+  "owner_authorized": true,
+  "client_authorized": false,
+  "profile_present": false
+}

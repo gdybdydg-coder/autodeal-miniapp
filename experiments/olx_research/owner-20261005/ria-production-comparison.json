@@ -1,0 +1,38 @@
+{
+  "baseline_at": "2026-10-05T06:31:11Z",
+  "current_at": "2026-10-05T08:08:03Z",
+  "baseline_commit": "afaf9cee348db64f0558e5d113b2895c48366421",
+  "current_commit": "3a5586a5259e62b371754502e72ae1625d7db25f",
+  "checks": {
+    "valuation_policy": true,
+    "monitor_schedule": true,
+    "ria_budget_limits": true,
+    "recent_limits": true,
+    "monitor_strategy": true,
+    "confirmed_deals_only": true,
+    "active_window_enabled": true
+  },
+  "monitor": {
+    "running": true,
+    "watching": {
+      "watching": 4
+    },
+    "pending_jobs": 1
+  },
+  "delivery_queues": {
+    "pending": 0,
+    "sending": 0,
+    "oldest_wait_seconds": null,
+    "unit": "messages"
+  },
+  "RIA_last_acceptance": {
+    "accepted_at": 1791186263.782993,
+    "discovery_to_telegram_seconds": 22.475,
+    "discovery_to_evaluation_seconds": 2.808,
+    "send_request_seconds": 0.632,
+    "source_added_to_telegram_seconds": null
+  },
+  "OLX_flag": false,
+  "OLX_server_source_calls": 0,
+  "OLX_telegram_calls": 0
+}

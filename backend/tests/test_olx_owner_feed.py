@@ -131,6 +131,26 @@ def test_recomputes_control_scores_and_keeps_eight_minimum(live):
     assert feed.assessment_for(target,profile,search,live.clock[0]) is None
 
 
+def test_damage_target_cannot_use_eight_clean_analogs(live):
+    profile=synthetic_profile(live)
+    target=synthetic_car(live,research_condition='running_reported_damage:body_dents+windshield_crack')
+    search=feed.current_search(live.engine,live.settings)
+    assert feed.profile_ready(profile,live.clock[0])
+    assert feed.assessment_for(target,profile,search,live.clock[0]) is None
+    a=feed.estimate(target,profile['reference'],None,int(live.clock[0]),minimum=8)
+    assert a['sample']==0 and a['reference_usd'] is None
+    assert all('mismatch_condition' in row['reasons'] for row in a['excluded'])
+
+
+def test_damage_caption_displays_claim_without_inventing_repair_cost(live):
+    target=synthetic_car(live,research_condition='running_reported_damage:body_dents+windshield_crack')
+    p=synthetic_profile(live)
+    for car in p['reference']:car['research_condition']=target['research_condition']
+    a=feed.estimate(target,p['reference'],None,int(live.clock[0]),minimum=8)
+    text=feed.caption(target,{'usd_amount':'6000','fx':None},a,'median')
+    assert 'вм’ятини кузова, тріщина лобового скла' in text
+
+
 @pytest.mark.parametrize('failure',['duplicate_vehicle','duplicate_id','missing_photos_review','invalid_key','late_freeze','wrong_method','insufficient_controls','stale','permission_only'])
 def test_readiness_rejects_invalid_or_leaking_real_profile(live,failure):
     p=synthetic_profile(live)

@@ -885,7 +885,7 @@
     "modification": null,
     "year": 2010,
     "mileage_km": 270000,
-    "research_condition": "seller_declared_running",
+    "research_condition": "running_reported_damage:body_dents+windshield_crack",
     "category": "whole_passenger_car",
     "checked_at": 1791184153,
     "region": "Хмельницкая область",

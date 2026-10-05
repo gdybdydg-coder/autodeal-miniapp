@@ -1,0 +1,20 @@
+[
+  {
+    "id": "936658970",
+    "old": "seller_declared_running",
+    "current": "running_reported_damage:body_dents+windshield_crack",
+    "eligibility": "allowed",
+    "evidence": {
+      "basis": "visible_source_attributes",
+      "technical": "На ходу, технически исправна",
+      "paint": "Незначительные следы эксплуатации (мелкие царапины, сколы)",
+      "independently_verified": false,
+      "description_damage_flags": [
+        "body_dents",
+        "windshield_crack"
+      ],
+      "description_basis": "complete_visible_seller_claim_not_physical_review",
+      "description_sha256": "ae077727aaad6efdb9c965d905c37d9848148484aa7d1186e0dd0022490e64e4"
+    }
+  }
+]

@@ -1,0 +1,33 @@
+{
+  "enabled": false,
+  "owner_verified": true,
+  "recipient_count": 1,
+  "strict_paid_policy": true,
+  "confirmed_paid": true,
+  "ready": true,
+  "own_searches": [
+    {
+      "id": 4,
+      "fingerprint": "aa3dc66cadd6d6343f55f3930823173faf45741059cac1968b66a411b8a99be2",
+      "filters": {
+        "currency": "USD",
+        "region": [
+          "вінницька",
+          "тернопільська",
+          "хмельницька",
+          "чернівецька"
+        ],
+        "price_min": 1000,
+        "price_max": 7000
+      },
+      "threshold": 10,
+      "only_deals": true
+    }
+  ],
+  "selected_search_id": 0,
+  "interval_seconds": 600,
+  "legacy_batch_enabled": false,
+  "legacy_canary_enabled": false,
+  "until": 0,
+  "profile_present": false
+}

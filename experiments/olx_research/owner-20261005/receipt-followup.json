@@ -1,0 +1,21 @@
+{
+  "reservation_commit": "61e15ef4b830cdc4c0f003780c067962abdd2d70",
+  "calls": [
+    {
+      "kind": "olx_search_followup",
+      "url": "https://www.olx.ua/transport/legkovye-avtomobili/skoda/q-octavia-a5/?page=11",
+      "cap": 4194304,
+      "state": "finished",
+      "started_at": 1791186168.255476,
+      "http": 0,
+      "curl_exit": 28,
+      "bytes": 0,
+      "finished_at": 1791186178.2647464
+    }
+  ],
+  "source_hold": null,
+  "no_telegram": true,
+  "paid_ria_calls": 0,
+  "retry_count": 0,
+  "finished_at": 1791186178.2647557
+}

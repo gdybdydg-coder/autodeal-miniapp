@@ -1,0 +1,164 @@
+{
+  "observed_at": 1791187671.2302876,
+  "configuration": {
+    "active_window_enabled": false,
+    "automobile_admin_copies_enabled": false,
+    "delivery_enabled": true,
+    "full_scan_enabled": false,
+    "html_shadow_configured": true,
+    "manual_payment_notices_enabled": true,
+    "monitor_enabled": true,
+    "provider_valuation_enabled": true,
+    "recent_publications_enabled": true,
+    "release": "3a5586a5259e62b371754502e72ae1625d7db25f",
+    "shared_distribution_enabled": true,
+    "strict_paid_sources": true,
+    "valuation_selection_status": "api_range_selection_native_parity_unverified"
+  },
+  "primary": {
+    "candidate_search_states_last_hour": {
+      "checked": 42,
+      "html_cancelled": 3,
+      "pending": 1
+    },
+    "cursor_lag_seconds": 89,
+    "feed_states": {
+      "watching": 4
+    },
+    "interval_seconds": 110,
+    "last_success_at": 1791187671.0394268,
+    "oldest_cursor_at": 1791187582,
+    "pending_jobs_by_reason": {
+      "reserved_for_new_publications": 1
+    },
+    "recorded_decisions_last_hour": {
+      "basis": "saved_decisions_current_filters_no_new_source_calls",
+      "distinct_cars": 32,
+      "examples": [
+        {
+          "discovered_at": 1791187593.7329595,
+          "reason": "below_user_discount_threshold",
+          "source_id": "40521702"
+        },
+        {
+          "discovered_at": 1791187444.5287652,
+          "reason": "pending_evaluation",
+          "source_id": "40474044"
+        },
+        {
+          "discovered_at": 1791186700.9388845,
+          "reason": "filter_mismatch",
+          "source_id": "40521614"
+        },
+        {
+          "discovered_at": 1791186244.3185325,
+          "reason": "delivery_sent",
+          "source_id": "40491864"
+        },
+        {
+          "discovered_at": 1791185372.3265738,
+          "reason": "html_publication_expired",
+          "source_id": "39985179"
+        }
+      ],
+      "reasons": {
+        "below_user_discount_threshold": 33,
+        "delivery_sent": 2,
+        "filter_mismatch": 7,
+        "html_publication_expired": 3,
+        "pending_evaluation": 1
+      },
+      "search_car_pairs": 46,
+      "truncated": false
+    },
+    "running": true,
+    "schedule": {
+      "active_period": "day",
+      "budget_limited": false,
+      "enabled": true,
+      "estimate_basis": "one_page_per_poll_standard_24h_day",
+      "interval_seconds": 110,
+      "minimum_planning_limits": {
+        "daily": 3394,
+        "hourly": 320
+      },
+      "periods": [
+        {
+          "end": "08:00",
+          "interval_seconds": 3600,
+          "name": "night",
+          "requested_interval_seconds": 3600,
+          "start": "23:00"
+        },
+        {
+          "end": "18:00",
+          "interval_seconds": 110,
+          "name": "day",
+          "requested_interval_seconds": 110,
+          "start": "08:00"
+        },
+        {
+          "end": "23:00",
+          "interval_seconds": 60,
+          "name": "evening",
+          "requested_interval_seconds": 60,
+          "start": "18:00"
+        }
+      ],
+      "requested_interval_seconds": 110,
+      "requested_search_calls_per_day": 2546,
+      "timezone": "Europe/Kyiv"
+    },
+    "status": "discover"
+  },
+  "source_access_audit": {
+    "active_entitlement_without_current_purchase_clients": 0,
+    "basis": "saved_owner_approval_audit_access_and_membership_no_source_calls",
+    "current_owner_approval_with_access_clients": 4,
+    "current_owner_approval_without_access_clients": 0,
+    "current_paid_excluded_admin_clients": 0,
+    "current_paid_excluded_config_only_clients": 0,
+    "current_paid_not_ready_clients": 0,
+    "current_paid_without_enabled_search_clients": 1,
+    "current_purchase_without_owner_audit_clients": 0,
+    "owner_approval_with_access_blocked_by_guard_clients": 0,
+    "paid_ready_searches_without_current_membership": 0
+  },
+  "delivery": {
+    "last_client_accepted_at": 1791186263.782993,
+    "last_owner_accepted_at": 1791186263.782993,
+    "receipt_basis": "telegram_api_acceptance",
+    "states_queued_last_hour": {
+      "sent": 2
+    },
+    "unattempted_admin_copies_remaining": 0
+  },
+  "global_budget": {
+    "basis": "local_reservations_not_provider_balance",
+    "gate": {
+      "reason": "available",
+      "retry_after_seconds": 0
+    },
+    "limits": {
+      "daily": 90000,
+      "hourly": 4500,
+      "total": 1102160
+    },
+    "used": {
+      "daily": 4193,
+      "hourly": 358,
+      "total": 333483
+    }
+  },
+  "post5430Accepted": [
+    {
+      "account": "administrator",
+      "source_id": "40491864",
+      "accepted_at": 1791186263.782993,
+      "state": "sent",
+      "approval_covers": true,
+      "access_covers": true
+    }
+  ],
+  "post3a5586Accepted": []
+}

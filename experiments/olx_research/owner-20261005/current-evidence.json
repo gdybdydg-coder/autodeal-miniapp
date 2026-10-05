@@ -1,12 +1,12 @@
 {
-  "checked_at": 1791184499,
+  "checked_at": 1791186599,
   "dataset_kind": "saved_real_fresh_details_not_telegram",
   "previous_unique": 71,
   "fresh_detail_gets": 14,
   "new_unique": 1,
   "combined_unique": 72,
   "estimated": 0,
-  "max_comparables": 4,
+  "max_comparables": 3,
   "fresh_estimated": 0,
   "fresh_known_power": 8,
   "fresh_vin_claims": 1,
@@ -14,7 +14,7 @@
   "frozen_holdout": 3,
   "eligible_holdout": 2,
   "estimated_holdout": 0,
-  "max_holdout_comparables": 3,
+  "max_holdout_comparables": 2,
   "selected_method": null,
   "sale_price_labels": 0,
   "asking_error_metrics": {
@@ -158,7 +158,7 @@
       },
       "valuation_status": "profitability_unconfirmed",
       "market_reference": null,
-      "comparables": 3,
+      "comparables": 2,
       "reasons": [
         "insufficient_comparables"
       ],
@@ -184,7 +184,7 @@
       },
       "valuation_status": "profitability_unconfirmed",
       "market_reference": null,
-      "comparables": 4,
+      "comparables": 3,
       "reasons": [
         "insufficient_comparables"
       ],
@@ -240,7 +240,7 @@
       },
       "valuation_status": "profitability_unconfirmed",
       "market_reference": null,
-      "comparables": 4,
+      "comparables": 3,
       "reasons": [
         "insufficient_comparables"
       ],
@@ -319,7 +319,7 @@
       },
       "valuation_status": "profitability_unconfirmed",
       "market_reference": null,
-      "comparables": 3,
+      "comparables": 2,
       "reasons": [
         "insufficient_comparables"
       ],
@@ -431,7 +431,7 @@
       },
       "valuation_status": "profitability_unconfirmed",
       "market_reference": null,
-      "comparables": 4,
+      "comparables": 0,
       "reasons": [
         "insufficient_comparables"
       ],
@@ -443,5 +443,39 @@
       "vin_derived_claim_present": false,
       "physical_identity_verified": false
     }
-  ]
+  ],
+  "condition_recheck": {
+    "changed": 1,
+    "id": "936658970",
+    "before": "seller_declared_running",
+    "after": "running_reported_damage:body_dents+windshield_crack",
+    "whole_car_eligibility": "allowed",
+    "previous_max_peers_before_description_fix": 4,
+    "current_max_peers": 3,
+    "target_current_peers": 0,
+    "source": "saved_current_complete_HTML_no_new_GET"
+  },
+  "followup_search": {
+    "reservation_commit": "61e15ef4b830cdc4c0f003780c067962abdd2d70",
+    "http": 0,
+    "curl_exit": 28,
+    "bytes": 0,
+    "new_observations": 0,
+    "retry": 0
+  },
+  "confirmed_olx_deliveries": 0,
+  "saved_frontier_density_check": {
+    "pending": 342,
+    "strict_matching_16diesel_manual_A5_2009_2011_240k_300k": 0,
+    "new_GETs": 0,
+    "fields_missing_not_inferred": true
+  },
+  "deployment": {
+    "commit": "3a5586a5259e62b371754502e72ae1625d7db25f",
+    "id": "dep-db1lklm0tbcc73bee2rg",
+    "live_at": "2026-10-05T08:06:56.179154Z",
+    "OLX_enabled": false,
+    "Telegram_accepted": 0
+  },
+  "compatibility_counts_basis": "exploratory distinct advertised IDs after known vehicle dedup; not independently proved physical cars; frozen controls evaluated separately"
 }

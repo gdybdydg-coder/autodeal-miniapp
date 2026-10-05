@@ -38,8 +38,10 @@ Accepted/rejected/uncertain receipts are separate; no timeout retry or photo fal
 
 ## Verification before any enable
 
-Full offline regression: 2294 passed + 150 subtests (333.70s), before final targeted
-sender/profile checks. Expanded owner/new+legacy transport suite: 123 passed (6.66s).
+Full earlier offline regression: 2327 passed + 150 subtests (325.92s). After the
+complete-description condition correction: backend 2057 passed (318.24s), with
+282 offline cases passed separately with networking fenced before collection. Owner/condition suite57 passed;
+saved real sanitized replay3 passed. Counts overlap; they are not added as new cases.
 All tests use temporary databases and fixture transports behind an import-time
 network fence. Synthetic controls do not prove real market coverage or delivery.
 No real OLX Telegram sends are authorized by test successes alone.
@@ -51,9 +53,9 @@ No real OLX Telegram sends are authorized by test successes alone.
 New public focused A5 1.6 TDI search HTTP200 (3,624,200 bytes), followed by
 14 complete details HTTP200 (22,041,145 bytes) under committed reservations.
 13 refreshed existing details and one new ID => 72 unique saved details, 0 estimates,
-maximum4/8 compatible peers. 8/14 have explicit power; only1/14 has a validated
+maximum3/8 compatible peers after the condition correction. 8/14 have explicit power; only1/14 has a validated
 public VIN-derived claim. Three separately frozen controls:2 eligible,0 estimated,
-maximum3 peers. Asking error metrics remain unknown; no method winner selected.
+maximum2 peers. Asking error metrics remain unknown; no method winner selected.
 No real OLX Telegram calls/receipts. Do not enable on the strength of synthetic tests.
 Fresh official dated PrivatBank fallback:44.9857000 UAH/USD, effective2026-10-05,
 acquired07:02:57Z. NBU403 hold was respected; no repeated request to NBU.
@@ -65,3 +67,17 @@ Source regular-use authorization and complete publication semantics remain unkno
 bounded publicly accessible HTML is not a demonstrated commercial catalogue API.
 A continuously discovering observer is not installed. Code/preflight are deployed
 defaultoff; authorization for owner testing is separate from technical readiness.
+
+Complete visible description936658970 reports an unresolved windshield crack and
+body dents after hail; the generic running/minor-wear attributes previously hid
+them. Reproduced5fail/5pass, then10/10condition tests passed. The whole car remains
+eligible and matches the saved owner filters, but has0same-condition analogs.
+Negations and explicitly completed repairs do not count as current damage.
+The caption preserves any reported damage; repair costs are not invented.
+Older sanitized observations are not proof that their descriptions are damage-free.
+
+A further observed A5 page11 request timed out after the connection deadline,
+0body bytes, no retry or bypass. Total foreground OLX GET16 /25,665,345body bytes;
+reserved16 /36MiB, within60GET /160MiB. Fresh FXGET1 /2,836bytes. The saved342pending
+frontier entries contain0known matching 1.6diesel/manual/A5/year2009–2011/240–300kkm
+rows. Missing attributes are not filled to make that count larger. No observer is enabled.

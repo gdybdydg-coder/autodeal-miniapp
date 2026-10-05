@@ -1,79 +1,122 @@
-# Owner-only continuation, 2026-10-05
+# Owner-only OLX continuation — 2026-10-05, final verified checkpoint
 
-This is a new foreground authorization, not a resumed night run. Night state and
-research/olx-isolated-fx-market-20261004 remain stopped and unchanged at f95f1c1.
-Clients are NOT authorized; owner permission does not manufacture technical readiness.
+Production commit: **3a5586a5259e62b371754502e72ae1625d7db25f**.
+Render deployment: **dep-db1lklm0tbcc73bee2rg**, live 08:06:56.179154Z.
+Verified health release and source diagnostics at 08:08:03Z.
+**OLX OFF; real new OLX Telegram calls/receipts: 0.** Permission for the owner is
+true; technical readiness is false; permission for other clients is false.
+This is a foreground continuation under the new explicit user authorization.
+Night state and research/f95f1c1 remain stopped and unchanged; the research branch
+was not merged. Only selected OLX modules, tests and additive application wiring
+were transferred to main. This evidence directory remains on the feature branch.
 
-Production baseline: afaf9ce. Selected OLX modules, default off, first deployed
-c488d28 / dep-db1kk4ou01pc73etb8b0 at06:57:40Z. Protected configured owner is verified,
-has a genuine approved current purchase/entitlement and ready active search#4,
-1000–7000 USD, four saved regions, threshold10%. No filter or subscription edits.
-Existing old canary and old batch flags bothfalse. New feedfalse, pinned search0,
-deadline0, no profile and no new SourceProbe state. Current main has minimal
-region/owner-status fixes5430b608732522cf8677f4635c324faa961c2296; its final deployment
-verification is pending at this checkpoint. Do not call a prepared commit live.
+## Owner and isolation
 
-## Confirmed fault
+Preflight 08:06:53Z: protected owner identity matches; genuine approved current
+payment, ready status and one active search #4 verified. Saved fingerprint:
+aa3dc66cadd6d6343f55f3930823173faf45741059cac1968b66a411b8a99be2.
+Filters are unchanged: 1000–7000 USD, Vinnytsia/Ternopil/Khmelnytskyi/Chernivtsi,
+threshold 10%, only deals. Configured recipient count is exactly one; active OLX
+recipients are zero because the switch is false, search pin/deadline are zero,
+profile absent and no new state is initialized. Both old OLX switches remain false.
+The real getChat private-chat check is implemented immediately before every send;
+it was not executed for a new live send in this run. Administrator role cannot
+substitute for approved paid access. No fictitious subscription or filter edits.
 
-OLX Russian region labels did not match Ukrainian saved filters. Reproduced:
-4 failed/1 passed. Explicit four-oblast language equivalence fixed the OLX-only
-comparison; it does not expand geography or mutate filters. Example936658970 now
-passes the owner's saved region and budget, but has only4 compatible peers, not8.
-Example935196654 also matches but lacks explicit power. Neither has a market value.
-New /olx_status now separates new readiness from yesterday's unvalued samples;
-/olx_stop persists a stop only in the new namespace, including while defaultoff.
+Separate source namespace, ledger, single executor, budget and stop are prepared.
+/olx_status and /olx_stop are deployed; /stop still prevents I/O and delivery.
+Prepared canary schedule: 600s day, 3600s 23:00–08:00 Europe/Kyiv; 12 GET/hour,
+60 GET/day, 160 MiB/day, 2 MiB/detail, 4s spacing, 20s timeout, no automatic retry.
+Three total canary attempts maximum, including uncertain/rejected outcomes.
+Old source+ad+recipient ledger keys are preserved. Ambiguous photo outcomes do
+not produce a text fallback or repeated send. Continuous discovery is not installed;
+a fixed reviewed candidate list is not a running continuous observer.
 
-## Fresh evidence
+## Reused night evidence and fresh data
 
-Committed source reservations:a9d2369(first search+FX),167c1b5(frozen controls+14details).
-One focused public A5 1.6TDI query HTTP200,32 distinct cards.14 complete detail GETs
-HTTP200,13 refreshed existing IDs and1newID=>72 saved unique observations. No bypass,
-cookies, credentials, paid RIA, retry or Telegram.15OLX GET,25,665,345bytes;1FX GET,
-2,836bytes. Reserved15OLX/32MiB within episode60GET/160MiB, FX1/6. No refund of reservations.
-This query was selected by attributes, not cheap prices. Split frozen before refreshed
-full prices, not claimed blind to old stored prices. Controls3loaded,2eligible,
-1ineligible(missing power),0estimated,max3peers. Overall0/72 estimates,max4/8 peers;
-0/14 fresh estimates.8/14 explicit power,1/14 VIN-derived claim,0manual identity reviews.
-Median/trimmed mean/weighted median have no computable control errors and no winner.
-No independent sale/profit labels; FP/FN unknown. Minimum8 unchanged.
+Night modules: attribute corroboration, body policy, FX, valuation, frozen controls,
+stability and source parsing. Historical night data: 71 complete observations,
+0 estimates, max 4 compatible advertised IDs, min 8. No night real Telegram sends.
+New bounded focused A5 1.6 TDI search returned HTTP200 / 32 distinct cards.
+Fourteen full details returned HTTP200: 13 refreshed known IDs plus one new ID,
+72 unique saved observations overall. Selection was by complete characteristics,
+not low asking prices. Three controls were frozen before refreshed full prices;
+this was not blind to old stored prices. Frozen targets/crossposts are excluded
+from reference membership by the evaluation module.
 
-Current fallback FX from dated official PrivatBank API:44.9857000 UAH/USD,
-effective2026-10-05, fetched07:02:57Z. NBU403 hold respected. USD is not reconverted.
-The live full cards display USD; no claim that a real UAH card was sent/converted.
-Sanitized details, exact IDs/URLs, assessments/exclusions, frozen memberships,
-receipts/byte hashes and quote provenance are committed in this directory.
-No raw VIN, plates, contacts, seller descriptions or raw HTML are committed.
+Confirmed fault 1: Russian OLX oblast labels did not match the owner's Ukrainian
+saved labels. Reproduced 4 fail / 1 pass; explicit four-oblast equivalence fixed
+only OLX matching. No new geographic region or saved-filter modification.
 
-## Current result and limits
+Confirmed fault 2: complete visible description936658970 reports a windshield
+crack and body dents after hail, while generic running/minor-wear attributes hid
+this damage. Reproduced 5 fail / 5 pass; after correction 10/10 condition cases pass.
+Whole-car eligibility remains allowed and owner filters still match, but the
+candidate now has 0 compatible same-condition peers. Negated and completed repairs
+are distinguished; condition claims and uncertainty remain visible. Repair costs
+are not inferred. Older unavailable HTML is not certified damage-free.
 
-OLX remains OFF. No real OLX Telegram calls or accepted/rejected/uncertain receipts.
-Synthetic transport tests cover correct private owner, other payer/unpaid/stop,
-legacy dedup, three attempts, persistent budget/lease/sourcehold, exact currencies,
-FX fallback, minimum8, frozen controls and ambiguous-photo at-most-once.
-Full first regression2294+150subtests; latest targeted148passed; final broader run
-still pending at this checkpoint. Tests and deployments do not prove real delivery.
+Current asking-price estimates: 0/72; fresh estimates 0/14. Maximum compatible
+advertised IDs in the exploratory pool: 3/8, not independently proved physical cars.
+Frozen controls: 3 loaded, 2 eligible, 0 estimated, maximum 2 reference peers.
+Asking prediction error metrics are unknown and no method winner exists.
+Median, trimmed mean and weighted median cannot be selected by profitability count.
+Only 1/14 fresh validated VIN-derived claim; 0 manual independence reviews.
+No independent sale/profit labels; sale accuracy and FP/FN remain unknown.
 
-Readiness is data-blocked, not permission-blocked. Current requesting-price coverage
-is0; sample/identity and independent control sufficiency must improve honestly.
-Bounded public HTML works; regular source authorization/completeness remain unverified.
-First_seen is not publication. No continuously discovering observer is installed.
-Prepared independent server task600sday/3600s23–08Kyiv,12GET/h60/day160MiB/day,
-2MiB/detail4spause20stimeout, no retries, max3canaryattempts, defaultoff. Never advertise
-that fixed candidate list as a running continuous feed. /stop still blocks it.
+Two owner-filter matches are retained with insufficient valuation data:
+936658970, displayed6500USD, explicit damage, no matching repair cohort;
+935196654, displayed6700USD, explicit power missing (not guessed as105).
+Their displayed prices are not market values or proof of 10% profitability.
+All IDs/URLs, inclusion/exclusion reasons, prices, timestamp/FX provenance, frozen
+memberships and sanitized receipts are in adjacent JSON. No raw VIN, plate,
+contact, seller description or HTML is committed.
 
-AUTO.RIA208preexisting backend files identical; only app.py adds OLX wiring/settings.
-OLX-only parser adjustment outside backend. Runtime schedule and quota limits and
-valuation policy match baseline;4 paid/filter groups, no owner guard blockage,
-delivery queuepending0/sending0 at07:08. Last observed RIA acceptance40521321 at
-06:46:24Z(owner)/06:46:26Z(client), before the first OLX-off deployment. Do not label
-it a post-deploy delivery. New qualified natural RIA receipt after deployment not yet observed.
+NBU403 hold respected. Official dated PrivatBank fallback effective2026-10-05,
+fetched07:02:57Z:44.9857000UAH/USD. USD displays were not converted again.
+No actual UAH Telegram card was sent. A further observed public A5 page11 GET
+(reserved61e15ef) timed out at connection deadline, HTTP0, body0bytes; no retry,
+bypass or new observations. All reservations remain charged. Foreground totals:
+16 OLX GET /25,665,345 body bytes; reserved16 /36MiB of60 /160MiB. FX1 GET /2,836bytes.
+The saved342 pending entries contain0known matching 1.6diesel/manual/A5/year2009–2011/
+240–300kkm rows; missing attributes were not inferred. Unused budget remains;
+this is not proof no other vehicles exist. Bounded public HTML works for the
+observed pages; ongoing source authorization/completeness remains unverified.
 
-## Next precise step
+## Tests and deployment evidence
 
-Finish final regression, deploy only corrected default-off OLX code, verify fresh
-preflight and unchanged RIA runtime, and persist final journals. Do not enable a
-profile until real compatible refs>=8, independent identity review and >=3 estimable
-frozen controls pass. Acquire only a new explained denser compatible window; do not
-repeat the general59GET, fill missing power or weaken min8, years/body/drive/condition.
-Owner-only permission persists, client rollout does not. No background ChatGPT work
-is promised; no new automation or production observer is enabled.
+Backend2057passed in318.24s; offline282passed in0.672s; saved-real replay3passed
+in0.05s. Owner/condition targeted57passed in2.26s, overlapping backend cases.
+Earlier combined2327+150subtests is historical. Network fences precede collection;
+fixture transports and synthetic full cohorts are not live source/send evidence.
+Every confirmed fix follows reproduction, test, fix, check and selected deploy.
+Current production code exactly matches tested selected backend files. Default-off
+runtime/preflight and filtered OLX error logs verified (0 matching errors).
+The new owner profile was not installed or unlocked by a readiness flag.
+
+AUTO.RIA208 preexisting backend files are byte-identical to afaf9ce; only app.py
+has additive OLX settings/lifecycle/command wiring. Runtime valuation policy,
+schedule, budget and recent processor limits, strategy and paid rules equal
+baseline. Four watching groups, no genuine paid approval blocked, complete search
+memberships; delivery queue pending0/sending0 at08:08. No environment updates,
+paid RIA requests for OLX, payment/history/filter/webhook/getUpdates changes.
+
+Actual ordinary AUTO.RIA acceptance40491864 at07:44:23.782993Z (10:44 Kyiv) for
+the owner has saved approval/access covering acceptance. It occurred after5430
+live deployment and before the final3a5586 live deployment; no new post-final
+qualified acceptance was observed at this checkpoint. Acceptance is not reading.
+Client acceptance40521478 at07:22:25Z follows the firstc488 default-off deployment.
+Current monitoring/health cannot substitute for a new actual receipt.
+
+## Exact blockers and next step
+
+Owner permission persists. To enable valued cards, acquire a denser compatible
+current cohort for the unchanged owner search, >=8 independently reviewed analogs,
+>=3 estimable frozen asking controls and a stable method. Current code conservatively
+requires corroborated unique VIN-derived keys and distinct photo reviews for profile
+independence; this requirement is not satisfied by the current observations.
+A whole-car repair candidate remains retained rather than silently discarded.
+Do not fabricate missing power/condition/value, weaken min8, refill controls from
+known prices, replay old samples, or enable other clients. No automatic resumption,
+continuous observer or new ChatGPT background promise. Stages for wider rollout
+and client delivery still require new authorization.
