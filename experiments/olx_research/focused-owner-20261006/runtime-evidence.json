@@ -1,0 +1,98 @@
+[
+  {
+    "log_id": "4d463ad2-78e2-46fc-98b7-1f3ea81a412b",
+    "instance": "srv-dal2h35g1s2s73e0sj80-xfrnw",
+    "timestamp": "2026-10-06T07:57:29.322035426Z",
+    "evidence": {
+      "id": "936658970",
+      "version": "olx-ria-provider-average-v1",
+      "reference_usd": "7431",
+      "range_usd": {
+        "low": "7059.45",
+        "high": "7802.55"
+      },
+      "discount_percent": "12.52859642040102274256493070",
+      "asking_usd": "6500",
+      "provider_quantity": 1841,
+      "returned_ad_ids": [
+        "37333592",
+        "40389681",
+        "40409242"
+      ],
+      "independently_reviewed_compatible_analogs": null,
+      "omitted_criteria": [
+        "generation"
+      ],
+      "request": {
+        "version": "olx-ria-provider-average-v1",
+        "source": "olx",
+        "source_id": "936658970",
+        "target_binding": "1ea9d6ecd813571c834339a8958f3839f21bdad010f41f6fc0d46576632fe159",
+        "request_sha256": "1200fa6f62ac0f1d710ba45dd14bfc8d52ba0718fe4cf7bfef04815bfd3e678f",
+        "body": {
+          "langId": 4,
+          "period": 168,
+          "params": {
+            "categoryId": "1",
+            "brandId": "70",
+            "modelId": "652",
+            "bodyId": "2",
+            "fuelId": "2",
+            "gearBoxId": "1",
+            "driveId": "2",
+            "year": {
+              "gte": "2010",
+              "lte": "2010"
+            },
+            "mileage": {
+              "gte": "270",
+              "lte": "270"
+            },
+            "engineVolume": {
+              "gte": "1.6",
+              "lte": "1.6"
+            },
+            "power": 105
+          }
+        },
+        "omitted_criteria": [
+          "generation"
+        ],
+        "observed_at": 1791273443.6697903
+      },
+      "observed_at": 1791273449.3126543,
+      "asking_price_not_sale_price": true,
+      "extra_margin_percent": 0,
+      "threshold": 10,
+      "eligible_deal": true
+    }
+  },
+  {
+    "log_id": "b9b7c7e5-2739-4f24-bcc9-f423622ac236",
+    "instance": "srv-dal2h35g1s2s73e0sj80-xfrnw",
+    "timestamp": "2026-10-06T07:57:30.412771311Z",
+    "evidence": {
+      "source_id": "936658970",
+      "status": "accepted",
+      "method": "sendPhoto",
+      "at": 1791273450.3098319,
+      "message_id": 17367
+    }
+  },
+  {
+    "log_id": "714a704e-4956-4360-a6d0-d967bd3cd33e",
+    "instance": "srv-dal2h35g1s2s73e0sj80-xfrnw",
+    "timestamp": "2026-10-06T07:57:30.426764654Z",
+    "evidence": {
+      "status": "completed_focused_owner",
+      "error": null,
+      "ria_calls": 24,
+      "ai_calls": 4,
+      "olx_gets": 6,
+      "observations": 3,
+      "technical_ready": true,
+      "telegram_calls": 1
+    }
+  }
+]
+
