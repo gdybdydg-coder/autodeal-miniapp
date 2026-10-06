@@ -30,12 +30,13 @@ SEND_INTERVAL = 1
 LEASE = 60
 LOG = logging.getLogger("uvicorn.error")
 TEXT = (
-    "🚘 Менше ручного пошуку — більше уваги до цікавих авто!\n\n"
-    "AutoDeal шукає вигідні оголошення AUTO.RIA за твоїми фільтрами "
+    "🚘 Шукаєте автомобіль без постійного перегляду оголошень?\n\n"
+    "AutoDeal знаходить вигідні пропозиції AUTO.RIA за вашими фільтрами "
     "та надсилає їх у Telegram.\n\n"
-    "💳 Підписка — 250 грн на 30 днів.\n"
-    "Доступ активується після перевірки оплати адміністратором.\n\n"
-    "Налаштуй пошук під себе та переглянь умови підписки 👇"
+    "💳 Підписка — 250 грн на 30 днів.\n\n"
+    "Після переказу натисніть «Я оплатив» і надішліть скриншот. "
+    "Адміністратор перевірить надходження коштів та активує доступ.\n\n"
+    "👇 Перегляньте тариф і реквізити для оплати."
 )
 RENEWAL_TEXT = (
     "🔔 Продовж підписку AutoDeal, щоб знову отримувати оголошення.\n\n"
@@ -108,11 +109,16 @@ def counts(db, campaign_id):
 
 def result(db, campaign, now):
     states = counts(db, campaign.id)
+    accepted = db.scalar(select(func.count()).select_from(CampaignRecipient).where(
+        CampaignRecipient.campaign_id == campaign.id, CampaignRecipient.state == "sent",
+        CampaignRecipient.message_id.is_not(None)))
     return {"campaign_id": campaign.id, "date_kyiv": campaign.id.removeprefix(PREFIX),
             "status": campaign.status, "selected": campaign.audience.get("selected"),
             "queued": sum(states.values()), "started_at": campaign.audience.get("at"),
             "audience_at_selection": campaign.audience.get("summary"),
             "sent": states.get("sent", 0), "excluded": states.get("excluded", 0),
+            "telegram_accepted": accepted,
+            "sent_without_receipt": states.get("sent", 0)-accepted,
             "temporary_errors": states.get("retry", 0), "permanent_errors": states.get("failed", 0),
             "errors": states.get("retry", 0) + states.get("failed", 0),
             "uncertain": states.get("uncertain", 0), "expired": states.get("expired", 0),

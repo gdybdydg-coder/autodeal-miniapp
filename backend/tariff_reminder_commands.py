@@ -37,6 +37,28 @@ def _admin_card(uid, data):
              "Наступний запуск: " + escape(str(data.get("next_run_kyiv") or "не запланований")),
              "Придатних отримувачів зараз: " + _number(data.get("eligible_recipients")),
              "Кількість перевіряється знову перед запуском і надсиланням."]
+    cohort = data.get("audience") or {}
+    created = cohort.get("created_only")
+    if isinstance(created, dict):
+        lines.append("Лише створена неоплачена заявка: " + _number(created.get("total_users"))
+                     + "; придатних: " + _number(created.get("eligible_users")))
+    labels = {"current_access": "Чинний доступ", "payment_in_progress": "Оплата на перевірці",
+              "blocked": "Блокування", "test_or_service": "Тестові й службові",
+              "stopped": "Зупинено / неактивний стан", "opted_out": "Відмова від нагадувань",
+              "missing_explicit_consent": "Без записаної явної згоди"}
+    reasons = cohort.get("excluded_by_primary_reason") or {}
+    if reasons:
+        lines.append("Виключення за головною причиною:\n" + "\n".join(
+            label + ": " + _number(reasons[key]) for key, label in labels.items() if key in reasons))
+    if reasons.get("missing_explicit_consent", 0):
+        lines.append("Добровільне ввімкнення клієнтом: /reminders. Згода автоматично не змінюється.")
+    payments = data.get("pending_payments") or {}
+    if payments:
+        stale = sum(item.get("stale", 0) for item in payments.get("requests", {}).values())
+        lines.append("Застарілі заявки: " + _number(stale) + "; очікування скриншота: "
+                     + _number(payments.get("stale_receipt_expectations"))
+                     + " (понад " + _number(payments.get("stale_after_days"))
+                     + " днів). Лише звіт; рішення щодо оплат не змінюються.")
     last = data.get("last_result")
     if isinstance(last, dict) and type(last.get("selected")) is int:
         errors = last.get("errors")
@@ -44,11 +66,13 @@ def _admin_card(uid, data):
             temporary, permanent = last.get("temporary_errors"), last.get("permanent_errors")
             errors = temporary + permanent if type(temporary) is int and type(permanent) is int else None
         lines.append("Останній запуск " + escape(str(last.get("date_kyiv") or "")) + ": обрано " + _number(last.get("selected"))
-                     + ", надіслано " + _number(last.get("sent"))
+                     + ", надіслано " + _number(last.get("telegram_accepted"))
                      + ", виключено " + _number(last.get("excluded"))
                      + ", помилки " + _number(errors)
                      + ", невизначено " + _number(last.get("uncertain")))
         lines.append("«Надіслано» означає підтвердження Telegram API, а не прочитання.")
+        if last.get("sent_without_receipt"):
+            lines.append("Без збереженого підтвердження Telegram: " + _number(last.get("sent_without_receipt")))
     else:
         lines.append("Запусків цієї кампанії ще не було.")
     records = (data.get("history") or {}).get("records", [])

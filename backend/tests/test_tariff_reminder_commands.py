@@ -82,7 +82,7 @@ def test_admin_view_has_current_count_schedule_preview_and_controls(setup):
 
 def test_admin_view_keeps_previous_day_summary_after_today_runs(setup):
     setup.data["last_result"] = {"date_kyiv": "2026-10-04", "selected": 0,
-        "sent": 0, "excluded": 0, "errors": 0, "uncertain": 0}
+        "sent": 0, "telegram_accepted": 0, "excluded": 0, "errors": 0, "uncertain": 0}
     setup.data["history"] = {"records": [
         {"date_kyiv": "2026-10-03", "run_observed": True, "selected": 3,
          "queued": 3, "telegram_accepted": 2, "errors": 0, "uncertain": 1},
@@ -91,6 +91,25 @@ def test_admin_view_keeps_previous_day_summary_after_today_runs(setup):
     assert "Останній запуск 2026-10-04: обрано 0" in result["text"]
     assert ("Попередній день 2026-10-03: обрано 3, поставлено в чергу 3, "
             "Telegram: 2, помилки 0, невизначено 1") in result["text"]
+    assert len(result["text"]) < 4000
+    assert setup.transport == []
+
+
+def test_admin_shows_created_cohort_exclusions_and_unconfirmed_sent_records(setup):
+    setup.data["audience"] = {"created_only": {"total_users": 2, "eligible_users": 0},
+        "excluded_by_primary_reason": {"missing_explicit_consent": 143, "current_access": 5}}
+    setup.data["last_result"] = {"date_kyiv": "2026-10-04", "selected": 2,
+        "sent": 2, "telegram_accepted": 1, "sent_without_receipt": 1,
+        "excluded": 0, "errors": 0, "uncertain": 0}
+    setup.data["pending_payments"] = {"requests": {"clarification": {"stale": 2}},
+        "stale_receipt_expectations": 1, "stale_after_days": 7}
+    result = handle(setup, event(uid=ADMIN, text="/tariff_reminders"))
+    assert "Лише створена неоплачена заявка: 2; придатних: 0" in result["text"]
+    assert "Без записаної явної згоди: 143" in result["text"]
+    assert "надіслано 1" in result["text"]
+    assert "Без збереженого підтвердження Telegram: 1" in result["text"]
+    assert "Застарілі заявки: 2; очікування скриншота: 1" in result["text"]
+    assert "надіслано 2" not in result["text"]
     assert len(result["text"]) < 4000
     assert setup.transport == []
 
@@ -223,7 +242,7 @@ def test_database_error_has_no_false_statistics_or_success_confirmation(setup):
 
 
 def test_last_summary_only_renders_aggregate_fields(setup):
-    setup.data["last_result"] = {"selected": 3, "sent": 1, "excluded": 1,
+    setup.data["last_result"] = {"selected": 3, "sent": 1, "telegram_accepted": 1, "excluded": 1,
                                  "temporary_errors": 0, "permanent_errors": 0,
                                  "uncertain": 1, "user_id": "private-user", "receipt": "private-receipt"}
     result = handle(setup, event(uid=ADMIN, text="/tariff_reminders"))

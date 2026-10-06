@@ -134,6 +134,8 @@ def test_three_clients_two_confirmed_purchases_only_third_gets_reminder(daily):
                     source="explicit_marketing_button_v1") for u in (OTHER, THIRD)])
         buyer(db, UID)
         buyer(db, OTHER)  # Both purchases are current; only the third is unpaid.
+        db.add(PaymentRequest(id="SYNTHETIC-CREATED", user_id=THIRD, state="created",
+            created_at=BEFORE, updated_at=BEFORE))
     calls = []
     assert reminders.tick(engine, settings, accepted(calls), MORNING) == "sent"
     assert [r["chat_id"] for r in calls] == [THIRD]

@@ -126,22 +126,37 @@ def former_buyer(db, uid):
 def summary(db, settings, now):
     """Aggregate exclusions with one primary reason per user; no identities."""
     try:
-        reason = case(*[(condition, name) for name, condition in clauses(settings, now).items()],
+        checks = clauses(settings, now)
+        renewal = former_buyer_clause(User.id)
+        created_only = and_(exists().where(PaymentRequest.user_id == User.id,
+            PaymentRequest.state == "created"), not_(checks["current_access"]),
+            not_(checks["payment_in_progress"]), not_(renewal))
+        reason = case(*[(condition, name) for name, condition in checks.items()],
                       else_="eligible").label("reason")
-        grouped = select(reason, former_buyer_clause(User.id).label("renewal")).select_from(User).subquery()
-        rows = db.execute(select(grouped.c.reason, grouped.c.renewal, func.count())
-                          .group_by(grouped.c.reason, grouped.c.renewal)).all()
+        grouped = (select(reason, renewal.label("renewal"), created_only.label("created_only"))
+                   .select_from(User).subquery())
+        rows = db.execute(select(grouped.c.reason, grouped.c.renewal, grouped.c.created_only, func.count())
+                          .group_by(grouped.c.reason, grouped.c.renewal, grouped.c.created_only)).all()
         reasons, total, eligible_total, renewals = {}, 0, 0, 0
-        for name, renewal, count in rows:
+        created = {"total_users": 0, "eligible_users": 0, "excluded_by_primary_reason": {}}
+        for name, renewal, only_created, count in rows:
             total += count
             if name == "eligible":
                 eligible_total += count
                 renewals += count if renewal else 0
             else:
                 reasons[name] = reasons.get(name, 0) + count
+            if only_created:
+                created["total_users"] += count
+                if name == "eligible":
+                    created["eligible_users"] += count
+                else:
+                    excluded = created["excluded_by_primary_reason"]
+                    excluded[name] = excluded.get(name, 0) + count
         return {"total": total, "eligible": eligible_total, "excluded": total-eligible_total,
                 "excluded_by_primary_reason": reasons,
                 "eligible_copy": {"purchase": eligible_total-renewals, "renewal": renewals},
+                "created_only": created,
                 "basis": "current_access_and_unchanged_explicit_consent", "observed_at": now}
     except SQLAlchemyError:
         raise EligibilityUnavailable("tariff_reminder_audience_unavailable") from None

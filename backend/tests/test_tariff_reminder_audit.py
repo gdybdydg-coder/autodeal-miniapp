@@ -86,3 +86,48 @@ def test_stale_incomplete_payments_are_reported_without_mutation(ledger):
         assert audience.eligible(db, ledger[1], UID, NOW) is False
         assert db.get(PaymentRequest, "review").state == "review"
         assert db.get(ReceiptExpectation, UID).active is True
+
+
+def test_created_only_users_are_counted_once_and_do_not_bypass_consent_or_payment(ledger):
+    engine, settings = ledger
+    with Session(engine) as db, db.begin():
+        for offset in range(1, 5):
+            uid = UID+offset
+            db.add(User(id=uid, ready=True))
+            if offset != 1:
+                db.add(MarketingConsent(user_id=uid, allowed=True, blocked=False,
+                    source=audience.EXPLICIT_MARKETING_SOURCE, update_id=1, at=NOW-100))
+        for uid in (UID, UID+1, UID+2, UID+3, UID+4):
+            db.add(PaymentRequest(id="CREATED-"+str(uid), user_id=uid, state="created",
+                created_at=NOW-100, updated_at=NOW-100))
+        # Several requests are still one person; a created row does not erase
+        # later payment evidence or make a former buyer a first-time buyer.
+        db.add(PaymentRequest(id="OLDER-CREATED", user_id=UID, state="created",
+            created_at=NOW-200, updated_at=NOW-200))
+        db.add(Entitlement(user_id=UID+2, expires_at=NOW+100, updated_at=NOW))
+        db.add(ReceiptExpectation(user_id=UID+3, active=True, started_at=NOW, updated_at=NOW))
+        db.add(PaymentRequest(id="EXPIRED-PAID", user_id=UID+4, state="approved",
+            expires_at=NOW-1, created_at=NOW-10000, updated_at=NOW-100))
+    with Session(engine) as db:
+        data = audience.summary(db, settings, NOW)
+        assert data["created_only"] == {"total_users": 2, "eligible_users": 1,
+            "excluded_by_primary_reason": {"missing_explicit_consent": 1}}
+        assert audience.ids(db, settings, NOW) == [UID, UID+4]
+        assert db.get(MarketingConsent, UID+1) is None
+        assert db.get(PaymentRequest, "CREATED-"+str(UID)).state == "created"
+
+
+def test_latest_result_does_not_count_sent_state_without_message_id_as_confirmation(daily):
+    engine, _, _ = daily
+    with Session(engine) as db, db.begin():
+        campaign = BillingCampaign(id=KEY, not_before=MORNING, deadline=MORNING+1800,
+            timezone="Europe/Kyiv", status="complete", blockers=[], content={},
+            audience={"selected": 2, "at": MORNING})
+        db.add(campaign)
+        db.add_all([CampaignRecipient(campaign_id=KEY, user_id=uid, state="sent", message_id=mid)
+                    for uid, mid in ((123, 9001), (456, None))])
+        db.flush()
+        result = reminders.result(db, campaign, MORNING+10)
+        assert result["sent"] == 2
+        assert result["telegram_accepted"] == 1
+        assert result["sent_without_receipt"] == 1
