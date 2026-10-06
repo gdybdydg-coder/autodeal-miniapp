@@ -42,6 +42,9 @@ def enabled():return os.getenv('OLX_RIA_PROBE_ENABLED')=='true'
 
 
 def allowed(engine,settings,plan):
+    if (plan.get('phase')==6 and (os.getenv('OLX_FOCUSED_OWNER_SEND_ENABLED')!='true'
+            or plan.get('owner_authorized') is not True or plan.get('client_authorized') is not False)):
+        return False
     if (SHUTDOWN.is_set() or not enabled() or not settings.live or not billing.verified_admin(settings)
             or not paid_source_access.strict(engine) or time.time()>=plan['until']
             or not settings.auto_ria_api_key or not settings.auto_ria_user_id):return False
@@ -61,6 +64,11 @@ def initialize(engine,settings,plan):
         if previous:
             # One reviewed correction may continue the SAME spent ledger.
             # No crash/source hold replay, reset, or automatic phase advance.
+            phase6=(plan.get('phase')==6 and os.getenv('OLX_FOCUSED_OWNER_SEND_ENABLED')=='true'
+                    and plan.get('owner_authorized') is True and plan.get('client_authorized') is False
+                    and previous.result.get('phase')==5
+                    and previous.status=='completed_observations_not_admitted'
+                    and previous.result.get('error') is None)
             phase3=(plan.get('phase')==3 and previous.result.get('phase')==2
                     and previous.status=='completed_observations_not_admitted'
                     and previous.result.get('error') is None)
@@ -79,12 +87,14 @@ def initialize(engine,settings,plan):
             phase2=(plan.get('phase')==2 and previous.result.get('phase',1)==1
                     and previous.status=='technical_hold'
                     and previous.result.get('error')=='dictionary_mapping_ambiguous_or_missing')
-            if ((not phase5 and not phase4 and not phase3 and not phase2) or previous.result.get('phase',1) not in (1,2,3,4)
+            if ((not phase6 and not phase5 and not phase4 and not phase3 and not phase2) or previous.result.get('phase',1) not in (1,2,3,4,5)
                     or previous.result.get('owner_id')!=settings.admin_telegram_id
                     or previous.result.get('fingerprint')!=plan['fingerprint']):return False
             previous.status='checking'
             previous.result={**previous.result,'phase':plan['phase'],'previous_error':previous.result['error'],
-                             'phase_started_at':time.time(),'error':None}
+                             'phase_started_at':time.time(),'error':None,
+                             **({'previous_until':previous.result.get('until'),'until':plan['until'],
+                                  'focused_authorized_at':plan.get('focused_authorized_at')} if phase6 else {})}
             db.commit();return True
         if plan.get('phase',1)!=1:return False
         db.add(SourceProbe(id=STATE,status='checking',requests=0,checked_at=time.time(),
@@ -250,6 +260,8 @@ def run_once(engine,settings,plan=None,fetch=transport,olx_fetch=feed.source_fet
         return
     status='completed_observations_not_admitted';error=None
     try:
+        if plan.get('phase')==6:
+            return focused_once(engine,settings,plan,fetch,olx_fetch)
         if plan.get('phase')==3:
             audit_references(engine,settings,plan,fetch)
             return finish(engine,'completed_reference_audit_not_admitted',None)
@@ -369,7 +381,7 @@ def report_completed(engine):
             'olx_bytes_unknown_receipts':sum('bytes' not in c or c.get('status')=='reserved' for c in olx),
             'reference_details':len(d.get('reference_details',[])),
             'last_olx_receipt':{k:olx[-1].get(k) for k in ('id','status','bytes','truncated','cap')} if olx else None,
-            'technical_ready':False,'telegram_calls':0,'restart_additional_requests':0}
+            'technical_ready':d.get('technical_ready',False),'telegram_calls':d.get('telegram_calls',0),'focused_receipt':d.get('focused_receipt'),'restart_additional_requests':0}
     LOG.info('OLX RIA completed receipt %s',json.dumps(summary));return summary
 
 
@@ -380,7 +392,7 @@ def finish(engine,status,error):
         result={'status':status,'error':error,'ria_calls':row.requests,
                 'ai_calls':sum(c['kind']=='ai' for c in row.result['calls']),
                 'olx_gets':len(row.result['olx_calls']),'observations':len(row.result['observations']),
-                'technical_ready':False,'telegram_calls':0}
+                'technical_ready':row.result.get('technical_ready',False),'telegram_calls':row.result.get('telegram_calls',0)}
     LOG.info('OLX RIA probe result %s',json.dumps(result));return result
 
 
@@ -395,3 +407,55 @@ async def run(engine,settings,stop):
         try:await task
         except Exception as exc:
             LOG.warning('OLX RIA probe isolated failure (%s)',type(exc).__name__)
+
+
+def focused_once(engine,settings,plan,fetch,olx_fetch):
+    """Single current target; same historical spent RIA ledger, no replay."""
+    from . import olx_focused_provider as focus
+    entry=plan['candidates'][0]
+    if (len(plan['candidates'])!=1 or plan['maximum_olx_gets']!=6
+            or plan.get('focused_method') not in (None,focus.VERSION) or os.getenv(focus.ARM)!='true'):raise ValueError('focused_arm_missing')
+    if not allowed(engine,settings,plan):raise ValueError('owner_access_or_stop_blocked')
+    with Session(engine) as db:
+        row=db.get(SourceProbe,STATE,with_for_update=True);d=copy.deepcopy(row.result)
+        if len(d['olx_calls'])>=plan['maximum_olx_gets']:raise ValueError('olx_probe_budget_exhausted')
+        d['olx_calls'].append({'id':entry['id'],'url':entry['url'],'status':'reserved','cap':feed.DETAIL_CAP,'phase':6})
+        row.result=d;db.commit()
+    if not allowed(engine,settings,plan):raise ValueError('owner_access_or_stop_blocked')
+    code,raw,truncated=olx_fetch(entry['url'])
+    with Session(engine) as db:
+        row=db.get(SourceProbe,STATE,with_for_update=True);d=copy.deepcopy(row.result)
+        d['olx_calls'][-1].update(status='http_'+str(code),bytes=len(raw),truncated=truncated)
+        row.result=d;db.commit()
+    if code in (401,403,429):raise ValueError('olx_source_hold_http_'+str(code))
+    if code!=200 or truncated:raise ValueError('olx_detail_unavailable')
+    car=enrich(raw,parse_detail_snapshot(raw,fetched_at=int(time.time()),truncated=False))['listing']
+    if car['id']!=entry['id'] or not feed.same_detail_url(car['url'],entry['url']):raise ValueError('olx_identity_mismatch')
+    paths={'brand':'brands','model':'models','body':'body','fuel':'fuel','transmission':'gear','drive_type':'drive'}
+    labels={'brand':['Skoda','Škoda'],'model':['Octavia'],'body':{'wagon':['Універсал'],'liftback':['Ліфтбек']}.get(car.get('body'),[]),
+        'fuel':{'diesel':['Дизель'],'petrol':['Бензин']}.get(car.get('fuel'),[]),
+        'transmission':{'manual':['Ручна / Механіка'],'automatic':['Автомат']}.get(car.get('transmission'),[]),
+        'drive_type':{'front':['Передній'],'rear':['Задній'],'all':['Повний']}.get(car.get('drive_type'),[])}
+    mapping={}
+    for field,key in paths.items():
+        if car.get(field) is None:continue
+        e=plan['dictionary_evidence'][key]
+        if not e.get('receipt_log_id'):raise ValueError('dictionary_receipt_missing')
+        mapping[field]={'value':car[field],'id':int(exact_id(e['items'],labels[field])),
+            'dictionary_url':'https://developers.ria.com/'+e['path'],'checked_at':e['checked_at']}
+    prepared=focus.prepare(car,mapping,time.time())
+    with Session(engine) as db:
+        search=next((s for s in feed.own_searches(db,settings) if s['id']==plan['search_id'] and s['fingerprint']==plan['fingerprint']),None)
+    if not search or not feed.filter_reasons(car,search['filters'],None,time.time())['match']:raise ValueError('owner_filter_contradiction')
+    data=request(engine,settings,plan,'auto/ai-avarage-price/',prepared['body'],fetch=fetch)
+    assessment=focus.assess(data,prepared,car,search,time.time())
+    with Session(engine) as db:
+        row=db.get(SourceProbe,STATE,with_for_update=True)
+        row.result={**row.result,'focused_assessment':assessment,'technical_ready':True};db.commit()
+    LOG.info('OLX focused provider assessment %s',json.dumps({'id':car['id'],**assessment},ensure_ascii=False))
+    receipt=focus.send(engine,settings,plan,car,assessment,allowed) if assessment['eligible_deal'] else None
+    with Session(engine) as db:
+        row=db.get(SourceProbe,STATE,with_for_update=True)
+        row.result={**row.result,'focused_receipt':receipt,'telegram_calls':int(receipt is not None and receipt.get('method') is not None)};db.commit()
+    LOG.info('OLX focused owner receipt %s',json.dumps(receipt or {'source_id':car['id'],'status':'not_attempted','reason':'below_threshold_or_previous_attempt'}))
+    return finish(engine,'completed_focused_owner',None)

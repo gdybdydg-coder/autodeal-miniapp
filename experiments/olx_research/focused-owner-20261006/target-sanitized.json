@@ -1,0 +1,84 @@
+{
+  "source": "olx",
+  "id": "936658970",
+  "url": "https://www.olx.ua/d/uk/obyavlenie/skoda-octavia-a5-1-6-tdi-ID11o7MK.html",
+  "brand": "Skoda",
+  "model": "Octavia",
+  "year": 2010,
+  "mileage_km": 270000,
+  "engine_cc": 1600,
+  "fuel": "diesel",
+  "transmission": "manual",
+  "body": "wagon",
+  "generation": "A5",
+  "generation_variant": null,
+  "drive_type": "front",
+  "power_hp": 105,
+  "research_condition": "running_reported_damage:body_dents+windshield_crack",
+  "price": "6500",
+  "currency": "USD",
+  "checked_at": 1791272817,
+  "region": "Хмельницька область",
+  "category": "whole_passenger_car",
+  "eligibility_review": {
+    "status": "allowed",
+    "reasons": [
+      "customs_cleared_declared",
+      "no_forbidden_offer_evidence"
+    ],
+    "evidence": [
+      {
+        "reason": "customs_cleared_declared",
+        "field": "customs_cleared",
+        "snippet": "true"
+      },
+      {
+        "reason": "no_forbidden_offer_evidence",
+        "field": "title/category/description",
+        "snippet": ""
+      }
+    ],
+    "used_fields": [
+      "title",
+      "category",
+      "customs_cleared",
+      "description",
+      "description_available"
+    ],
+    "fingerprint": "401c469da38a9d71c361895c3314395061ac6a14d63337e7eb75b40965990a2b",
+    "customs_status": "cleared_declared",
+    "customs_independently_verified": false,
+    "description_complete": true,
+    "version": "olx-eligibility-v2"
+  },
+  "observed_asking_display": {
+    "status": "corroborated_display",
+    "reasons": [],
+    "amount": "6500",
+    "currency": "USD",
+    "basis": "complete_visible_detail_and_matching_public_state",
+    "original_seller_currency_verified": false,
+    "full_price_verified": false,
+    "description_reviewed_in_full": true,
+    "limits": [
+      "original_seller_currency_unverified",
+      "first_publication_unverified",
+      "asking_amount_is_not_a_completed_sale_price"
+    ],
+    "state_regular_price": {
+      "amount": "292345",
+      "currency": "UAH"
+    }
+  },
+  "price_review": {
+    "status": "needs_review",
+    "reasons": [
+      "full_price_unconfirmed"
+    ],
+    "version": "price-review-v1",
+    "text_is_not_proof": true
+  },
+  "field_conflicts": [],
+  "research_field_conflicts": [],
+  "asking_price_reasons": []
+}

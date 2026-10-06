@@ -426,10 +426,15 @@ def handle(engine,settings,event):
             db.commit()
     info=preflight(engine,settings)
     technical=profile_ready(load_profile(),time.time())
+    with Session(engine) as db:
+        focused=db.get(SourceProbe,'olx-ria-probe-20261005-1332-v1')
+        focused_data=focused.result if focused and focused.result.get('phase')==6 else {}
+    focused_receipt=focused_data.get('focused_receipt') or {}
     text=('🟠 OLX зупинено. AUTO.RIA продовжує працювати.' if command=='/olx_stop' else
         '🟠 OLX • лише власник\nСтан: '+str(info.get('status','вимкнено'))+
         '\nПідтверджено Telegram: '+str(info.get('state',{}).get('accepted',0))+
         '\nПеревірена оцінка готова: '+('так' if technical else 'ні')+
+        ('\nОкремий тест AUTO.RIA AI: '+str(focused_receipt.get('status','не відправлено')) if focused_data else '')+
         '\nПочатковий пакет: максимум 3 спроби. Постійний збір ще не запущений.'+
         '\nІнтервал: '+str(interval())+' с\nЛіміти: 12 GET/год, 60 GET/день, 160 MiB/день.'+
         '\n/olx_stop — зупинити лише OLX.')

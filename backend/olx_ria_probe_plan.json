@@ -4,11 +4,11 @@
   "client_authorized": false,
   "search_id": 4,
   "fingerprint": "aa3dc66cadd6d6343f55f3930823173faf45741059cac1968b66a411b8a99be2",
-  "until": 1791205200,
+  "until": 1791276673,
   "maximum_ria_calls": 30,
   "maximum_ai_calls": 6,
-  "maximum_olx_gets": 5,
-  "maximum_olx_bytes": 10485760,
+  "maximum_olx_gets": 6,
+  "maximum_olx_bytes": 12582912,
   "technical_ready": false,
   "telegram_enabled": false,
   "candidates": [
@@ -22,8 +22,8 @@
     "933340614"
   ],
   "controls_are_not_references": true,
-  "purpose": "Single reviewed locale canonical retry for confirmed302 only; same spent ledger, original30/6/deadline retained; no sender.",
-  "phase": 5,
+  "purpose": "Explicit 2026-10-06 owner authorization. One current target, one AI query from remaining30/6 budget, condition not exclusion, average frozen before fresh price. No local-peer readiness override. Arm separately after deployment verification.",
+  "phase": 6,
   "dictionary_evidence": {
     "brands": {
       "path": "auto/categories/1/marks",
@@ -275,5 +275,7 @@
     "observed_via": "previously acquired real full-page explicit Ukrainian alternate URL; used for address only, not current facts",
     "saved_page_sha256": "f06cba726a0ce749a25578cf60d9b1c965ae2969e758970f96e988cc118e9c17",
     "http302_receipt_log": "403c832e-3255-41b4-acfa-b1b94d4878e2"
-  }
+  },
+  "focused_authorized_at": "2026-10-06T10:32:54+03:00",
+  "focused_method": "olx-ria-provider-average-v1"
 }
