@@ -60,6 +60,13 @@ def _admin_card(uid, data):
                      + " (понад " + _number(payments.get("stale_after_days"))
                      + " днів). Лише звіт; рішення щодо оплат не змінюються.")
     last = data.get("last_result")
+    immediate = data.get("immediate") or {}
+    if immediate.get("installed"):
+        lines.append("Разове нагадування власника: " + escape(str(immediate.get("status", "невідомо")))
+                     + "; обрано " + _number(immediate.get("selected"))
+                     + "; Telegram: " + _number(immediate.get("telegram_accepted"))
+                     + "; помилки " + _number(immediate.get("errors"))
+                     + "; невизначено " + _number(immediate.get("uncertain")))
     if isinstance(last, dict) and type(last.get("selected")) is int:
         errors = last.get("errors")
         if type(errors) is not int:

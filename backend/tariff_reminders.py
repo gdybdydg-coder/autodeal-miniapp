@@ -128,6 +128,7 @@ def result(db, campaign, now):
 
 def snapshot(db, settings, now):
     from .tariff_reminder_audit import history, pending_payments
+    from . import tariff_reminder_once
     row = db.get(TariffReminderSchedule, ID, populate_existing=True)
     current = db.get(BillingCampaign, row.last_campaign_id) if row and row.last_campaign_id else None
     upcoming = row.next_run_at if row and row.enabled else None
@@ -140,6 +141,7 @@ def snapshot(db, settings, now):
             "installed_at": row.installed_at if row else None,
             "eligible_recipients": cohort["eligible"], "audience": cohort,
             "history": history(db, row, now), "pending_payments": pending_payments(db, now),
+            "immediate": tariff_reminder_once.summary(db),
             "schedule_rows": db.scalar(select(func.count()).select_from(TariffReminderSchedule)),
             "text": TEXT, "buttons": [b[0]["text"] for b in BUTTONS],
             "last_result": result(db, current, now) if current else (row.last_result if row else {}),
@@ -235,6 +237,12 @@ def tick(engine, settings, request, now=None, *, clock=None):
         raise ValueError("Explicit reminder transport required")
     clock = clock or (time.time if now is None else lambda: now)
     now = clock()
+    from . import tariff_reminder_once
+    # Same bounded executor and priority rules; no second recurring task.
+    try:
+        tariff_reminder_once.tick(engine, settings, request, now, clock=clock)
+    except (SQLAlchemyError, promotion.EligibilityUnavailable):
+        LOG.error("Owner one-time reminder deferred; durable state retained")
     with Session(engine) as db, db.begin():
         billing.control(db, lock=True)
         schedule = db.get(TariffReminderSchedule, ID, populate_existing=True)
