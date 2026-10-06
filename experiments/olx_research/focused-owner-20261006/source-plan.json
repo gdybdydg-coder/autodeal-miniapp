@@ -1,0 +1,24 @@
+{
+  "authorized_at": "2026-10-06T10:32:54+03:00",
+  "scope": "one owner OLX target; condition does not exclude; unchanged AUTO.RIA and client recipients",
+  "target": {
+    "id": "936658970",
+    "url": "https://www.olx.ua/d/uk/obyavlenie/skoda-octavia-a5-1-6-tdi-ID11o7MK.html"
+  },
+  "source_budget": {
+    "gets": 1,
+    "bytes": 2097152,
+    "timeout_seconds": 20,
+    "retries": 0,
+    "follow_redirects": false,
+    "hold_on": [
+      401,
+      403,
+      429,
+      "actual CAPTCHA"
+    ]
+  },
+  "valuation_method_frozen_before_current_price": "AUTO.RIA AI avgPrice.price.USD; source avgValueRange when returned; no automatic minus5%; provider quantity minimum8; core actual criteria, unknowns never fabricated",
+  "payment_or_filter_changes": false,
+  "production_sender_enabled": false
+}
