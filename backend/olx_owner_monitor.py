@@ -7,7 +7,7 @@ from datetime import datetime
 from urllib.parse import urlsplit,urlencode,urljoin,parse_qs
 from urllib.request import Request,build_opener
 from urllib.error import HTTPError
-from sqlalchemy import select
+from sqlalchemy import select,func
 from sqlalchemy.orm import Session
 from sqlalchemy.exc import IntegrityError
 from .models import SourceProbe,User
@@ -307,6 +307,7 @@ def process(engine,settings,token,public=public_fetch,provider=probe.transport,s
             if 'budget' in reason or reason.startswith(('source_hold','access_','lease_')):raise
             with Session(engine) as db:
                 r=db.get(SourceProbe,key);r.status='pending' if reason=='fx_pending' else 'excluded';r.result={**r.result,'reason':reason};db.commit()
+            LOG.info('OLX owner monitor exclusion %s',json.dumps({'id':item['id'],'status':'pending' if reason=='fx_pending' else 'excluded','reason':reason}))
 
 
 def tick(engine,settings,public=public_fetch,provider=probe.transport,sender=None):
@@ -332,7 +333,11 @@ def status(engine,settings):
         row=db.get(SourceProbe,STATE);d=row.result if row else {}
         stop=db.get(SourceProbe,feed.STATE)
         paused=bool(stop and stop.status=='paused_by_owner')
+        counts=dict(db.execute(select(SourceProbe.status,func.count()).where(SourceProbe.id.like('olx-monitor-ad-%')).group_by(SourceProbe.status)).all())
+        reason=SourceProbe.result['reason'].as_string()
+        exclusions=dict(db.execute(select(reason,func.count()).where(SourceProbe.id.like('olx-monitor-ad-%'),SourceProbe.status=='excluded').group_by(reason)).all())
         return {'enabled':enabled(),'status':'paused_by_owner' if paused else row.status if row else 'not_started','active_searches':len(searches(engine,settings)),
+            'queue_states':counts,'exclusion_reasons':exclusions,
             'interval_seconds':feed.interval(),'next_at':None if paused else d.get('next_at'),'cycles':d.get('cycles',0),'accepted':d.get('accepted',0),
             'source_requests':d.get('source_requests',0),'ria_requests':d.get('ria_requests',0),'fx_requests':d.get('fx_requests',0),
             'ria_daily_allowance':allowance(),'budget':d.get('budget',{}),'last_error':d.get('last_error'),
@@ -341,6 +346,10 @@ def status(engine,settings):
 
 async def run(engine,settings,stop):
     with ThreadPoolExecutor(max_workers=1,thread_name_prefix='olx-owner-monitor') as pool:
+        try:
+            current=await asyncio.get_running_loop().run_in_executor(pool,status,engine,settings)
+            LOG.info('OLX owner monitor startup %s',json.dumps(current,ensure_ascii=False))
+        except Exception as e:LOG.warning('OLX owner monitor startup status unavailable (%s)',type(e).__name__)
         while not stop.is_set() and enabled():
             try:await asyncio.get_running_loop().run_in_executor(pool,tick,engine,settings)
             except Exception as e:LOG.warning('OLX owner monitor isolated error (%s)',type(e).__name__)

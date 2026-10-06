@@ -82,6 +82,34 @@ def test_shared_lease_and_budget_survive_worker_restart(running,monkeypatch):
     with pytest.raises(ValueError,match='access'):mon.reserve(running.engine,running.settings,token,'olx',100,'observed')
 
 
+def test_old_refresh_has_auditable_exclusion_and_spends_no_paid_requests(running,monkeypatch,caplog):
+    import logging
+    from backend.billing_models import Entitlement
+    caplog.set_level(logging.INFO,logger='uvicorn.error')
+    with Session(running.engine) as db:
+        db.get(PaymentRequest,'test-900').expires_at=running.clock[0]+86400
+        db.get(Entitlement,900).expires_at=running.clock[0]+86400
+        db.commit()
+    started=running.clock[0];phase=[0]
+    monkeypatch.setenv('OLX_OWNER_MONITOR_RIA_DAILY_LIMIT','200')
+    monkeypatch.setattr(mon,'parse_page',lambda *a,**k:parsed(['100'] if not phase[0] else ['101','100']))
+    def detail(*a,**k):
+        c=car(running.clock[0]);c.update(id='101',url='https://www.olx.ua/d/uk/obyavlenie/car-ID101.html')
+        c['source_date_observations']={'identity_matches':True,'issues':[],'values':{'createdTime':{'epoch':int(started)-1}}}
+        return {'listing':c}
+    monkeypatch.setattr(mon,'parse_detail_snapshot',detail);monkeypatch.setattr(mon,'enrich',lambda raw,p:p)
+    public=lambda *a:(200,b'fixture',None)
+    provider=lambda *a:pytest.fail('old publication must not spend paid budget')
+    sender=lambda *a:pytest.fail('old publication must not be sent')
+    mon.tick(running.engine,running.settings,public,provider,sender)
+    phase[0]=1;running.clock[0]+=3601
+    result=mon.tick(running.engine,running.settings,public,provider,sender)
+    assert result['ria_daily_allowance']==200 and result['ria_requests']==0 and result['accepted']==0
+    assert result['queue_states']=={'baseline':1,'excluded':1}
+    assert result['exclusion_reasons']=={'old_or_unconfirmed_source_creation':1}
+    assert 'OLX owner monitor exclusion' in caplog.text and 'old_or_unconfirmed_source_creation' in caplog.text
+
+
 def test_missing_explicit_daily_paid_budget_makes_zero_api_calls(running,monkeypatch):
     monkeypatch.delenv('OLX_OWNER_MONITOR_RIA_DAILY_LIMIT');mon.initialize(running.engine,running.settings);t=mon.claim(running.engine,running.settings)
     with pytest.raises(ValueError,match='budget'):mon.ria(running.engine,running.settings,t,'auto/type',transport=lambda *a:pytest.fail('paid call'))
