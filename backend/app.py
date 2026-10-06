@@ -234,7 +234,9 @@ def create_app(settings: Settings, engine=None, *, paid_source_only=False):
                     "AUTO.RIA source comparison unavailable (%s)", type(exc).__name__)
         comparison_task = asyncio.create_task(compare_source_once()) if settings.ria_source_comparison_listing_id else None
         from . import olx_owner_canary, olx_owner_batch, olx_owner_feed
-        from . import olx_ria_probe
+        from . import olx_ria_probe, olx_owner_monitor
+        olx_owner_monitor_task = (asyncio.create_task(olx_owner_monitor.run(engine, settings, stop))
+                                  if olx_owner_monitor.enabled() else None)
         olx_ria_probe_task = (asyncio.create_task(olx_ria_probe.run(engine, settings, stop))
                               if olx_ria_probe.enabled() else None)
         await asyncio.to_thread(olx_owner_batch.log_status, engine, settings)
@@ -271,6 +273,8 @@ def create_app(settings: Settings, engine=None, *, paid_source_only=False):
                 await olx_task
             if olx_ria_probe_task:
                 await olx_ria_probe_task
+            if olx_owner_monitor_task:
+                await olx_owner_monitor_task
             if manual_notice_task:
                 await manual_notice_task
             validation_stop.set()

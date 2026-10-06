@@ -424,6 +424,21 @@ def handle(engine,settings,event):
                     result={'until':settings.olx_owner_feed_until,'attempts':0,'accepted':0,'receipts':[]});db.add(row)
             else:row.status='paused_by_owner'
             db.commit()
+    from . import olx_owner_monitor
+    if olx_owner_monitor.enabled():
+        info=olx_owner_monitor.status(engine,settings)
+        next_at=info.get('next_at')
+        next_text=datetime.fromtimestamp(next_at,KYIV).strftime('%d.%m %H:%M:%S') if next_at else 'ще не заплановано'
+        return billing.message(settings.admin_telegram_id,
+            ('🟠 OLX зупинено. AUTO.RIA продовжує працювати.' if command=='/olx_stop' else
+             '🟠 OLX • лише власник\nСтан: '+str(info['status'])+
+             '\nАктивних пошуків: '+str(info['active_searches'])+
+             '\nПідтверджено Telegram: '+str(info['accepted'])+
+             '\nНаступна перевірка: '+next_text+' Europe/Kyiv'+
+             '\nІнтервал: '+str(info['interval_seconds'])+' с'+
+             '\nЗапитів AUTO.RIA сьогодні: '+str(info['budget'].get('ria',0))+'/'+str(info['ria_daily_allowance'])+
+             '\nОстання помилка: '+str(info['last_error'] or 'немає')+
+             '\n/olx_stop — зупинити лише OLX.'))
     info=preflight(engine,settings)
     technical=profile_ready(load_profile(),time.time())
     with Session(engine) as db:

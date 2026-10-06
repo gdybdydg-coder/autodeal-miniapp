@@ -51,14 +51,15 @@ def prepare(car,mapping,now):
         'body':body,'omitted_criteria':omitted,'observed_at':now}
 
 
-def assess(data,request,car,search,now):
+def assess(data,request,car,search,now,*,quote=None):
     if (request.get('version')!=VERSION or request.get('target_binding')!=provider.binding(car)
             or request.get('source_id')!=car.get('id')
             or request.get('request_sha256')!=provider.digest(request.get('body'))
             or not 0<=now-car['checked_at']<=300 or asking_price_reasons(car)):
         raise ValueError('response_target_binding_invalid')
-    if car.get('currency')!='USD':raise ValueError('focused_currency_requires_verified_fx')
-    if not feed.filter_reasons(car,search['filters'],None,now)['match']:raise ValueError('owner_filter_contradiction')
+    price=feed.normalize(car,quote,now)
+    if price['status']!='ready':raise ValueError('focused_currency_requires_verified_fx')
+    if not feed.filter_reasons(car,search['filters'],quote,now)['match']:raise ValueError('owner_filter_contradiction')
     blocks=[b for b in data.get('statisticData',[]) if isinstance(b,dict) and b.get('type')=='avgPrice'] if isinstance(data,dict) else []
     if len(blocks)!=1:raise ValueError('provider_average_ambiguous')
     b=blocks[0];average=provider.positive(b.get('price',{}).get('USD'))
@@ -68,12 +69,12 @@ def assess(data,request,car,search,now):
     if type(quantity) is not int or quantity<8:raise ValueError('provider_sample_insufficient')
     lower=average*(1-radius)
     reference=lower*Decimal('0.95')
-    discount=provider.discount_percent(reference,car['price'])
+    discount=provider.discount_percent(reference,price['usd_amount'])
     ids=sorted({str(p['id']) for p in data.get('similarCars',[]) if isinstance(p,dict) and type(p.get('id')) is int and p['id']>0})
     return {'version':VERSION,'reference_usd':str(reference),'provider_average_usd':str(average),
         'provider_lower_bound_usd':str(lower),'pricing_method':'provider_lower_bound_minus_5_percent',
         'range_usd':{'low':str(average*(1-radius)),'high':str(average*(1+radius))},
-        'discount_percent':str(discount),'asking_usd':str(car['price']),
+        'discount_percent':str(discount),'asking_usd':price['usd_amount'],'price_basis':price,
         'provider_quantity':quantity,'returned_ad_ids':ids,
         'independently_reviewed_compatible_analogs':None,
         'omitted_criteria':request['omitted_criteria'],'request':request,
@@ -90,7 +91,7 @@ def caption(car,a):
     if car.get('mileage_km'):attrs.append(money(car['mileage_km'])+' км')
     return '\n'.join(['🟠 <b>OLX • тест лише для власника</b>',
         '🚘 '+escape(' '.join(str(car.get(k,'')) for k in ('brand','model','year'))),
-        '💵 Ціна: '+money(a['asking_usd'])+' USD',
+        '💵 Ціна: '+('≈ ' if a.get('price_basis',{}).get('fx') else '')+money(a['asking_usd'])+' USD',
         '📊 Ринкова вартість ≈ '+money(a['reference_usd'])+' USD',
         '📉 Нижче ринкового орієнтира: '+str(Decimal(a['discount_percent']).quantize(Decimal('.1')))+'%',
         '📍 '+escape(car.get('locality') or car.get('region') or ''),
@@ -102,7 +103,7 @@ def caption(car,a):
         '/olx_stop — зупинити лише OLX.'])
 
 
-def send(engine,settings,plan,car,a,access,sender=telegram_setup.call):
+def send(engine,settings,plan,car,a,access,sender=telegram_setup.call,*,arm=ARM):
     """At most once, owner-only, fresh access again under the payment lock."""
     if not a['eligible_deal'] or not access(engine,settings,plan):return None
     key='olx-owner-car-'+hashlib.sha256((str(settings.admin_telegram_id)+':'+car['id']).encode()).hexdigest()[:32]
@@ -123,7 +124,7 @@ def send(engine,settings,plan,car,a,access,sender=telegram_setup.call):
                     owner=db.get(User,settings.admin_telegram_id,with_for_update=True)
                     stopped=db.get(SourceProbe,feed.STATE)
                     searches=feed.own_searches(db,settings)
-                    if (os.getenv(ARM)=='true' and owner and owner.ready
+                    if (os.getenv(arm)=='true' and owner and owner.ready
                             and paid_source_access.allowed(db,owner.id,time.time())
                             and not (stopped and stopped.status=='paused_by_owner')
                             and time.time()<plan['until'] and 0<=time.time()-car['checked_at']<=300
