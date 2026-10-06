@@ -1,5 +1,6 @@
 """Offline public-page observations. First seen is never first publication."""
-import re
+import re,json
+from experiments.olx_offline.source_dates import ASSIGNMENT,_instant
 from urllib.parse import urlsplit
 from experiments.olx_offline.html_snapshot import parse_search_snapshot, SearchParser,clean_url
 
@@ -48,6 +49,30 @@ def parse_page(data, *, fetched_at, truncated=False):
                 c[field]=None
                 c.setdefault('field_conflicts',[]).append(field)
     result['summary']['attribute_locale_adapter']='explicit_uk_ru_spans_v1'
+    if not result['summary']['download_truncated']:
+        # Negative age evidence only. A recent value never authorizes delivery.
+        scripts=[n for root in parser.roots for n in root.nodes()
+                 if n.tag=='script' and n.closed and n.attrs.get('id')=='olx-init-config']
+        try:
+            if len(scripts)!=1:raise ValueError()
+            script=''.join(x for x in scripts[0].children if isinstance(x,str))
+            matches=list(ASSIGNMENT.finditer(script))
+            if len(matches)!=1:raise ValueError()
+            state,_=json.JSONDecoder().raw_decode(script[matches[0].end():])
+            if isinstance(state,str):state=json.loads(state)
+            ads=state['listing']['listing']['ads']
+            if not isinstance(ads,list):raise ValueError()
+            grouped={}
+            for ad in ads:
+                if isinstance(ad,dict) and type(ad.get('id')) in (int,str):grouped.setdefault(str(ad['id']),[]).append(ad)
+            for id,c in by_id.items():
+                candidates=grouped.get(id,[])
+                if len(candidates)!=1 or not same_detail_url(c['url'],candidates[0].get('url')):continue
+                created=_instant(candidates[0].get('createdTime'))
+                if type(created) is int and 0<created<=fetched_at:
+                    c['source_created_at']=created;c['creation_identity_verified']=True
+                    c['creation_basis']='public_listing_state_matching_visible_card'
+        except (ValueError,TypeError,KeyError,AttributeError,RecursionError):pass
     return result
 
 

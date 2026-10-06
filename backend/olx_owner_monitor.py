@@ -27,6 +27,7 @@ SEARCH_CAP=4*1024*1024
 DETAIL_CAP=2*1024*1024
 OLX_DAY=600
 OLX_HOUR=40
+OLX_DISCOVERY_HOUR=20
 BYTE_DAY=2*1024**3
 RIA_HOUR=20
 FX_DAY=12
@@ -84,7 +85,7 @@ def live_plan(engine,settings,token):
     return {'token':token,'until':time.time()+LEASE,'search_id':rows[0]['id'],'fingerprint':rows[0]['fingerprint']}
 
 
-def reserve(engine,settings,token,kind,cap,url):
+def reserve(engine,settings,token,kind,cap,url,*,discovery=False):
     plan=live_plan(engine,settings,token)
     if not access(engine,settings,plan):raise ValueError('access_stopped')
     now=time.time();local=datetime.fromtimestamp(now,feed.KYIV);day=local.strftime('%Y-%m-%d');hour=local.strftime('%Y-%m-%dT%H%z')
@@ -93,12 +94,14 @@ def reserve(engine,settings,token,kind,cap,url):
         if not row or row.status!='active' or row.result['lease']!=token or row.result['lease_until']<=now:raise ValueError('lease_expired')
         d=copy.deepcopy(row.result);b=d['budget']
         if b.get('day')!=day:b={'day':day,'olx':0,'ria':0,'fx':0,'bytes':0}
-        if b.get('hour')!=hour:b.update(hour=hour,olx_hour=0,ria_hour=0)
+        if b.get('hour')!=hour:b.update(hour=hour,olx_hour=0,ria_hour=0,olx_discovery_hour=0)
         if kind=='olx' and (b['olx']>=OLX_DAY or b['olx_hour']>=OLX_HOUR or b['bytes']+cap>BYTE_DAY):raise ValueError('olx_budget_exhausted')
+        if kind=='olx' and discovery and b.get('olx_discovery_hour',0)>=OLX_DISCOVERY_HOUR:raise ValueError('olx_discovery_budget_exhausted')
         if kind=='ria' and (b['ria']>=allowance() or b['ria_hour']>=RIA_HOUR):raise ValueError('ria_budget_not_authorized_or_exhausted')
         if kind=='fx' and b['fx']>=FX_DAY:raise ValueError('fx_budget_exhausted')
         b[kind]+=1;b['bytes']+=cap
         if kind in ('olx','ria'):b[kind+'_hour']+=1
+        if kind=='olx' and discovery:b['olx_discovery_hour']=b.get('olx_discovery_hour',0)+1
         d['budget']=b;d[{'olx':'source_requests','ria':'ria_requests','fx':'fx_requests'}[kind]]+=1
         d['last_reservation']={'kind':kind,'url_or_path':url,'cap':cap,'at':now,'status':'reserved'}
         row.result=d;row.requests+=1;db.commit()
@@ -120,8 +123,8 @@ def record_io(engine,token,code,size):
                 'last_reservation':{**row.result['last_reservation'],'status':'http_'+str(code),'bytes':size}};db.commit()
 
 
-def fetch(engine,settings,token,url,cap,kind='olx',transport=public_fetch):
-    plan=reserve(engine,settings,token,kind,cap,url)
+def fetch(engine,settings,token,url,cap,kind='olx',transport=public_fetch,*,discovery=False):
+    plan=reserve(engine,settings,token,kind,cap,url,discovery=discovery)
     if not access(engine,settings,plan):raise ValueError('access_stopped')
     code,raw,location=transport(url,cap);record_io(engine,token,code,len(raw))
     if code in (401,403,429):raise ValueError(('source_hold_' if kind=='olx' else 'fx_unavailable_')+str(code))
@@ -144,15 +147,29 @@ def routes(rows):
     return [ROOT+r+'?'+urlencode({'currency':'UAH','search[order]':'created_at:desc'}) for r in sorted(selected)]
 
 
-def source_read(engine,settings,token,url,cap,transport):
-    code,raw,location=fetch(engine,settings,token,url,cap,transport=transport)
+def canonical_redirect(url,target):
+    a=urlsplit(url);b=urlsplit(target)
+    return (b.scheme=='https' and b.netloc=='www.olx.ua' and not b.fragment and
+            a.path.replace('/uk/','/').rstrip('/')==b.path.replace('/uk/','/').rstrip('/') and parse_qs(a.query)==parse_qs(b.query))
+
+
+def source_read(engine,settings,token,url,cap,transport,*,discovery=False):
+    original=url
+    if discovery:
+        with Session(engine) as db:cached=db.get(SourceProbe,STATE).result.get('canonical_search_urls',{}).get(url)
+        if cached and canonical_redirect(url,cached):url=cached
+    code,raw,location=fetch(engine,settings,token,url,cap,transport=transport,discovery=discovery)
     if code in (301,302,307,308) and location:
-        target=urljoin(url,location);a=urlsplit(url);b=urlsplit(target)
-        same=(b.scheme=='https' and b.netloc=='www.olx.ua' and not b.fragment and
-              a.path.replace('/uk/','/').rstrip('/')==b.path.replace('/uk/','/').rstrip('/') and parse_qs(a.query)==parse_qs(b.query))
-        if not same:raise ValueError('source_redirect_unreviewed')
-        code,raw,_=fetch(engine,settings,token,target,cap,transport=transport)
+        target=urljoin(url,location)
+        if not canonical_redirect(url,target):raise ValueError('source_redirect_unreviewed')
+        url=target
+        code,raw,_=fetch(engine,settings,token,url,cap,transport=transport,discovery=discovery)
     if code!=200:raise ValueError('source_http_'+str(code))
+    if discovery and original!=url:
+        with Session(engine) as db:
+            row=db.get(SourceProbe,STATE,with_for_update=True)
+            if row.result['lease']!=token or row.status!='active':raise ValueError('lease_expired')
+            row.result={**row.result,'canonical_search_urls':{**row.result.get('canonical_search_urls',{}),original:url}};db.commit()
     return raw
 
 
@@ -164,7 +181,7 @@ def discover(engine,settings,token,transport=public_fetch):
         for page_number in range(1,4):
             if page_url in seen_pages:raise ValueError('pagination_cycle')
             seen_pages.add(page_url)
-            raw=source_read(engine,settings,token,page_url,SEARCH_CAP,transport)
+            raw=source_read(engine,settings,token,page_url,SEARCH_CAP,transport,discovery=True)
             parsed=parse_page(raw,fetched_at=int(time.time()),truncated=False);s=parsed['summary']
             if s['download_truncated'] or (s.get('observed_sort') or {}).get('value')!='created_at:desc':raise ValueError('source_page_not_verified')
             current=[c for c in parsed['listings'] if c.get('observed_search_reason')=='organic']
@@ -187,10 +204,21 @@ def discover(engine,settings,token,transport=public_fetch):
             if row.result['lease']!=token or row.status!='active':raise ValueError('lease_expired')
             for c in cards:
                 key='olx-monitor-ad-'+c['id']
-                if db.get(SourceProbe,key):continue
+                item=db.get(SourceProbe,key)
+                created=c.get('source_created_at') if c.get('creation_identity_verified') is True else None
+                valid=type(created) is int and 0<created<=time.time()
+                preexisting=valid and created<row.result['started_at']
+                if item:
+                    if item.status=='pending' and valid:
+                        item.result={**item.result,'source_created_at':created,'creation_basis':'public_listing_state_matching_visible_card'}
+                        if preexisting:
+                            item.status='excluded';item.result={**item.result,'reason':'source_created_before_monitor_start'}
+                    continue
                 baseline=old is None
-                db.add(SourceProbe(id=key,status='baseline' if baseline else 'pending',requests=0,checked_at=time.time(),
+                db.add(SourceProbe(id=key,status='baseline' if baseline else 'excluded' if preexisting else 'pending',requests=0,checked_at=time.time(),
                     result={'source':'olx','id':c['id'],'url':c['url'],'first_seen':int(time.time()),
+                            **({'source_created_at':created,'creation_basis':'public_listing_state_matching_visible_card'} if valid else {}),
+                            **({'reason':'source_created_before_monitor_start'} if preexisting and not baseline else {}),
                             'snapshot_price':c.get('price'),'snapshot_currency':c.get('currency'),'event':'first_seen',
                             'publication_verified':False}))
             sources=copy.deepcopy(row.result['sources']);sources[url]={'ids':ids,'checked_at':time.time(),
@@ -265,7 +293,7 @@ def process(engine,settings,token,public=public_fetch,provider=probe.transport,s
     if allowance()==0:raise ValueError('ria_budget_not_authorized_or_exhausted')
     # One active worker. Pending candidates persist across cycles/restarts.
     with Session(engine) as db:
-        queue=[(r.id,copy.deepcopy(r.result)) for r in db.scalars(select(SourceProbe).where(SourceProbe.id.like('olx-monitor-ad-%'),SourceProbe.status=='pending').order_by(SourceProbe.checked_at).limit(4))]
+        queue=[(r.id,copy.deepcopy(r.result)) for r in db.scalars(select(SourceProbe).where(SourceProbe.id.like('olx-monitor-ad-%'),SourceProbe.status=='pending').order_by(SourceProbe.result['source_created_at'].as_float().desc().nullslast(),SourceProbe.checked_at).limit(4))]
         boundary=db.get(SourceProbe,STATE).result['started_at']
     for key,item in queue:
         if time.time()-item['first_seen']>86400:
@@ -317,8 +345,10 @@ def tick(engine,settings,public=public_fetch,provider=probe.transport,sender=Non
     error=None
     try:
         discover(engine,settings,token,public)
-        process(engine,settings,token,public,provider,sender)
     except Exception as e:error=str(e) if isinstance(e,ValueError) else type(e).__name__
+    if not error or not error.startswith(('source_hold','access_','lease_')):
+        try:process(engine,settings,token,public,provider,sender)
+        except Exception as e:error=str(e) if isinstance(e,ValueError) else type(e).__name__
     with Session(engine) as db:
         row=db.get(SourceProbe,STATE,with_for_update=True)
         if row and row.result['lease']==token:
