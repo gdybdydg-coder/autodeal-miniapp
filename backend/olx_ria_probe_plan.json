@@ -22,7 +22,7 @@
     "933340614"
   ],
   "controls_are_not_references": true,
-  "purpose": "Explicit 2026-10-06 owner authorization. One current target, one AI query from remaining30/6 budget, condition not exclusion, average frozen before fresh price. No local-peer readiness override. Arm separately after deployment verification.",
+  "purpose": "Correct owner-authorized OLX formula to provider lower bound minus5%; completed phase6 stays completed; no rearm or replay.",
   "phase": 6,
   "dictionary_evidence": {
     "brands": {
@@ -277,5 +277,5 @@
     "http302_receipt_log": "403c832e-3255-41b4-acfa-b1b94d4878e2"
   },
   "focused_authorized_at": "2026-10-06T10:32:54+03:00",
-  "focused_method": "olx-ria-provider-average-v1"
+  "focused_method": "olx-ria-provider-lower-bound-minus5-v2"
 }

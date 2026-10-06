@@ -16,7 +16,7 @@ from .models import SourceProbe, User
 from .olx_market import ria_provider as provider
 from .olx_market.observations import asking_price_reasons
 
-VERSION='olx-ria-provider-average-v1'
+VERSION='olx-ria-provider-lower-bound-minus5-v2'
 ARM='OLX_FOCUSED_OWNER_SEND_ENABLED'
 
 
@@ -66,15 +66,18 @@ def assess(data,request,car,search,now):
     if radius>=1:raise ValueError('provider_range_invalid')
     quantity=b.get('quantityAdv')
     if type(quantity) is not int or quantity<8:raise ValueError('provider_sample_insufficient')
-    discount=provider.discount_percent(average,car['price'])
+    lower=average*(1-radius)
+    reference=lower*Decimal('0.95')
+    discount=provider.discount_percent(reference,car['price'])
     ids=sorted({str(p['id']) for p in data.get('similarCars',[]) if isinstance(p,dict) and type(p.get('id')) is int and p['id']>0})
-    return {'version':VERSION,'reference_usd':str(average),
+    return {'version':VERSION,'reference_usd':str(reference),'provider_average_usd':str(average),
+        'provider_lower_bound_usd':str(lower),'pricing_method':'provider_lower_bound_minus_5_percent',
         'range_usd':{'low':str(average*(1-radius)),'high':str(average*(1+radius))},
         'discount_percent':str(discount),'asking_usd':str(car['price']),
         'provider_quantity':quantity,'returned_ad_ids':ids,
         'independently_reviewed_compatible_analogs':None,
         'omitted_criteria':request['omitted_criteria'],'request':request,
-        'observed_at':now,'asking_price_not_sale_price':True,'extra_margin_percent':0,
+        'observed_at':now,'asking_price_not_sale_price':True,'extra_margin_percent':5,
         'threshold':search['threshold'],'eligible_deal':discount>=Decimal(str(search['threshold']))}
 
 

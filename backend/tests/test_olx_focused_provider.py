@@ -26,7 +26,7 @@ def test_condition_never_rejects_and_unknown_generation_not_invented(condition):
     c=car(1000);c['research_condition']=condition;r=focus.prepare(c,mapping(c,1000),1000)
     assert 'generationId' not in r['body']['params'] and 'damage' not in r['body']['params']
     a=focus.assess(quote(),r,c,search(),1000)
-    assert a['eligible_deal'] and a['reference_usd']=='7386' and a['extra_margin_percent']==0
+    assert not a['eligible_deal'] and a['reference_usd']=='6665.8650' and a['extra_margin_percent']==5
     assert a['independently_reviewed_compatible_analogs'] is None
     assert 'PRIVATE' not in json.dumps(a)
 
@@ -64,7 +64,7 @@ def test_phase6_explicit_arm_keeps_spent_budget_and_never_replays(live,monkeypat
     monkeypatch.setattr(probe,'enrich',lambda raw,p:p)
     receipts=[];calls=[]
     monkeypatch.setattr(focus,'send',lambda *a:receipts.append(a[3]['id']) or {'source_id':a[3]['id'],'method':'sendMessage','status':'accepted'})
-    result=probe.run_once(live.engine,live.settings,live.plan,fetch=lambda *a:(calls.append(a) or (200,{'statisticData':[{'type':'avgPrice','price':{'USD':8000},'avgValueRange':.05,'quantityAdv':20}]},100)),olx_fetch=lambda u:(200,b'fake',False))
+    result=probe.run_once(live.engine,live.settings,live.plan,fetch=lambda *a:(calls.append(a) or (200,{'statisticData':[{'type':'avgPrice','price':{'USD':9000},'avgValueRange':.05,'quantityAdv':20}]},100)),olx_fetch=lambda u:(200,b'fake',False))
     assert result['ria_calls']==24 and result['ai_calls']==4 and result['olx_gets']==6
     assert len(calls)==len(receipts)==1
     assert probe.run_once(live.engine,live.settings,live.plan,fetch=lambda *a:pytest.fail('restart I/O')) is None
@@ -74,7 +74,7 @@ def test_phase6_explicit_arm_keeps_spent_budget_and_never_replays(live,monkeypat
 @pytest.mark.parametrize('mutation',['off','other_owner','stop_after_getChat','timeout','accepted'])
 def test_transport_owner_current_stop_unknown_and_dedup(live,monkeypatch,mutation):
     phase6(live,monkeypatch)
-    c=car(live.clock[0]);r=focus.prepare(c,mapping(c,live.clock[0]),live.clock[0]);a=focus.assess(quote(),r,c,search(),live.clock[0]);calls=[]
+    c=car(live.clock[0]);r=focus.prepare(c,mapping(c,live.clock[0]),live.clock[0]);a=focus.assess({'statisticData':[{'type':'avgPrice','price':{'USD':9000},'avgValueRange':.05,'quantityAdv':20}]},r,c,search(),live.clock[0]);calls=[]
     if mutation=='off':monkeypatch.setenv(focus.ARM,'false')
     elif mutation=='other_owner':live.settings=replace(live.settings,admin_telegram_id=100)
     def sender(token,method,payload,timeout):
@@ -94,7 +94,7 @@ def test_transport_owner_current_stop_unknown_and_dedup(live,monkeypatch,mutatio
 
 
 def test_photo_timeout_has_no_text_fallback(live,monkeypatch):
-    phase6(live,monkeypatch);c=car(live.clock[0]);c['photos']=['https://images.example/car.jpg'];r=focus.prepare(c,mapping(c,live.clock[0]),live.clock[0]);a=focus.assess(quote(),r,c,search(),live.clock[0]);calls=[]
+    phase6(live,monkeypatch);c=car(live.clock[0]);c['photos']=['https://images.example/car.jpg'];r=focus.prepare(c,mapping(c,live.clock[0]),live.clock[0]);a=focus.assess({'statisticData':[{'type':'avgPrice','price':{'USD':9000},'avgValueRange':.05,'quantityAdv':20}]},r,c,search(),live.clock[0]);calls=[]
     def sender(token,method,payload,timeout):
         calls.append(method)
         if method=='getChat':return {'ok':True,'result':{'id':900,'type':'private'}}
@@ -107,7 +107,7 @@ def test_photo_timeout_has_no_text_fallback(live,monkeypatch):
 @pytest.mark.parametrize('mutation',['payment','olx_stop','arm'])
 def test_final_payment_stop_and_disable_recheck(live,monkeypatch,mutation):
     from backend.manual_payment_models import PaymentRequest
-    phase6(live,monkeypatch);c=car(live.clock[0]);r=focus.prepare(c,mapping(c,live.clock[0]),live.clock[0]);a=focus.assess(quote(),r,c,search(),live.clock[0]);calls=[]
+    phase6(live,monkeypatch);c=car(live.clock[0]);r=focus.prepare(c,mapping(c,live.clock[0]),live.clock[0]);a=focus.assess({'statisticData':[{'type':'avgPrice','price':{'USD':9000},'avgValueRange':.05,'quantityAdv':20}]},r,c,search(),live.clock[0]);calls=[]
     def sender(token,method,payload,timeout):
         calls.append(method)
         assert method=='getChat'
@@ -119,3 +119,20 @@ def test_final_payment_stop_and_disable_recheck(live,monkeypatch,mutation):
         return {'ok':True,'result':{'id':900,'type':'private'}}
     out=focus.send(live.engine,live.settings,live.plan,c,a,probe.allowed,sender)
     assert calls==['getChat'] and out['status']=='not_attempted'
+
+
+def test_owner_corrected_lower_bound_then_five_percent_formula():
+    c=car(1000);r=focus.prepare(c,mapping(c,1000),1000)
+    q=quote();q['statisticData'][0].update(price={'USD':7386.315789473684},avgValueRange=.05)
+    a=focus.assess(q,r,c,search(),1000)
+    assert abs(float(a['reference_usd'])-6666.15)<.000001
+    assert abs(float(a['discount_percent'])-2.492443164345)<.00001
+    assert not a['eligible_deal']
+
+
+def test_actual_sent_provider_quote_is_not_a_deal_under_correct_formula():
+    c=car(1000);r=focus.prepare(c,mapping(c,1000),1000)
+    q=quote();q['statisticData'][0]['price']['USD']=7431
+    a=focus.assess(q,r,c,search(),1000)
+    assert a['reference_usd']=='6706.4775'
+    assert not a['eligible_deal']
