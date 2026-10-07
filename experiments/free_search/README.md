@@ -1,5 +1,48 @@
 # Isolated free-search experiment
 
+## 2026-10-07 evidence continuation
+
+`evidence_audit.py` separates unknown publication time, local public collection,
+and passive Render paid-production delivery timings. It reports each queue stage
+without substituting polling intervals or first detection for publication time.
+It rejects noncausal/nonfinite timestamps, refuses a collector's own output as
+an independent control population, and retains absent control IDs explicitly.
+Even independent sample overlap is never represented as whole-market recall.
+
+`public_only_valuation` accepts only a fresh-public-probe contract and passes
+an explicit allowlist of public detail fields to the prior research estimator.
+It cannot import paid cache labels. A marker alone is not external attestation;
+review the acquisition code and preserve the receipts. Unknown valuations do
+not create messages. The asking-price estimator remains uncalibrated and is
+not a replacement for the production lower-bound-minus-5-percent formula.
+
+The bounded probe now rejects production credential configuration before I/O,
+records monotonic HTTP durations, wall-clock receive/parse timestamps, response
+body hashes and available cache headers. It still retains no raw seller data,
+follows no redirects and stops on denial; at most five requests per invocation.
+An explicit alternative may inspect page 3 without detail requests:
+
+```python
+from experiments.free_search.bounded_probe import run, ALLOWED_FEEDS
+result = run(feed_urls=(ALLOWED_FEEDS[2],), detail_limit=0)
+```
+
+This is not an automatic pagination/cadence expansion or a cumulative budget
+manager. The caller must bound the whole session. Private live measurements
+stay outside this public repository. Run the complete standard-library suite:
+
+```sh
+python -m unittest discover -s experiments/free_search/tests -q
+```
+
+Continuation priorities: independent fixed-window control sampling; investigation
+of missing/reordered/expired page items; complete cold-start public peer baskets
+with held-out targets; source appearance bounds across repeated observations;
+only then a separately approved isolated Render run. Do not merge the whole old
+WIP branch into current main: it carries historical backend changes. Any future
+integration must preserve the then-current paid access, /stop, user filters,
+schedule, valuation rule, dedupe and disabled administrative automobile copies.
+
 This branch is a code-only review candidate. Production diagnostic exports,
 listing snapshots, private audit reports and measured live evidence are not
 included. Nothing imports this experiment into the production backend.

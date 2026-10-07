@@ -8,6 +8,20 @@ from experiments.free_search.replay_demo import card, detail
 
 
 class ProbeTests(TestCase):
+    def test_credentials_rejected_before_transport(self):
+        with patch.dict('os.environ', {'RIA_API_KEY':'synthetic'}), patch('experiments.free_search.bounded_probe.build_opener') as opener:
+            with self.assertRaisesRegex(ValueError, 'production_configuration_present'):
+                run()
+            opener.assert_not_called()
+
+    def test_alternative_is_explicit_and_bounded_before_io(self):
+        from experiments.free_search.bounded_probe import ALLOWED_FEEDS
+        with patch('experiments.free_search.bounded_probe.build_opener') as opener:
+            for feeds, limit in ((ALLOWED_FEEDS,2), (('https://evil.test',),0),
+                                 ((ALLOWED_FEEDS[0],ALLOWED_FEEDS[0]),0), (ALLOWED_FEEDS,True)):
+                with self.subTest(feeds=feeds,limit=limit), self.assertRaises(ValueError):
+                    run(feed_urls=feeds,detail_limit=limit)
+            opener.assert_not_called()
     def test_cannot_reach_paid_api_telegram_or_redirect(self):
         for url in ('https://developers.ria.com/auto/search', 'https://api.telegram.org/bot/sendMessage',
                     'https://auto.ria.com/api/test', 'https://auto.ria.com@evil.test/uk/last/hour/',
@@ -36,6 +50,14 @@ class ProbeTests(TestCase):
         self.assertEqual(len(requests), 5)
         self.assertTrue(all(allowed_url(r.full_url) and r.get_method() == 'GET' and not r.has_header('Cookie') for r in requests))
         self.assertNotIn('private-phone', json.dumps(result, default=str))
+        self.assertEqual(result['acquisition_basis'], 'fresh_public_html_no_paid_cache')
+        self.assertIsNone(result['publication_latency_seconds'])
+        for item in result['requests']:
+            self.assertEqual(len(item['body_sha256']),64)
+            self.assertGreaterEqual(item['completed_at'],item['started_at'])
+            self.assertGreaterEqual(item['seconds'],0)
+        for observation in result['details']:
+            self.assertGreaterEqual(observation['parsed_at'],observation['body_received_at'])
 
     def test_denial_stops_without_retry(self):
         class Opener:
