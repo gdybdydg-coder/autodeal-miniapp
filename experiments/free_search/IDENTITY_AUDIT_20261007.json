@@ -1,0 +1,192 @@
+{
+  "records": [
+    {
+      "listing_id": "40363054",
+      "status": "single_source_assertion",
+      "distinct_full_values": 1,
+      "incomplete_fields": 0
+    },
+    {
+      "listing_id": "40528545",
+      "status": "single_source_assertion",
+      "distinct_full_values": 1,
+      "incomplete_fields": 0
+    },
+    {
+      "listing_id": "39869087",
+      "status": "single_source_assertion",
+      "distinct_full_values": 1,
+      "incomplete_fields": 0
+    },
+    {
+      "listing_id": "38629439",
+      "status": "single_source_assertion",
+      "distinct_full_values": 1,
+      "incomplete_fields": 0
+    },
+    {
+      "listing_id": "39510018",
+      "status": "single_source_assertion",
+      "distinct_full_values": 1,
+      "incomplete_fields": 0
+    },
+    {
+      "listing_id": "40462277",
+      "status": "single_source_assertion",
+      "distinct_full_values": 1,
+      "incomplete_fields": 0
+    },
+    {
+      "listing_id": "37174656",
+      "status": "single_source_assertion",
+      "distinct_full_values": 1,
+      "incomplete_fields": 0
+    },
+    {
+      "listing_id": "40450137",
+      "status": "unavailable",
+      "distinct_full_values": 0,
+      "incomplete_fields": 0
+    },
+    {
+      "listing_id": "40178401",
+      "status": "single_source_assertion",
+      "distinct_full_values": 1,
+      "incomplete_fields": 0
+    },
+    {
+      "listing_id": "40442210",
+      "status": "single_source_assertion",
+      "distinct_full_values": 1,
+      "incomplete_fields": 0
+    },
+    {
+      "listing_id": "40439743",
+      "status": "single_source_assertion",
+      "distinct_full_values": 1,
+      "incomplete_fields": 0
+    },
+    {
+      "listing_id": "40528281",
+      "status": "single_source_assertion",
+      "distinct_full_values": 1,
+      "incomplete_fields": 0
+    },
+    {
+      "listing_id": "39257075",
+      "status": "single_source_assertion",
+      "distinct_full_values": 1,
+      "incomplete_fields": 0
+    },
+    {
+      "listing_id": "38696413",
+      "status": "single_source_assertion",
+      "distinct_full_values": 1,
+      "incomplete_fields": 0
+    },
+    {
+      "file": "outback-peers/body-5.txt",
+      "status": "parse_error",
+      "reason": "primary_path_unbound"
+    },
+    {
+      "listing_id": "40373452",
+      "status": "single_source_assertion",
+      "distinct_full_values": 1,
+      "incomplete_fields": 0
+    },
+    {
+      "listing_id": "40496142",
+      "status": "single_source_assertion",
+      "distinct_full_values": 1,
+      "incomplete_fields": 0
+    },
+    {
+      "listing_id": "39672718",
+      "status": "single_source_assertion",
+      "distinct_full_values": 1,
+      "incomplete_fields": 0
+    },
+    {
+      "listing_id": "40332059",
+      "status": "single_source_assertion",
+      "distinct_full_values": 1,
+      "incomplete_fields": 0
+    },
+    {
+      "listing_id": "39952517",
+      "status": "single_source_assertion",
+      "distinct_full_values": 1,
+      "incomplete_fields": 0
+    },
+    {
+      "listing_id": "40407713",
+      "status": "single_source_assertion",
+      "distinct_full_values": 1,
+      "incomplete_fields": 0
+    },
+    {
+      "listing_id": "40302489",
+      "status": "single_source_assertion",
+      "distinct_full_values": 1,
+      "incomplete_fields": 0
+    },
+    {
+      "listing_id": "36673912",
+      "status": "single_source_assertion",
+      "distinct_full_values": 1,
+      "incomplete_fields": 0
+    },
+    {
+      "listing_id": "39749271",
+      "status": "single_source_assertion",
+      "distinct_full_values": 1,
+      "incomplete_fields": 0
+    },
+    {
+      "listing_id": "36295093",
+      "status": "single_source_assertion",
+      "distinct_full_values": 1,
+      "incomplete_fields": 0
+    },
+    {
+      "listing_id": "37182546",
+      "status": "single_source_assertion",
+      "distinct_full_values": 1,
+      "incomplete_fields": 0
+    },
+    {
+      "listing_id": "40419569",
+      "status": "unavailable",
+      "distinct_full_values": 0,
+      "incomplete_fields": 0
+    },
+    {
+      "listing_id": "37739402",
+      "status": "single_source_assertion",
+      "distinct_full_values": 1,
+      "incomplete_fields": 0
+    },
+    {
+      "listing_id": "38741599",
+      "status": "single_source_assertion",
+      "distinct_full_values": 1,
+      "incomplete_fields": 0
+    },
+    {
+      "listing_id": "40534272",
+      "status": "unavailable",
+      "distinct_full_values": 0,
+      "incomplete_fields": 0
+    }
+  ],
+  "counts": {
+    "single_source_assertion": 26,
+    "unavailable": 3,
+    "parse_error": 1
+  },
+  "duplicate_listing_groups": [],
+  "subject_available": false,
+  "physical_identity_verified": false,
+  "used_in_valuation": false
+}

@@ -1,0 +1,41 @@
+AutoDeal: independent validation protocol, frozen before a future collection
+Status: NOT EXECUTED. No deployment or polling authorization.
+
+1. Define three actual enabled/paid client filter segments using a permitted
+   anonymized read-only export. Current DB access is blocked by its external
+   allowlist; do not change it. Public exploratory segments must be labelled
+   exploratory and cannot substitute for this prerequisite.
+2. Freeze source, query, ordering, observation window, inclusion rules, target
+   count (at least 50 subjects), finite request/body budgets and stopping rules
+   BEFORE retrieving subject detail prices or computing estimates.
+3. Discovery controls must come from a separately observed public surface or
+   existing authorized delivery records, independently of collector output.
+   Record selection bias and overlapping upstream source. Paid records may
+   identify controls but their prices/appraisals must not enter the free model.
+4. Retain all frozen subjects in denominator, including fetch errors, removed
+   ads, unknown valuations, currency conflicts and feature gaps. No replacing
+   failures with convenient subjects. Any extension is a new documented batch.
+5. Freeze disjoint peer pool and holdout subjects by listing ID and, when
+   evidenced, vehicle identity. Missing identity means leakage remains unknown.
+   No peer from a holdout vehicle may calibrate or evaluate that vehicle.
+6. Freeze model version, thresholds and comparability policy. The thresholds
+   5/10/15% in sensitivity diagnostics are NOT current client filter settings.
+   Do not tune policy on holdout results. If revised, obtain a new holdout.
+7. Separate endpoints: (a) asking-price comparability, blinded manual feature
+   review and uncertainty; (b) actual sale/market-price accuracy, only if an
+   independent trustworthy target exists. A target's advertised price is not
+   ground truth market value. Manual agreement is not proof of sale price.
+8. Report discovery overlap, missing controls, unknown rate, technical failures,
+   per-segment coverage, duplicate uncertainty and deletion sensitivity. Report
+   error/calibration only against an explicitly described independent target.
+9. Publication time may be null. Keep source observation window, collector
+   detection, details completion, estimate completion, queue admission and
+   queue wait separate. Local timings cannot establish Render performance;
+   Telegram delivery remains unmeasured until an authorized real observation.
+10. At this stage use offline message rendering only; preserve production access,
+    /stop, filters, dedup, formula, schedule, payments and no admin copies.
+    Any shadow deployment or production transition needs new explicit approval.
+
+Next runnable step: independent public control/holdout collection with frozen
+finite budget; current-client segment validation and true market-price quality
+remain blocked/unproven. This document schedules no background work.

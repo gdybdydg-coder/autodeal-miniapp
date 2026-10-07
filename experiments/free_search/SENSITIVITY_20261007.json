@@ -1,0 +1,1680 @@
+{
+  "baseline": {
+    "status": "estimated",
+    "classification": "plausible_undervalued",
+    "reason": "experimental_peer_asking_estimate",
+    "currency": "USD",
+    "reference_price": "16900.00",
+    "reference_price_usd": "16900.00",
+    "discount_percent": "11.24260355029585798816568047",
+    "sample_count": 8,
+    "as_of": 1791399059.0305166,
+    "lower_asking_price": "16900.00",
+    "median_asking_price": "18249.0",
+    "upper_asking_price": "18750.00",
+    "peer_age_min_seconds": 0.0,
+    "peer_age_max_seconds": 433.3149902820587,
+    "input_count": 27,
+    "excluded": {
+      "engine_mismatch": 1,
+      "fuel_mismatch": 8,
+      "mileage_mismatch": 4,
+      "transmission_mismatch": 6
+    },
+    "notices": [
+      "asking_prices_not_sales",
+      "mixed_or_unknown_peer_regions",
+      "quality_not_live_validated"
+    ],
+    "missing_fields": [],
+    "region_sample_count": 0,
+    "provenance": "experimental_peer_asking_v1",
+    "production_approved": false,
+    "confidence": "uncalibrated",
+    "diagnostic_thresholds": {
+      "5": true,
+      "10": true,
+      "15": false
+    }
+  },
+  "leave_one_listing_out": [
+    {
+      "removed_id": "40363054",
+      "outcome": {
+        "status": "estimated",
+        "classification": "plausible_undervalued",
+        "reason": "experimental_peer_asking_estimate",
+        "currency": "USD",
+        "reference_price": "16900.00",
+        "reference_price_usd": "16900.00",
+        "discount_percent": "11.24260355029585798816568047",
+        "sample_count": 8,
+        "as_of": 1791399059.0305166,
+        "lower_asking_price": "16900.00",
+        "median_asking_price": "18249.0",
+        "upper_asking_price": "18750.00",
+        "peer_age_min_seconds": 0.0,
+        "peer_age_max_seconds": 433.3149902820587,
+        "input_count": 26,
+        "excluded": {
+          "engine_mismatch": 1,
+          "fuel_mismatch": 8,
+          "mileage_mismatch": 4,
+          "transmission_mismatch": 5
+        },
+        "notices": [
+          "asking_prices_not_sales",
+          "mixed_or_unknown_peer_regions",
+          "quality_not_live_validated"
+        ],
+        "missing_fields": [],
+        "region_sample_count": 0,
+        "provenance": "experimental_peer_asking_v1",
+        "production_approved": false,
+        "confidence": "uncalibrated",
+        "diagnostic_thresholds": {
+          "5": true,
+          "10": true,
+          "15": false
+        }
+      }
+    },
+    {
+      "removed_id": "40528545",
+      "outcome": {
+        "status": "estimated",
+        "classification": "plausible_undervalued",
+        "reason": "experimental_peer_asking_estimate",
+        "currency": "USD",
+        "reference_price": "16900.00",
+        "reference_price_usd": "16900.00",
+        "discount_percent": "11.24260355029585798816568047",
+        "sample_count": 8,
+        "as_of": 1791399059.0305166,
+        "lower_asking_price": "16900.00",
+        "median_asking_price": "18249.0",
+        "upper_asking_price": "18750.00",
+        "peer_age_min_seconds": 0.0,
+        "peer_age_max_seconds": 433.3149902820587,
+        "input_count": 26,
+        "excluded": {
+          "engine_mismatch": 1,
+          "fuel_mismatch": 8,
+          "mileage_mismatch": 3,
+          "transmission_mismatch": 6
+        },
+        "notices": [
+          "asking_prices_not_sales",
+          "mixed_or_unknown_peer_regions",
+          "quality_not_live_validated"
+        ],
+        "missing_fields": [],
+        "region_sample_count": 0,
+        "provenance": "experimental_peer_asking_v1",
+        "production_approved": false,
+        "confidence": "uncalibrated",
+        "diagnostic_thresholds": {
+          "5": true,
+          "10": true,
+          "15": false
+        }
+      }
+    },
+    {
+      "removed_id": "40528281",
+      "outcome": {
+        "status": "estimated",
+        "classification": "plausible_undervalued",
+        "reason": "experimental_peer_asking_estimate",
+        "currency": "USD",
+        "reference_price": "16900.00",
+        "reference_price_usd": "16900.00",
+        "discount_percent": "11.24260355029585798816568047",
+        "sample_count": 8,
+        "as_of": 1791399059.0305166,
+        "lower_asking_price": "16900.00",
+        "median_asking_price": "18249.0",
+        "upper_asking_price": "18750.00",
+        "peer_age_min_seconds": 0.0,
+        "peer_age_max_seconds": 433.3149902820587,
+        "input_count": 26,
+        "excluded": {
+          "engine_mismatch": 1,
+          "fuel_mismatch": 7,
+          "mileage_mismatch": 4,
+          "transmission_mismatch": 6
+        },
+        "notices": [
+          "asking_prices_not_sales",
+          "mixed_or_unknown_peer_regions",
+          "quality_not_live_validated"
+        ],
+        "missing_fields": [],
+        "region_sample_count": 0,
+        "provenance": "experimental_peer_asking_v1",
+        "production_approved": false,
+        "confidence": "uncalibrated",
+        "diagnostic_thresholds": {
+          "5": true,
+          "10": true,
+          "15": false
+        }
+      }
+    },
+    {
+      "removed_id": "39257075",
+      "outcome": {
+        "status": "estimated",
+        "classification": "plausible_undervalued",
+        "reason": "experimental_peer_asking_estimate",
+        "currency": "USD",
+        "reference_price": "16900.00",
+        "reference_price_usd": "16900.00",
+        "discount_percent": "11.24260355029585798816568047",
+        "sample_count": 8,
+        "as_of": 1791399059.0305166,
+        "lower_asking_price": "16900.00",
+        "median_asking_price": "18249.0",
+        "upper_asking_price": "18750.00",
+        "peer_age_min_seconds": 0.0,
+        "peer_age_max_seconds": 433.3149902820587,
+        "input_count": 26,
+        "excluded": {
+          "engine_mismatch": 1,
+          "fuel_mismatch": 7,
+          "mileage_mismatch": 4,
+          "transmission_mismatch": 6
+        },
+        "notices": [
+          "asking_prices_not_sales",
+          "mixed_or_unknown_peer_regions",
+          "quality_not_live_validated"
+        ],
+        "missing_fields": [],
+        "region_sample_count": 0,
+        "provenance": "experimental_peer_asking_v1",
+        "production_approved": false,
+        "confidence": "uncalibrated",
+        "diagnostic_thresholds": {
+          "5": true,
+          "10": true,
+          "15": false
+        }
+      }
+    },
+    {
+      "removed_id": "38696413",
+      "outcome": {
+        "status": "estimated",
+        "classification": "plausible_undervalued",
+        "reason": "experimental_peer_asking_estimate",
+        "currency": "USD",
+        "reference_price": "16900.00",
+        "reference_price_usd": "16900.00",
+        "discount_percent": "11.24260355029585798816568047",
+        "sample_count": 8,
+        "as_of": 1791399059.0305166,
+        "lower_asking_price": "16900.00",
+        "median_asking_price": "18249.0",
+        "upper_asking_price": "18750.00",
+        "peer_age_min_seconds": 0.0,
+        "peer_age_max_seconds": 433.3149902820587,
+        "input_count": 26,
+        "excluded": {
+          "engine_mismatch": 1,
+          "fuel_mismatch": 8,
+          "mileage_mismatch": 3,
+          "transmission_mismatch": 6
+        },
+        "notices": [
+          "asking_prices_not_sales",
+          "mixed_or_unknown_peer_regions",
+          "quality_not_live_validated"
+        ],
+        "missing_fields": [],
+        "region_sample_count": 0,
+        "provenance": "experimental_peer_asking_v1",
+        "production_approved": false,
+        "confidence": "uncalibrated",
+        "diagnostic_thresholds": {
+          "5": true,
+          "10": true,
+          "15": false
+        }
+      }
+    },
+    {
+      "removed_id": "40373452",
+      "outcome": {
+        "status": "estimated",
+        "classification": "plausible_undervalued",
+        "reason": "experimental_peer_asking_estimate",
+        "currency": "USD",
+        "reference_price": "16900.00",
+        "reference_price_usd": "16900.00",
+        "discount_percent": "11.24260355029585798816568047",
+        "sample_count": 8,
+        "as_of": 1791399059.0305166,
+        "lower_asking_price": "16900.00",
+        "median_asking_price": "18249.0",
+        "upper_asking_price": "18750.00",
+        "peer_age_min_seconds": 0.0,
+        "peer_age_max_seconds": 433.3149902820587,
+        "input_count": 26,
+        "excluded": {
+          "engine_mismatch": 1,
+          "fuel_mismatch": 8,
+          "mileage_mismatch": 3,
+          "transmission_mismatch": 6
+        },
+        "notices": [
+          "asking_prices_not_sales",
+          "mixed_or_unknown_peer_regions",
+          "quality_not_live_validated"
+        ],
+        "missing_fields": [],
+        "region_sample_count": 0,
+        "provenance": "experimental_peer_asking_v1",
+        "production_approved": false,
+        "confidence": "uncalibrated",
+        "diagnostic_thresholds": {
+          "5": true,
+          "10": true,
+          "15": false
+        }
+      }
+    },
+    {
+      "removed_id": "40496142",
+      "outcome": {
+        "status": "estimated",
+        "classification": "plausible_undervalued",
+        "reason": "experimental_peer_asking_estimate",
+        "currency": "USD",
+        "reference_price": "16900.00",
+        "reference_price_usd": "16900.00",
+        "discount_percent": "11.24260355029585798816568047",
+        "sample_count": 8,
+        "as_of": 1791399059.0305166,
+        "lower_asking_price": "16900.00",
+        "median_asking_price": "18249.0",
+        "upper_asking_price": "18750.00",
+        "peer_age_min_seconds": 0.0,
+        "peer_age_max_seconds": 433.3149902820587,
+        "input_count": 26,
+        "excluded": {
+          "engine_mismatch": 1,
+          "fuel_mismatch": 7,
+          "mileage_mismatch": 4,
+          "transmission_mismatch": 6
+        },
+        "notices": [
+          "asking_prices_not_sales",
+          "mixed_or_unknown_peer_regions",
+          "quality_not_live_validated"
+        ],
+        "missing_fields": [],
+        "region_sample_count": 0,
+        "provenance": "experimental_peer_asking_v1",
+        "production_approved": false,
+        "confidence": "uncalibrated",
+        "diagnostic_thresholds": {
+          "5": true,
+          "10": true,
+          "15": false
+        }
+      }
+    },
+    {
+      "removed_id": "39672718",
+      "outcome": {
+        "status": "estimated",
+        "classification": "plausible_undervalued",
+        "reason": "experimental_peer_asking_estimate",
+        "currency": "USD",
+        "reference_price": "16600.00",
+        "reference_price_usd": "16600.00",
+        "discount_percent": "9.638554216867469879518072289",
+        "sample_count": 7,
+        "as_of": 1791399059.0305166,
+        "lower_asking_price": "16600.00",
+        "median_asking_price": "17999.0",
+        "upper_asking_price": "18499.50",
+        "peer_age_min_seconds": 0.0,
+        "peer_age_max_seconds": 422.08186388015747,
+        "input_count": 26,
+        "excluded": {
+          "engine_mismatch": 1,
+          "fuel_mismatch": 8,
+          "mileage_mismatch": 4,
+          "transmission_mismatch": 6
+        },
+        "notices": [
+          "asking_prices_not_sales",
+          "mixed_or_unknown_peer_regions",
+          "quality_not_live_validated"
+        ],
+        "missing_fields": [],
+        "region_sample_count": 0,
+        "provenance": "experimental_peer_asking_v1",
+        "production_approved": false,
+        "confidence": "uncalibrated",
+        "diagnostic_thresholds": {
+          "5": true,
+          "10": false,
+          "15": false
+        }
+      }
+    },
+    {
+      "removed_id": "40332059",
+      "outcome": {
+        "status": "estimated",
+        "classification": "plausible_undervalued",
+        "reason": "experimental_peer_asking_estimate",
+        "currency": "USD",
+        "reference_price": "16600.00",
+        "reference_price_usd": "16600.00",
+        "discount_percent": "9.638554216867469879518072289",
+        "sample_count": 7,
+        "as_of": 1791399059.0305166,
+        "lower_asking_price": "16600.00",
+        "median_asking_price": "17999.0",
+        "upper_asking_price": "18499.50",
+        "peer_age_min_seconds": 0.0,
+        "peer_age_max_seconds": 433.3149902820587,
+        "input_count": 26,
+        "excluded": {
+          "engine_mismatch": 1,
+          "fuel_mismatch": 8,
+          "mileage_mismatch": 4,
+          "transmission_mismatch": 6
+        },
+        "notices": [
+          "asking_prices_not_sales",
+          "mixed_or_unknown_peer_regions",
+          "quality_not_live_validated"
+        ],
+        "missing_fields": [],
+        "region_sample_count": 0,
+        "provenance": "experimental_peer_asking_v1",
+        "production_approved": false,
+        "confidence": "uncalibrated",
+        "diagnostic_thresholds": {
+          "5": true,
+          "10": false,
+          "15": false
+        }
+      }
+    },
+    {
+      "removed_id": "39869087",
+      "outcome": {
+        "status": "estimated",
+        "classification": "plausible_undervalued",
+        "reason": "experimental_peer_asking_estimate",
+        "currency": "USD",
+        "reference_price": "16900.00",
+        "reference_price_usd": "16900.00",
+        "discount_percent": "11.24260355029585798816568047",
+        "sample_count": 8,
+        "as_of": 1791399059.0305166,
+        "lower_asking_price": "16900.00",
+        "median_asking_price": "18249.0",
+        "upper_asking_price": "18750.00",
+        "peer_age_min_seconds": 0.0,
+        "peer_age_max_seconds": 433.3149902820587,
+        "input_count": 26,
+        "excluded": {
+          "engine_mismatch": 1,
+          "fuel_mismatch": 7,
+          "mileage_mismatch": 4,
+          "transmission_mismatch": 6
+        },
+        "notices": [
+          "asking_prices_not_sales",
+          "mixed_or_unknown_peer_regions",
+          "quality_not_live_validated"
+        ],
+        "missing_fields": [],
+        "region_sample_count": 0,
+        "provenance": "experimental_peer_asking_v1",
+        "production_approved": false,
+        "confidence": "uncalibrated",
+        "diagnostic_thresholds": {
+          "5": true,
+          "10": true,
+          "15": false
+        }
+      }
+    },
+    {
+      "removed_id": "38629439",
+      "outcome": {
+        "status": "estimated",
+        "classification": "plausible_undervalued",
+        "reason": "experimental_peer_asking_estimate",
+        "currency": "USD",
+        "reference_price": "16900.00",
+        "reference_price_usd": "16900.00",
+        "discount_percent": "11.24260355029585798816568047",
+        "sample_count": 8,
+        "as_of": 1791399059.0305166,
+        "lower_asking_price": "16900.00",
+        "median_asking_price": "18249.0",
+        "upper_asking_price": "18750.00",
+        "peer_age_min_seconds": 0.0,
+        "peer_age_max_seconds": 433.3149902820587,
+        "input_count": 26,
+        "excluded": {
+          "engine_mismatch": 1,
+          "fuel_mismatch": 7,
+          "mileage_mismatch": 4,
+          "transmission_mismatch": 6
+        },
+        "notices": [
+          "asking_prices_not_sales",
+          "mixed_or_unknown_peer_regions",
+          "quality_not_live_validated"
+        ],
+        "missing_fields": [],
+        "region_sample_count": 0,
+        "provenance": "experimental_peer_asking_v1",
+        "production_approved": false,
+        "confidence": "uncalibrated",
+        "diagnostic_thresholds": {
+          "5": true,
+          "10": true,
+          "15": false
+        }
+      }
+    },
+    {
+      "removed_id": "39510018",
+      "outcome": {
+        "status": "estimated",
+        "classification": "plausible_undervalued",
+        "reason": "experimental_peer_asking_estimate",
+        "currency": "USD",
+        "reference_price": "16900.00",
+        "reference_price_usd": "16900.00",
+        "discount_percent": "11.24260355029585798816568047",
+        "sample_count": 8,
+        "as_of": 1791399059.0305166,
+        "lower_asking_price": "16900.00",
+        "median_asking_price": "18249.0",
+        "upper_asking_price": "18750.00",
+        "peer_age_min_seconds": 0.0,
+        "peer_age_max_seconds": 433.3149902820587,
+        "input_count": 26,
+        "excluded": {
+          "engine_mismatch": 1,
+          "fuel_mismatch": 8,
+          "mileage_mismatch": 3,
+          "transmission_mismatch": 6
+        },
+        "notices": [
+          "asking_prices_not_sales",
+          "mixed_or_unknown_peer_regions",
+          "quality_not_live_validated"
+        ],
+        "missing_fields": [],
+        "region_sample_count": 0,
+        "provenance": "experimental_peer_asking_v1",
+        "production_approved": false,
+        "confidence": "uncalibrated",
+        "diagnostic_thresholds": {
+          "5": true,
+          "10": true,
+          "15": false
+        }
+      }
+    },
+    {
+      "removed_id": "40462277",
+      "outcome": {
+        "status": "estimated",
+        "classification": "plausible_undervalued",
+        "reason": "experimental_peer_asking_estimate",
+        "currency": "USD",
+        "reference_price": "16900.00",
+        "reference_price_usd": "16900.00",
+        "discount_percent": "11.24260355029585798816568047",
+        "sample_count": 8,
+        "as_of": 1791399059.0305166,
+        "lower_asking_price": "16900.00",
+        "median_asking_price": "18249.0",
+        "upper_asking_price": "18750.00",
+        "peer_age_min_seconds": 0.0,
+        "peer_age_max_seconds": 433.3149902820587,
+        "input_count": 26,
+        "excluded": {
+          "engine_mismatch": 1,
+          "fuel_mismatch": 8,
+          "mileage_mismatch": 4,
+          "transmission_mismatch": 5
+        },
+        "notices": [
+          "asking_prices_not_sales",
+          "mixed_or_unknown_peer_regions",
+          "quality_not_live_validated"
+        ],
+        "missing_fields": [],
+        "region_sample_count": 0,
+        "provenance": "experimental_peer_asking_v1",
+        "production_approved": false,
+        "confidence": "uncalibrated",
+        "diagnostic_thresholds": {
+          "5": true,
+          "10": true,
+          "15": false
+        }
+      }
+    },
+    {
+      "removed_id": "37174656",
+      "outcome": {
+        "status": "estimated",
+        "classification": "plausible_undervalued",
+        "reason": "experimental_peer_asking_estimate",
+        "currency": "USD",
+        "reference_price": "16900.00",
+        "reference_price_usd": "16900.00",
+        "discount_percent": "11.24260355029585798816568047",
+        "sample_count": 8,
+        "as_of": 1791399059.0305166,
+        "lower_asking_price": "16900.00",
+        "median_asking_price": "18249.0",
+        "upper_asking_price": "18750.00",
+        "peer_age_min_seconds": 0.0,
+        "peer_age_max_seconds": 433.3149902820587,
+        "input_count": 26,
+        "excluded": {
+          "engine_mismatch": 1,
+          "fuel_mismatch": 7,
+          "mileage_mismatch": 4,
+          "transmission_mismatch": 6
+        },
+        "notices": [
+          "asking_prices_not_sales",
+          "mixed_or_unknown_peer_regions",
+          "quality_not_live_validated"
+        ],
+        "missing_fields": [],
+        "region_sample_count": 0,
+        "provenance": "experimental_peer_asking_v1",
+        "production_approved": false,
+        "confidence": "uncalibrated",
+        "diagnostic_thresholds": {
+          "5": true,
+          "10": true,
+          "15": false
+        }
+      }
+    },
+    {
+      "removed_id": "40450137",
+      "outcome": {
+        "status": "estimated",
+        "classification": "plausible_undervalued",
+        "reason": "experimental_peer_asking_estimate",
+        "currency": "USD",
+        "reference_price": "16900.00",
+        "reference_price_usd": "16900.00",
+        "discount_percent": "11.24260355029585798816568047",
+        "sample_count": 8,
+        "as_of": 1791399059.0305166,
+        "lower_asking_price": "16900.00",
+        "median_asking_price": "18249.0",
+        "upper_asking_price": "18750.00",
+        "peer_age_min_seconds": 0.0,
+        "peer_age_max_seconds": 433.3149902820587,
+        "input_count": 26,
+        "excluded": {
+          "engine_mismatch": 1,
+          "fuel_mismatch": 8,
+          "mileage_mismatch": 4,
+          "transmission_mismatch": 5
+        },
+        "notices": [
+          "asking_prices_not_sales",
+          "mixed_or_unknown_peer_regions",
+          "quality_not_live_validated"
+        ],
+        "missing_fields": [],
+        "region_sample_count": 0,
+        "provenance": "experimental_peer_asking_v1",
+        "production_approved": false,
+        "confidence": "uncalibrated",
+        "diagnostic_thresholds": {
+          "5": true,
+          "10": true,
+          "15": false
+        }
+      }
+    },
+    {
+      "removed_id": "40178401",
+      "outcome": {
+        "status": "estimated",
+        "classification": "plausible_undervalued",
+        "reason": "experimental_peer_asking_estimate",
+        "currency": "USD",
+        "reference_price": "17599.50",
+        "reference_price_usd": "17599.50",
+        "discount_percent": "14.77030597460155118043126225",
+        "sample_count": 7,
+        "as_of": 1791399059.0305166,
+        "lower_asking_price": "17599.50",
+        "median_asking_price": "18499.0",
+        "upper_asking_price": "19000.00",
+        "peer_age_min_seconds": 0.0,
+        "peer_age_max_seconds": 433.3149902820587,
+        "input_count": 26,
+        "excluded": {
+          "engine_mismatch": 1,
+          "fuel_mismatch": 8,
+          "mileage_mismatch": 4,
+          "transmission_mismatch": 6
+        },
+        "notices": [
+          "asking_prices_not_sales",
+          "mixed_or_unknown_peer_regions",
+          "quality_not_live_validated"
+        ],
+        "missing_fields": [],
+        "region_sample_count": 0,
+        "provenance": "experimental_peer_asking_v1",
+        "production_approved": false,
+        "confidence": "uncalibrated",
+        "diagnostic_thresholds": {
+          "5": true,
+          "10": true,
+          "15": false
+        }
+      }
+    },
+    {
+      "removed_id": "40442210",
+      "outcome": {
+        "status": "estimated",
+        "classification": "plausible_undervalued",
+        "reason": "experimental_peer_asking_estimate",
+        "currency": "USD",
+        "reference_price": "16900.00",
+        "reference_price_usd": "16900.00",
+        "discount_percent": "11.24260355029585798816568047",
+        "sample_count": 8,
+        "as_of": 1791399059.0305166,
+        "lower_asking_price": "16900.00",
+        "median_asking_price": "18249.0",
+        "upper_asking_price": "18750.00",
+        "peer_age_min_seconds": 0.0,
+        "peer_age_max_seconds": 433.3149902820587,
+        "input_count": 26,
+        "excluded": {
+          "engine_mismatch": 1,
+          "fuel_mismatch": 8,
+          "mileage_mismatch": 4,
+          "transmission_mismatch": 5
+        },
+        "notices": [
+          "asking_prices_not_sales",
+          "mixed_or_unknown_peer_regions",
+          "quality_not_live_validated"
+        ],
+        "missing_fields": [],
+        "region_sample_count": 0,
+        "provenance": "experimental_peer_asking_v1",
+        "production_approved": false,
+        "confidence": "uncalibrated",
+        "diagnostic_thresholds": {
+          "5": true,
+          "10": true,
+          "15": false
+        }
+      }
+    },
+    {
+      "removed_id": "40439743",
+      "outcome": {
+        "status": "estimated",
+        "classification": "plausible_undervalued",
+        "reason": "experimental_peer_asking_estimate",
+        "currency": "USD",
+        "reference_price": "17599.50",
+        "reference_price_usd": "17599.50",
+        "discount_percent": "14.77030597460155118043126225",
+        "sample_count": 7,
+        "as_of": 1791399059.0305166,
+        "lower_asking_price": "17599.50",
+        "median_asking_price": "18499.0",
+        "upper_asking_price": "19000.00",
+        "peer_age_min_seconds": 0.0,
+        "peer_age_max_seconds": 433.3149902820587,
+        "input_count": 26,
+        "excluded": {
+          "engine_mismatch": 1,
+          "fuel_mismatch": 8,
+          "mileage_mismatch": 4,
+          "transmission_mismatch": 6
+        },
+        "notices": [
+          "asking_prices_not_sales",
+          "mixed_or_unknown_peer_regions",
+          "quality_not_live_validated"
+        ],
+        "missing_fields": [],
+        "region_sample_count": 0,
+        "provenance": "experimental_peer_asking_v1",
+        "production_approved": false,
+        "confidence": "uncalibrated",
+        "diagnostic_thresholds": {
+          "5": true,
+          "10": true,
+          "15": false
+        }
+      }
+    },
+    {
+      "removed_id": "39952517",
+      "outcome": {
+        "status": "estimated",
+        "classification": "plausible_undervalued",
+        "reason": "experimental_peer_asking_estimate",
+        "currency": "USD",
+        "reference_price": "16900.00",
+        "reference_price_usd": "16900.00",
+        "discount_percent": "11.24260355029585798816568047",
+        "sample_count": 8,
+        "as_of": 1791399059.0305166,
+        "lower_asking_price": "16900.00",
+        "median_asking_price": "18249.0",
+        "upper_asking_price": "18750.00",
+        "peer_age_min_seconds": 0.0,
+        "peer_age_max_seconds": 433.3149902820587,
+        "input_count": 26,
+        "excluded": {
+          "engine_mismatch": 1,
+          "fuel_mismatch": 7,
+          "mileage_mismatch": 4,
+          "transmission_mismatch": 6
+        },
+        "notices": [
+          "asking_prices_not_sales",
+          "mixed_or_unknown_peer_regions",
+          "quality_not_live_validated"
+        ],
+        "missing_fields": [],
+        "region_sample_count": 0,
+        "provenance": "experimental_peer_asking_v1",
+        "production_approved": false,
+        "confidence": "uncalibrated",
+        "diagnostic_thresholds": {
+          "5": true,
+          "10": true,
+          "15": false
+        }
+      }
+    },
+    {
+      "removed_id": "40302489",
+      "outcome": {
+        "status": "estimated",
+        "classification": "plausible_undervalued",
+        "reason": "experimental_peer_asking_estimate",
+        "currency": "USD",
+        "reference_price": "16900.00",
+        "reference_price_usd": "16900.00",
+        "discount_percent": "11.24260355029585798816568047",
+        "sample_count": 8,
+        "as_of": 1791399059.0305166,
+        "lower_asking_price": "16900.00",
+        "median_asking_price": "18249.0",
+        "upper_asking_price": "18750.00",
+        "peer_age_min_seconds": 0.0,
+        "peer_age_max_seconds": 433.3149902820587,
+        "input_count": 26,
+        "excluded": {
+          "engine_mismatch": 1,
+          "fuel_mismatch": 8,
+          "mileage_mismatch": 4,
+          "transmission_mismatch": 5
+        },
+        "notices": [
+          "asking_prices_not_sales",
+          "mixed_or_unknown_peer_regions",
+          "quality_not_live_validated"
+        ],
+        "missing_fields": [],
+        "region_sample_count": 0,
+        "provenance": "experimental_peer_asking_v1",
+        "production_approved": false,
+        "confidence": "uncalibrated",
+        "diagnostic_thresholds": {
+          "5": true,
+          "10": true,
+          "15": false
+        }
+      }
+    },
+    {
+      "removed_id": "36673912",
+      "outcome": {
+        "status": "estimated",
+        "classification": "plausible_undervalued",
+        "reason": "experimental_peer_asking_estimate",
+        "currency": "USD",
+        "reference_price": "16900.00",
+        "reference_price_usd": "16900.00",
+        "discount_percent": "11.24260355029585798816568047",
+        "sample_count": 8,
+        "as_of": 1791399059.0305166,
+        "lower_asking_price": "16900.00",
+        "median_asking_price": "18249.0",
+        "upper_asking_price": "18750.00",
+        "peer_age_min_seconds": 0.0,
+        "peer_age_max_seconds": 433.3149902820587,
+        "input_count": 26,
+        "excluded": {
+          "engine_mismatch": 1,
+          "fuel_mismatch": 7,
+          "mileage_mismatch": 4,
+          "transmission_mismatch": 6
+        },
+        "notices": [
+          "asking_prices_not_sales",
+          "mixed_or_unknown_peer_regions",
+          "quality_not_live_validated"
+        ],
+        "missing_fields": [],
+        "region_sample_count": 0,
+        "provenance": "experimental_peer_asking_v1",
+        "production_approved": false,
+        "confidence": "uncalibrated",
+        "diagnostic_thresholds": {
+          "5": true,
+          "10": true,
+          "15": false
+        }
+      }
+    },
+    {
+      "removed_id": "39749271",
+      "outcome": {
+        "status": "estimated",
+        "classification": "plausible_undervalued",
+        "reason": "experimental_peer_asking_estimate",
+        "currency": "USD",
+        "reference_price": "16999.50",
+        "reference_price_usd": "16999.50",
+        "discount_percent": "11.76211065031324450719138798",
+        "sample_count": 7,
+        "as_of": 1791399059.0305166,
+        "lower_asking_price": "16999.50",
+        "median_asking_price": "18499.0",
+        "upper_asking_price": "19000.00",
+        "peer_age_min_seconds": 0.0,
+        "peer_age_max_seconds": 433.3149902820587,
+        "input_count": 26,
+        "excluded": {
+          "engine_mismatch": 1,
+          "fuel_mismatch": 8,
+          "mileage_mismatch": 4,
+          "transmission_mismatch": 6
+        },
+        "notices": [
+          "asking_prices_not_sales",
+          "mixed_or_unknown_peer_regions",
+          "quality_not_live_validated"
+        ],
+        "missing_fields": [],
+        "region_sample_count": 0,
+        "provenance": "experimental_peer_asking_v1",
+        "production_approved": false,
+        "confidence": "uncalibrated",
+        "diagnostic_thresholds": {
+          "5": true,
+          "10": true,
+          "15": false
+        }
+      }
+    },
+    {
+      "removed_id": "36295093",
+      "outcome": {
+        "status": "estimated",
+        "classification": "plausible_undervalued",
+        "reason": "experimental_peer_asking_estimate",
+        "currency": "USD",
+        "reference_price": "16600.00",
+        "reference_price_usd": "16600.00",
+        "discount_percent": "9.638554216867469879518072289",
+        "sample_count": 7,
+        "as_of": 1791399059.0305166,
+        "lower_asking_price": "16600.00",
+        "median_asking_price": "17999.0",
+        "upper_asking_price": "18999.50",
+        "peer_age_min_seconds": 0.0,
+        "peer_age_max_seconds": 433.3149902820587,
+        "input_count": 26,
+        "excluded": {
+          "engine_mismatch": 1,
+          "fuel_mismatch": 8,
+          "mileage_mismatch": 4,
+          "transmission_mismatch": 6
+        },
+        "notices": [
+          "asking_prices_not_sales",
+          "mixed_or_unknown_peer_regions",
+          "quality_not_live_validated"
+        ],
+        "missing_fields": [],
+        "region_sample_count": 0,
+        "provenance": "experimental_peer_asking_v1",
+        "production_approved": false,
+        "confidence": "uncalibrated",
+        "diagnostic_thresholds": {
+          "5": true,
+          "10": false,
+          "15": false
+        }
+      }
+    },
+    {
+      "removed_id": "37182546",
+      "outcome": {
+        "status": "estimated",
+        "classification": "plausible_undervalued",
+        "reason": "experimental_peer_asking_estimate",
+        "currency": "USD",
+        "reference_price": "16900.00",
+        "reference_price_usd": "16900.00",
+        "discount_percent": "11.24260355029585798816568047",
+        "sample_count": 8,
+        "as_of": 1791399059.0305166,
+        "lower_asking_price": "16900.00",
+        "median_asking_price": "18249.0",
+        "upper_asking_price": "18750.00",
+        "peer_age_min_seconds": 0.0,
+        "peer_age_max_seconds": 433.3149902820587,
+        "input_count": 26,
+        "excluded": {
+          "engine_mismatch": 1,
+          "fuel_mismatch": 8,
+          "mileage_mismatch": 4,
+          "transmission_mismatch": 5
+        },
+        "notices": [
+          "asking_prices_not_sales",
+          "mixed_or_unknown_peer_regions",
+          "quality_not_live_validated"
+        ],
+        "missing_fields": [],
+        "region_sample_count": 0,
+        "provenance": "experimental_peer_asking_v1",
+        "production_approved": false,
+        "confidence": "uncalibrated",
+        "diagnostic_thresholds": {
+          "5": true,
+          "10": true,
+          "15": false
+        }
+      }
+    },
+    {
+      "removed_id": "40419569",
+      "outcome": {
+        "status": "estimated",
+        "classification": "plausible_undervalued",
+        "reason": "experimental_peer_asking_estimate",
+        "currency": "USD",
+        "reference_price": "16600.00",
+        "reference_price_usd": "16600.00",
+        "discount_percent": "9.638554216867469879518072289",
+        "sample_count": 7,
+        "as_of": 1791399059.0305166,
+        "lower_asking_price": "16600.00",
+        "median_asking_price": "17999.0",
+        "upper_asking_price": "19000.00",
+        "peer_age_min_seconds": 0.0,
+        "peer_age_max_seconds": 433.3149902820587,
+        "input_count": 26,
+        "excluded": {
+          "engine_mismatch": 1,
+          "fuel_mismatch": 8,
+          "mileage_mismatch": 4,
+          "transmission_mismatch": 6
+        },
+        "notices": [
+          "asking_prices_not_sales",
+          "mixed_or_unknown_peer_regions",
+          "quality_not_live_validated"
+        ],
+        "missing_fields": [],
+        "region_sample_count": 0,
+        "provenance": "experimental_peer_asking_v1",
+        "production_approved": false,
+        "confidence": "uncalibrated",
+        "diagnostic_thresholds": {
+          "5": true,
+          "10": false,
+          "15": false
+        }
+      }
+    },
+    {
+      "removed_id": "38741599",
+      "outcome": {
+        "status": "estimated",
+        "classification": "plausible_undervalued",
+        "reason": "experimental_peer_asking_estimate",
+        "currency": "USD",
+        "reference_price": "16900.00",
+        "reference_price_usd": "16900.00",
+        "discount_percent": "11.24260355029585798816568047",
+        "sample_count": 8,
+        "as_of": 1791399059.0305166,
+        "lower_asking_price": "16900.00",
+        "median_asking_price": "18249.0",
+        "upper_asking_price": "18750.00",
+        "peer_age_min_seconds": 0.0,
+        "peer_age_max_seconds": 433.3149902820587,
+        "input_count": 26,
+        "excluded": {
+          "fuel_mismatch": 8,
+          "mileage_mismatch": 4,
+          "transmission_mismatch": 6
+        },
+        "notices": [
+          "asking_prices_not_sales",
+          "mixed_or_unknown_peer_regions",
+          "quality_not_live_validated"
+        ],
+        "missing_fields": [],
+        "region_sample_count": 0,
+        "provenance": "experimental_peer_asking_v1",
+        "production_approved": false,
+        "confidence": "uncalibrated",
+        "diagnostic_thresholds": {
+          "5": true,
+          "10": true,
+          "15": false
+        }
+      }
+    },
+    {
+      "removed_id": "40407713",
+      "outcome": {
+        "status": "estimated",
+        "classification": "plausible_undervalued",
+        "reason": "experimental_peer_asking_estimate",
+        "currency": "USD",
+        "reference_price": "16600.00",
+        "reference_price_usd": "16600.00",
+        "discount_percent": "9.638554216867469879518072289",
+        "sample_count": 7,
+        "as_of": 1791399059.0305166,
+        "lower_asking_price": "16600.00",
+        "median_asking_price": "18499.0",
+        "upper_asking_price": "19000.00",
+        "peer_age_min_seconds": 34.29631853103638,
+        "peer_age_max_seconds": 433.3149902820587,
+        "input_count": 26,
+        "excluded": {
+          "engine_mismatch": 1,
+          "fuel_mismatch": 8,
+          "mileage_mismatch": 4,
+          "transmission_mismatch": 6
+        },
+        "notices": [
+          "asking_prices_not_sales",
+          "mixed_or_unknown_peer_regions",
+          "quality_not_live_validated"
+        ],
+        "missing_fields": [],
+        "region_sample_count": 0,
+        "provenance": "experimental_peer_asking_v1",
+        "production_approved": false,
+        "confidence": "uncalibrated",
+        "diagnostic_thresholds": {
+          "5": true,
+          "10": false,
+          "15": false
+        }
+      }
+    }
+  ],
+  "leave_one_region_out": [
+    {
+      "removed_region": "Івано-Франківська область",
+      "removed_count": 2,
+      "outcome": {
+        "status": "estimated",
+        "classification": "plausible_undervalued",
+        "reason": "experimental_peer_asking_estimate",
+        "currency": "USD",
+        "reference_price": "16900.00",
+        "reference_price_usd": "16900.00",
+        "discount_percent": "11.24260355029585798816568047",
+        "sample_count": 8,
+        "as_of": 1791399059.0305166,
+        "lower_asking_price": "16900.00",
+        "median_asking_price": "18249.0",
+        "upper_asking_price": "18750.00",
+        "peer_age_min_seconds": 0.0,
+        "peer_age_max_seconds": 433.3149902820587,
+        "input_count": 25,
+        "excluded": {
+          "engine_mismatch": 1,
+          "fuel_mismatch": 8,
+          "mileage_mismatch": 4,
+          "transmission_mismatch": 4
+        },
+        "notices": [
+          "asking_prices_not_sales",
+          "mixed_or_unknown_peer_regions",
+          "quality_not_live_validated"
+        ],
+        "missing_fields": [],
+        "region_sample_count": 0,
+        "provenance": "experimental_peer_asking_v1",
+        "production_approved": false,
+        "confidence": "uncalibrated",
+        "diagnostic_thresholds": {
+          "5": true,
+          "10": true,
+          "15": false
+        }
+      }
+    },
+    {
+      "removed_region": "Вінницька область",
+      "removed_count": 1,
+      "outcome": {
+        "status": "estimated",
+        "classification": "plausible_undervalued",
+        "reason": "experimental_peer_asking_estimate",
+        "currency": "USD",
+        "reference_price": "16900.00",
+        "reference_price_usd": "16900.00",
+        "discount_percent": "11.24260355029585798816568047",
+        "sample_count": 8,
+        "as_of": 1791399059.0305166,
+        "lower_asking_price": "16900.00",
+        "median_asking_price": "18249.0",
+        "upper_asking_price": "18750.00",
+        "peer_age_min_seconds": 0.0,
+        "peer_age_max_seconds": 433.3149902820587,
+        "input_count": 26,
+        "excluded": {
+          "engine_mismatch": 1,
+          "fuel_mismatch": 7,
+          "mileage_mismatch": 4,
+          "transmission_mismatch": 6
+        },
+        "notices": [
+          "asking_prices_not_sales",
+          "mixed_or_unknown_peer_regions",
+          "quality_not_live_validated"
+        ],
+        "missing_fields": [],
+        "region_sample_count": 0,
+        "provenance": "experimental_peer_asking_v1",
+        "production_approved": false,
+        "confidence": "uncalibrated",
+        "diagnostic_thresholds": {
+          "5": true,
+          "10": true,
+          "15": false
+        }
+      }
+    },
+    {
+      "removed_region": "Дніпропетровська область",
+      "removed_count": 5,
+      "outcome": {
+        "status": "estimated",
+        "classification": "plausible_undervalued",
+        "reason": "experimental_peer_asking_estimate",
+        "currency": "USD",
+        "reference_price": "16600.00",
+        "reference_price_usd": "16600.00",
+        "discount_percent": "9.638554216867469879518072289",
+        "sample_count": 7,
+        "as_of": 1791399059.0305166,
+        "lower_asking_price": "16600.00",
+        "median_asking_price": "17999.0",
+        "upper_asking_price": "19000.00",
+        "peer_age_min_seconds": 0.0,
+        "peer_age_max_seconds": 433.3149902820587,
+        "input_count": 22,
+        "excluded": {
+          "engine_mismatch": 1,
+          "fuel_mismatch": 6,
+          "mileage_mismatch": 3,
+          "transmission_mismatch": 5
+        },
+        "notices": [
+          "asking_prices_not_sales",
+          "mixed_or_unknown_peer_regions",
+          "quality_not_live_validated"
+        ],
+        "missing_fields": [],
+        "region_sample_count": 0,
+        "provenance": "experimental_peer_asking_v1",
+        "production_approved": false,
+        "confidence": "uncalibrated",
+        "diagnostic_thresholds": {
+          "5": true,
+          "10": false,
+          "15": false
+        }
+      }
+    },
+    {
+      "removed_region": "Запорізька область",
+      "removed_count": 1,
+      "outcome": {
+        "status": "estimated",
+        "classification": "plausible_undervalued",
+        "reason": "experimental_peer_asking_estimate",
+        "currency": "USD",
+        "reference_price": "16900.00",
+        "reference_price_usd": "16900.00",
+        "discount_percent": "11.24260355029585798816568047",
+        "sample_count": 8,
+        "as_of": 1791399059.0305166,
+        "lower_asking_price": "16900.00",
+        "median_asking_price": "18249.0",
+        "upper_asking_price": "18750.00",
+        "peer_age_min_seconds": 0.0,
+        "peer_age_max_seconds": 433.3149902820587,
+        "input_count": 26,
+        "excluded": {
+          "engine_mismatch": 1,
+          "fuel_mismatch": 8,
+          "mileage_mismatch": 3,
+          "transmission_mismatch": 6
+        },
+        "notices": [
+          "asking_prices_not_sales",
+          "mixed_or_unknown_peer_regions",
+          "quality_not_live_validated"
+        ],
+        "missing_fields": [],
+        "region_sample_count": 0,
+        "provenance": "experimental_peer_asking_v1",
+        "production_approved": false,
+        "confidence": "uncalibrated",
+        "diagnostic_thresholds": {
+          "5": true,
+          "10": true,
+          "15": false
+        }
+      }
+    },
+    {
+      "removed_region": "Київська область",
+      "removed_count": 6,
+      "outcome": {
+        "status": "estimated",
+        "classification": "plausible_undervalued",
+        "reason": "experimental_peer_asking_estimate",
+        "currency": "USD",
+        "reference_price": "16600.00",
+        "reference_price_usd": "16600.00",
+        "discount_percent": "9.638554216867469879518072289",
+        "sample_count": 7,
+        "as_of": 1791399059.0305166,
+        "lower_asking_price": "16600.00",
+        "median_asking_price": "17999.0",
+        "upper_asking_price": "18499.50",
+        "peer_age_min_seconds": 0.0,
+        "peer_age_max_seconds": 422.08186388015747,
+        "input_count": 21,
+        "excluded": {
+          "fuel_mismatch": 6,
+          "mileage_mismatch": 3,
+          "transmission_mismatch": 5
+        },
+        "notices": [
+          "asking_prices_not_sales",
+          "mixed_or_unknown_peer_regions",
+          "quality_not_live_validated"
+        ],
+        "missing_fields": [],
+        "region_sample_count": 0,
+        "provenance": "experimental_peer_asking_v1",
+        "production_approved": false,
+        "confidence": "uncalibrated",
+        "diagnostic_thresholds": {
+          "5": true,
+          "10": false,
+          "15": false
+        }
+      }
+    },
+    {
+      "removed_region": "Львівська область",
+      "removed_count": 3,
+      "outcome": {
+        "status": "estimated",
+        "classification": "plausible_undervalued",
+        "reason": "experimental_peer_asking_estimate",
+        "currency": "USD",
+        "reference_price": "17399.75",
+        "reference_price_usd": "17399.75",
+        "discount_percent": "13.79186482564404660986508427",
+        "sample_count": 6,
+        "as_of": 1791399059.0305166,
+        "lower_asking_price": "17399.75",
+        "median_asking_price": "18249.0",
+        "upper_asking_price": "18499.75",
+        "peer_age_min_seconds": 0.0,
+        "peer_age_max_seconds": 433.3149902820587,
+        "input_count": 24,
+        "excluded": {
+          "engine_mismatch": 1,
+          "fuel_mismatch": 8,
+          "mileage_mismatch": 4,
+          "transmission_mismatch": 5
+        },
+        "notices": [
+          "asking_prices_not_sales",
+          "mixed_or_unknown_peer_regions",
+          "quality_not_live_validated"
+        ],
+        "missing_fields": [],
+        "region_sample_count": 0,
+        "provenance": "experimental_peer_asking_v1",
+        "production_approved": false,
+        "confidence": "uncalibrated",
+        "diagnostic_thresholds": {
+          "5": true,
+          "10": true,
+          "15": false
+        }
+      }
+    },
+    {
+      "removed_region": "Полтавська область",
+      "removed_count": 2,
+      "outcome": {
+        "status": "estimated",
+        "classification": "plausible_undervalued",
+        "reason": "experimental_peer_asking_estimate",
+        "currency": "USD",
+        "reference_price": "16600.00",
+        "reference_price_usd": "16600.00",
+        "discount_percent": "9.638554216867469879518072289",
+        "sample_count": 7,
+        "as_of": 1791399059.0305166,
+        "lower_asking_price": "16600.00",
+        "median_asking_price": "18499.0",
+        "upper_asking_price": "19000.00",
+        "peer_age_min_seconds": 34.29631853103638,
+        "peer_age_max_seconds": 433.3149902820587,
+        "input_count": 25,
+        "excluded": {
+          "engine_mismatch": 1,
+          "fuel_mismatch": 8,
+          "mileage_mismatch": 4,
+          "transmission_mismatch": 5
+        },
+        "notices": [
+          "asking_prices_not_sales",
+          "mixed_or_unknown_peer_regions",
+          "quality_not_live_validated"
+        ],
+        "missing_fields": [],
+        "region_sample_count": 0,
+        "provenance": "experimental_peer_asking_v1",
+        "production_approved": false,
+        "confidence": "uncalibrated",
+        "diagnostic_thresholds": {
+          "5": true,
+          "10": false,
+          "15": false
+        }
+      }
+    },
+    {
+      "removed_region": "Рівненська область",
+      "removed_count": 2,
+      "outcome": {
+        "status": "estimated",
+        "classification": "plausible_undervalued",
+        "reason": "experimental_peer_asking_estimate",
+        "currency": "USD",
+        "reference_price": "16600.00",
+        "reference_price_usd": "16600.00",
+        "discount_percent": "9.638554216867469879518072289",
+        "sample_count": 7,
+        "as_of": 1791399059.0305166,
+        "lower_asking_price": "16600.00",
+        "median_asking_price": "17999.0",
+        "upper_asking_price": "18999.50",
+        "peer_age_min_seconds": 0.0,
+        "peer_age_max_seconds": 433.3149902820587,
+        "input_count": 25,
+        "excluded": {
+          "engine_mismatch": 1,
+          "fuel_mismatch": 7,
+          "mileage_mismatch": 4,
+          "transmission_mismatch": 6
+        },
+        "notices": [
+          "asking_prices_not_sales",
+          "mixed_or_unknown_peer_regions",
+          "quality_not_live_validated"
+        ],
+        "missing_fields": [],
+        "region_sample_count": 0,
+        "provenance": "experimental_peer_asking_v1",
+        "production_approved": false,
+        "confidence": "uncalibrated",
+        "diagnostic_thresholds": {
+          "5": true,
+          "10": false,
+          "15": false
+        }
+      }
+    },
+    {
+      "removed_region": "Сумська область",
+      "removed_count": 2,
+      "outcome": {
+        "status": "estimated",
+        "classification": "plausible_undervalued",
+        "reason": "experimental_peer_asking_estimate",
+        "currency": "USD",
+        "reference_price": "16999.50",
+        "reference_price_usd": "16999.50",
+        "discount_percent": "11.76211065031324450719138798",
+        "sample_count": 7,
+        "as_of": 1791399059.0305166,
+        "lower_asking_price": "16999.50",
+        "median_asking_price": "18499.0",
+        "upper_asking_price": "19000.00",
+        "peer_age_min_seconds": 0.0,
+        "peer_age_max_seconds": 433.3149902820587,
+        "input_count": 25,
+        "excluded": {
+          "engine_mismatch": 1,
+          "fuel_mismatch": 7,
+          "mileage_mismatch": 4,
+          "transmission_mismatch": 6
+        },
+        "notices": [
+          "asking_prices_not_sales",
+          "mixed_or_unknown_peer_regions",
+          "quality_not_live_validated"
+        ],
+        "missing_fields": [],
+        "region_sample_count": 0,
+        "provenance": "experimental_peer_asking_v1",
+        "production_approved": false,
+        "confidence": "uncalibrated",
+        "diagnostic_thresholds": {
+          "5": true,
+          "10": true,
+          "15": false
+        }
+      }
+    },
+    {
+      "removed_region": "Харківська область",
+      "removed_count": 1,
+      "outcome": {
+        "status": "estimated",
+        "classification": "plausible_undervalued",
+        "reason": "experimental_peer_asking_estimate",
+        "currency": "USD",
+        "reference_price": "16900.00",
+        "reference_price_usd": "16900.00",
+        "discount_percent": "11.24260355029585798816568047",
+        "sample_count": 8,
+        "as_of": 1791399059.0305166,
+        "lower_asking_price": "16900.00",
+        "median_asking_price": "18249.0",
+        "upper_asking_price": "18750.00",
+        "peer_age_min_seconds": 0.0,
+        "peer_age_max_seconds": 433.3149902820587,
+        "input_count": 26,
+        "excluded": {
+          "engine_mismatch": 1,
+          "fuel_mismatch": 8,
+          "mileage_mismatch": 3,
+          "transmission_mismatch": 6
+        },
+        "notices": [
+          "asking_prices_not_sales",
+          "mixed_or_unknown_peer_regions",
+          "quality_not_live_validated"
+        ],
+        "missing_fields": [],
+        "region_sample_count": 0,
+        "provenance": "experimental_peer_asking_v1",
+        "production_approved": false,
+        "confidence": "uncalibrated",
+        "diagnostic_thresholds": {
+          "5": true,
+          "10": true,
+          "15": false
+        }
+      }
+    },
+    {
+      "removed_region": "Хмельницька область",
+      "removed_count": 1,
+      "outcome": {
+        "status": "estimated",
+        "classification": "plausible_undervalued",
+        "reason": "experimental_peer_asking_estimate",
+        "currency": "USD",
+        "reference_price": "17599.50",
+        "reference_price_usd": "17599.50",
+        "discount_percent": "14.77030597460155118043126225",
+        "sample_count": 7,
+        "as_of": 1791399059.0305166,
+        "lower_asking_price": "17599.50",
+        "median_asking_price": "18499.0",
+        "upper_asking_price": "19000.00",
+        "peer_age_min_seconds": 0.0,
+        "peer_age_max_seconds": 433.3149902820587,
+        "input_count": 26,
+        "excluded": {
+          "engine_mismatch": 1,
+          "fuel_mismatch": 8,
+          "mileage_mismatch": 4,
+          "transmission_mismatch": 6
+        },
+        "notices": [
+          "asking_prices_not_sales",
+          "mixed_or_unknown_peer_regions",
+          "quality_not_live_validated"
+        ],
+        "missing_fields": [],
+        "region_sample_count": 0,
+        "provenance": "experimental_peer_asking_v1",
+        "production_approved": false,
+        "confidence": "uncalibrated",
+        "diagnostic_thresholds": {
+          "5": true,
+          "10": true,
+          "15": false
+        }
+      }
+    },
+    {
+      "removed_region": "Чернігівська область",
+      "removed_count": 1,
+      "outcome": {
+        "status": "estimated",
+        "classification": "plausible_undervalued",
+        "reason": "experimental_peer_asking_estimate",
+        "currency": "USD",
+        "reference_price": "16900.00",
+        "reference_price_usd": "16900.00",
+        "discount_percent": "11.24260355029585798816568047",
+        "sample_count": 8,
+        "as_of": 1791399059.0305166,
+        "lower_asking_price": "16900.00",
+        "median_asking_price": "18249.0",
+        "upper_asking_price": "18750.00",
+        "peer_age_min_seconds": 0.0,
+        "peer_age_max_seconds": 433.3149902820587,
+        "input_count": 26,
+        "excluded": {
+          "engine_mismatch": 1,
+          "fuel_mismatch": 7,
+          "mileage_mismatch": 4,
+          "transmission_mismatch": 6
+        },
+        "notices": [
+          "asking_prices_not_sales",
+          "mixed_or_unknown_peer_regions",
+          "quality_not_live_validated"
+        ],
+        "missing_fields": [],
+        "region_sample_count": 0,
+        "provenance": "experimental_peer_asking_v1",
+        "production_approved": false,
+        "confidence": "uncalibrated",
+        "diagnostic_thresholds": {
+          "5": true,
+          "10": true,
+          "15": false
+        }
+      }
+    }
+  ],
+  "listing_summary": {
+    "scenarios": 27,
+    "unknown": 0,
+    "reference_min": "16600.00",
+    "reference_max": "17599.50",
+    "threshold_changes": {
+      "5": 0,
+      "10": 5,
+      "15": 0
+    }
+  },
+  "region_summary": {
+    "scenarios": 12,
+    "unknown": 0,
+    "reference_min": "16600.00",
+    "reference_max": "17599.50",
+    "threshold_changes": {
+      "5": 0,
+      "10": 4,
+      "15": 0
+    }
+  },
+  "independent_accuracy_validation": false,
+  "production_approved": false,
+  "ready_for_delivery": false,
+  "thresholds_are_diagnostics_not_client_filters": true,
+  "input_sha256": "4ce54d970bd710af0ab2679d1bf1bd38574439e1918fb4fc6f37ab4552c701b1"
+}
