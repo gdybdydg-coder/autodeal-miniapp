@@ -51,7 +51,10 @@ def crosscheck_details(html,expected_id):
     matches=re.findall(r'(?<![\d.,])([1-9][0-9 ]*(?:[.,][0-9]{1,2})?)\s*\$',text)
     price=Decimal(matches[0].replace(' ','').replace(',','.')) if len(matches)==1 else None
     price_agrees=price is not None and details.currency=='USD' and price==details.price
-    if not price_agrees:issues.append('visible_price_missing_or_conflicting')
+    if details.currency != 'USD':
+        issues.append('visible_currency_not_crosschecked')
+    elif not price_agrees:
+        issues.append('visible_price_missing_or_conflicting')
     body=fields.get('descCharacteristicsValue','').split('•',1)[0].strip() or None
     # The literal known label is retained; never guess from model/title.
     engine=fields.get('descEngineEngine','')
@@ -69,6 +72,7 @@ def crosscheck_details(html,expected_id):
             'jsonld_price':str(details.price) if details.price is not None else None,
             'jsonld_currency':details.currency,'price_agrees':price_agrees,
             'body':body,'engine_cc':cc,'generation_text':fields.get('basicInfoGenerationBase'),
+            'generation':(fields.get('basicInfoGenerationBase','').split('•',1)[0].strip() or None),
             'transmission_text':trans,'drive_text':fields.get('descDriveTypeDriveType'),
             'visible_mileage_km':str(km) if km is not None else None,
             'issues':issues,'independent_seller_verification':False,

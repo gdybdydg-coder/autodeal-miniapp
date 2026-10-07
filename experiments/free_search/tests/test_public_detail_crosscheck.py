@@ -30,3 +30,16 @@ class DetailCrosscheckTests(TestCase):
     def test_dom_kilometres_conflict_is_visible(self):
         p=html(BASE)+'<div id="basicInfoTableMainInfo0">180 тис. км</div>'
         self.assertIn('mileage_conflict',crosscheck_details(p,ID)['issues'])
+
+    def test_generation_separated_from_explicit_trim_bullet(self):
+        p=html(BASE)+'<div id="basicInfoGenerationBase">V покоління (FL) • 2.5 CVT Premium</div>'
+        r=crosscheck_details(p,ID)
+        self.assertEqual(r['generation'],'V покоління (FL)')
+        self.assertIn('Premium',r['generation_text'])
+
+    def test_eur_offer_usd_display_is_unverified_not_price_contradiction(self):
+        data=deepcopy(BASE);data['offers']['priceCurrency']='EUR'
+        r=crosscheck_details(html(data)+'<div id="basicInfoPrice">6000 $</div>',ID)
+        self.assertFalse(r['price_agrees'])
+        self.assertIn('visible_currency_not_crosschecked',r['issues'])
+        self.assertNotIn('visible_price_missing_or_conflicting',r['issues'])
