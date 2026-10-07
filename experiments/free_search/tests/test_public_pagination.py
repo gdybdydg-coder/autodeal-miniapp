@@ -1,5 +1,5 @@
 from unittest import TestCase
-from experiments.free_search.public_pagination import inspect_page,assess_scan,route_page
+from experiments.free_search.public_pagination import inspect_page,assess_scan,route_page,nominal_windows
 
 BASE='https://auto.ria.com/uk/last/hour/'
 
@@ -64,3 +64,18 @@ class PaginationTests(TestCase):
     def test_empty_and_oversize(self):
         self.assertEqual(assess_scan([])['state'],'incomplete')
         with self.assertRaises(ValueError):inspect_page('x'*2_500_001,BASE)
+
+    def test_nominal_offsets_explain_repeated_window_without_claiming_coverage(self):
+        pages=[inspect_page(fixture(),BASE),inspect_page(fixture(1),BASE+'?page=2'),
+               inspect_page(fixture(2,20),BASE+'?page=3')]
+        r=nominal_windows(pages)
+        self.assertEqual(r['nominal_overlaps'],[[40,60]])
+        self.assertFalse(r['actual_rank_coverage_proven'])
+        self.assertIsNone(r['whole_market_recall'])
+
+    def test_nominal_gap_is_bounded_not_assumed_tail(self):
+        pages=[inspect_page(fixture(0,20),BASE),inspect_page(fixture(2,20),BASE+'?page=3')]
+        self.assertEqual(nominal_windows(pages)['nominal_gaps_before_last_observed_end'],[[20,40]])
+
+    def test_nominal_invalid_metadata_is_unknown(self):
+        self.assertEqual(nominal_windows([inspect_page('',BASE)])['state'],'unknown')

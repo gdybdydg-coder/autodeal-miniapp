@@ -137,3 +137,35 @@ def assess_scan(pages):
     return {'state':'incomplete' if reasons else 'declared_end_observed',
             'reasons':sorted(reasons), 'whole_market_recall':None,
             'atomic_snapshot_proven':False, 'automatic_request_authorized':False}
+
+
+def nominal_windows(pages):
+    """Explain offset-pagination risks, not actual source ranks or recall.
+
+    Assumes offset = page_index * page_size. This formula is a diagnostic
+    hypothesis until verified against the source. Scope changes and a moving
+    feed make actual coverage unknowable from these intervals alone.
+    """
+    windows, overlaps, gaps = [], [], []
+    for page in pages:
+        if (page.issues or type(page.page_index) is not int or
+                type(page.page_size) is not int or page.page_index < 0 or
+                not 1 <= page.page_size <= 200):
+            return {'state': 'unknown', 'reason': 'invalid_page_metadata',
+                    'whole_market_recall': None}
+        start = page.page_index * page.page_size
+        windows.append({'url': page.url, 'start': start,
+                        'end_exclusive': start + page.page_size})
+    end = 0
+    for window in sorted(windows, key=lambda item: item['start']):
+        start, stop = window['start'], window['end_exclusive']
+        if start > end:
+            gaps.append([end, start])
+        elif start < end:
+            overlaps.append([start, min(end, stop)])
+        end = max(end, stop)
+    return {'state': 'diagnostic_only', 'assumption': 'offset=page_index*page_size',
+            'windows': windows, 'nominal_overlaps': overlaps,
+            'nominal_gaps_before_last_observed_end': gaps,
+            'same_scope_metadata': len({p.scope_digest for p in pages}) == 1,
+            'actual_rank_coverage_proven': False, 'whole_market_recall': None}
