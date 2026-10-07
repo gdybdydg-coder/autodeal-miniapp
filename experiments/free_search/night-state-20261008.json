@@ -10,8 +10,8 @@
   "budget": {
     "max_public_gets": 120,
     "max_reserved_response_bytes": 160000000,
-    "reserved_gets": 26,
-    "reserved_response_bytes": 32840000,
+    "reserved_gets": 45,
+    "reserved_response_bytes": 55640000,
     "actual_gets": 23,
     "actual_known_body_bytes": 13741394
   },
@@ -165,6 +165,92 @@
       ],
       "max_requests": 3,
       "reserved_bytes": 3770000,
+      "status": "reserved"
+    },
+    {
+      "owner": "night2-2f35f270-b010-45b4-a06b-8954f3706dbc",
+      "batch": "frozen_19_2022_peers",
+      "reserved_at": "2026-10-07T22:58:32.966450+00:00",
+      "requests": [
+        {
+          "url": "https://auto.ria.com/uk/auto_mazda_cx_5_39937163.html",
+          "body_cap": 1200000
+        },
+        {
+          "url": "https://auto.ria.com/uk/auto_mazda_cx_5_40418295.html",
+          "body_cap": 1200000
+        },
+        {
+          "url": "https://auto.ria.com/uk/auto_mazda_cx_5_40480647.html",
+          "body_cap": 1200000
+        },
+        {
+          "url": "https://auto.ria.com/uk/auto_mazda_cx_5_40513269.html",
+          "body_cap": 1200000
+        },
+        {
+          "url": "https://auto.ria.com/uk/auto_mazda_cx_5_40494266.html",
+          "body_cap": 1200000
+        },
+        {
+          "url": "https://auto.ria.com/uk/auto_mazda_cx_5_40516776.html",
+          "body_cap": 1200000
+        },
+        {
+          "url": "https://auto.ria.com/uk/auto_mazda_cx_5_40509607.html",
+          "body_cap": 1200000
+        },
+        {
+          "url": "https://auto.ria.com/uk/auto_mazda_cx_5_40504877.html",
+          "body_cap": 1200000
+        },
+        {
+          "url": "https://auto.ria.com/uk/auto_mazda_cx_5_39766995.html",
+          "body_cap": 1200000
+        },
+        {
+          "url": "https://auto.ria.com/uk/auto_mazda_cx_5_39894276.html",
+          "body_cap": 1200000
+        },
+        {
+          "url": "https://auto.ria.com/uk/auto_mazda_cx_5_39919183.html",
+          "body_cap": 1200000
+        },
+        {
+          "url": "https://auto.ria.com/uk/auto_mazda_cx_5_40500381.html",
+          "body_cap": 1200000
+        },
+        {
+          "url": "https://auto.ria.com/uk/auto_mazda_cx_5_40349713.html",
+          "body_cap": 1200000
+        },
+        {
+          "url": "https://auto.ria.com/uk/auto_mazda_cx_5_39021111.html",
+          "body_cap": 1200000
+        },
+        {
+          "url": "https://auto.ria.com/uk/auto_mazda_cx_5_38582183.html",
+          "body_cap": 1200000
+        },
+        {
+          "url": "https://auto.ria.com/uk/auto_mazda_cx_5_40530470.html",
+          "body_cap": 1200000
+        },
+        {
+          "url": "https://auto.ria.com/uk/auto_mazda_cx_5_39574569.html",
+          "body_cap": 1200000
+        },
+        {
+          "url": "https://auto.ria.com/uk/auto_mazda_cx_5_40263559.html",
+          "body_cap": 1200000
+        },
+        {
+          "url": "https://auto.ria.com/uk/auto_mazda_cx_5_40396450.html",
+          "body_cap": 1200000
+        }
+      ],
+      "max_requests": 19,
+      "reserved_bytes": 22800000,
       "status": "reserved"
     }
   ],
