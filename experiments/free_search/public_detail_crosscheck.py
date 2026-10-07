@@ -14,15 +14,15 @@ FIELDS=frozenset({'basicInfoPrice','basicInfoTitle','basicInfoGenerationBase',
 VOID=frozenset('area base br col embed hr img input link meta param source track wbr'.split())
 
 class _Fields(HTMLParser):
-    def __init__(self):
-        super().__init__();self.stack=[];self.values={}
+    def __init__(self, fields=FIELDS):
+        super().__init__();self.stack=[];self.values={};self.fields=fields
     def handle_starttag(self,tag,attrs):
         d=dict(attrs);hidden=(tag in {'script','style','template','noscript'} or
             'hidden' in d or d.get('aria-hidden')=='true' or
             'display:none' in (d.get('style') or '').replace(' ','').lower() or
             bool(self.stack and self.stack[-1][2]))
         ident=d.get('id');parts=None
-        if ident in FIELDS and not hidden:
+        if ident in self.fields and not hidden:
             parts=[];self.values.setdefault(ident,[]).append(parts)
         if tag not in VOID:self.stack.append((tag,parts,hidden))
     def handle_endtag(self,tag):

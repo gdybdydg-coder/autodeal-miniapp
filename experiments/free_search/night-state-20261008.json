@@ -2,18 +2,14 @@
   "status": "ready",
   "authorized_scope": "isolated free AUTO.RIA research only",
   "stop_new_work_at": "2026-10-08T07:00:00+03:00",
-  "lease": {
-    "owner": "night1-f89f68fe-f913-4613-83b9-d0be9b24a96c",
-    "claimed_at": "2026-10-07T21:06:37.413350+00:00",
-    "expires_at": "2026-10-07T21:36:37.413350+00:00"
-  },
+  "lease": null,
   "budget": {
     "max_public_gets": 120,
     "max_reserved_response_bytes": 160000000,
     "reserved_gets": 23,
     "reserved_response_bytes": 29070000,
-    "actual_gets": 0,
-    "actual_known_body_bytes": 0
+    "actual_gets": 23,
+    "actual_known_body_bytes": 13741394
   },
   "source_hold": false,
   "reservations": [
@@ -33,7 +29,9 @@
       ],
       "max_requests": 2,
       "reserved_bytes": 2520000,
-      "status": "reserved"
+      "status": "completed",
+      "actual_gets": 2,
+      "actual_known_body_bytes": 505123
     },
     {
       "owner": "night1-f89f68fe-f913-4613-83b9-d0be9b24a96c",
@@ -51,7 +49,9 @@
       ],
       "max_requests": 2,
       "reserved_bytes": 3750000,
-      "status": "reserved"
+      "status": "completed",
+      "actual_gets": 2,
+      "actual_known_body_bytes": 1474933
     },
     {
       "owner": "night1-f89f68fe-f913-4613-83b9-d0be9b24a96c",
@@ -137,9 +137,13 @@
       ],
       "max_requests": 19,
       "reserved_bytes": 22800000,
-      "status": "reserved"
+      "status": "completed",
+      "actual_gets": 19,
+      "actual_known_body_bytes": 11761338
     }
   ],
-  "last_completed_step": "See CONTROL_REPORT_20261007.txt for the current-session evidence",
-  "next_step": "Build useful independent public peer coverage; distinguish asking-price validation from actual market accuracy; client filter segments remain unverified"
+  "last_completed_step": "NIGHT_CHECKPOINT_20261008_01.txt: Mazda2016 eight comparable peers, one of50 estimated; accident history/current condition uncertainty disclosed;307 tests",
+  "next_step": "Extend a second disjoint age/model cohort before tuning; preserve49 unknowns; actual client segments and condition-adjusted market accuracy remain unproven",
+  "last_released_owner": "night1-f89f68fe-f913-4613-83b9-d0be9b24a96c",
+  "last_completed_at": "2026-10-07T21:17:26.849314+00:00"
 }
