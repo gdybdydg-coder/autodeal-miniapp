@@ -22,6 +22,7 @@ from experiments.free_search.public_cards import parse_public_cards
 from experiments.free_search.public_details import parse_public_details
 from experiments.free_search.visible_adapter import parse_visible_facts
 from experiments.free_search.network_guard import CREDENTIAL_NAMES
+from experiments.free_search.public_pagination import inspect_page, assess_scan
 
 BASE = 'https://auto.ria.com'
 FEEDS = (BASE+'/uk/last/hour/', BASE+'/uk/last/hour/?page=2')
@@ -112,11 +113,14 @@ def run(*, feed_urls=FEEDS, detail_limit=2):
     try:
         robots.parse(fetch(ROBOTS).splitlines())
         cards = {}
+        page_metadata = []
         for url in feed_urls:
             html = fetch(url)
             observed = time.time()
             census = LinkCensus(); census.feed(html)
             rows = parse_public_cards(html)
+            metadata = inspect_page(html, url)
+            page_metadata.append(metadata)
             parsed_at = time.time()
             parsed_ids = {c.listing_id for c in rows}
             report['feeds'].append({'url': url, 'observed_at': observed, 'cards': len(rows),
@@ -124,10 +128,12 @@ def run(*, feed_urls=FEEDS, detail_limit=2):
                 'independent_link_census': len(census.ids),
                 'link_ids_missed_by_parser': sorted(census.ids-parsed_ids),
                 'parsed_at': parsed_at,
+                'pagination': asdict(metadata),
                 'rows': [asdict(c) for c in rows]})
             for c in rows:
                 if c.url and not c.issues:
                     cards.setdefault(c.listing_id, c)
+        report['coverage'] = assess_scan(page_metadata)
         for c in list(cards.values())[:detail_limit]:
             html = fetch(c.url)
             item = {'listing_id': c.listing_id, 'body_received_at': time.time()}

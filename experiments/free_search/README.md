@@ -2,6 +2,23 @@
 
 ## 2026-10-07 evidence continuation
 
+### Stage 1 pagination review
+
+`public_pagination.py` inspects both observed script attribute spellings for
+page index/size, a digest of the remaining query scope and the visible next
+link. `bounded_probe` now reports `coverage` separately from HTTP completion.
+Changing page sizes, changing declared scopes, gaps, ambiguous metadata or an
+unobserved terminal page keep coverage `incomplete`. A 20-card page is never
+itself proof of the end. Even a consistent declared end is not an atomic
+snapshot or whole-market completeness. Implicit versus explicit query defaults
+remain unresolved; the checker does not invent equivalence or alter URLs.
+
+The checker is diagnostic only: it adds no network routes, pagination loops,
+production integration, request-budget increases or automatic retries. Raw live
+HTML and customer diagnostic data are not committed. Independent control-card
+availability and page absence must be reported separately; the mechanism above
+does not prove the exact historical reason for any particular missing ID.
+
 `evidence_audit.py` separates unknown publication time, local public collection,
 and passive Render paid-production delivery timings. It reports each queue stage
 without substituting polling intervals or first detection for publication time.

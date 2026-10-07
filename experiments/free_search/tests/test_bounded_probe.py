@@ -8,6 +8,30 @@ from experiments.free_search.replay_demo import card, detail
 
 
 class ProbeTests(TestCase):
+    def test_successful_http_does_not_hide_inconsistent_pagination(self):
+        from experiments.free_search.bounded_probe import ALLOWED_FEEDS
+        from experiments.free_search.tests.test_public_pagination import fixture
+        class Response:
+            status = 200
+            headers = {}
+            def __init__(self,body): self.body=body.encode()
+            def read(self,limit): return self.body[:limit]
+            def __enter__(self): return self
+            def __exit__(self,*args): pass
+        class Opener:
+            def open(self,request,timeout):
+                if request.full_url.endswith('robots.txt'):
+                    return Response('User-agent: *\nAllow: /')
+                index=ALLOWED_FEEDS.index(request.full_url)
+                return Response(fixture(index,20 if index==2 else 100)+card(str(800+index)))
+        with patch('experiments.free_search.bounded_probe.build_opener',return_value=Opener()),patch('time.sleep'):
+            result=run(feed_urls=ALLOWED_FEEDS,detail_limit=0)
+        self.assertEqual(result['status'],'bounded_observation_complete')
+        self.assertEqual(result['coverage']['state'],'incomplete')
+        self.assertIn('page_size_changed',result['coverage']['reasons'])
+        self.assertEqual(len(result['requests']),4)
+        self.assertEqual(result['details'],[])
+
     def test_credentials_rejected_before_transport(self):
         with patch.dict('os.environ', {'RIA_API_KEY':'synthetic'}), patch('experiments.free_search.bounded_probe.build_opener') as opener:
             with self.assertRaisesRegex(ValueError, 'production_configuration_present'):
