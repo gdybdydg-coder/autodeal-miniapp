@@ -6,38 +6,15 @@ apiData are not data sources. No request, internal endpoint, key or paid cache.
 import json
 import re
 from hashlib import sha256
-from html.parser import HTMLParser
 from urllib.parse import parse_qsl, urlsplit
 
 
-class SearchStateError(ValueError):
-    pass
-
-
-class _Scripts(HTMLParser):
-    def __init__(self):
-        super().__init__(); self.active = False; self.scripts = []
-    def handle_starttag(self, tag, attrs):
-        if tag == 'script':
-            self.active = True; self.scripts.append('')
-    def handle_endtag(self, tag):
-        if tag == 'script': self.active = False
-    def handle_data(self, text):
-        if self.active: self.scripts[-1] += text
+from .embedded_state import EmbeddedStateError as SearchStateError, parse_embedded_state
 
 
 def parse_search_state(html):
-    if not isinstance(html, str) or len(html.encode()) > 2_500_000:
-        raise SearchStateError('html_oversize')
-    parser = _Scripts(); parser.feed(html)
-    marker = 'window.__PINIA__ = '
-    matches = [s for s in parser.scripts if marker in s]
-    if len(matches) != 1 or matches[0].count(marker) != 1:
-        raise SearchStateError('state_missing_or_ambiguous')
-    raw = matches[0].split(marker, 1)[1]
+    state = parse_embedded_state(html)
     try:
-        state, end = json.JSONDecoder().raw_decode(raw)
-        if raw[end:].strip() != ';': raise ValueError()
         listing = state['list']['lists']['items']
         meta = state['searchPage']['searchResultData']
         pairs = parse_qsl(meta['searchString'], strict_parsing=True, max_num_fields=80)

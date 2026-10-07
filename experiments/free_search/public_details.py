@@ -50,7 +50,7 @@ def _url_id(value):
         raise ParseError("invalid_identity") from None
     if p.scheme != "https" or p.netloc != "auto.ria.com" or p.query:
         raise ParseError("invalid_identity")
-    m = re.fullmatch(r"/(?:uk/)?auto_[a-z0-9_]+_([1-9][0-9]{0,11})\.html", p.path)
+    m = re.fullmatch(r"/(?:uk/)?auto_[a-z0-9_-]+_([1-9][0-9]{0,11})\.html", p.path)
     if not m:
         raise ParseError("invalid_identity")
     return m[1]
