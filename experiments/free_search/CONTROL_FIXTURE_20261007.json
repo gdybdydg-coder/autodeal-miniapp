@@ -1,0 +1,3659 @@
+{
+  "manifest": {
+    "frozen_at": 1791400897.9922507,
+    "source_sha256": "66a935b3409dc4e218f2b166bc7013d7c7a42a88132a07f025ee89eee963d185",
+    "candidates": [
+      {
+        "id": "40534354",
+        "url": "https://auto.ria.com/uk/auto_toyota_camry_40534354.html"
+      },
+      {
+        "id": "40020253",
+        "url": "https://auto.ria.com/uk/auto_audi_a4_40020253.html"
+      },
+      {
+        "id": "40534316",
+        "url": "https://auto.ria.com/uk/auto_volkswagen_golf_40534316.html"
+      },
+      {
+        "id": "40408057",
+        "url": "https://auto.ria.com/uk/auto_mazda_cx_5_40408057.html"
+      },
+      {
+        "id": "40534458",
+        "url": "https://auto.ria.com/uk/auto_renault_trafic_40534458.html"
+      },
+      {
+        "id": "40534496",
+        "url": "https://auto.ria.com/uk/auto_hyundai_santa_fe_40534496.html"
+      },
+      {
+        "id": "40534392",
+        "url": "https://auto.ria.com/uk/auto_ford_transit_40534392.html"
+      },
+      {
+        "id": "40534339",
+        "url": "https://auto.ria.com/uk/auto_renault_scenic_40534339.html"
+      },
+      {
+        "id": "40199387",
+        "url": "https://auto.ria.com/uk/auto_volvo_v50_40199387.html"
+      },
+      {
+        "id": "40534477",
+        "url": "https://auto.ria.com/uk/auto_volkswagen_touareg_40534477.html"
+      },
+      {
+        "id": "40534317",
+        "url": "https://auto.ria.com/uk/auto_peugeot_5008_40534317.html"
+      },
+      {
+        "id": "38096971",
+        "url": "https://auto.ria.com/uk/auto_daf_xf_105_38096971.html"
+      },
+      {
+        "id": "40534540",
+        "url": "https://auto.ria.com/uk/auto_kia_ceed_40534540.html"
+      },
+      {
+        "id": "40534461",
+        "url": "https://auto.ria.com/uk/auto_volkswagen_touran_40534461.html"
+      },
+      {
+        "id": "40534320",
+        "url": "https://auto.ria.com/uk/auto_maz_5337_40534320.html"
+      },
+      {
+        "id": "40534451",
+        "url": "https://auto.ria.com/uk/auto_volkswagen_tiguan_40534451.html"
+      },
+      {
+        "id": "40534462",
+        "url": "https://auto.ria.com/uk/auto_daewoo_sens_40534462.html"
+      },
+      {
+        "id": "39783103",
+        "url": "https://auto.ria.com/uk/auto_lexus_rx_39783103.html"
+      },
+      {
+        "id": "40534553",
+        "url": "https://auto.ria.com/uk/auto_skoda_enyaq_iv_40534553.html"
+      },
+      {
+        "id": "40082622",
+        "url": "https://auto.ria.com/uk/auto_ford_escape_40082622.html"
+      },
+      {
+        "id": "39040657",
+        "url": "https://auto.ria.com/uk/auto_mazda_cx_5_39040657.html"
+      },
+      {
+        "id": "39312488",
+        "url": "https://auto.ria.com/uk/auto_ford_focus_39312488.html"
+      },
+      {
+        "id": "39831497",
+        "url": "https://auto.ria.com/uk/auto_volkswagen_tiguan_39831497.html"
+      },
+      {
+        "id": "39549833",
+        "url": "https://auto.ria.com/uk/auto_bmw_x3_39549833.html"
+      },
+      {
+        "id": "39806125",
+        "url": "https://auto.ria.com/uk/auto_ford_edge_39806125.html"
+      },
+      {
+        "id": "38635727",
+        "url": "https://auto.ria.com/uk/auto_audi_q3_38635727.html"
+      },
+      {
+        "id": "40349697",
+        "url": "https://auto.ria.com/uk/auto_hyundai_ioniq_40349697.html"
+      },
+      {
+        "id": "40534559",
+        "url": "https://auto.ria.com/uk/auto_land_rover_discovery_sport_40534559.html"
+      },
+      {
+        "id": "40405105",
+        "url": "https://auto.ria.com/uk/auto_hyundai_ioniq_5_40405105.html"
+      },
+      {
+        "id": "39959411",
+        "url": "https://auto.ria.com/uk/auto_mercedes_benz_amg_gt_4_door_coupe_39959411.html"
+      },
+      {
+        "id": "40534517",
+        "url": "https://auto.ria.com/uk/auto_kia_ev6_40534517.html"
+      },
+      {
+        "id": "39719405",
+        "url": "https://auto.ria.com/uk/auto_hyundai_sonata_39719405.html"
+      },
+      {
+        "id": "40534465",
+        "url": "https://auto.ria.com/uk/auto_volkswagen_golf_plus_40534465.html"
+      },
+      {
+        "id": "40421479",
+        "url": "https://auto.ria.com/uk/auto_subaru_outback_40421479.html"
+      },
+      {
+        "id": "40040939",
+        "url": "https://auto.ria.com/uk/auto_jeep_renegade_40040939.html"
+      },
+      {
+        "id": "40534410",
+        "url": "https://auto.ria.com/uk/auto_skoda_octavia_40534410.html"
+      },
+      {
+        "id": "40534402",
+        "url": "https://auto.ria.com/uk/auto_volvo_xc60_40534402.html"
+      },
+      {
+        "id": "40534381",
+        "url": "https://auto.ria.com/uk/auto_toyota_corolla_40534381.html"
+      },
+      {
+        "id": "40534350",
+        "url": "https://auto.ria.com/uk/auto_ford_transit_custom_40534350.html"
+      },
+      {
+        "id": "39352375",
+        "url": "https://auto.ria.com/uk/auto_audi_q7_39352375.html"
+      },
+      {
+        "id": "39768069",
+        "url": "https://auto.ria.com/uk/auto_audi_a7_sportback_39768069.html"
+      },
+      {
+        "id": "40534546",
+        "url": "https://auto.ria.com/uk/auto_bmw_5_series_40534546.html"
+      },
+      {
+        "id": "39595302",
+        "url": "https://auto.ria.com/uk/auto_volkswagen_golf_39595302.html"
+      },
+      {
+        "id": "40534505",
+        "url": "https://auto.ria.com/uk/auto_peugeot_3008_40534505.html"
+      },
+      {
+        "id": "40534501",
+        "url": "https://auto.ria.com/uk/auto_renault_scenic_40534501.html"
+      },
+      {
+        "id": "40534400",
+        "url": "https://auto.ria.com/uk/auto_audi_sq5_40534400.html"
+      },
+      {
+        "id": "40534361",
+        "url": "https://auto.ria.com/uk/auto_renault_megane_40534361.html"
+      },
+      {
+        "id": "40534183",
+        "url": "https://auto.ria.com/uk/auto_bmw_5_series_40534183.html"
+      },
+      {
+        "id": "40534547",
+        "url": "https://auto.ria.com/uk/auto_bmw_i4_40534547.html"
+      },
+      {
+        "id": "40451438",
+        "url": "https://auto.ria.com/uk/auto_mercedes_benz_s_class_40451438.html"
+      }
+    ],
+    "selection": "first_50_unique_valid_link_ids_source_order",
+    "prices_used_for_selection": false
+  },
+  "result": {
+    "audit": {
+      "control_count": 50,
+      "discovered_count": 5,
+      "missing_ids": [
+        "40534354",
+        "40020253",
+        "40534316",
+        "40408057",
+        "40534458",
+        "40534496",
+        "40534392",
+        "40534339",
+        "40534477",
+        "40534317",
+        "38096971",
+        "40534540",
+        "40534461",
+        "40534320",
+        "40534451",
+        "40534462",
+        "39783103",
+        "40082622",
+        "39040657",
+        "39312488",
+        "39831497",
+        "39549833",
+        "39806125",
+        "38635727",
+        "40349697",
+        "40405105",
+        "39959411",
+        "40534517",
+        "39719405",
+        "40534465",
+        "40421479",
+        "40040939",
+        "40534410",
+        "40534402",
+        "40534381",
+        "40534350",
+        "39352375",
+        "39768069",
+        "40534546",
+        "39595302",
+        "40534505",
+        "40534501",
+        "40534400",
+        "40534361",
+        "40534183"
+      ],
+      "detail_ready_count": 50,
+      "estimated_count": 0,
+      "unknown_count": 50,
+      "valuation_not_attempted_count": 0,
+      "rows": [
+        {
+          "listing_id": "40534354",
+          "discovered": false,
+          "detail_status": "prepared",
+          "detail_reason": null,
+          "valuation_status": "unknown",
+          "valuation_reason": "too_few_comparable_peers",
+          "publication_at": null,
+          "ready_for_delivery": false
+        },
+        {
+          "listing_id": "40020253",
+          "discovered": false,
+          "detail_status": "prepared",
+          "detail_reason": null,
+          "valuation_status": "unknown",
+          "valuation_reason": "too_few_comparable_peers",
+          "publication_at": null,
+          "ready_for_delivery": false
+        },
+        {
+          "listing_id": "40534316",
+          "discovered": false,
+          "detail_status": "prepared",
+          "detail_reason": null,
+          "valuation_status": "unknown",
+          "valuation_reason": "too_few_comparable_peers",
+          "publication_at": null,
+          "ready_for_delivery": false
+        },
+        {
+          "listing_id": "40408057",
+          "discovered": false,
+          "detail_status": "prepared",
+          "detail_reason": null,
+          "valuation_status": "unknown",
+          "valuation_reason": "too_few_comparable_peers",
+          "publication_at": null,
+          "ready_for_delivery": false
+        },
+        {
+          "listing_id": "40534458",
+          "discovered": false,
+          "detail_status": "prepared",
+          "detail_reason": null,
+          "valuation_status": "unknown",
+          "valuation_reason": "too_few_comparable_peers",
+          "publication_at": null,
+          "ready_for_delivery": false
+        },
+        {
+          "listing_id": "40534496",
+          "discovered": false,
+          "detail_status": "prepared",
+          "detail_reason": null,
+          "valuation_status": "unknown",
+          "valuation_reason": "too_few_comparable_peers",
+          "publication_at": null,
+          "ready_for_delivery": false
+        },
+        {
+          "listing_id": "40534392",
+          "discovered": false,
+          "detail_status": "prepared",
+          "detail_reason": null,
+          "valuation_status": "unknown",
+          "valuation_reason": "too_few_comparable_peers",
+          "publication_at": null,
+          "ready_for_delivery": false
+        },
+        {
+          "listing_id": "40534339",
+          "discovered": false,
+          "detail_status": "prepared",
+          "detail_reason": null,
+          "valuation_status": "unknown",
+          "valuation_reason": "too_few_comparable_peers",
+          "publication_at": null,
+          "ready_for_delivery": false
+        },
+        {
+          "listing_id": "40199387",
+          "discovered": true,
+          "detail_status": "prepared",
+          "detail_reason": null,
+          "valuation_status": "unknown",
+          "valuation_reason": "too_few_comparable_peers",
+          "publication_at": null,
+          "ready_for_delivery": false
+        },
+        {
+          "listing_id": "40534477",
+          "discovered": false,
+          "detail_status": "prepared",
+          "detail_reason": null,
+          "valuation_status": "unknown",
+          "valuation_reason": "too_few_comparable_peers",
+          "publication_at": null,
+          "ready_for_delivery": false
+        },
+        {
+          "listing_id": "40534317",
+          "discovered": false,
+          "detail_status": "prepared",
+          "detail_reason": null,
+          "valuation_status": "unknown",
+          "valuation_reason": "too_few_comparable_peers",
+          "publication_at": null,
+          "ready_for_delivery": false
+        },
+        {
+          "listing_id": "38096971",
+          "discovered": false,
+          "detail_status": "prepared",
+          "detail_reason": null,
+          "valuation_status": "unknown",
+          "valuation_reason": "too_few_comparable_peers",
+          "publication_at": null,
+          "ready_for_delivery": false
+        },
+        {
+          "listing_id": "40534540",
+          "discovered": false,
+          "detail_status": "prepared",
+          "detail_reason": null,
+          "valuation_status": "unknown",
+          "valuation_reason": "too_few_comparable_peers",
+          "publication_at": null,
+          "ready_for_delivery": false
+        },
+        {
+          "listing_id": "40534461",
+          "discovered": false,
+          "detail_status": "prepared",
+          "detail_reason": null,
+          "valuation_status": "unknown",
+          "valuation_reason": "too_few_comparable_peers",
+          "publication_at": null,
+          "ready_for_delivery": false
+        },
+        {
+          "listing_id": "40534320",
+          "discovered": false,
+          "detail_status": "prepared",
+          "detail_reason": null,
+          "valuation_status": "unknown",
+          "valuation_reason": "too_few_comparable_peers",
+          "publication_at": null,
+          "ready_for_delivery": false
+        },
+        {
+          "listing_id": "40534451",
+          "discovered": false,
+          "detail_status": "prepared",
+          "detail_reason": null,
+          "valuation_status": "unknown",
+          "valuation_reason": "too_few_comparable_peers",
+          "publication_at": null,
+          "ready_for_delivery": false
+        },
+        {
+          "listing_id": "40534462",
+          "discovered": false,
+          "detail_status": "prepared",
+          "detail_reason": null,
+          "valuation_status": "unknown",
+          "valuation_reason": "too_few_comparable_peers",
+          "publication_at": null,
+          "ready_for_delivery": false
+        },
+        {
+          "listing_id": "39783103",
+          "discovered": false,
+          "detail_status": "prepared",
+          "detail_reason": null,
+          "valuation_status": "unknown",
+          "valuation_reason": "too_few_comparable_peers",
+          "publication_at": null,
+          "ready_for_delivery": false
+        },
+        {
+          "listing_id": "40534553",
+          "discovered": true,
+          "detail_status": "prepared",
+          "detail_reason": null,
+          "valuation_status": "unknown",
+          "valuation_reason": "too_few_comparable_peers",
+          "publication_at": null,
+          "ready_for_delivery": false
+        },
+        {
+          "listing_id": "40082622",
+          "discovered": false,
+          "detail_status": "prepared",
+          "detail_reason": null,
+          "valuation_status": "unknown",
+          "valuation_reason": "too_few_comparable_peers",
+          "publication_at": null,
+          "ready_for_delivery": false
+        },
+        {
+          "listing_id": "39040657",
+          "discovered": false,
+          "detail_status": "prepared",
+          "detail_reason": null,
+          "valuation_status": "unknown",
+          "valuation_reason": "too_few_comparable_peers",
+          "publication_at": null,
+          "ready_for_delivery": false
+        },
+        {
+          "listing_id": "39312488",
+          "discovered": false,
+          "detail_status": "prepared",
+          "detail_reason": null,
+          "valuation_status": "unknown",
+          "valuation_reason": "too_few_comparable_peers",
+          "publication_at": null,
+          "ready_for_delivery": false
+        },
+        {
+          "listing_id": "39831497",
+          "discovered": false,
+          "detail_status": "prepared",
+          "detail_reason": null,
+          "valuation_status": "unknown",
+          "valuation_reason": "too_few_comparable_peers",
+          "publication_at": null,
+          "ready_for_delivery": false
+        },
+        {
+          "listing_id": "39549833",
+          "discovered": false,
+          "detail_status": "prepared",
+          "detail_reason": null,
+          "valuation_status": "unknown",
+          "valuation_reason": "too_few_comparable_peers",
+          "publication_at": null,
+          "ready_for_delivery": false
+        },
+        {
+          "listing_id": "39806125",
+          "discovered": false,
+          "detail_status": "prepared",
+          "detail_reason": null,
+          "valuation_status": "unknown",
+          "valuation_reason": "too_few_comparable_peers",
+          "publication_at": null,
+          "ready_for_delivery": false
+        },
+        {
+          "listing_id": "38635727",
+          "discovered": false,
+          "detail_status": "prepared",
+          "detail_reason": null,
+          "valuation_status": "unknown",
+          "valuation_reason": "too_few_comparable_peers",
+          "publication_at": null,
+          "ready_for_delivery": false
+        },
+        {
+          "listing_id": "40349697",
+          "discovered": false,
+          "detail_status": "prepared",
+          "detail_reason": null,
+          "valuation_status": "unknown",
+          "valuation_reason": "too_few_comparable_peers",
+          "publication_at": null,
+          "ready_for_delivery": false
+        },
+        {
+          "listing_id": "40534559",
+          "discovered": true,
+          "detail_status": "prepared",
+          "detail_reason": null,
+          "valuation_status": "unknown",
+          "valuation_reason": "too_few_comparable_peers",
+          "publication_at": null,
+          "ready_for_delivery": false
+        },
+        {
+          "listing_id": "40405105",
+          "discovered": false,
+          "detail_status": "prepared",
+          "detail_reason": null,
+          "valuation_status": "unknown",
+          "valuation_reason": "too_few_comparable_peers",
+          "publication_at": null,
+          "ready_for_delivery": false
+        },
+        {
+          "listing_id": "39959411",
+          "discovered": false,
+          "detail_status": "prepared",
+          "detail_reason": null,
+          "valuation_status": "unknown",
+          "valuation_reason": "too_few_comparable_peers",
+          "publication_at": null,
+          "ready_for_delivery": false
+        },
+        {
+          "listing_id": "40534517",
+          "discovered": false,
+          "detail_status": "prepared",
+          "detail_reason": null,
+          "valuation_status": "unknown",
+          "valuation_reason": "too_few_comparable_peers",
+          "publication_at": null,
+          "ready_for_delivery": false
+        },
+        {
+          "listing_id": "39719405",
+          "discovered": false,
+          "detail_status": "prepared",
+          "detail_reason": null,
+          "valuation_status": "unknown",
+          "valuation_reason": "too_few_comparable_peers",
+          "publication_at": null,
+          "ready_for_delivery": false
+        },
+        {
+          "listing_id": "40534465",
+          "discovered": false,
+          "detail_status": "prepared",
+          "detail_reason": null,
+          "valuation_status": "unknown",
+          "valuation_reason": "too_few_comparable_peers",
+          "publication_at": null,
+          "ready_for_delivery": false
+        },
+        {
+          "listing_id": "40421479",
+          "discovered": false,
+          "detail_status": "prepared",
+          "detail_reason": null,
+          "valuation_status": "unknown",
+          "valuation_reason": "too_few_comparable_peers",
+          "publication_at": null,
+          "ready_for_delivery": false
+        },
+        {
+          "listing_id": "40040939",
+          "discovered": false,
+          "detail_status": "prepared",
+          "detail_reason": null,
+          "valuation_status": "unknown",
+          "valuation_reason": "too_few_comparable_peers",
+          "publication_at": null,
+          "ready_for_delivery": false
+        },
+        {
+          "listing_id": "40534410",
+          "discovered": false,
+          "detail_status": "prepared",
+          "detail_reason": null,
+          "valuation_status": "unknown",
+          "valuation_reason": "too_few_comparable_peers",
+          "publication_at": null,
+          "ready_for_delivery": false
+        },
+        {
+          "listing_id": "40534402",
+          "discovered": false,
+          "detail_status": "prepared",
+          "detail_reason": null,
+          "valuation_status": "unknown",
+          "valuation_reason": "too_few_comparable_peers",
+          "publication_at": null,
+          "ready_for_delivery": false
+        },
+        {
+          "listing_id": "40534381",
+          "discovered": false,
+          "detail_status": "prepared",
+          "detail_reason": null,
+          "valuation_status": "unknown",
+          "valuation_reason": "too_few_comparable_peers",
+          "publication_at": null,
+          "ready_for_delivery": false
+        },
+        {
+          "listing_id": "40534350",
+          "discovered": false,
+          "detail_status": "prepared",
+          "detail_reason": null,
+          "valuation_status": "unknown",
+          "valuation_reason": "too_few_comparable_peers",
+          "publication_at": null,
+          "ready_for_delivery": false
+        },
+        {
+          "listing_id": "39352375",
+          "discovered": false,
+          "detail_status": "prepared",
+          "detail_reason": null,
+          "valuation_status": "unknown",
+          "valuation_reason": "too_few_comparable_peers",
+          "publication_at": null,
+          "ready_for_delivery": false
+        },
+        {
+          "listing_id": "39768069",
+          "discovered": false,
+          "detail_status": "prepared",
+          "detail_reason": null,
+          "valuation_status": "unknown",
+          "valuation_reason": "too_few_comparable_peers",
+          "publication_at": null,
+          "ready_for_delivery": false
+        },
+        {
+          "listing_id": "40534546",
+          "discovered": false,
+          "detail_status": "prepared",
+          "detail_reason": null,
+          "valuation_status": "unknown",
+          "valuation_reason": "too_few_comparable_peers",
+          "publication_at": null,
+          "ready_for_delivery": false
+        },
+        {
+          "listing_id": "39595302",
+          "discovered": false,
+          "detail_status": "prepared",
+          "detail_reason": null,
+          "valuation_status": "unknown",
+          "valuation_reason": "too_few_comparable_peers",
+          "publication_at": null,
+          "ready_for_delivery": false
+        },
+        {
+          "listing_id": "40534505",
+          "discovered": false,
+          "detail_status": "prepared",
+          "detail_reason": null,
+          "valuation_status": "unknown",
+          "valuation_reason": "too_few_comparable_peers",
+          "publication_at": null,
+          "ready_for_delivery": false
+        },
+        {
+          "listing_id": "40534501",
+          "discovered": false,
+          "detail_status": "prepared",
+          "detail_reason": null,
+          "valuation_status": "unknown",
+          "valuation_reason": "too_few_comparable_peers",
+          "publication_at": null,
+          "ready_for_delivery": false
+        },
+        {
+          "listing_id": "40534400",
+          "discovered": false,
+          "detail_status": "prepared",
+          "detail_reason": null,
+          "valuation_status": "unknown",
+          "valuation_reason": "too_few_comparable_peers",
+          "publication_at": null,
+          "ready_for_delivery": false
+        },
+        {
+          "listing_id": "40534361",
+          "discovered": false,
+          "detail_status": "prepared",
+          "detail_reason": null,
+          "valuation_status": "unknown",
+          "valuation_reason": "too_few_comparable_peers",
+          "publication_at": null,
+          "ready_for_delivery": false
+        },
+        {
+          "listing_id": "40534183",
+          "discovered": false,
+          "detail_status": "prepared",
+          "detail_reason": null,
+          "valuation_status": "unknown",
+          "valuation_reason": "too_few_comparable_peers",
+          "publication_at": null,
+          "ready_for_delivery": false
+        },
+        {
+          "listing_id": "40534547",
+          "discovered": true,
+          "detail_status": "prepared",
+          "detail_reason": null,
+          "valuation_status": "unknown",
+          "valuation_reason": "too_few_comparable_peers",
+          "publication_at": null,
+          "ready_for_delivery": false
+        },
+        {
+          "listing_id": "40451438",
+          "discovered": true,
+          "detail_status": "prepared",
+          "detail_reason": null,
+          "valuation_status": "unknown",
+          "valuation_reason": "too_few_comparable_peers",
+          "publication_at": null,
+          "ready_for_delivery": false
+        }
+      ],
+      "whole_market_recall": null,
+      "publication_to_ready_seconds": null,
+      "independent_selection_verified_by_module": false,
+      "production_approved": false
+    },
+    "discovery_observations": [
+      {
+        "listing_id": "40534590",
+        "method": "collector_scan",
+        "observed_at": 1791400907.7503965
+      },
+      {
+        "listing_id": "40534607",
+        "method": "collector_scan",
+        "observed_at": 1791400907.7503965
+      },
+      {
+        "listing_id": "40534606",
+        "method": "collector_scan",
+        "observed_at": 1791400907.7503965
+      },
+      {
+        "listing_id": "40530120",
+        "method": "collector_scan",
+        "observed_at": 1791400907.7503965
+      },
+      {
+        "listing_id": "40534601",
+        "method": "collector_scan",
+        "observed_at": 1791400907.7503965
+      },
+      {
+        "listing_id": "40534598",
+        "method": "collector_scan",
+        "observed_at": 1791400907.7503965
+      },
+      {
+        "listing_id": "40534594",
+        "method": "collector_scan",
+        "observed_at": 1791400907.7503965
+      },
+      {
+        "listing_id": "40534593",
+        "method": "collector_scan",
+        "observed_at": 1791400907.7503965
+      },
+      {
+        "listing_id": "40390135",
+        "method": "collector_scan",
+        "observed_at": 1791400907.7503965
+      },
+      {
+        "listing_id": "40534603",
+        "method": "collector_scan",
+        "observed_at": 1791400907.7503965
+      },
+      {
+        "listing_id": "40534600",
+        "method": "collector_scan",
+        "observed_at": 1791400907.7503965
+      },
+      {
+        "listing_id": "40534596",
+        "method": "collector_scan",
+        "observed_at": 1791400907.7503965
+      },
+      {
+        "listing_id": "40534595",
+        "method": "collector_scan",
+        "observed_at": 1791400907.7503965
+      },
+      {
+        "listing_id": "36481023",
+        "method": "collector_scan",
+        "observed_at": 1791400907.7503965
+      },
+      {
+        "listing_id": "40534536",
+        "method": "collector_scan",
+        "observed_at": 1791400907.7503965
+      },
+      {
+        "listing_id": "40534269",
+        "method": "collector_scan",
+        "observed_at": 1791400907.7503965
+      },
+      {
+        "listing_id": "40534588",
+        "method": "collector_scan",
+        "observed_at": 1791400907.7503965
+      },
+      {
+        "listing_id": "40401340",
+        "method": "collector_scan",
+        "observed_at": 1791400907.7503965
+      },
+      {
+        "listing_id": "40534543",
+        "method": "collector_scan",
+        "observed_at": 1791400907.7503965
+      },
+      {
+        "listing_id": "40534592",
+        "method": "collector_scan",
+        "observed_at": 1791400907.7503965
+      },
+      {
+        "listing_id": "40534589",
+        "method": "collector_scan",
+        "observed_at": 1791400924.2555945
+      },
+      {
+        "listing_id": "40534585",
+        "method": "collector_scan",
+        "observed_at": 1791400924.2555945
+      },
+      {
+        "listing_id": "40534586",
+        "method": "collector_scan",
+        "observed_at": 1791400924.2555945
+      },
+      {
+        "listing_id": "40534547",
+        "method": "collector_scan",
+        "observed_at": 1791400924.2555945
+      },
+      {
+        "listing_id": "40534581",
+        "method": "collector_scan",
+        "observed_at": 1791400924.2555945
+      },
+      {
+        "listing_id": "40534580",
+        "method": "collector_scan",
+        "observed_at": 1791400924.2555945
+      },
+      {
+        "listing_id": "40451438",
+        "method": "collector_scan",
+        "observed_at": 1791400924.2555945
+      },
+      {
+        "listing_id": "40534577",
+        "method": "collector_scan",
+        "observed_at": 1791400924.2555945
+      },
+      {
+        "listing_id": "40534575",
+        "method": "collector_scan",
+        "observed_at": 1791400924.2555945
+      },
+      {
+        "listing_id": "40534573",
+        "method": "collector_scan",
+        "observed_at": 1791400924.2555945
+      },
+      {
+        "listing_id": "37055892",
+        "method": "collector_scan",
+        "observed_at": 1791400924.2555945
+      },
+      {
+        "listing_id": "40534576",
+        "method": "collector_scan",
+        "observed_at": 1791400924.2555945
+      },
+      {
+        "listing_id": "40394364",
+        "method": "collector_scan",
+        "observed_at": 1791400924.2555945
+      },
+      {
+        "listing_id": "39999413",
+        "method": "collector_scan",
+        "observed_at": 1791400924.2555945
+      },
+      {
+        "listing_id": "40534542",
+        "method": "collector_scan",
+        "observed_at": 1791400924.2555945
+      },
+      {
+        "listing_id": "40534569",
+        "method": "collector_scan",
+        "observed_at": 1791400924.2555945
+      },
+      {
+        "listing_id": "40534563",
+        "method": "collector_scan",
+        "observed_at": 1791400924.2555945
+      },
+      {
+        "listing_id": "40403213",
+        "method": "collector_scan",
+        "observed_at": 1791400924.2555945
+      },
+      {
+        "listing_id": "40534565",
+        "method": "collector_scan",
+        "observed_at": 1791400924.2555945
+      },
+      {
+        "listing_id": "40534552",
+        "method": "collector_scan",
+        "observed_at": 1791400924.2555945
+      },
+      {
+        "listing_id": "40534542",
+        "method": "collector_scan",
+        "observed_at": 1791400938.5020018
+      },
+      {
+        "listing_id": "40534569",
+        "method": "collector_scan",
+        "observed_at": 1791400938.5020018
+      },
+      {
+        "listing_id": "40534563",
+        "method": "collector_scan",
+        "observed_at": 1791400938.5020018
+      },
+      {
+        "listing_id": "40403213",
+        "method": "collector_scan",
+        "observed_at": 1791400938.5020018
+      },
+      {
+        "listing_id": "40534565",
+        "method": "collector_scan",
+        "observed_at": 1791400938.5020018
+      },
+      {
+        "listing_id": "40534552",
+        "method": "collector_scan",
+        "observed_at": 1791400938.5020018
+      },
+      {
+        "listing_id": "40534559",
+        "method": "collector_scan",
+        "observed_at": 1791400938.5020018
+      },
+      {
+        "listing_id": "40380271",
+        "method": "collector_scan",
+        "observed_at": 1791400938.5020018
+      },
+      {
+        "listing_id": "40534554",
+        "method": "collector_scan",
+        "observed_at": 1791400938.5020018
+      },
+      {
+        "listing_id": "40534555",
+        "method": "collector_scan",
+        "observed_at": 1791400938.5020018
+      },
+      {
+        "listing_id": "40534553",
+        "method": "collector_scan",
+        "observed_at": 1791400938.5020018
+      },
+      {
+        "listing_id": "40534556",
+        "method": "collector_scan",
+        "observed_at": 1791400938.5020018
+      },
+      {
+        "listing_id": "40358469",
+        "method": "collector_scan",
+        "observed_at": 1791400938.5020018
+      },
+      {
+        "listing_id": "40534562",
+        "method": "collector_scan",
+        "observed_at": 1791400938.5020018
+      },
+      {
+        "listing_id": "40366822",
+        "method": "collector_scan",
+        "observed_at": 1791400938.5020018
+      },
+      {
+        "listing_id": "40534549",
+        "method": "collector_scan",
+        "observed_at": 1791400938.5020018
+      },
+      {
+        "listing_id": "40534557",
+        "method": "collector_scan",
+        "observed_at": 1791400938.5020018
+      },
+      {
+        "listing_id": "40534367",
+        "method": "collector_scan",
+        "observed_at": 1791400938.5020018
+      },
+      {
+        "listing_id": "40534551",
+        "method": "collector_scan",
+        "observed_at": 1791400938.5020018
+      },
+      {
+        "listing_id": "40199387",
+        "method": "collector_scan",
+        "observed_at": 1791400938.5020018
+      }
+    ],
+    "details": [
+      {
+        "listing_id": "40534354",
+        "status": "prepared"
+      },
+      {
+        "listing_id": "40020253",
+        "status": "prepared"
+      },
+      {
+        "listing_id": "40534316",
+        "status": "prepared"
+      },
+      {
+        "listing_id": "40408057",
+        "status": "prepared"
+      },
+      {
+        "listing_id": "40534458",
+        "status": "prepared"
+      },
+      {
+        "listing_id": "40534496",
+        "status": "prepared"
+      },
+      {
+        "listing_id": "40534392",
+        "status": "prepared"
+      },
+      {
+        "listing_id": "40534339",
+        "status": "prepared"
+      },
+      {
+        "listing_id": "40199387",
+        "status": "prepared"
+      },
+      {
+        "listing_id": "40534477",
+        "status": "prepared"
+      },
+      {
+        "listing_id": "40534317",
+        "status": "prepared"
+      },
+      {
+        "listing_id": "38096971",
+        "status": "prepared"
+      },
+      {
+        "listing_id": "40534540",
+        "status": "prepared"
+      },
+      {
+        "listing_id": "40534461",
+        "status": "prepared"
+      },
+      {
+        "listing_id": "40534320",
+        "status": "prepared"
+      },
+      {
+        "listing_id": "40534451",
+        "status": "prepared"
+      },
+      {
+        "listing_id": "40534462",
+        "status": "prepared"
+      },
+      {
+        "listing_id": "39783103",
+        "status": "prepared"
+      },
+      {
+        "listing_id": "40534553",
+        "status": "prepared"
+      },
+      {
+        "listing_id": "40082622",
+        "status": "prepared"
+      },
+      {
+        "listing_id": "39040657",
+        "status": "prepared"
+      },
+      {
+        "listing_id": "39312488",
+        "status": "prepared"
+      },
+      {
+        "listing_id": "39831497",
+        "status": "prepared"
+      },
+      {
+        "listing_id": "39549833",
+        "status": "prepared"
+      },
+      {
+        "listing_id": "39806125",
+        "status": "prepared"
+      },
+      {
+        "listing_id": "38635727",
+        "status": "prepared"
+      },
+      {
+        "listing_id": "40349697",
+        "status": "prepared"
+      },
+      {
+        "listing_id": "40534559",
+        "status": "prepared"
+      },
+      {
+        "listing_id": "40405105",
+        "status": "prepared"
+      },
+      {
+        "listing_id": "39959411",
+        "status": "prepared"
+      },
+      {
+        "listing_id": "40534517",
+        "status": "prepared"
+      },
+      {
+        "listing_id": "39719405",
+        "status": "prepared"
+      },
+      {
+        "listing_id": "40534465",
+        "status": "prepared"
+      },
+      {
+        "listing_id": "40421479",
+        "status": "prepared"
+      },
+      {
+        "listing_id": "40040939",
+        "status": "prepared"
+      },
+      {
+        "listing_id": "40534410",
+        "status": "prepared"
+      },
+      {
+        "listing_id": "40534402",
+        "status": "prepared"
+      },
+      {
+        "listing_id": "40534381",
+        "status": "prepared"
+      },
+      {
+        "listing_id": "40534350",
+        "status": "prepared"
+      },
+      {
+        "listing_id": "39352375",
+        "status": "prepared"
+      },
+      {
+        "listing_id": "39768069",
+        "status": "prepared"
+      },
+      {
+        "listing_id": "40534546",
+        "status": "prepared"
+      },
+      {
+        "listing_id": "39595302",
+        "status": "prepared"
+      },
+      {
+        "listing_id": "40534505",
+        "status": "prepared"
+      },
+      {
+        "listing_id": "40534501",
+        "status": "prepared"
+      },
+      {
+        "listing_id": "40534400",
+        "status": "prepared"
+      },
+      {
+        "listing_id": "40534361",
+        "status": "prepared"
+      },
+      {
+        "listing_id": "40534183",
+        "status": "prepared"
+      },
+      {
+        "listing_id": "40534547",
+        "status": "prepared"
+      },
+      {
+        "listing_id": "40451438",
+        "status": "prepared"
+      }
+    ],
+    "valuations": [
+      {
+        "listing_id": "40534354",
+        "status": "unknown",
+        "classification": "insufficient_data",
+        "reason": "too_few_comparable_peers",
+        "currency": "USD",
+        "reference_price": null,
+        "reference_price_usd": null,
+        "discount_percent": null,
+        "sample_count": 0,
+        "as_of": 1791401596.8107648,
+        "lower_asking_price": null,
+        "median_asking_price": null,
+        "upper_asking_price": null,
+        "peer_age_min_seconds": null,
+        "peer_age_max_seconds": null,
+        "input_count": 27,
+        "excluded": {
+          "brand_mismatch": 27
+        },
+        "notices": [
+          "asking_prices_not_sales",
+          "quality_not_live_validated"
+        ],
+        "missing_fields": [],
+        "region_sample_count": 0,
+        "provenance": "experimental_peer_asking_v1",
+        "production_approved": false,
+        "confidence": "uncalibrated"
+      },
+      {
+        "listing_id": "40020253",
+        "status": "unknown",
+        "classification": "insufficient_data",
+        "reason": "too_few_comparable_peers",
+        "currency": "USD",
+        "reference_price": null,
+        "reference_price_usd": null,
+        "discount_percent": null,
+        "sample_count": 0,
+        "as_of": 1791401596.8923516,
+        "lower_asking_price": null,
+        "median_asking_price": null,
+        "upper_asking_price": null,
+        "peer_age_min_seconds": null,
+        "peer_age_max_seconds": null,
+        "input_count": 27,
+        "excluded": {
+          "brand_mismatch": 27
+        },
+        "notices": [
+          "asking_prices_not_sales",
+          "quality_not_live_validated",
+          "subject_optional_fields_missing"
+        ],
+        "missing_fields": [
+          "generation"
+        ],
+        "region_sample_count": 0,
+        "provenance": "experimental_peer_asking_v1",
+        "production_approved": false,
+        "confidence": "uncalibrated"
+      },
+      {
+        "listing_id": "40534316",
+        "status": "unknown",
+        "classification": "insufficient_data",
+        "reason": "too_few_comparable_peers",
+        "currency": "USD",
+        "reference_price": null,
+        "reference_price_usd": null,
+        "discount_percent": null,
+        "sample_count": 0,
+        "as_of": 1791401596.9879906,
+        "lower_asking_price": null,
+        "median_asking_price": null,
+        "upper_asking_price": null,
+        "peer_age_min_seconds": null,
+        "peer_age_max_seconds": null,
+        "input_count": 27,
+        "excluded": {
+          "brand_mismatch": 27
+        },
+        "notices": [
+          "asking_prices_not_sales",
+          "quality_not_live_validated"
+        ],
+        "missing_fields": [],
+        "region_sample_count": 0,
+        "provenance": "experimental_peer_asking_v1",
+        "production_approved": false,
+        "confidence": "uncalibrated"
+      },
+      {
+        "listing_id": "40408057",
+        "status": "unknown",
+        "classification": "insufficient_data",
+        "reason": "too_few_comparable_peers",
+        "currency": "USD",
+        "reference_price": null,
+        "reference_price_usd": null,
+        "discount_percent": null,
+        "sample_count": 0,
+        "as_of": 1791401597.0679607,
+        "lower_asking_price": null,
+        "median_asking_price": null,
+        "upper_asking_price": null,
+        "peer_age_min_seconds": null,
+        "peer_age_max_seconds": null,
+        "input_count": 27,
+        "excluded": {
+          "brand_mismatch": 27
+        },
+        "notices": [
+          "asking_prices_not_sales",
+          "quality_not_live_validated",
+          "subject_optional_fields_missing"
+        ],
+        "missing_fields": [
+          "generation"
+        ],
+        "region_sample_count": 0,
+        "provenance": "experimental_peer_asking_v1",
+        "production_approved": false,
+        "confidence": "uncalibrated"
+      },
+      {
+        "listing_id": "40534458",
+        "status": "unknown",
+        "classification": "insufficient_data",
+        "reason": "too_few_comparable_peers",
+        "currency": "USD",
+        "reference_price": null,
+        "reference_price_usd": null,
+        "discount_percent": null,
+        "sample_count": 0,
+        "as_of": 1791401597.155767,
+        "lower_asking_price": null,
+        "median_asking_price": null,
+        "upper_asking_price": null,
+        "peer_age_min_seconds": null,
+        "peer_age_max_seconds": null,
+        "input_count": 27,
+        "excluded": {
+          "brand_mismatch": 27
+        },
+        "notices": [
+          "asking_prices_not_sales",
+          "quality_not_live_validated",
+          "subject_optional_fields_missing"
+        ],
+        "missing_fields": [
+          "generation"
+        ],
+        "region_sample_count": 0,
+        "provenance": "experimental_peer_asking_v1",
+        "production_approved": false,
+        "confidence": "uncalibrated"
+      },
+      {
+        "listing_id": "40534496",
+        "status": "unknown",
+        "classification": "insufficient_data",
+        "reason": "too_few_comparable_peers",
+        "currency": "USD",
+        "reference_price": null,
+        "reference_price_usd": null,
+        "discount_percent": null,
+        "sample_count": 0,
+        "as_of": 1791401597.2562304,
+        "lower_asking_price": null,
+        "median_asking_price": null,
+        "upper_asking_price": null,
+        "peer_age_min_seconds": null,
+        "peer_age_max_seconds": null,
+        "input_count": 27,
+        "excluded": {
+          "brand_mismatch": 27
+        },
+        "notices": [
+          "asking_prices_not_sales",
+          "quality_not_live_validated"
+        ],
+        "missing_fields": [],
+        "region_sample_count": 0,
+        "provenance": "experimental_peer_asking_v1",
+        "production_approved": false,
+        "confidence": "uncalibrated"
+      },
+      {
+        "listing_id": "40534392",
+        "status": "unknown",
+        "classification": "insufficient_data",
+        "reason": "too_few_comparable_peers",
+        "currency": "USD",
+        "reference_price": null,
+        "reference_price_usd": null,
+        "discount_percent": null,
+        "sample_count": 0,
+        "as_of": 1791401597.3370433,
+        "lower_asking_price": null,
+        "median_asking_price": null,
+        "upper_asking_price": null,
+        "peer_age_min_seconds": null,
+        "peer_age_max_seconds": null,
+        "input_count": 27,
+        "excluded": {
+          "brand_mismatch": 27
+        },
+        "notices": [
+          "asking_prices_not_sales",
+          "quality_not_live_validated"
+        ],
+        "missing_fields": [],
+        "region_sample_count": 0,
+        "provenance": "experimental_peer_asking_v1",
+        "production_approved": false,
+        "confidence": "uncalibrated"
+      },
+      {
+        "listing_id": "40534339",
+        "status": "unknown",
+        "classification": "insufficient_data",
+        "reason": "too_few_comparable_peers",
+        "currency": "USD",
+        "reference_price": null,
+        "reference_price_usd": null,
+        "discount_percent": null,
+        "sample_count": 0,
+        "as_of": 1791401597.4170651,
+        "lower_asking_price": null,
+        "median_asking_price": null,
+        "upper_asking_price": null,
+        "peer_age_min_seconds": null,
+        "peer_age_max_seconds": null,
+        "input_count": 27,
+        "excluded": {
+          "brand_mismatch": 27
+        },
+        "notices": [
+          "asking_prices_not_sales",
+          "quality_not_live_validated"
+        ],
+        "missing_fields": [],
+        "region_sample_count": 0,
+        "provenance": "experimental_peer_asking_v1",
+        "production_approved": false,
+        "confidence": "uncalibrated"
+      },
+      {
+        "listing_id": "40199387",
+        "status": "unknown",
+        "classification": "insufficient_data",
+        "reason": "too_few_comparable_peers",
+        "currency": "USD",
+        "reference_price": null,
+        "reference_price_usd": null,
+        "discount_percent": null,
+        "sample_count": 0,
+        "as_of": 1791401597.5051415,
+        "lower_asking_price": null,
+        "median_asking_price": null,
+        "upper_asking_price": null,
+        "peer_age_min_seconds": null,
+        "peer_age_max_seconds": null,
+        "input_count": 27,
+        "excluded": {
+          "brand_mismatch": 27
+        },
+        "notices": [
+          "asking_prices_not_sales",
+          "quality_not_live_validated"
+        ],
+        "missing_fields": [],
+        "region_sample_count": 0,
+        "provenance": "experimental_peer_asking_v1",
+        "production_approved": false,
+        "confidence": "uncalibrated"
+      },
+      {
+        "listing_id": "40534477",
+        "status": "unknown",
+        "classification": "insufficient_data",
+        "reason": "too_few_comparable_peers",
+        "currency": "USD",
+        "reference_price": null,
+        "reference_price_usd": null,
+        "discount_percent": null,
+        "sample_count": 0,
+        "as_of": 1791401597.574454,
+        "lower_asking_price": null,
+        "median_asking_price": null,
+        "upper_asking_price": null,
+        "peer_age_min_seconds": null,
+        "peer_age_max_seconds": null,
+        "input_count": 27,
+        "excluded": {
+          "brand_mismatch": 27
+        },
+        "notices": [
+          "asking_prices_not_sales",
+          "quality_not_live_validated",
+          "subject_optional_fields_missing"
+        ],
+        "missing_fields": [
+          "engine"
+        ],
+        "region_sample_count": 0,
+        "provenance": "experimental_peer_asking_v1",
+        "production_approved": false,
+        "confidence": "uncalibrated"
+      },
+      {
+        "listing_id": "40534317",
+        "status": "unknown",
+        "classification": "insufficient_data",
+        "reason": "too_few_comparable_peers",
+        "currency": "USD",
+        "reference_price": null,
+        "reference_price_usd": null,
+        "discount_percent": null,
+        "sample_count": 0,
+        "as_of": 1791401597.674801,
+        "lower_asking_price": null,
+        "median_asking_price": null,
+        "upper_asking_price": null,
+        "peer_age_min_seconds": null,
+        "peer_age_max_seconds": null,
+        "input_count": 27,
+        "excluded": {
+          "brand_mismatch": 27
+        },
+        "notices": [
+          "asking_prices_not_sales",
+          "quality_not_live_validated"
+        ],
+        "missing_fields": [],
+        "region_sample_count": 0,
+        "provenance": "experimental_peer_asking_v1",
+        "production_approved": false,
+        "confidence": "uncalibrated"
+      },
+      {
+        "listing_id": "38096971",
+        "status": "unknown",
+        "classification": "insufficient_data",
+        "reason": "too_few_comparable_peers",
+        "currency": "USD",
+        "reference_price": null,
+        "reference_price_usd": null,
+        "discount_percent": null,
+        "sample_count": 0,
+        "as_of": 1791401597.7276998,
+        "lower_asking_price": null,
+        "median_asking_price": null,
+        "upper_asking_price": null,
+        "peer_age_min_seconds": null,
+        "peer_age_max_seconds": null,
+        "input_count": 27,
+        "excluded": {
+          "brand_mismatch": 27
+        },
+        "notices": [
+          "asking_prices_not_sales",
+          "quality_not_live_validated",
+          "subject_optional_fields_missing"
+        ],
+        "missing_fields": [
+          "engine",
+          "generation"
+        ],
+        "region_sample_count": 0,
+        "provenance": "experimental_peer_asking_v1",
+        "production_approved": false,
+        "confidence": "uncalibrated"
+      },
+      {
+        "listing_id": "40534540",
+        "status": "unknown",
+        "classification": "insufficient_data",
+        "reason": "too_few_comparable_peers",
+        "currency": "USD",
+        "reference_price": null,
+        "reference_price_usd": null,
+        "discount_percent": null,
+        "sample_count": 0,
+        "as_of": 1791401597.7968798,
+        "lower_asking_price": null,
+        "median_asking_price": null,
+        "upper_asking_price": null,
+        "peer_age_min_seconds": null,
+        "peer_age_max_seconds": null,
+        "input_count": 27,
+        "excluded": {
+          "brand_mismatch": 27
+        },
+        "notices": [
+          "asking_prices_not_sales",
+          "quality_not_live_validated"
+        ],
+        "missing_fields": [],
+        "region_sample_count": 0,
+        "provenance": "experimental_peer_asking_v1",
+        "production_approved": false,
+        "confidence": "uncalibrated"
+      },
+      {
+        "listing_id": "40534461",
+        "status": "unknown",
+        "classification": "insufficient_data",
+        "reason": "too_few_comparable_peers",
+        "currency": "USD",
+        "reference_price": null,
+        "reference_price_usd": null,
+        "discount_percent": null,
+        "sample_count": 0,
+        "as_of": 1791401597.8730452,
+        "lower_asking_price": null,
+        "median_asking_price": null,
+        "upper_asking_price": null,
+        "peer_age_min_seconds": null,
+        "peer_age_max_seconds": null,
+        "input_count": 27,
+        "excluded": {
+          "brand_mismatch": 27
+        },
+        "notices": [
+          "asking_prices_not_sales",
+          "quality_not_live_validated"
+        ],
+        "missing_fields": [],
+        "region_sample_count": 0,
+        "provenance": "experimental_peer_asking_v1",
+        "production_approved": false,
+        "confidence": "uncalibrated"
+      },
+      {
+        "listing_id": "40534320",
+        "status": "unknown",
+        "classification": "insufficient_data",
+        "reason": "too_few_comparable_peers",
+        "currency": "USD",
+        "reference_price": null,
+        "reference_price_usd": null,
+        "discount_percent": null,
+        "sample_count": 0,
+        "as_of": 1791401597.9147446,
+        "lower_asking_price": null,
+        "median_asking_price": null,
+        "upper_asking_price": null,
+        "peer_age_min_seconds": null,
+        "peer_age_max_seconds": null,
+        "input_count": 27,
+        "excluded": {
+          "brand_mismatch": 27
+        },
+        "notices": [
+          "asking_prices_not_sales",
+          "quality_not_live_validated",
+          "subject_optional_fields_missing"
+        ],
+        "missing_fields": [
+          "engine",
+          "generation",
+          "mileage_km",
+          "transmission"
+        ],
+        "region_sample_count": 0,
+        "provenance": "experimental_peer_asking_v1",
+        "production_approved": false,
+        "confidence": "uncalibrated"
+      },
+      {
+        "listing_id": "40534451",
+        "status": "unknown",
+        "classification": "insufficient_data",
+        "reason": "too_few_comparable_peers",
+        "currency": "USD",
+        "reference_price": null,
+        "reference_price_usd": null,
+        "discount_percent": null,
+        "sample_count": 0,
+        "as_of": 1791401597.9899006,
+        "lower_asking_price": null,
+        "median_asking_price": null,
+        "upper_asking_price": null,
+        "peer_age_min_seconds": null,
+        "peer_age_max_seconds": null,
+        "input_count": 27,
+        "excluded": {
+          "brand_mismatch": 27
+        },
+        "notices": [
+          "asking_prices_not_sales",
+          "quality_not_live_validated",
+          "subject_optional_fields_missing"
+        ],
+        "missing_fields": [
+          "generation"
+        ],
+        "region_sample_count": 0,
+        "provenance": "experimental_peer_asking_v1",
+        "production_approved": false,
+        "confidence": "uncalibrated"
+      },
+      {
+        "listing_id": "40534462",
+        "status": "unknown",
+        "classification": "insufficient_data",
+        "reason": "too_few_comparable_peers",
+        "currency": "USD",
+        "reference_price": null,
+        "reference_price_usd": null,
+        "discount_percent": null,
+        "sample_count": 0,
+        "as_of": 1791401598.061002,
+        "lower_asking_price": null,
+        "median_asking_price": null,
+        "upper_asking_price": null,
+        "peer_age_min_seconds": null,
+        "peer_age_max_seconds": null,
+        "input_count": 27,
+        "excluded": {
+          "brand_mismatch": 27
+        },
+        "notices": [
+          "asking_prices_not_sales",
+          "quality_not_live_validated"
+        ],
+        "missing_fields": [],
+        "region_sample_count": 0,
+        "provenance": "experimental_peer_asking_v1",
+        "production_approved": false,
+        "confidence": "uncalibrated"
+      },
+      {
+        "listing_id": "39783103",
+        "status": "unknown",
+        "classification": "insufficient_data",
+        "reason": "too_few_comparable_peers",
+        "currency": "USD",
+        "reference_price": null,
+        "reference_price_usd": null,
+        "discount_percent": null,
+        "sample_count": 0,
+        "as_of": 1791401598.1544578,
+        "lower_asking_price": null,
+        "median_asking_price": null,
+        "upper_asking_price": null,
+        "peer_age_min_seconds": null,
+        "peer_age_max_seconds": null,
+        "input_count": 27,
+        "excluded": {
+          "brand_mismatch": 27
+        },
+        "notices": [
+          "asking_prices_not_sales",
+          "quality_not_live_validated"
+        ],
+        "missing_fields": [],
+        "region_sample_count": 0,
+        "provenance": "experimental_peer_asking_v1",
+        "production_approved": false,
+        "confidence": "uncalibrated"
+      },
+      {
+        "listing_id": "40534553",
+        "status": "unknown",
+        "classification": "insufficient_data",
+        "reason": "too_few_comparable_peers",
+        "currency": "USD",
+        "reference_price": null,
+        "reference_price_usd": null,
+        "discount_percent": null,
+        "sample_count": 0,
+        "as_of": 1791401598.2614417,
+        "lower_asking_price": null,
+        "median_asking_price": null,
+        "upper_asking_price": null,
+        "peer_age_min_seconds": null,
+        "peer_age_max_seconds": null,
+        "input_count": 27,
+        "excluded": {
+          "brand_mismatch": 27
+        },
+        "notices": [
+          "asking_prices_not_sales",
+          "quality_not_live_validated",
+          "subject_optional_fields_missing"
+        ],
+        "missing_fields": [
+          "engine"
+        ],
+        "region_sample_count": 0,
+        "provenance": "experimental_peer_asking_v1",
+        "production_approved": false,
+        "confidence": "uncalibrated"
+      },
+      {
+        "listing_id": "40082622",
+        "status": "unknown",
+        "classification": "insufficient_data",
+        "reason": "too_few_comparable_peers",
+        "currency": "USD",
+        "reference_price": null,
+        "reference_price_usd": null,
+        "discount_percent": null,
+        "sample_count": 0,
+        "as_of": 1791401598.3465834,
+        "lower_asking_price": null,
+        "median_asking_price": null,
+        "upper_asking_price": null,
+        "peer_age_min_seconds": null,
+        "peer_age_max_seconds": null,
+        "input_count": 27,
+        "excluded": {
+          "brand_mismatch": 27
+        },
+        "notices": [
+          "asking_prices_not_sales",
+          "quality_not_live_validated"
+        ],
+        "missing_fields": [],
+        "region_sample_count": 0,
+        "provenance": "experimental_peer_asking_v1",
+        "production_approved": false,
+        "confidence": "uncalibrated"
+      },
+      {
+        "listing_id": "39040657",
+        "status": "unknown",
+        "classification": "insufficient_data",
+        "reason": "too_few_comparable_peers",
+        "currency": "USD",
+        "reference_price": null,
+        "reference_price_usd": null,
+        "discount_percent": null,
+        "sample_count": 0,
+        "as_of": 1791401598.4392412,
+        "lower_asking_price": null,
+        "median_asking_price": null,
+        "upper_asking_price": null,
+        "peer_age_min_seconds": null,
+        "peer_age_max_seconds": null,
+        "input_count": 27,
+        "excluded": {
+          "brand_mismatch": 27
+        },
+        "notices": [
+          "asking_prices_not_sales",
+          "quality_not_live_validated"
+        ],
+        "missing_fields": [],
+        "region_sample_count": 0,
+        "provenance": "experimental_peer_asking_v1",
+        "production_approved": false,
+        "confidence": "uncalibrated"
+      },
+      {
+        "listing_id": "39312488",
+        "status": "unknown",
+        "classification": "insufficient_data",
+        "reason": "too_few_comparable_peers",
+        "currency": "USD",
+        "reference_price": null,
+        "reference_price_usd": null,
+        "discount_percent": null,
+        "sample_count": 0,
+        "as_of": 1791401598.5306997,
+        "lower_asking_price": null,
+        "median_asking_price": null,
+        "upper_asking_price": null,
+        "peer_age_min_seconds": null,
+        "peer_age_max_seconds": null,
+        "input_count": 27,
+        "excluded": {
+          "brand_mismatch": 27
+        },
+        "notices": [
+          "asking_prices_not_sales",
+          "quality_not_live_validated"
+        ],
+        "missing_fields": [],
+        "region_sample_count": 0,
+        "provenance": "experimental_peer_asking_v1",
+        "production_approved": false,
+        "confidence": "uncalibrated"
+      },
+      {
+        "listing_id": "39831497",
+        "status": "unknown",
+        "classification": "insufficient_data",
+        "reason": "too_few_comparable_peers",
+        "currency": "USD",
+        "reference_price": null,
+        "reference_price_usd": null,
+        "discount_percent": null,
+        "sample_count": 0,
+        "as_of": 1791401598.6213918,
+        "lower_asking_price": null,
+        "median_asking_price": null,
+        "upper_asking_price": null,
+        "peer_age_min_seconds": null,
+        "peer_age_max_seconds": null,
+        "input_count": 27,
+        "excluded": {
+          "brand_mismatch": 27
+        },
+        "notices": [
+          "asking_prices_not_sales",
+          "quality_not_live_validated"
+        ],
+        "missing_fields": [],
+        "region_sample_count": 0,
+        "provenance": "experimental_peer_asking_v1",
+        "production_approved": false,
+        "confidence": "uncalibrated"
+      },
+      {
+        "listing_id": "39549833",
+        "status": "unknown",
+        "classification": "insufficient_data",
+        "reason": "too_few_comparable_peers",
+        "currency": "USD",
+        "reference_price": null,
+        "reference_price_usd": null,
+        "discount_percent": null,
+        "sample_count": 0,
+        "as_of": 1791401598.7081246,
+        "lower_asking_price": null,
+        "median_asking_price": null,
+        "upper_asking_price": null,
+        "peer_age_min_seconds": null,
+        "peer_age_max_seconds": null,
+        "input_count": 27,
+        "excluded": {
+          "brand_mismatch": 27
+        },
+        "notices": [
+          "asking_prices_not_sales",
+          "quality_not_live_validated"
+        ],
+        "missing_fields": [],
+        "region_sample_count": 0,
+        "provenance": "experimental_peer_asking_v1",
+        "production_approved": false,
+        "confidence": "uncalibrated"
+      },
+      {
+        "listing_id": "39806125",
+        "status": "unknown",
+        "classification": "insufficient_data",
+        "reason": "too_few_comparable_peers",
+        "currency": "USD",
+        "reference_price": null,
+        "reference_price_usd": null,
+        "discount_percent": null,
+        "sample_count": 0,
+        "as_of": 1791401598.8063993,
+        "lower_asking_price": null,
+        "median_asking_price": null,
+        "upper_asking_price": null,
+        "peer_age_min_seconds": null,
+        "peer_age_max_seconds": null,
+        "input_count": 27,
+        "excluded": {
+          "brand_mismatch": 27
+        },
+        "notices": [
+          "asking_prices_not_sales",
+          "quality_not_live_validated"
+        ],
+        "missing_fields": [],
+        "region_sample_count": 0,
+        "provenance": "experimental_peer_asking_v1",
+        "production_approved": false,
+        "confidence": "uncalibrated"
+      },
+      {
+        "listing_id": "38635727",
+        "status": "unknown",
+        "classification": "insufficient_data",
+        "reason": "too_few_comparable_peers",
+        "currency": "USD",
+        "reference_price": null,
+        "reference_price_usd": null,
+        "discount_percent": null,
+        "sample_count": 0,
+        "as_of": 1791401598.9001412,
+        "lower_asking_price": null,
+        "median_asking_price": null,
+        "upper_asking_price": null,
+        "peer_age_min_seconds": null,
+        "peer_age_max_seconds": null,
+        "input_count": 27,
+        "excluded": {
+          "brand_mismatch": 27
+        },
+        "notices": [
+          "asking_prices_not_sales",
+          "quality_not_live_validated"
+        ],
+        "missing_fields": [],
+        "region_sample_count": 0,
+        "provenance": "experimental_peer_asking_v1",
+        "production_approved": false,
+        "confidence": "uncalibrated"
+      },
+      {
+        "listing_id": "40349697",
+        "status": "unknown",
+        "classification": "insufficient_data",
+        "reason": "too_few_comparable_peers",
+        "currency": "USD",
+        "reference_price": null,
+        "reference_price_usd": null,
+        "discount_percent": null,
+        "sample_count": 0,
+        "as_of": 1791401598.986901,
+        "lower_asking_price": null,
+        "median_asking_price": null,
+        "upper_asking_price": null,
+        "peer_age_min_seconds": null,
+        "peer_age_max_seconds": null,
+        "input_count": 27,
+        "excluded": {
+          "brand_mismatch": 27
+        },
+        "notices": [
+          "asking_prices_not_sales",
+          "quality_not_live_validated"
+        ],
+        "missing_fields": [],
+        "region_sample_count": 0,
+        "provenance": "experimental_peer_asking_v1",
+        "production_approved": false,
+        "confidence": "uncalibrated"
+      },
+      {
+        "listing_id": "40534559",
+        "status": "unknown",
+        "classification": "insufficient_data",
+        "reason": "too_few_comparable_peers",
+        "currency": "USD",
+        "reference_price": null,
+        "reference_price_usd": null,
+        "discount_percent": null,
+        "sample_count": 0,
+        "as_of": 1791401599.0829682,
+        "lower_asking_price": null,
+        "median_asking_price": null,
+        "upper_asking_price": null,
+        "peer_age_min_seconds": null,
+        "peer_age_max_seconds": null,
+        "input_count": 27,
+        "excluded": {
+          "brand_mismatch": 27
+        },
+        "notices": [
+          "asking_prices_not_sales",
+          "quality_not_live_validated"
+        ],
+        "missing_fields": [],
+        "region_sample_count": 0,
+        "provenance": "experimental_peer_asking_v1",
+        "production_approved": false,
+        "confidence": "uncalibrated"
+      },
+      {
+        "listing_id": "40405105",
+        "status": "unknown",
+        "classification": "insufficient_data",
+        "reason": "too_few_comparable_peers",
+        "currency": "USD",
+        "reference_price": null,
+        "reference_price_usd": null,
+        "discount_percent": null,
+        "sample_count": 0,
+        "as_of": 1791401599.1811092,
+        "lower_asking_price": null,
+        "median_asking_price": null,
+        "upper_asking_price": null,
+        "peer_age_min_seconds": null,
+        "peer_age_max_seconds": null,
+        "input_count": 27,
+        "excluded": {
+          "brand_mismatch": 27
+        },
+        "notices": [
+          "asking_prices_not_sales",
+          "quality_not_live_validated",
+          "subject_optional_fields_missing"
+        ],
+        "missing_fields": [
+          "engine"
+        ],
+        "region_sample_count": 0,
+        "provenance": "experimental_peer_asking_v1",
+        "production_approved": false,
+        "confidence": "uncalibrated"
+      },
+      {
+        "listing_id": "39959411",
+        "status": "unknown",
+        "classification": "insufficient_data",
+        "reason": "too_few_comparable_peers",
+        "currency": "USD",
+        "reference_price": null,
+        "reference_price_usd": null,
+        "discount_percent": null,
+        "sample_count": 0,
+        "as_of": 1791401599.2904556,
+        "lower_asking_price": null,
+        "median_asking_price": null,
+        "upper_asking_price": null,
+        "peer_age_min_seconds": null,
+        "peer_age_max_seconds": null,
+        "input_count": 27,
+        "excluded": {
+          "brand_mismatch": 27
+        },
+        "notices": [
+          "asking_prices_not_sales",
+          "quality_not_live_validated",
+          "subject_optional_fields_missing"
+        ],
+        "missing_fields": [
+          "engine"
+        ],
+        "region_sample_count": 0,
+        "provenance": "experimental_peer_asking_v1",
+        "production_approved": false,
+        "confidence": "uncalibrated"
+      },
+      {
+        "listing_id": "40534517",
+        "status": "unknown",
+        "classification": "insufficient_data",
+        "reason": "too_few_comparable_peers",
+        "currency": "USD",
+        "reference_price": null,
+        "reference_price_usd": null,
+        "discount_percent": null,
+        "sample_count": 0,
+        "as_of": 1791401599.364306,
+        "lower_asking_price": null,
+        "median_asking_price": null,
+        "upper_asking_price": null,
+        "peer_age_min_seconds": null,
+        "peer_age_max_seconds": null,
+        "input_count": 27,
+        "excluded": {
+          "brand_mismatch": 27
+        },
+        "notices": [
+          "asking_prices_not_sales",
+          "quality_not_live_validated",
+          "subject_optional_fields_missing"
+        ],
+        "missing_fields": [
+          "engine"
+        ],
+        "region_sample_count": 0,
+        "provenance": "experimental_peer_asking_v1",
+        "production_approved": false,
+        "confidence": "uncalibrated"
+      },
+      {
+        "listing_id": "39719405",
+        "status": "unknown",
+        "classification": "insufficient_data",
+        "reason": "too_few_comparable_peers",
+        "currency": "USD",
+        "reference_price": null,
+        "reference_price_usd": null,
+        "discount_percent": null,
+        "sample_count": 0,
+        "as_of": 1791401599.457375,
+        "lower_asking_price": null,
+        "median_asking_price": null,
+        "upper_asking_price": null,
+        "peer_age_min_seconds": null,
+        "peer_age_max_seconds": null,
+        "input_count": 27,
+        "excluded": {
+          "brand_mismatch": 27
+        },
+        "notices": [
+          "asking_prices_not_sales",
+          "quality_not_live_validated"
+        ],
+        "missing_fields": [],
+        "region_sample_count": 0,
+        "provenance": "experimental_peer_asking_v1",
+        "production_approved": false,
+        "confidence": "uncalibrated"
+      },
+      {
+        "listing_id": "40534465",
+        "status": "unknown",
+        "classification": "insufficient_data",
+        "reason": "too_few_comparable_peers",
+        "currency": "USD",
+        "reference_price": null,
+        "reference_price_usd": null,
+        "discount_percent": null,
+        "sample_count": 0,
+        "as_of": 1791401599.5508997,
+        "lower_asking_price": null,
+        "median_asking_price": null,
+        "upper_asking_price": null,
+        "peer_age_min_seconds": null,
+        "peer_age_max_seconds": null,
+        "input_count": 27,
+        "excluded": {
+          "brand_mismatch": 27
+        },
+        "notices": [
+          "asking_prices_not_sales",
+          "quality_not_live_validated"
+        ],
+        "missing_fields": [],
+        "region_sample_count": 0,
+        "provenance": "experimental_peer_asking_v1",
+        "production_approved": false,
+        "confidence": "uncalibrated"
+      },
+      {
+        "listing_id": "40421479",
+        "status": "unknown",
+        "classification": "insufficient_data",
+        "reason": "too_few_comparable_peers",
+        "currency": "USD",
+        "reference_price": null,
+        "reference_price_usd": null,
+        "discount_percent": null,
+        "sample_count": 0,
+        "as_of": 1791401599.6430223,
+        "lower_asking_price": null,
+        "median_asking_price": null,
+        "upper_asking_price": null,
+        "peer_age_min_seconds": null,
+        "peer_age_max_seconds": null,
+        "input_count": 27,
+        "excluded": {
+          "year_mismatch_or_unknown": 27
+        },
+        "notices": [
+          "asking_prices_not_sales",
+          "quality_not_live_validated"
+        ],
+        "missing_fields": [],
+        "region_sample_count": 0,
+        "provenance": "experimental_peer_asking_v1",
+        "production_approved": false,
+        "confidence": "uncalibrated"
+      },
+      {
+        "listing_id": "40040939",
+        "status": "unknown",
+        "classification": "insufficient_data",
+        "reason": "too_few_comparable_peers",
+        "currency": "USD",
+        "reference_price": null,
+        "reference_price_usd": null,
+        "discount_percent": null,
+        "sample_count": 0,
+        "as_of": 1791401599.7350926,
+        "lower_asking_price": null,
+        "median_asking_price": null,
+        "upper_asking_price": null,
+        "peer_age_min_seconds": null,
+        "peer_age_max_seconds": null,
+        "input_count": 27,
+        "excluded": {
+          "brand_mismatch": 27
+        },
+        "notices": [
+          "asking_prices_not_sales",
+          "quality_not_live_validated"
+        ],
+        "missing_fields": [],
+        "region_sample_count": 0,
+        "provenance": "experimental_peer_asking_v1",
+        "production_approved": false,
+        "confidence": "uncalibrated"
+      },
+      {
+        "listing_id": "40534410",
+        "status": "unknown",
+        "classification": "insufficient_data",
+        "reason": "too_few_comparable_peers",
+        "currency": "USD",
+        "reference_price": null,
+        "reference_price_usd": null,
+        "discount_percent": null,
+        "sample_count": 0,
+        "as_of": 1791401599.824234,
+        "lower_asking_price": null,
+        "median_asking_price": null,
+        "upper_asking_price": null,
+        "peer_age_min_seconds": null,
+        "peer_age_max_seconds": null,
+        "input_count": 27,
+        "excluded": {
+          "brand_mismatch": 27
+        },
+        "notices": [
+          "asking_prices_not_sales",
+          "quality_not_live_validated"
+        ],
+        "missing_fields": [],
+        "region_sample_count": 0,
+        "provenance": "experimental_peer_asking_v1",
+        "production_approved": false,
+        "confidence": "uncalibrated"
+      },
+      {
+        "listing_id": "40534402",
+        "status": "unknown",
+        "classification": "insufficient_data",
+        "reason": "too_few_comparable_peers",
+        "currency": "USD",
+        "reference_price": null,
+        "reference_price_usd": null,
+        "discount_percent": null,
+        "sample_count": 0,
+        "as_of": 1791401599.9178486,
+        "lower_asking_price": null,
+        "median_asking_price": null,
+        "upper_asking_price": null,
+        "peer_age_min_seconds": null,
+        "peer_age_max_seconds": null,
+        "input_count": 27,
+        "excluded": {
+          "brand_mismatch": 27
+        },
+        "notices": [
+          "asking_prices_not_sales",
+          "quality_not_live_validated"
+        ],
+        "missing_fields": [],
+        "region_sample_count": 0,
+        "provenance": "experimental_peer_asking_v1",
+        "production_approved": false,
+        "confidence": "uncalibrated"
+      },
+      {
+        "listing_id": "40534381",
+        "status": "unknown",
+        "classification": "insufficient_data",
+        "reason": "too_few_comparable_peers",
+        "currency": "USD",
+        "reference_price": null,
+        "reference_price_usd": null,
+        "discount_percent": null,
+        "sample_count": 0,
+        "as_of": 1791401600.0053704,
+        "lower_asking_price": null,
+        "median_asking_price": null,
+        "upper_asking_price": null,
+        "peer_age_min_seconds": null,
+        "peer_age_max_seconds": null,
+        "input_count": 27,
+        "excluded": {
+          "brand_mismatch": 27
+        },
+        "notices": [
+          "asking_prices_not_sales",
+          "quality_not_live_validated"
+        ],
+        "missing_fields": [],
+        "region_sample_count": 0,
+        "provenance": "experimental_peer_asking_v1",
+        "production_approved": false,
+        "confidence": "uncalibrated"
+      },
+      {
+        "listing_id": "40534350",
+        "status": "unknown",
+        "classification": "insufficient_data",
+        "reason": "too_few_comparable_peers",
+        "currency": "USD",
+        "reference_price": null,
+        "reference_price_usd": null,
+        "discount_percent": null,
+        "sample_count": 0,
+        "as_of": 1791401600.1055114,
+        "lower_asking_price": null,
+        "median_asking_price": null,
+        "upper_asking_price": null,
+        "peer_age_min_seconds": null,
+        "peer_age_max_seconds": null,
+        "input_count": 27,
+        "excluded": {
+          "brand_mismatch": 27
+        },
+        "notices": [
+          "asking_prices_not_sales",
+          "quality_not_live_validated"
+        ],
+        "missing_fields": [],
+        "region_sample_count": 0,
+        "provenance": "experimental_peer_asking_v1",
+        "production_approved": false,
+        "confidence": "uncalibrated"
+      },
+      {
+        "listing_id": "39352375",
+        "status": "unknown",
+        "classification": "insufficient_data",
+        "reason": "too_few_comparable_peers",
+        "currency": "USD",
+        "reference_price": null,
+        "reference_price_usd": null,
+        "discount_percent": null,
+        "sample_count": 0,
+        "as_of": 1791401600.200181,
+        "lower_asking_price": null,
+        "median_asking_price": null,
+        "upper_asking_price": null,
+        "peer_age_min_seconds": null,
+        "peer_age_max_seconds": null,
+        "input_count": 27,
+        "excluded": {
+          "brand_mismatch": 27
+        },
+        "notices": [
+          "asking_prices_not_sales",
+          "quality_not_live_validated"
+        ],
+        "missing_fields": [],
+        "region_sample_count": 0,
+        "provenance": "experimental_peer_asking_v1",
+        "production_approved": false,
+        "confidence": "uncalibrated"
+      },
+      {
+        "listing_id": "39768069",
+        "status": "unknown",
+        "classification": "insufficient_data",
+        "reason": "too_few_comparable_peers",
+        "currency": "USD",
+        "reference_price": null,
+        "reference_price_usd": null,
+        "discount_percent": null,
+        "sample_count": 0,
+        "as_of": 1791401600.2966423,
+        "lower_asking_price": null,
+        "median_asking_price": null,
+        "upper_asking_price": null,
+        "peer_age_min_seconds": null,
+        "peer_age_max_seconds": null,
+        "input_count": 27,
+        "excluded": {
+          "brand_mismatch": 27
+        },
+        "notices": [
+          "asking_prices_not_sales",
+          "quality_not_live_validated"
+        ],
+        "missing_fields": [],
+        "region_sample_count": 0,
+        "provenance": "experimental_peer_asking_v1",
+        "production_approved": false,
+        "confidence": "uncalibrated"
+      },
+      {
+        "listing_id": "40534546",
+        "status": "unknown",
+        "classification": "insufficient_data",
+        "reason": "too_few_comparable_peers",
+        "currency": "USD",
+        "reference_price": null,
+        "reference_price_usd": null,
+        "discount_percent": null,
+        "sample_count": 0,
+        "as_of": 1791401600.4176629,
+        "lower_asking_price": null,
+        "median_asking_price": null,
+        "upper_asking_price": null,
+        "peer_age_min_seconds": null,
+        "peer_age_max_seconds": null,
+        "input_count": 27,
+        "excluded": {
+          "brand_mismatch": 27
+        },
+        "notices": [
+          "asking_prices_not_sales",
+          "quality_not_live_validated"
+        ],
+        "missing_fields": [],
+        "region_sample_count": 0,
+        "provenance": "experimental_peer_asking_v1",
+        "production_approved": false,
+        "confidence": "uncalibrated"
+      },
+      {
+        "listing_id": "39595302",
+        "status": "unknown",
+        "classification": "insufficient_data",
+        "reason": "too_few_comparable_peers",
+        "currency": "USD",
+        "reference_price": null,
+        "reference_price_usd": null,
+        "discount_percent": null,
+        "sample_count": 0,
+        "as_of": 1791401600.4962924,
+        "lower_asking_price": null,
+        "median_asking_price": null,
+        "upper_asking_price": null,
+        "peer_age_min_seconds": null,
+        "peer_age_max_seconds": null,
+        "input_count": 27,
+        "excluded": {
+          "brand_mismatch": 27
+        },
+        "notices": [
+          "asking_prices_not_sales",
+          "quality_not_live_validated"
+        ],
+        "missing_fields": [],
+        "region_sample_count": 0,
+        "provenance": "experimental_peer_asking_v1",
+        "production_approved": false,
+        "confidence": "uncalibrated"
+      },
+      {
+        "listing_id": "40534505",
+        "status": "unknown",
+        "classification": "insufficient_data",
+        "reason": "too_few_comparable_peers",
+        "currency": "USD",
+        "reference_price": null,
+        "reference_price_usd": null,
+        "discount_percent": null,
+        "sample_count": 0,
+        "as_of": 1791401600.5785291,
+        "lower_asking_price": null,
+        "median_asking_price": null,
+        "upper_asking_price": null,
+        "peer_age_min_seconds": null,
+        "peer_age_max_seconds": null,
+        "input_count": 27,
+        "excluded": {
+          "brand_mismatch": 27
+        },
+        "notices": [
+          "asking_prices_not_sales",
+          "quality_not_live_validated"
+        ],
+        "missing_fields": [],
+        "region_sample_count": 0,
+        "provenance": "experimental_peer_asking_v1",
+        "production_approved": false,
+        "confidence": "uncalibrated"
+      },
+      {
+        "listing_id": "40534501",
+        "status": "unknown",
+        "classification": "insufficient_data",
+        "reason": "too_few_comparable_peers",
+        "currency": "USD",
+        "reference_price": null,
+        "reference_price_usd": null,
+        "discount_percent": null,
+        "sample_count": 0,
+        "as_of": 1791401600.6624002,
+        "lower_asking_price": null,
+        "median_asking_price": null,
+        "upper_asking_price": null,
+        "peer_age_min_seconds": null,
+        "peer_age_max_seconds": null,
+        "input_count": 27,
+        "excluded": {
+          "brand_mismatch": 27
+        },
+        "notices": [
+          "asking_prices_not_sales",
+          "quality_not_live_validated"
+        ],
+        "missing_fields": [],
+        "region_sample_count": 0,
+        "provenance": "experimental_peer_asking_v1",
+        "production_approved": false,
+        "confidence": "uncalibrated"
+      },
+      {
+        "listing_id": "40534400",
+        "status": "unknown",
+        "classification": "insufficient_data",
+        "reason": "too_few_comparable_peers",
+        "currency": "USD",
+        "reference_price": null,
+        "reference_price_usd": null,
+        "discount_percent": null,
+        "sample_count": 0,
+        "as_of": 1791401600.748321,
+        "lower_asking_price": null,
+        "median_asking_price": null,
+        "upper_asking_price": null,
+        "peer_age_min_seconds": null,
+        "peer_age_max_seconds": null,
+        "input_count": 27,
+        "excluded": {
+          "brand_mismatch": 27
+        },
+        "notices": [
+          "asking_prices_not_sales",
+          "quality_not_live_validated"
+        ],
+        "missing_fields": [],
+        "region_sample_count": 0,
+        "provenance": "experimental_peer_asking_v1",
+        "production_approved": false,
+        "confidence": "uncalibrated"
+      },
+      {
+        "listing_id": "40534361",
+        "status": "unknown",
+        "classification": "insufficient_data",
+        "reason": "too_few_comparable_peers",
+        "currency": "USD",
+        "reference_price": null,
+        "reference_price_usd": null,
+        "discount_percent": null,
+        "sample_count": 0,
+        "as_of": 1791401600.8366623,
+        "lower_asking_price": null,
+        "median_asking_price": null,
+        "upper_asking_price": null,
+        "peer_age_min_seconds": null,
+        "peer_age_max_seconds": null,
+        "input_count": 27,
+        "excluded": {
+          "brand_mismatch": 27
+        },
+        "notices": [
+          "asking_prices_not_sales",
+          "quality_not_live_validated"
+        ],
+        "missing_fields": [],
+        "region_sample_count": 0,
+        "provenance": "experimental_peer_asking_v1",
+        "production_approved": false,
+        "confidence": "uncalibrated"
+      },
+      {
+        "listing_id": "40534183",
+        "status": "unknown",
+        "classification": "insufficient_data",
+        "reason": "too_few_comparable_peers",
+        "currency": "USD",
+        "reference_price": null,
+        "reference_price_usd": null,
+        "discount_percent": null,
+        "sample_count": 0,
+        "as_of": 1791401600.9183965,
+        "lower_asking_price": null,
+        "median_asking_price": null,
+        "upper_asking_price": null,
+        "peer_age_min_seconds": null,
+        "peer_age_max_seconds": null,
+        "input_count": 27,
+        "excluded": {
+          "brand_mismatch": 27
+        },
+        "notices": [
+          "asking_prices_not_sales",
+          "quality_not_live_validated"
+        ],
+        "missing_fields": [],
+        "region_sample_count": 0,
+        "provenance": "experimental_peer_asking_v1",
+        "production_approved": false,
+        "confidence": "uncalibrated"
+      },
+      {
+        "listing_id": "40534547",
+        "status": "unknown",
+        "classification": "insufficient_data",
+        "reason": "too_few_comparable_peers",
+        "currency": "USD",
+        "reference_price": null,
+        "reference_price_usd": null,
+        "discount_percent": null,
+        "sample_count": 0,
+        "as_of": 1791401601.0025895,
+        "lower_asking_price": null,
+        "median_asking_price": null,
+        "upper_asking_price": null,
+        "peer_age_min_seconds": null,
+        "peer_age_max_seconds": null,
+        "input_count": 27,
+        "excluded": {
+          "brand_mismatch": 27
+        },
+        "notices": [
+          "asking_prices_not_sales",
+          "quality_not_live_validated",
+          "subject_optional_fields_missing"
+        ],
+        "missing_fields": [
+          "engine"
+        ],
+        "region_sample_count": 0,
+        "provenance": "experimental_peer_asking_v1",
+        "production_approved": false,
+        "confidence": "uncalibrated"
+      },
+      {
+        "listing_id": "40451438",
+        "status": "unknown",
+        "classification": "insufficient_data",
+        "reason": "too_few_comparable_peers",
+        "currency": "USD",
+        "reference_price": null,
+        "reference_price_usd": null,
+        "discount_percent": null,
+        "sample_count": 0,
+        "as_of": 1791401601.105091,
+        "lower_asking_price": null,
+        "median_asking_price": null,
+        "upper_asking_price": null,
+        "peer_age_min_seconds": null,
+        "peer_age_max_seconds": null,
+        "input_count": 27,
+        "excluded": {
+          "brand_mismatch": 27
+        },
+        "notices": [
+          "asking_prices_not_sales",
+          "quality_not_live_validated"
+        ],
+        "missing_fields": [],
+        "region_sample_count": 0,
+        "provenance": "experimental_peer_asking_v1",
+        "production_approved": false,
+        "confidence": "uncalibrated"
+      }
+    ]
+  },
+  "public_records": [
+    {
+      "listing_id": "40534354",
+      "brand": "Toyota",
+      "model": "Camry",
+      "year": 2016,
+      "fuel": "Газ пропан-бутан / Бензин",
+      "transmission": "Автомат",
+      "mileage_km": "150000",
+      "price": "12700",
+      "currency": "USD",
+      "body": "Седан",
+      "generation": "VII покоління/XV50 (FL)",
+      "engine_cc": 2490,
+      "region": "Черкаська область",
+      "observed_at": 1791400952.054852
+    },
+    {
+      "listing_id": "40020253",
+      "brand": "Audi",
+      "model": "A4",
+      "year": 2016,
+      "fuel": "Дизель",
+      "transmission": "Автомат",
+      "mileage_km": "257000",
+      "price": "18500",
+      "currency": "USD",
+      "body": "Універсал",
+      "generation": null,
+      "engine_cc": 1990,
+      "region": "Тернопільська область",
+      "observed_at": 1791400966.1147516
+    },
+    {
+      "listing_id": "40534316",
+      "brand": "Volkswagen",
+      "model": "Golf",
+      "year": 2015,
+      "fuel": "Дизель",
+      "transmission": "Ручна / Механіка",
+      "mileage_km": "221000",
+      "price": "10999",
+      "currency": "USD",
+      "body": "Хетчбек",
+      "generation": "VII покоління/Typ 5G",
+      "engine_cc": 1600,
+      "region": "Львівська область",
+      "observed_at": 1791400978.273062
+    },
+    {
+      "listing_id": "40408057",
+      "brand": "Mazda",
+      "model": "CX-5",
+      "year": 2022,
+      "fuel": "Бензин",
+      "transmission": "Автомат",
+      "mileage_km": "44000",
+      "price": "20500",
+      "currency": "USD",
+      "body": "Позашляховик / Кросовер",
+      "generation": null,
+      "engine_cc": 2490,
+      "region": "Харківська область",
+      "observed_at": 1791400989.8055415
+    },
+    {
+      "listing_id": "40534458",
+      "brand": "Renault",
+      "model": "Trafic",
+      "year": 2022,
+      "fuel": "Дизель",
+      "transmission": "Автомат",
+      "mileage_km": "239000",
+      "price": "24900",
+      "currency": "USD",
+      "body": "Вантажопасажирський фургон",
+      "generation": null,
+      "engine_cc": 2000,
+      "region": "Рівненська область",
+      "observed_at": 1791401001.700154
+    },
+    {
+      "listing_id": "40534496",
+      "brand": "Hyundai",
+      "model": "Santa FE",
+      "year": 2013,
+      "fuel": "Дизель",
+      "transmission": "Автомат",
+      "mileage_km": "180000",
+      "price": "14700",
+      "currency": "USD",
+      "body": "Позашляховик / Кросовер",
+      "generation": "III покоління",
+      "engine_cc": 2200,
+      "region": "Одеська область",
+      "observed_at": 1791401015.7605655
+    },
+    {
+      "listing_id": "40534392",
+      "brand": "Ford",
+      "model": "Transit",
+      "year": 2021,
+      "fuel": "Дизель",
+      "transmission": "Ручна / Механіка",
+      "mileage_km": "169000",
+      "price": "22500",
+      "currency": "USD",
+      "body": "Вантажний фургон",
+      "generation": "VIII покоління (FL)",
+      "engine_cc": 2000,
+      "region": "Черкаська область",
+      "observed_at": 1791401028.187561
+    },
+    {
+      "listing_id": "40534339",
+      "brand": "Renault",
+      "model": "Scenic",
+      "year": 2007,
+      "fuel": "Бензин",
+      "transmission": "Ручна / Механіка",
+      "mileage_km": "157000",
+      "price": "4999",
+      "currency": "USD",
+      "body": "Мінівен",
+      "generation": "II покоління (FL)",
+      "engine_cc": 1600,
+      "region": "Волинська область",
+      "observed_at": 1791401040.5350995
+    },
+    {
+      "listing_id": "40199387",
+      "brand": "Volvo",
+      "model": "V50",
+      "year": 2009,
+      "fuel": "Дизель",
+      "transmission": "Ручна / Механіка",
+      "mileage_km": "239000",
+      "price": "6400",
+      "currency": "USD",
+      "body": "Універсал",
+      "generation": "I покоління (FL)",
+      "engine_cc": 1560,
+      "region": "Львівська область",
+      "observed_at": 1791401054.7608874
+    },
+    {
+      "listing_id": "40534477",
+      "brand": "Volkswagen",
+      "model": "Touareg",
+      "year": 2012,
+      "fuel": "Дизель",
+      "transmission": "Автомат",
+      "mileage_km": "260000",
+      "price": "16500",
+      "currency": "USD",
+      "body": "Позашляховик / Кросовер",
+      "generation": "II покоління",
+      "engine_cc": null,
+      "region": "Житомирська область",
+      "observed_at": 1791401067.2902503
+    },
+    {
+      "listing_id": "40534317",
+      "brand": "Peugeot",
+      "model": "5008",
+      "year": 2015,
+      "fuel": "Дизель",
+      "transmission": "Автомат",
+      "mileage_km": "229000",
+      "price": "10850",
+      "currency": "USD",
+      "body": "Мікровен",
+      "generation": "I покоління (FL)",
+      "engine_cc": 1600,
+      "region": "Львівська область",
+      "observed_at": 1791401078.8563094
+    },
+    {
+      "listing_id": "38096971",
+      "brand": "DAF",
+      "model": "XF 105",
+      "year": 2011,
+      "fuel": "Дизель",
+      "transmission": "Автомат",
+      "mileage_km": "1100000",
+      "price": "12500",
+      "currency": "USD",
+      "body": "Тягач",
+      "generation": null,
+      "engine_cc": null,
+      "region": "Одеська область",
+      "observed_at": 1791401089.498966
+    },
+    {
+      "listing_id": "40534540",
+      "brand": "Kia",
+      "model": "Ceed",
+      "year": 2008,
+      "fuel": "Бензин",
+      "transmission": "Ручна / Механіка",
+      "mileage_km": "164000",
+      "price": "4600",
+      "currency": "USD",
+      "body": "Універсал",
+      "generation": "I покоління",
+      "engine_cc": 1400,
+      "region": "Волинська область",
+      "observed_at": 1791401101.0155513
+    },
+    {
+      "listing_id": "40534461",
+      "brand": "Volkswagen",
+      "model": "Touran",
+      "year": 2009,
+      "fuel": "Бензин",
+      "transmission": "Автомат",
+      "mileage_km": "186000",
+      "price": "6350",
+      "currency": "USD",
+      "body": "Мінівен",
+      "generation": "I покоління (FL)",
+      "engine_cc": 1400,
+      "region": "Волинська область",
+      "observed_at": 1791401115.1842418
+    },
+    {
+      "listing_id": "40534320",
+      "brand": "МАЗ",
+      "model": "5337",
+      "year": 1992,
+      "fuel": "Дизель",
+      "transmission": null,
+      "mileage_km": null,
+      "price": "12000",
+      "currency": "USD",
+      "body": "Автокран",
+      "generation": null,
+      "engine_cc": null,
+      "region": "Кіровоградська область",
+      "observed_at": 1791401126.8293078
+    },
+    {
+      "listing_id": "40534451",
+      "brand": "Volkswagen",
+      "model": "Tiguan",
+      "year": 2024,
+      "fuel": "Бензин",
+      "transmission": "Автомат",
+      "mileage_km": "52000",
+      "price": "26350",
+      "currency": "USD",
+      "body": "Позашляховик / Кросовер",
+      "generation": null,
+      "engine_cc": 2000,
+      "region": "Київська область",
+      "observed_at": 1791401140.2235415
+    },
+    {
+      "listing_id": "40534462",
+      "brand": "Daewoo",
+      "model": "Sens",
+      "year": 2011,
+      "fuel": "Бензин",
+      "transmission": "Ручна / Механіка",
+      "mileage_km": "207000",
+      "price": "1900",
+      "currency": "USD",
+      "body": "Седан",
+      "generation": "I покоління (FL)",
+      "engine_cc": 1300,
+      "region": "Київська область",
+      "observed_at": 1791401152.4783313
+    },
+    {
+      "listing_id": "39783103",
+      "brand": "Lexus",
+      "model": "RX",
+      "year": 2020,
+      "fuel": "Бензин",
+      "transmission": "Автомат",
+      "mileage_km": "132000",
+      "price": "29700",
+      "currency": "USD",
+      "body": "Позашляховик / Кросовер",
+      "generation": "IV покоління (FL)",
+      "engine_cc": 3460,
+      "region": "Львівська область",
+      "observed_at": 1791401163.9101465
+    },
+    {
+      "listing_id": "40534553",
+      "brand": "Skoda",
+      "model": "Enyaq iV",
+      "year": 2022,
+      "fuel": "Електро",
+      "transmission": "Автомат",
+      "mileage_km": "199000",
+      "price": "22300",
+      "currency": "USD",
+      "body": "Позашляховик / Кросовер",
+      "generation": "I покоління",
+      "engine_cc": null,
+      "region": "Рівненська область",
+      "observed_at": 1791401175.3717785
+    },
+    {
+      "listing_id": "40082622",
+      "brand": "Ford",
+      "model": "Escape",
+      "year": 2017,
+      "fuel": "Бензин",
+      "transmission": "Автомат",
+      "mileage_km": "230000",
+      "price": "8500",
+      "currency": "USD",
+      "body": "Позашляховик / Кросовер",
+      "generation": "III покоління (FL)",
+      "engine_cc": 1500,
+      "region": "Львівська область",
+      "observed_at": 1791401187.9167144
+    },
+    {
+      "listing_id": "39040657",
+      "brand": "Mazda",
+      "model": "CX-5",
+      "year": 2016,
+      "fuel": "Бензин",
+      "transmission": "Автомат",
+      "mileage_km": "202000",
+      "price": "8500",
+      "currency": "USD",
+      "body": "Позашляховик / Кросовер",
+      "generation": "I покоління (FL)",
+      "engine_cc": 2500,
+      "region": "Львівська область",
+      "observed_at": 1791401199.4525838
+    },
+    {
+      "listing_id": "39312488",
+      "brand": "Ford",
+      "model": "Focus",
+      "year": 2016,
+      "fuel": "Бензин",
+      "transmission": "Автомат",
+      "mileage_km": "258000",
+      "price": "4000",
+      "currency": "USD",
+      "body": "Седан",
+      "generation": "III покоління (FL)",
+      "engine_cc": 2000,
+      "region": "Львівська область",
+      "observed_at": 1791401211.9034271
+    },
+    {
+      "listing_id": "39831497",
+      "brand": "Volkswagen",
+      "model": "Tiguan",
+      "year": 2017,
+      "fuel": "Бензин",
+      "transmission": "Автомат",
+      "mileage_km": "199000",
+      "price": "9300",
+      "currency": "USD",
+      "body": "Позашляховик / Кросовер",
+      "generation": "I покоління (FL)",
+      "engine_cc": 1980,
+      "region": "Львівська область",
+      "observed_at": 1791401226.6585882
+    },
+    {
+      "listing_id": "39549833",
+      "brand": "BMW",
+      "model": "X3",
+      "year": 2018,
+      "fuel": "Бензин",
+      "transmission": "Автомат",
+      "mileage_km": "213000",
+      "price": "15000",
+      "currency": "USD",
+      "body": "Позашляховик / Кросовер",
+      "generation": "G01",
+      "engine_cc": 2000,
+      "region": "Львівська область",
+      "observed_at": 1791401237.3581173
+    },
+    {
+      "listing_id": "39806125",
+      "brand": "Ford",
+      "model": "Edge",
+      "year": 2016,
+      "fuel": "Бензин",
+      "transmission": "Автомат",
+      "mileage_km": "221000",
+      "price": "9600",
+      "currency": "USD",
+      "body": "Позашляховик / Кросовер",
+      "generation": "II покоління",
+      "engine_cc": 2000,
+      "region": "Львівська область",
+      "observed_at": 1791401249.8718483
+    },
+    {
+      "listing_id": "38635727",
+      "brand": "Audi",
+      "model": "Q3",
+      "year": 2019,
+      "fuel": "Бензин",
+      "transmission": "Автомат",
+      "mileage_km": "163000",
+      "price": "12800",
+      "currency": "USD",
+      "body": "Позашляховик / Кросовер",
+      "generation": "F3",
+      "engine_cc": 1980,
+      "region": "Львівська область",
+      "observed_at": 1791401265.1740744
+    },
+    {
+      "listing_id": "40349697",
+      "brand": "Hyundai",
+      "model": "Ioniq",
+      "year": 2017,
+      "fuel": "Гібрид (HEV)",
+      "transmission": "Автомат",
+      "mileage_km": "160000",
+      "price": "9700",
+      "currency": "USD",
+      "body": "Хетчбек",
+      "generation": "I покоління",
+      "engine_cc": 1580,
+      "region": "Львівська область",
+      "observed_at": 1791401278.2560046
+    },
+    {
+      "listing_id": "40534559",
+      "brand": "Land Rover",
+      "model": "Discovery Sport",
+      "year": 2016,
+      "fuel": "Бензин",
+      "transmission": "Автомат",
+      "mileage_km": "151000",
+      "price": "13300",
+      "currency": "USD",
+      "body": "Позашляховик / Кросовер",
+      "generation": "I покоління",
+      "engine_cc": 2000,
+      "region": "Рівненська область",
+      "observed_at": 1791401292.9296734
+    },
+    {
+      "listing_id": "40405105",
+      "brand": "Hyundai",
+      "model": "Ioniq 5",
+      "year": 2021,
+      "fuel": "Електро",
+      "transmission": "Автомат",
+      "mileage_km": "10000",
+      "price": "26500",
+      "currency": "USD",
+      "body": "Позашляховик / Кросовер",
+      "generation": "I покоління",
+      "engine_cc": null,
+      "region": "Львівська область",
+      "observed_at": 1791401305.305985
+    },
+    {
+      "listing_id": "39959411",
+      "brand": "Mercedes-Benz",
+      "model": "AMG GT 4-Door Coupe",
+      "year": 2022,
+      "fuel": "Бензин",
+      "transmission": "Автомат",
+      "mileage_km": "57000",
+      "price": "107000",
+      "currency": "USD",
+      "body": "Купе",
+      "generation": "X290 (FL)",
+      "engine_cc": null,
+      "region": "Харківська область",
+      "observed_at": 1791401316.0394921
+    },
+    {
+      "listing_id": "40534517",
+      "brand": "Kia",
+      "model": "EV6",
+      "year": 2024,
+      "fuel": "Електро",
+      "transmission": "Редуктор",
+      "mileage_km": "22000",
+      "price": "29100",
+      "currency": "USD",
+      "body": "Позашляховик / Кросовер",
+      "generation": "I покоління",
+      "engine_cc": null,
+      "region": "Івано-Франківська область",
+      "observed_at": 1791401332.1916769
+    },
+    {
+      "listing_id": "39719405",
+      "brand": "Hyundai",
+      "model": "Sonata",
+      "year": 2024,
+      "fuel": "Гібрид (HEV)",
+      "transmission": "Автомат",
+      "mileage_km": "11000",
+      "price": "26000",
+      "currency": "USD",
+      "body": "Седан",
+      "generation": "IX покоління/ DN8",
+      "engine_cc": 2000,
+      "region": "Київська область",
+      "observed_at": 1791401348.500364
+    },
+    {
+      "listing_id": "40534465",
+      "brand": "Volkswagen",
+      "model": "Golf Plus",
+      "year": 2008,
+      "fuel": "Бензин",
+      "transmission": "Ручна / Механіка",
+      "mileage_km": "237000",
+      "price": "5999",
+      "currency": "USD",
+      "body": "Хетчбек",
+      "generation": "V покоління/Typ 1KP",
+      "engine_cc": 1400,
+      "region": "Полтавська область",
+      "observed_at": 1791401361.5813277
+    },
+    {
+      "listing_id": "40421479",
+      "brand": "Subaru",
+      "model": "Outback",
+      "year": 2023,
+      "fuel": "Бензин",
+      "transmission": "Автомат",
+      "mileage_km": "50000",
+      "price": "26300",
+      "currency": "USD",
+      "body": "Позашляховик / Кросовер",
+      "generation": "VI покоління (FL)",
+      "engine_cc": 2500,
+      "region": "Київська область",
+      "observed_at": 1791401372.7062888
+    },
+    {
+      "listing_id": "40040939",
+      "brand": "Jeep",
+      "model": "Renegade",
+      "year": 2016,
+      "fuel": "Бензин",
+      "transmission": "Автомат",
+      "mileage_km": "152000",
+      "price": "9000",
+      "currency": "USD",
+      "body": "Позашляховик / Кросовер",
+      "generation": "I покоління/BU",
+      "engine_cc": 2360,
+      "region": "Львівська область",
+      "observed_at": 1791401386.7105222
+    },
+    {
+      "listing_id": "40534410",
+      "brand": "Skoda",
+      "model": "Octavia",
+      "year": 2006,
+      "fuel": "Бензин",
+      "transmission": "Ручна / Механіка",
+      "mileage_km": "212000",
+      "price": "5850",
+      "currency": "USD",
+      "body": "Універсал",
+      "generation": "II покоління/A5",
+      "engine_cc": 1600,
+      "region": "Полтавська область",
+      "observed_at": 1791401401.5905118
+    },
+    {
+      "listing_id": "40534402",
+      "brand": "Volvo",
+      "model": "XC60",
+      "year": 2018,
+      "fuel": "Бензин",
+      "transmission": "Автомат",
+      "mileage_km": "115000",
+      "price": "27500",
+      "currency": "USD",
+      "body": "Позашляховик / Кросовер",
+      "generation": "II покоління",
+      "engine_cc": 2000,
+      "region": "Рівненська область",
+      "observed_at": 1791401414.287145
+    },
+    {
+      "listing_id": "40534381",
+      "brand": "Toyota",
+      "model": "Corolla",
+      "year": 2008,
+      "fuel": "Газ пропан-бутан / Бензин",
+      "transmission": "Типтронік",
+      "mileage_km": "251000",
+      "price": "5600",
+      "currency": "USD",
+      "body": "Седан",
+      "generation": "X покоління",
+      "engine_cc": 1600,
+      "region": "Вінницька область",
+      "observed_at": 1791401435.369569
+    },
+    {
+      "listing_id": "40534350",
+      "brand": "Ford",
+      "model": "Transit Custom",
+      "year": 2018,
+      "fuel": "Дизель",
+      "transmission": "Автомат",
+      "mileage_km": "145000",
+      "price": "28000",
+      "currency": "USD",
+      "body": "Мінівен",
+      "generation": "I покоління (FL)",
+      "engine_cc": 2000,
+      "region": "Харківська область",
+      "observed_at": 1791401449.2319784
+    },
+    {
+      "listing_id": "39352375",
+      "brand": "Audi",
+      "model": "Q7",
+      "year": 2018,
+      "fuel": "Бензин",
+      "transmission": "Автомат",
+      "mileage_km": "205000",
+      "price": "14200",
+      "currency": "USD",
+      "body": "Позашляховик / Кросовер",
+      "generation": "Typ 4M",
+      "engine_cc": 3000,
+      "region": "Львівська область",
+      "observed_at": 1791401461.8501313
+    },
+    {
+      "listing_id": "39768069",
+      "brand": "Audi",
+      "model": "A7 Sportback",
+      "year": 2016,
+      "fuel": "Бензин",
+      "transmission": "Робот",
+      "mileage_km": "196000",
+      "price": "11900",
+      "currency": "USD",
+      "body": "Ліфтбек",
+      "generation": "C7 (FL)",
+      "engine_cc": 3000,
+      "region": "Львівська область",
+      "observed_at": 1791401472.9205344
+    },
+    {
+      "listing_id": "40534546",
+      "brand": "BMW",
+      "model": "5 Series",
+      "year": 2013,
+      "fuel": "Бензин",
+      "transmission": "Автомат",
+      "mileage_km": "153000",
+      "price": "14000",
+      "currency": "USD",
+      "body": "Седан",
+      "generation": "F10 (FL)",
+      "engine_cc": 2000,
+      "region": "Одеська область",
+      "observed_at": 1791401484.989254
+    },
+    {
+      "listing_id": "39595302",
+      "brand": "Volkswagen",
+      "model": "Golf",
+      "year": 2004,
+      "fuel": "Газ пропан-бутан / Бензин",
+      "transmission": "Ручна / Механіка",
+      "mileage_km": "198000",
+      "price": "4800",
+      "currency": "USD",
+      "body": "Хетчбек",
+      "generation": "V покоління/Typ 1K",
+      "engine_cc": 1400,
+      "region": "Київська область",
+      "observed_at": 1791401499.4085817
+    },
+    {
+      "listing_id": "40534505",
+      "brand": "Peugeot",
+      "model": "3008",
+      "year": 2014,
+      "fuel": "Дизель",
+      "transmission": "Робот",
+      "mileage_km": "217000",
+      "price": "11500",
+      "currency": "USD",
+      "body": "Позашляховик / Кросовер",
+      "generation": "I покоління (FL)",
+      "engine_cc": 1600,
+      "region": "Тернопільська область",
+      "observed_at": 1791401512.0321088
+    },
+    {
+      "listing_id": "40534501",
+      "brand": "Renault",
+      "model": "Scenic",
+      "year": 2007,
+      "fuel": "Бензин",
+      "transmission": "Ручна / Механіка",
+      "mileage_km": "190000",
+      "price": "4999",
+      "currency": "USD",
+      "body": "Мінівен",
+      "generation": "II покоління (FL)",
+      "engine_cc": 1600,
+      "region": "Київська область",
+      "observed_at": 1791401523.613454
+    },
+    {
+      "listing_id": "40534400",
+      "brand": "Audi",
+      "model": "SQ5",
+      "year": 2024,
+      "fuel": "Бензин",
+      "transmission": "Типтронік",
+      "mileage_km": "33000",
+      "price": "38999",
+      "currency": "USD",
+      "body": "Позашляховик / Кросовер",
+      "generation": "II покоління (FL)",
+      "engine_cc": 3000,
+      "region": "Івано-Франківська область",
+      "observed_at": 1791401536.144692
+    },
+    {
+      "listing_id": "40534361",
+      "brand": "Renault",
+      "model": "Megane",
+      "year": 2018,
+      "fuel": "Дизель",
+      "transmission": "Робот",
+      "mileage_km": "201000",
+      "price": "13999",
+      "currency": "USD",
+      "body": "Універсал",
+      "generation": "IV покоління",
+      "engine_cc": 1460,
+      "region": "Полтавська область",
+      "observed_at": 1791401547.7331047
+    },
+    {
+      "listing_id": "40534183",
+      "brand": "BMW",
+      "model": "5 Series",
+      "year": 2019,
+      "fuel": "Бензин",
+      "transmission": "Автомат",
+      "mileage_km": "136000",
+      "price": "27500",
+      "currency": "USD",
+      "body": "Седан",
+      "generation": "G30",
+      "engine_cc": 2000,
+      "region": "Тернопільська область",
+      "observed_at": 1791401558.9069865
+    },
+    {
+      "listing_id": "40534547",
+      "brand": "BMW",
+      "model": "i4",
+      "year": 2022,
+      "fuel": "Електро",
+      "transmission": "Автомат",
+      "mileage_km": "25000",
+      "price": "37000",
+      "currency": "USD",
+      "body": "Купе",
+      "generation": "G26",
+      "engine_cc": null,
+      "region": "Одеська область",
+      "observed_at": 1791401573.7563534
+    },
+    {
+      "listing_id": "40451438",
+      "brand": "Mercedes-Benz",
+      "model": "S-Class",
+      "year": 2010,
+      "fuel": "Бензин",
+      "transmission": "Автомат",
+      "mileage_km": "272000",
+      "price": "13000",
+      "currency": "USD",
+      "body": "Седан",
+      "generation": "W221 (FL)",
+      "engine_cc": 5500,
+      "region": "Київська область",
+      "observed_at": 1791401589.560569
+    }
+  ],
+  "followup_rows": [
+    {
+      "listing_id": "40534592",
+      "log_accepted_at": "2026-10-07T19:19:07.751471833Z",
+      "found": false,
+      "found_page_indices": [],
+      "scan_observed_at": null,
+      "publication_at": null,
+      "telegram_delivered_at": null
+    },
+    {
+      "listing_id": "40534593",
+      "log_accepted_at": "2026-10-07T19:21:00.562543046Z",
+      "found": false,
+      "found_page_indices": [],
+      "scan_observed_at": null,
+      "publication_at": null,
+      "telegram_delivered_at": null
+    },
+    {
+      "listing_id": "40534606",
+      "log_accepted_at": "2026-10-07T19:21:29.135010455Z",
+      "found": false,
+      "found_page_indices": [],
+      "scan_observed_at": null,
+      "publication_at": null,
+      "telegram_delivered_at": null
+    },
+    {
+      "listing_id": "40534609",
+      "log_accepted_at": "2026-10-07T19:24:43.543570669Z",
+      "found": false,
+      "found_page_indices": [],
+      "scan_observed_at": null,
+      "publication_at": null,
+      "telegram_delivered_at": null
+    }
+  ]
+}

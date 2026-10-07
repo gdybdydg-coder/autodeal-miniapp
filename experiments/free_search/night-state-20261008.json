@@ -1,0 +1,18 @@
+{
+  "status": "ready",
+  "authorized_scope": "isolated free AUTO.RIA research only",
+  "stop_new_work_at": "2026-10-08T07:00:00+03:00",
+  "lease": null,
+  "budget": {
+    "max_public_gets": 120,
+    "max_reserved_response_bytes": 160000000,
+    "reserved_gets": 0,
+    "reserved_response_bytes": 0,
+    "actual_gets": 0,
+    "actual_known_body_bytes": 0
+  },
+  "source_hold": false,
+  "reservations": [],
+  "last_completed_step": "See CONTROL_REPORT_20261007.txt for the current-session evidence",
+  "next_step": "Build useful independent public peer coverage; distinguish asking-price validation from actual market accuracy; client filter segments remain unverified"
+}

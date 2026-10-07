@@ -1,0 +1,62 @@
+AutoDeal — authorized overnight isolated research, 7–8 October 2026 Kyiv
+
+User explicitly requested overnight continuation and a morning result at 22:28
+on 7 October. This authorizes bounded scheduled research, NOT production changes.
+Read the latest plan and private journal before work, then current remote HEAD
+of wip/free-search-evidence-20261007 and CONTROL_REPORT_20261007.txt. Earlier
+night-task prompts are historical and cannot override current restrictions.
+
+Allowed writes: experiments/free_search in this research branch only; private
+reports and journal with version guards. Never merge WIP ancestry into main.
+No production/main/DB/config/env/restart/source-switch/schedule/payment/ad
+changes; no Telegram sends including owner/test; zero paid API/cache valuation;
+no new paid resources. Keep paid search operating. Do not touch OLX.
+
+Each run <=25 minutes, lease <=35 minutes. Stop new work after 07:00 Kyiv Oct8.
+Before work claim a unique lease (owner, UTC expiry) in night-state-20261008.json
+by a commit on the current remote HEAD and expected-SHA non-force ref update.
+Unexpired foreign lease or source_hold means no source requests; foreign lease
+also means no competing writes. On ref conflict reread, never force or overwrite.
+Release only own lease with results and exact next step. Expired leases may be
+reclaimed, but already reserved budgets remain spent for budgeting purposes.
+
+Whole-night additional limits: 120 public GET and 160000000 reserved body bytes.
+Per run: at most30 GET, at most40000000 reserved bytes; each response <=2500000,
+timeout20s, >=4s after previous completion or stricter robots interval. No retries.
+Before IO persist exact observed public URL allowlist and reserve GET/body caps
+in the remote state via CAS; fail closed if claim/reservation cannot be saved.
+Do not refund reservations after crash, unknown outcome, or partial use.
+Read robots; no API/BFF/GraphQL, authentication, cookies, proxies, CAPTCHA bypass
+or hidden endpoints. 401/403/429/challenge: persist source_hold and do offline
+work only; no alternate route to bypass denial. Ordinary absence can be diagnosed
+offline; do not silently reset error/budget ledgers. Raw pages stay private.
+
+Prioritize a concrete bottleneck with new evidence, not repeated demos:
+1. Expand compatible public peers in explicitly chosen exploratory segments,
+   chosen by characteristics/source order before prices. Current client segments
+   are blocked by DB network allowlist; do not modify it or pretend public groups
+   are actual clients. Previously gathered 27 Outback peers cover only one model.
+2. Keep a disjoint frozen holdout and all failed/unknown cases. At least50 controls
+   in this session assess detail/discovery readiness, not independent market-price
+   accuracy. Missing vehicle identity leaves leakage uncertain. Do not lower min5
+   or loosen compatibility just to obtain an estimate. Original formula unchanged.
+3. Investigate bounded discovery omissions with independent controls and matched
+   query scopes. Known-ID lookup cannot count as discovery. First seen is not
+   publication; source sorting/republishing/promotion may differ.
+4. Measure every available stage; separate local/Render, cold/warm peers, source
+   wait, collector, detail, valuation, queue and actual Telegram evidence. Missing
+   stages remain null. Offline message rendering only after model/filter gate.
+5. Test meaningful safety and regression cases; no production imports or .env.
+
+Before research push verify Render remains main-only/no previews and inspect
+workflow triggers. If isolated push cannot be confirmed, save local patch/report.
+Access connected GitHub/Render read-only as needed, no secrets or broad raw logs.
+Use sanitized fixtures/receipts; never commit VIN, contacts, seller/user details.
+Commit code/tests/report/updated state, verify remote tree equals tested local tree.
+Update Library plan libfile_89cba24d220c8191bcd0d5fc627e4e7f and private journal
+libfile_a603e1cf46a08191a8e9b72770b481cd with current version guards; preserve all
+history and unrelated records. If shared journal changes, reread/reconcile.
+
+No new automations, no extending this night. Do not send intermediate night
+notifications; preserve progress for the separate morning report. Complete useful
+offline work if blocked. Report failures honestly, never promise solved accuracy.

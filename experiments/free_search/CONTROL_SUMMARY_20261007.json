@@ -1,0 +1,22 @@
+{
+  "control_count": 50,
+  "detail_prepared": 50,
+  "detail_errors": {},
+  "estimated": 0,
+  "unknown": 50,
+  "valuation_not_attempted": 0,
+  "public_control_overlap": 5,
+  "log_control_overlap": 0,
+  "log_control_count": 4,
+  "detail_http_min": 6.641945597999438,
+  "detail_http_median": 8.529458070499459,
+  "detail_http_p95_nearest_rank": 12.151322879999498,
+  "detail_http_max": 17.08149399800095,
+  "detail_batch_seconds": 647.0584409236908,
+  "public_gets": 58,
+  "body_bytes": 39628883,
+  "cumulative_public_gets": 155,
+  "cumulative_known_body_bytes": 105435808,
+  "paid_api_calls": 0,
+  "telegram_calls": 0
+}
