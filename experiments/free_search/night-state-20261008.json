@@ -2,12 +2,16 @@
   "status": "ready",
   "authorized_scope": "isolated free AUTO.RIA research only",
   "stop_new_work_at": "2026-10-08T07:00:00+03:00",
-  "lease": null,
+  "lease": {
+    "owner": "night2-2f35f270-b010-45b4-a06b-8954f3706dbc",
+    "claimed_at": "2026-10-07T22:57:03.538085+00:00",
+    "expires_at": "2026-10-07T23:27:03.538085+00:00"
+  },
   "budget": {
     "max_public_gets": 120,
     "max_reserved_response_bytes": 160000000,
-    "reserved_gets": 23,
-    "reserved_response_bytes": 29070000,
+    "reserved_gets": 26,
+    "reserved_response_bytes": 32840000,
     "actual_gets": 23,
     "actual_known_body_bytes": 13741394
   },
@@ -140,6 +144,28 @@
       "status": "completed",
       "actual_gets": 19,
       "actual_known_body_bytes": 11761338
+    },
+    {
+      "owner": "night2-2f35f270-b010-45b4-a06b-8954f3706dbc",
+      "batch": "year2022_and_target",
+      "reserved_at": "2026-10-07T22:57:03.538085+00:00",
+      "requests": [
+        {
+          "url": "https://auto.ria.com/robots.txt",
+          "body_cap": 20000
+        },
+        {
+          "url": "https://auto.ria.com/uk/car/mazda/cx-5/year/2022/",
+          "body_cap": 2500000
+        },
+        {
+          "url": "https://auto.ria.com/uk/auto_mazda_cx_5_40408057.html",
+          "body_cap": 1250000
+        }
+      ],
+      "max_requests": 3,
+      "reserved_bytes": 3770000,
+      "status": "reserved"
     }
   ],
   "last_completed_step": "NIGHT_CHECKPOINT_20261008_01.txt: Mazda2016 eight comparable peers, one of50 estimated; accident history/current condition uncertainty disclosed;307 tests",
