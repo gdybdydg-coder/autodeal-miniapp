@@ -10,8 +10,8 @@
   "budget": {
     "max_public_gets": 120,
     "max_reserved_response_bytes": 160000000,
-    "reserved_gets": 88,
-    "reserved_response_bytes": 115330000,
+    "reserved_gets": 106,
+    "reserved_response_bytes": 136930000,
     "actual_gets": 83,
     "actual_known_body_bytes": 50429255
   },
@@ -532,6 +532,88 @@
       ],
       "max_requests": 3,
       "reserved_bytes": 7500000,
+      "status": "reserved"
+    },
+    {
+      "owner": "night4-91afd6bd-c362-4e77-b252-fc420193e57c",
+      "batch": "all18_control_details",
+      "reserved_at": "2026-10-08T03:09:18.271683+00:00",
+      "requests": [
+        {
+          "url": "https://auto.ria.com/uk/auto_hyundai_tucson_40405395.html",
+          "body_cap": 1200000
+        },
+        {
+          "url": "https://auto.ria.com/uk/auto_mitsubishi_grandis_35108262.html",
+          "body_cap": 1200000
+        },
+        {
+          "url": "https://auto.ria.com/uk/auto_opel_astra_40121173.html",
+          "body_cap": 1200000
+        },
+        {
+          "url": "https://auto.ria.com/uk/auto_bobcat_s175_39319447.html",
+          "body_cap": 1200000
+        },
+        {
+          "url": "https://auto.ria.com/uk/auto_daf_lf_39319470.html",
+          "body_cap": 1200000
+        },
+        {
+          "url": "https://auto.ria.com/uk/auto_yamaha_xvs_650_40214825.html",
+          "body_cap": 1200000
+        },
+        {
+          "url": "https://auto.ria.com/uk/auto_tesla_model_s_40134596.html",
+          "body_cap": 1200000
+        },
+        {
+          "url": "https://auto.ria.com/uk/auto_daewoo_nexia_40134601.html",
+          "body_cap": 1200000
+        },
+        {
+          "url": "https://auto.ria.com/uk/auto_renault_kangoo_40267995.html",
+          "body_cap": 1200000
+        },
+        {
+          "url": "https://auto.ria.com/uk/auto_forte_ft_125_fa2_40134598.html",
+          "body_cap": 1200000
+        },
+        {
+          "url": "https://auto.ria.com/uk/auto_kia_niro_40401911.html",
+          "body_cap": 1200000
+        },
+        {
+          "url": "https://auto.ria.com/uk/auto_bmw_x3_40134595.html",
+          "body_cap": 1200000
+        },
+        {
+          "url": "https://auto.ria.com/uk/auto_opel_zafira_39724637.html",
+          "body_cap": 1200000
+        },
+        {
+          "url": "https://auto.ria.com/uk/auto_land_rover_range_rover_sport_40134597.html",
+          "body_cap": 1200000
+        },
+        {
+          "url": "https://auto.ria.com/uk/auto_schmitz_cargobull_mega_39862423.html",
+          "body_cap": 1200000
+        },
+        {
+          "url": "https://auto.ria.com/uk/auto_chevrolet_lacetti_39862480.html",
+          "body_cap": 1200000
+        },
+        {
+          "url": "https://auto.ria.com/uk/auto_vaz_lada_2110_39724636.html",
+          "body_cap": 1200000
+        },
+        {
+          "url": "https://auto.ria.com/uk/auto_daewoo_nexia_39724605.html",
+          "body_cap": 1200000
+        }
+      ],
+      "max_requests": 18,
+      "reserved_bytes": 21600000,
       "status": "reserved"
     }
   ],
