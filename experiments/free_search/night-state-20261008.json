@@ -10,8 +10,8 @@
   "budget": {
     "max_public_gets": 120,
     "max_reserved_response_bytes": 160000000,
-    "reserved_gets": 77,
-    "reserved_response_bytes": 98110000,
+    "reserved_gets": 83,
+    "reserved_response_bytes": 105310000,
     "actual_gets": 53,
     "actual_known_body_bytes": 32328213
   },
@@ -448,6 +448,40 @@
       ],
       "max_requests": 1,
       "reserved_bytes": 2500000,
+      "status": "reserved"
+    },
+    {
+      "owner": "night3-542a9ed1-2eff-452d-a57b-21b7e9740362",
+      "batch": "six_camry_extension",
+      "reserved_at": "2026-10-08T01:01:54.208338+00:00",
+      "requests": [
+        {
+          "url": "https://auto.ria.com/uk/auto_toyota_camry_40266509.html",
+          "body_cap": 1200000
+        },
+        {
+          "url": "https://auto.ria.com/uk/auto_toyota_camry_33111909.html",
+          "body_cap": 1200000
+        },
+        {
+          "url": "https://auto.ria.com/uk/auto_toyota_camry_37195844.html",
+          "body_cap": 1200000
+        },
+        {
+          "url": "https://auto.ria.com/uk/auto_toyota_camry_40525489.html",
+          "body_cap": 1200000
+        },
+        {
+          "url": "https://auto.ria.com/uk/auto_toyota_camry_40527073.html",
+          "body_cap": 1200000
+        },
+        {
+          "url": "https://auto.ria.com/uk/auto_toyota_camry_37045421.html",
+          "body_cap": 1200000
+        }
+      ],
+      "max_requests": 6,
+      "reserved_bytes": 7200000,
       "status": "reserved"
     }
   ],
