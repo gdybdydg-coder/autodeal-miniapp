@@ -10,8 +10,8 @@
   "budget": {
     "max_public_gets": 120,
     "max_reserved_response_bytes": 160000000,
-    "reserved_gets": 106,
-    "reserved_response_bytes": 136930000,
+    "reserved_gets": 109,
+    "reserved_response_bytes": 144430000,
     "actual_gets": 83,
     "actual_known_body_bytes": 50429255
   },
@@ -614,6 +614,28 @@
       ],
       "max_requests": 18,
       "reserved_bytes": 21600000,
+      "status": "reserved"
+    },
+    {
+      "owner": "night4-91afd6bd-c362-4e77-b252-fc420193e57c",
+      "batch": "collector_cycle2",
+      "reserved_at": "2026-10-08T03:13:00.826852+00:00",
+      "requests": [
+        {
+          "url": "https://auto.ria.com/uk/search/?search_type=1&category=1&abroad=0&customs_cleared=1&republished_last=1&order=7&limit=20&page=0",
+          "body_cap": 2500000
+        },
+        {
+          "url": "https://auto.ria.com/uk/search/?search_type=1&category=1&abroad=0&customs_cleared=1&republished_last=1&order=7&limit=20&page=1",
+          "body_cap": 2500000
+        },
+        {
+          "url": "https://auto.ria.com/uk/search/?search_type=1&category=1&abroad=0&customs_cleared=1&republished_last=1&order=7&limit=20&page=2",
+          "body_cap": 2500000
+        }
+      ],
+      "max_requests": 3,
+      "reserved_bytes": 7500000,
       "status": "reserved"
     }
   ],
