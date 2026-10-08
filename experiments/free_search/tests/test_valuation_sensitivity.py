@@ -30,3 +30,18 @@ class SensitivityTests(unittest.TestCase):
     def test_nonfinite_threshold_rejected(self):
         subject,peers=self.rows()
         with self.assertRaises(ValueError):audit_sensitivity(subject,peers,1000,[float('nan')])
+
+    def test_unknown_transition_is_not_a_known_threshold_flip(self):
+        subject,peers=self.rows(5)
+        summary=audit_sensitivity(subject,peers,1000)['listing_summary']
+        self.assertEqual(summary['known_threshold_flips'],{'5':0,'10':0,'15':0})
+        self.assertEqual(summary['unknown_threshold_transitions'],{'5':5,'10':5,'15':5})
+        self.assertEqual(summary['scenarios'],5)
+        self.assertTrue(summary['threshold_changes_include_unknown'])
+
+    def test_known_threshold_flip_is_separate_from_unknown(self):
+        subject,peers=self.rows(6)
+        summary=audit_sensitivity(subject,peers,1000,[26])['listing_summary']
+        self.assertGreater(summary['known_threshold_flips']['26'],0)
+        self.assertEqual(summary['unknown_threshold_transitions']['26'],0)
+        self.assertEqual(summary['unknown'],0)

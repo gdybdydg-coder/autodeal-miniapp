@@ -1,0 +1,48 @@
+AutoDeal — checkpoint03, 08.10.2026, ізольована безкоштовна перевірка
+
+РЕЗУЛЬТАТ
+Продовжено checkpoint02, не почато дослідження заново. Третя нова вікова/модельна група — Toyota Camry2016. Ціль40534354 — перше авто раніше незалежно замороженої вибірки50, вибір не залежав від ціни. Це дослідна група, НЕ підтверджений фільтр клієнтів. Доступ до трьох фактичних сегментів досі заблокований DB allowlist; його не змінювали.
+Свіжа ціна цілі12700USD. Зібрано19+6 нових аналогів без API/paid cache. Початкові19 дали5 baseline-аналогів, але тільки4 сумісні з відомим однаковим приводом, тобто unknown при незміненомуmin5. Наступні6 з публічної page2 дали ще2 сумісних: now6, reference12999.25USD, median14250, upper15950. Різниця із ціною цілі2.30206%, нижче дослідних5/10/15%. Це ціни пропозицій, НЕ ринкова істина/ціна угод/підтверджений прибуток. Оголошення не відправлялося й не проголошене вигідним.
+
+ПОПЕРЕДНЯ ОСНОВА Й БЕЗПЕКА
+Прочитано актуальні планv8, журналv31, remote28c274cce82e64eefdc3b6501045521d6d1f2ccc / treefa08e297667b69cc4868943f14e6a3deec5aba33; NIGHT_20261008, state, CONTROL_REPORT і checkpoint02. ВласнийCASlease, незбільшуваний бюджет, точні спостереженіURLs/caps до кожного GETbatch; force=false. Render read-only: service srv-dal2h35g1s2s73e0sj80, workspace tea-dakrf02fngtc73dvk4dg, branchmain/autodeployyes/previews off; локальне дерево збігалося remote, workflow triggers на інших гілках. Немає записів у main/production/DB/config/env, restart/deploy чи Telegram. Paid search, OLX, оплата, реклама, розклад і формула не змінювалися. Поточні числа клієнтів/доставок/серверної черги не виміряні.
+
+ЗБІР І ПОВНОТА
+30/30 HTTP200: robots1, каталоги3, detail26 (ціль1+25peers). Parse26/26, помилки0. Всі25 peer candidates зафіксовано до відповідних detail GET, всі50 control IDs і старі peers виключено. Перші19 — source order першої year2016 page; додаткові6 — перші unseen IDs page2. Розширення адаптивне після недостатності приводу, НЕ незалежна validation. Початкові4/unknown збережено, policy/min5 не розширено.
+Маршрути тільки фактично спостережені public: https://auto.ria.com/uk/car/toyota/camry/ → https://auto.ria.com/uk/car/toyota/camry/year/2016/ → https://auto.ria.com/uk/car/toyota/camry/year/2016/?page=2 ; target https://auto.ria.com/uk/auto_toyota_camry_40534354.html . Жодних API/BFF/graphql,cookies,auth,proxies,redirect/retry. Source hold не спрацював. Після30GET нових запитів немає.
+50 controls /97 peers: baseline3estimated,47unknown; усі50 лишаються у знаменнику. Для25 нових peers fuel mismatch13/mileage5, baseline7/reference12999.50/2.30393%. Same-drive subset:20 known same labels до інших правил,5 unknown drive,0 known conflict; далі6 сумісних, fuel9/mileage5. Same-drive scenario не замінює production/model policy чи клієнтські filters. 47unknown не приховано.
+Discovery цього checkpoint не перевірявся: known-ID refresh не є новим виявленням. Раніше5/50 overlap при різних scopes — НЕ recall;0/4 повторного bounded window також не час від публікації. Повного охоплення ринку не доведено. Не оголошувати3baseline оцінки трьома вигідними пропозиціями.
+
+ОЗНАКИ, СТАН ТА ІДЕНТИЧНІСТЬ
+Ціль: Camry2016, VII/XV50(FL), газ/бензин2490cc, автомат,150000км, седан, передній привід; джерельні характеристики, не фізична інспекція. Покоління у6 same-drive сумісних відоме; missing optional notices в їхньому scenario немає. Лише1/6 у регіоні цілі: mixed regional sample, локальну надбавку не вигадано.
+Ціль має source accident-history=true, запропонована перевірка наСТО не доводить стан. У6 same-drive аналогів4 accident-history=true,2unknown; поточна потреба/вартість ремонту невідомі у всіх. Це не автоматична заборона цілого авто, але не дозволяє заявити condition-adjusted market price.
+Додатково офлайн звірено source VIN assertions:47/50 controls і25/25 нових peers мають валідний за форматом ідентифікатор; відомих збігів між цими peers та controls або між peers немає. Три controls без ідентифікатора залишаються unknown; неправдивий VIN у джерелі чи відсутню фізичну перевірку ця звірка не усуває. Старі72 peers повторно на фізичні дублікати тут не перевіряли. У звіт/репозиторій не потрапили raw VIN, хеші VIN, контакти чи raw HTML — лише counts/listingIDs. Сирі джерела приватні; цей identity-count неможливо повторно отримати лише з санітизованого fixture, це явно зазначено в replay.
+Аудит виявив структурний випадок: сторінка має повний Vehicle і додатковий частковий Vehicle без VIN. Відсутність поля в другому вузлі не повинна стирати валідне явне твердження першого. Конфлікт двох різних явних VIN лишається unknown. Поведінку зафіксовано meaningful tests.
+
+СТІЙКІСТЬ БЕЗ ПІДМІНИ UNKNOWN
+Same-drive pool20, baseline6:20 leave-one-listing-out дають reference12999–13000, unknown0;10 вилучень регіону — reference12999–12999.25 серед обчислених, unknown2. Відомих переходів через5/10/15% немає;2 регіональні сценарії переходять саме вunknown. Це стійкість, не independent market accuracy.
+Покращено valuation_sensitivity: старе threshold_changes означало будь-яку зміну tri-state (true/false/null), зокрема втрату оцінки. Збережено backward-compatible поле з явним threshold_changes_include_unknown=true; нові known_threshold_flips та unknown_threshold_transitions розділяють ці випадки. У початкових19 Camry5/19 listing-deletions і4/9 region-deletions давали unknown, а не доведене перетинання цінового порога. Формула, коефіцієнти, min5 і сумісність не змінені.
+Mazda2016 з checkpoint02 досі4 same-drive/unknown; Mazda2022 досі generationnull/conditional only. Новий Camry результат не виправляє їхні обмеження.
+
+ЧАС І ВИТРАТИ: ЛОКАЛЬНІ ФАКТИ
+Етап | Фактичне значення | Інтерпретація
+Publication | null | немає достовірного часу публікації
+Перша доступність джерела | null | receipt лише підтверджує snapshot, не першу появу
+Collector detection | null | independent control / known-ID refresh
+Target HTTP | 4.014627с | тільки завантаження
+19 detail peers | 160.892084с, median GET4.369479с | серійний пакет із паузами
+6 додаткових peers | 56.636405с | адаптивне розширення
+Target receipt→final experimental assessment | 319.780829с | реальний дослідний workflow: cold peers, reservation, offline parsing; не inline SLA
+Фінальний local valuation+50cohort compute | 0.026248с | CPU wall після наявності даних
+Весь30GET source batch | 346.610092с | не publication→повідомлення
+Черга/Telegram/Render latency | null | не запускали/немає даних
+
+stage_timing.py тепер зберігає provenance кожного фактичного етапу. First-seen відхиляється як publication, known-ID lookup як collector detection, local render як Telegram delivery. Unknown assessment може мати час завершення, не стаючи готовою оцінкою вигідності. Local/Render позначаються окремо; current run local. Details parsing завершено в офлайн batch після збору, а не підставлено часHTTPreceipt. Немає підготовленого до клієнтської доставки повідомлення.
+30GET/18101042 відомих bodybytes; reserved38770000. Timeout20с, maxcap<=2500000; max actual HTTP7.721756с; min completion pause4.000160с; retry0. За ніч83GET/50429255bodybytes, reserved83GET/105310000bytes. Залишок37GET/54690000 reservedbytes; невикористані caps НЕ повернено. Загалом дослідження238GET/155865063 відомих bodybytes. Це дослідні лічильники, не server/production stats.
+API cost0 paid calls; paidcache0; Telegram0; новихpaidresources0. Грошову вартість серверногоCPU, трафіку та storage не виміряно й не названо нульовою; bodybytes безheaders/TLS. Cold peer collection може тривати хвилини, самі~4сHTTP або~0.026сcompute не доводять швидкої доставки.
+Прогноз polling за попереднім CONTROL_REPORT зберігається як припущення: P=30/60/125/300с → середня scheduling wait15/30/62.5/150с, без source lag/details/peers/queue. Це не production дозвіл. Потрібні matched-scope незалежні controls, часові межі появи й оцінювання з unknown у знаменнику.
+
+КОД, ТЕСТИ, ПРОДОВЖЕННЯ
+331tests PASS (було316;15нових: timing7, sensitivity2, identity6). Network/production configuration barrier встановлено ДО test discovery/imports; successful external calls0 у offline replay. Нові stage_timing.py,public_identity_audit.py,replay_night03.py і тести; вузьке доповнення valuation_sensitivity. valuation.py не змінено, hash збережено у fixture. Тільки experiments/free_search. Санітизовані snapshot/receipts/manifest у NIGHT_PEERS_20261008_03.json; reproduce: python3 -m experiments.free_search.replay_night03 з rootrepo. Render/service/workflows перевірено перед remote записами; CAS/tree verification перед завершенням. Власний lease звільняється з checkpoint.
+Наступний конкретний крок: спочатку прочитати checkpoint03 і currentremote state; з новимCASlease пріоритетно зафіксувати незалежні discovery controls із явними scope/time, лише потім collector. Не використовувати collector output як контроль і не називати unmatched scope recall. Якщо scope незалежного джерела невідомий — лишити provisional, обрати наступну дозволену public альтернативу. Окремий відкритий крок — явне public поколінняMazda2022, без виведення з року/ціни/більшості. Чергове поповнення peers має обґрунтовувати конкретний shortage й не звужувати звіт до успіхів. New run<=30GET/40MB та загальний залишок37GET/54.69MB, до07:00Kyiv не починати нову роботу. Actualclientsegments, marketcalibration, станремонту, matchedscopecoverage і справжня deliverylatency лишаються відкритими.
+Перехід потребує НОВОГО явного погодження: точниймінімальнийdiff безmergeWIPancestry, погодження методуоцінки/охоплення, ізольованийRender shadow безTelegram, метрики впливу й rollback; потім окремо production/source switching. На цьому етапі — лише дослідна гілка, не впровадження.

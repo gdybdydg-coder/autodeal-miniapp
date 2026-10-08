@@ -32,7 +32,18 @@ def audit_sensitivity(subject, peers, as_of, thresholds=(5, 10, 15)):
         return {'scenarios': len(runs), 'unknown': sum(r['outcome']['status'] == 'unknown' for r in runs),
                 'reference_min': str(min(values)) if values else None,
                 'reference_max': str(max(values)) if values else None,
-                'threshold_changes': {str(c): sum(r['outcome']['diagnostic_thresholds'][str(c)] != baseline['diagnostic_thresholds'][str(c)] for r in runs) for c in cuts}}
+                # Legacy tri-state changes include transitions to/from unknown.
+                'threshold_changes': {str(c): sum(r['outcome']['diagnostic_thresholds'][str(c)] != baseline['diagnostic_thresholds'][str(c)] for r in runs) for c in cuts},
+                'threshold_changes_include_unknown': True,
+                'known_threshold_flips': {str(c): sum(
+                    baseline['diagnostic_thresholds'][str(c)] is not None
+                    and r['outcome']['diagnostic_thresholds'][str(c)] is not None
+                    and r['outcome']['diagnostic_thresholds'][str(c)] != baseline['diagnostic_thresholds'][str(c)]
+                    for r in runs) for c in cuts},
+                'unknown_threshold_transitions': {str(c): sum(
+                    (baseline['diagnostic_thresholds'][str(c)] is None)
+                    != (r['outcome']['diagnostic_thresholds'][str(c)] is None)
+                    for r in runs) for c in cuts}}
     return {'baseline': baseline, 'leave_one_listing_out': singles, 'leave_one_region_out': groups,
             'listing_summary': summary(singles), 'region_summary': summary(groups),
             'independent_accuracy_validation': False, 'production_approved': False,

@@ -2,18 +2,14 @@
   "status": "ready",
   "authorized_scope": "isolated free AUTO.RIA research only",
   "stop_new_work_at": "2026-10-08T07:00:00+03:00",
-  "lease": {
-    "owner": "night3-542a9ed1-2eff-452d-a57b-21b7e9740362",
-    "claimed_at": "2026-10-08T00:57:00.553472+00:00",
-    "expires_at": "2026-10-08T01:27:00.553472+00:00"
-  },
+  "lease": null,
   "budget": {
     "max_public_gets": 120,
     "max_reserved_response_bytes": 160000000,
     "reserved_gets": 83,
     "reserved_response_bytes": 105310000,
-    "actual_gets": 53,
-    "actual_known_body_bytes": 32328213
+    "actual_gets": 83,
+    "actual_known_body_bytes": 50429255
   },
   "source_hold": false,
   "reservations": [
@@ -330,7 +326,9 @@
       ],
       "max_requests": 2,
       "reserved_bytes": 2520000,
-      "status": "reserved"
+      "status": "completed",
+      "actual_gets": 2,
+      "actual_known_body_bytes": 499842
     },
     {
       "owner": "night3-542a9ed1-2eff-452d-a57b-21b7e9740362",
@@ -348,7 +346,9 @@
       ],
       "max_requests": 2,
       "reserved_bytes": 3750000,
-      "status": "reserved"
+      "status": "completed",
+      "actual_gets": 2,
+      "actual_known_body_bytes": 1489521
     },
     {
       "owner": "night3-542a9ed1-2eff-452d-a57b-21b7e9740362",
@@ -434,7 +434,9 @@
       ],
       "max_requests": 19,
       "reserved_bytes": 22800000,
-      "status": "reserved"
+      "status": "completed",
+      "actual_gets": 19,
+      "actual_known_body_bytes": 11748702
     },
     {
       "owner": "night3-542a9ed1-2eff-452d-a57b-21b7e9740362",
@@ -448,7 +450,9 @@
       ],
       "max_requests": 1,
       "reserved_bytes": 2500000,
-      "status": "reserved"
+      "status": "completed",
+      "actual_gets": 1,
+      "actual_known_body_bytes": 831184
     },
     {
       "owner": "night3-542a9ed1-2eff-452d-a57b-21b7e9740362",
@@ -482,11 +486,13 @@
       ],
       "max_requests": 6,
       "reserved_bytes": 7200000,
-      "status": "reserved"
+      "status": "completed",
+      "actual_gets": 6,
+      "actual_known_body_bytes": 3531793
     }
   ],
-  "last_completed_step": "NIGHT_CHECKPOINT_20261008_02.txt: 30GET; 2022 default quote missing generation; prior2016 same-drive only4 remains unknown after7 extra peers; 316 tests",
-  "next_step": "Read checkpoint02 correction first. Third disjoint model/age cohort or justify more observed2016 pagination; do not accept prior2016 quote as fully comparable. Target2022 generation unknown: verify through permitted public evidence without inference, otherwise preserve conditional outcomes. No policy/min5 changes. Preserve48 nominal unknowns and both unresolved qualifying cases.",
-  "last_released_owner": "night2-2f35f270-b010-45b4-a06b-8954f3706dbc",
-  "last_completed_at": "2026-10-07T23:08:49.493333+00:00"
+  "last_completed_step": "NIGHT_CHECKPOINT_20261008_03.txt: Camry2016 19+6 new peers; same-drive4unknown->6 estimate12999.25 vs12700; nominal3/50 estimated47unknown; source VIN audit47/50+25/25 no known collisions;331 tests",
+  "next_step": "Read checkpoint03 and keep Camry2.302% asking-reference gap distinct from a bargain. Prior Mazda2016 remains same-drive4unknown, Mazda2022 generation unresolved. Prioritize independently frozen matched-scope discovery controls and stage timings, or explicit public generation evidence; source-order peers only. Remaining37GET/54690000 reserved bytes; new run <=30GET/40MB with new CAS lease; no work start after07:00 Kyiv. Actual client segments, price calibration and condition remain blockers.",
+  "last_released_owner": "night3-542a9ed1-2eff-452d-a57b-21b7e9740362",
+  "last_completed_at": "2026-10-08T01:06:41.598435+00:00"
 }
