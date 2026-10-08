@@ -2,12 +2,16 @@
   "status": "ready",
   "authorized_scope": "isolated free AUTO.RIA research only",
   "stop_new_work_at": "2026-10-08T07:00:00+03:00",
-  "lease": null,
+  "lease": {
+    "owner": "night3-542a9ed1-2eff-452d-a57b-21b7e9740362",
+    "claimed_at": "2026-10-08T00:57:00.553472+00:00",
+    "expires_at": "2026-10-08T01:27:00.553472+00:00"
+  },
   "budget": {
     "max_public_gets": 120,
     "max_reserved_response_bytes": 160000000,
-    "reserved_gets": 53,
-    "reserved_response_bytes": 66540000,
+    "reserved_gets": 55,
+    "reserved_response_bytes": 69060000,
     "actual_gets": 53,
     "actual_known_body_bytes": 32328213
   },
@@ -309,6 +313,24 @@
       "status": "completed",
       "actual_gets": 7,
       "actual_known_body_bytes": 4351606
+    },
+    {
+      "owner": "night3-542a9ed1-2eff-452d-a57b-21b7e9740362",
+      "batch": "observed_camry_catalog",
+      "reserved_at": "2026-10-08T00:57:00.553472+00:00",
+      "requests": [
+        {
+          "url": "https://auto.ria.com/robots.txt",
+          "body_cap": 20000
+        },
+        {
+          "url": "https://auto.ria.com/uk/car/toyota/camry/",
+          "body_cap": 2500000
+        }
+      ],
+      "max_requests": 2,
+      "reserved_bytes": 2520000,
+      "status": "reserved"
     }
   ],
   "last_completed_step": "NIGHT_CHECKPOINT_20261008_02.txt: 30GET; 2022 default quote missing generation; prior2016 same-drive only4 remains unknown after7 extra peers; 316 tests",
