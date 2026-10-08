@@ -2,12 +2,16 @@
   "status": "ready",
   "authorized_scope": "isolated free AUTO.RIA research only",
   "stop_new_work_at": "2026-10-08T07:00:00+03:00",
-  "lease": null,
+  "lease": {
+    "owner": "night4-91afd6bd-c362-4e77-b252-fc420193e57c",
+    "claimed_at": "2026-10-08T03:06:33.646837+00:00",
+    "expires_at": "2026-10-08T03:36:33.646837+00:00"
+  },
   "budget": {
     "max_public_gets": 120,
     "max_reserved_response_bytes": 160000000,
-    "reserved_gets": 83,
-    "reserved_response_bytes": 105310000,
+    "reserved_gets": 85,
+    "reserved_response_bytes": 107830000,
     "actual_gets": 83,
     "actual_known_body_bytes": 50429255
   },
@@ -489,6 +493,24 @@
       "status": "completed",
       "actual_gets": 6,
       "actual_known_body_bytes": 3531793
+    },
+    {
+      "owner": "night4-91afd6bd-c362-4e77-b252-fc420193e57c",
+      "batch": "independent_control_source",
+      "reserved_at": "2026-10-08T03:06:33.646837+00:00",
+      "requests": [
+        {
+          "url": "https://auto.ria.com/robots.txt",
+          "body_cap": 20000
+        },
+        {
+          "url": "https://auto.ria.com/uk/last/hour/",
+          "body_cap": 2500000
+        }
+      ],
+      "max_requests": 2,
+      "reserved_bytes": 2520000,
+      "status": "reserved"
     }
   ],
   "last_completed_step": "NIGHT_CHECKPOINT_20261008_03.txt: Camry2016 19+6 new peers; same-drive4unknown->6 estimate12999.25 vs12700; nominal3/50 estimated47unknown; source VIN audit47/50+25/25 no known collisions;331 tests",
