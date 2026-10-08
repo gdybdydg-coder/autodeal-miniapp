@@ -1,0 +1,52 @@
+AutoDeal — checkpoint04, 08.10.2026, підсумкова нічна перевірка discovery/часу
+
+Продовжено актуальні planv9/journalv32 і remote b84f4fb37415c2f99d28e52232514aa349172566 / tree1ea9b103bb6edaac0dbc88d123afaf95977de83f. NIGHT_20261008, currentstate, CONTROL_REPORT і checkpoint03 враховано. Власний CASlease та точні раніше спостережені publicURLs/caps резервувалися remote до кожного batch. Foreignlease не було. Production/main/DB/config/env/deploy/restart/розклад/формула/доступ/оплата/реклама/OLX недоторканні. Paid search не вимикали. Read-only Render перед записами: branchmain/autodeployyes/previews off; workflow triggers — іншігілки. Публічні GET тільки robots+HTML, без paidkeys/API/BFF/graphql/cookies/auth/proxy/redirect/retry. Telegram0.
+
+КОНКРЕТНИЙ РЕЗУЛЬТАТ
+Зафіксовано18 незалежно відібраних publiccontrols із перших валідних посилань legacy /uk/last/hour/ ДО огляду колектора. Новий етап відрізняється від попереднього batch replay: кожна detail-картка розбиралась та оцінювалась одразу після її GET, з реальними wall/compute timestamps. Колектор мав2цикли по3сторінки по20. 26/26HTTP200, транспортнихпомилок0.
+Перший і повторний цикл дали10/18контрольнихIDs;8не спостерігалися. Але explicit scopes різні: control lang_id=4,top=1 проти collector search_type=1,category=1,abroad=0,customs_cleared=1,republished_last=1,order=7. Тому bounded_control_detection_fraction=null, whole_market_recall=null. 10/18НЕ означає56%повноти чи44%пропусків. Контроль не сформовано з collector output, проте обидва маршрути мають того самого upstreamоператора; джерельні твердження не є незалежною істиною ринку.
+Серед8відсутніх за sourcebody:40405395кросовер,35108262мінівен,40121173універсал;39319447міні-вантажник,39319470тентованийвантажнийтип,40214825мотоциклкруїзер,40134598мотоциклкласик,39862423напівпричіп. П'ять непасажирських типів наочно підтверджують проблему неоднакового набору транспортних засобів. Причину відсутності трьох легковоподібних авто НЕ встановлено; не оголошувати всі8 технічними пропусками. Не обчислювати постфактум13авто як новий заздалегідь погоджений контроль.
+Перевірено наступну дозволену альтернативу: у controlHTML немає конкретного public search href з еквівалентними умовами; є лише шаблон. Endpoint/query не вигадано й прихованіAPI не використано. Наступна перевірка — повтор exactcollector scope для утримання обмеженого вікна:60унікальнихIDs у кожномуциклі, всі60збереглися; bodies усіх3сторінок мають однаковіSHA256. Інтервал headHTTPcompletion339.874263с. Це свідчить про незмінність цихзнімків, НЕ доводить TTL, відсутність новихоголошень чи реальнийlagджерела.
+У control-картках source data-add-date/update є; жоден не підставлено як verified publication. Ознакаpromoted цим парсером не виявлена у18, що не доводить відсутність всіх видівпросування.
+
+ПОВНИЙ ЗНАМЕННИК І БЕЗКОШТОВНА ОЦІНКА
+Деталі:17/18підготовлено базовимUSDadapter,1/18error currency_not_crosschecked. Оцінювання:17unknown (усіsample_count0) +1неоціненийчерезdetailerror; estimated0,qualified message0. Жоденвідсутнійуcollector чиerror не вилучений. Known-IDdetailGET НЕ додає discoveryуспіх.
+Використано лише97раніше зібраних publicpeer records; paidcache/платніоцінки не читали. НовіcontrolIDs не єpeerоднеодному; перетину з97не було. Дані97теплі публічні, тому цейrunнеєcoldpeerdatabase test. Для17новихконтролів їхвиявилосянедостатньо — вузька модельна база не покриває широку нову вибірку. Попередні50controls/97peers лишаються окремим експериментом3baselineestimated/47unknown; не змішувати вибірки в удавануєдинустатистику68авто чи ринковуточність. Три поточніклієнтськісегменти досінепідтверджені(DBallowlist),доступнечіпали.
+Mazda2016same-drive4unknown, Mazda2022generationnull/conditional та Camry2016same-drive6/reference12999.25приasking12700(2.302%) із checkpoint02/03 лишаються з усімаобмеженнями. Політика,min5,ціноформула,filters та clientaccess не змінені. Askingreference не називаєтьсядоведеноюринковоюціною. Станремонту/вартість, незалежнаmarketcalibration та достатнєохоплення відкриті.
+
+ВАЛЮТНИЙ ВИПАДОК — АЛЬТЕРНАТИВА БЕЗ FX/API
+ID40134598: JSON-LD22000UAH, visibleprimaryprice містить489$ і22000грн. БазовийUSDcrosscheck обґрунтовано не прирівняв22000UAH до489USD. Додано окремий public_currency_evidence: порівнює лише ту саму явно позначенувалюту в allowlisted basicInfoPrice з JSON-LD, безрозрахункукурсу. SupplementalUAHagreement=true,22000. Це same-page assertion,неперевіркапродавця.
+Первинний inlineerror збережено; supplemental check виконано пізнішеoffline, не підміняєфактичнийчас/успішністьrun. Defaultdetailparser не змінено; мотоциклнеперетворено налегковеавто. Тести покривають mixedUSD/UAH, тількиконвертованийUSD,EURdecimalcomma,конфліктдвохсум,hidden/duplicateDOM,невірнийID. Немає платноговалютногоfallback.
+
+ФАКТИЧНИЙ ЛОКАЛЬНИЙ ЧАС — ОЦІНКА UNKNOWN НЕ Є ГОТОВИМ ПОВІДОМЛЕННЯМ
+Етап | n | вимірюваннясекунд
+Verifiedpublication / першаsourceavailability | — | null
+CollectorHTTPцикл1 / цикл2 | 3+3сторінки | 26.601124 /24.849967
+DetailHTTP |18| min3.873936,median4.683419,p95nearest-rank6.960440,max6.960440
+Inlineparse |17успішних| median0.083453,max0.092038
+Valuationcompute |17unknown| median0.000604,max0.001270
+Controlsource snapshot→assessment |17unknown| min181.760041,median255.595184,p95335.420498
+Actualcollector parse detection→assessment |10detectedunknown| min88.501180,median139.179903,p95188.526983
+Серійнийdetailbatch |18|160.666729
+Усі26sourceGET відпершогостарту доостанньогокомпліту |—|411.173524
+Qualifiedmessage / черга / Telegram / Render |—|0готових / null / null / null
+
+Collector observation timestamps — фактичний час парсингу зібраних сторінок, не підставлений HTTPreceipt. Між fetch і розборомциклу була робота надguard/reservation; контроль→assessment містить її та серійнеочікування. Ці локальніresearch durations не є speed-on-Render, steady-state SLO чи publication→клієнт. Показники17успішнорозібраних показані поручіз1error; всі17оцінокunknown, тому швидкістьїхобчислення не доводитьшвидкістьзнаходженнявигоди. Повідомлення/черга не запускалися; сплата,active,/stop,filters,dedup,noadmincopies не обходилися.
+
+ОПИТУВАННЯ — ЛИШЕ РОЗРАХУНОК
+Для3сторінок і рівномірноїфази,безsourcecache/details/peers/queue:
+Pсек | циклі/добу | GET/добу | середняschedulingwait
+30 |2880|8640|15с
+60 |1440|4320|30с
+125 |691.2|2073.6|62.5с
+300 |288|864|150с
+Локальнийнайдовшийцикл26.60с формально вміщується в30сбеззапасу, але попереднійцикл40.43с не вміщався. Не робити30срекомендованим чи гарантованим. Незміннізнімки через339.87с означають,що частішеопитування не обов'язково дає свіжішевиявлення;причинуне встановлено. Arrivalrate/retention/джерельнийкеш ще не доведені; жоденрежимнеувімкнено.
+
+ВИТРАТИ Й МЕЖІ
+Цейrun26GET/18711449відомихbodybytes,reserved39120000. Mincompletionpause4.000160с,timeout20с,caps<=2500000,no retry. За4нічніcheckpoint109GET/69140704bodybytes,reserved144430000bytesіз120GET/160000000. Залишок11GET/15570000reservedbytes;неповертавсяіНЕавторизуєновуфоновуроботуабопродовженняпісля07Kyiv. Всьогозпопереднімидослідженнями264GET/174576512bodybytes. Сервернілічильникицимнеоновлюються.
+PaidAPI0,paidcache0,Telegram0,новіpaidresources0. Трафікbodyбезheaders/TLS. ЦінуCPU/серверу/storage і місячнийкошторис окремоне виміряно, не названонульовими. Повністюготовийбезкоштовнийпошуквигіднихавтоне доведено.
+
+КОД І НАСТУПНИЙ КРОК
+Новіscoped_control_audit.py таpublic_currency_evidence.py;14meaningful tests (+8scope,+6currency),усього345PASS. Scopeguard не рахуєrecall при scope mismatch, неповномуциклі,posthocfreeze,selfvalidation,відсутніхумовах/дублікатахquery. Publictiming/deletion/identityмодуліізcheckpoint03 використані безproductionimports. Network/configbarrierдоtestimports,offlineexternals0. Replay: python3 -m experiments.free_search.replay_night04; всіdata/reasons уNIGHT_CONTROL_20261008_04.json. RawHTML/VIN/hashVIN/контакти/секрети/userIDsнеопубліковані. valuation.pyunchangedhashуfixture. Тількиexperiments/free_search.
+Найкращепідтверджено: boundedpublicHTMLdiscoveryякджерелокандидатів + ID-bounddetail/visiblepricecrosscheck; experimentalpublicpeerpricingлишеувузькихгрупах. Головніблокери:еквівалентний незалежнийконтрольdiscovery,source freshness/публікація,покриттясумісниханалогів,стан/ринковаточністьіактуальнісегменти.
+Дляранковогозвіту використатицейcheckpointразоміз01–03 таPILOT_GATES_20261008.txt. Нічнийобсягзакінчено; новіавтоматизації/продовженняне створені. Унаступномусеансіпродовжитидозволеніізольованікрокизпоточногостану; production/shadowзізмінамиконфігурації/source switching/реальнівідправлення потребуютьновогопогодження. НеmergeвсюWIPancestry. Власнийleaseзвільняєтьсяразомізрезультатом.

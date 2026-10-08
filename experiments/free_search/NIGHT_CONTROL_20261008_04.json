@@ -1,0 +1,6013 @@
+{
+  "protocol": {
+    "selection": "first18 valid unique legacy hour links frozen before collector; independent upstream route, not independent source operator",
+    "purpose": "attempt scope equivalence, preserve refusal of recall if unmatched, inline stage timings instead of prior batch replay",
+    "collector": "three previously observed search pages0/1/2 limit20 followed by one repeat cycle",
+    "detail_policy": "all18 controls, including collector misses, no paid inputs",
+    "valuation": "existing97 public-only peers, all new controls excluded",
+    "publication": null,
+    "actual_client_filters_verified": false,
+    "no_delivery": true
+  },
+  "manifest": {
+    "frozen_at": 1791428840.9257803,
+    "candidates": [
+      {
+        "id": "40405395",
+        "url": "https://auto.ria.com/uk/auto_hyundai_tucson_40405395.html"
+      },
+      {
+        "id": "35108262",
+        "url": "https://auto.ria.com/uk/auto_mitsubishi_grandis_35108262.html"
+      },
+      {
+        "id": "40121173",
+        "url": "https://auto.ria.com/uk/auto_opel_astra_40121173.html"
+      },
+      {
+        "id": "39319447",
+        "url": "https://auto.ria.com/uk/auto_bobcat_s175_39319447.html"
+      },
+      {
+        "id": "39319470",
+        "url": "https://auto.ria.com/uk/auto_daf_lf_39319470.html"
+      },
+      {
+        "id": "40214825",
+        "url": "https://auto.ria.com/uk/auto_yamaha_xvs_650_40214825.html"
+      },
+      {
+        "id": "40134596",
+        "url": "https://auto.ria.com/uk/auto_tesla_model_s_40134596.html"
+      },
+      {
+        "id": "40134601",
+        "url": "https://auto.ria.com/uk/auto_daewoo_nexia_40134601.html"
+      },
+      {
+        "id": "40267995",
+        "url": "https://auto.ria.com/uk/auto_renault_kangoo_40267995.html"
+      },
+      {
+        "id": "40134598",
+        "url": "https://auto.ria.com/uk/auto_forte_ft_125_fa2_40134598.html"
+      },
+      {
+        "id": "40401911",
+        "url": "https://auto.ria.com/uk/auto_kia_niro_40401911.html"
+      },
+      {
+        "id": "40134595",
+        "url": "https://auto.ria.com/uk/auto_bmw_x3_40134595.html"
+      },
+      {
+        "id": "39724637",
+        "url": "https://auto.ria.com/uk/auto_opel_zafira_39724637.html"
+      },
+      {
+        "id": "40134597",
+        "url": "https://auto.ria.com/uk/auto_land_rover_range_rover_sport_40134597.html"
+      },
+      {
+        "id": "39862423",
+        "url": "https://auto.ria.com/uk/auto_schmitz_cargobull_mega_39862423.html"
+      },
+      {
+        "id": "39862480",
+        "url": "https://auto.ria.com/uk/auto_chevrolet_lacetti_39862480.html"
+      },
+      {
+        "id": "39724636",
+        "url": "https://auto.ria.com/uk/auto_vaz_lada_2110_39724636.html"
+      },
+      {
+        "id": "39724605",
+        "url": "https://auto.ria.com/uk/auto_daewoo_nexia_39724605.html"
+      }
+    ],
+    "source_sha256": "4be9698190219f4c4d171008bb763c5928a9715682d7c92f848d5abbe99d5350",
+    "prices_used": false,
+    "selection": "first18_unique_valid_legacy_hour_links_before_collector"
+  },
+  "cycle1": {
+    "audit": {
+      "controls": 18,
+      "observed_controls": 10,
+      "rows": [
+        {
+          "listing_id": "40405395",
+          "observed_in_collector": false,
+          "collector_detected_at": null
+        },
+        {
+          "listing_id": "35108262",
+          "observed_in_collector": false,
+          "collector_detected_at": null
+        },
+        {
+          "listing_id": "40121173",
+          "observed_in_collector": false,
+          "collector_detected_at": null
+        },
+        {
+          "listing_id": "39319447",
+          "observed_in_collector": false,
+          "collector_detected_at": null
+        },
+        {
+          "listing_id": "39319470",
+          "observed_in_collector": false,
+          "collector_detected_at": null
+        },
+        {
+          "listing_id": "40214825",
+          "observed_in_collector": false,
+          "collector_detected_at": null
+        },
+        {
+          "listing_id": "40134596",
+          "observed_in_collector": true,
+          "collector_detected_at": 1791428958.100757
+        },
+        {
+          "listing_id": "40134601",
+          "observed_in_collector": true,
+          "collector_detected_at": 1791428958.100757
+        },
+        {
+          "listing_id": "40267995",
+          "observed_in_collector": true,
+          "collector_detected_at": 1791428958.100757
+        },
+        {
+          "listing_id": "40134598",
+          "observed_in_collector": false,
+          "collector_detected_at": null
+        },
+        {
+          "listing_id": "40401911",
+          "observed_in_collector": true,
+          "collector_detected_at": 1791428958.100757
+        },
+        {
+          "listing_id": "40134595",
+          "observed_in_collector": true,
+          "collector_detected_at": 1791428958.100757
+        },
+        {
+          "listing_id": "39724637",
+          "observed_in_collector": true,
+          "collector_detected_at": 1791428958.100757
+        },
+        {
+          "listing_id": "40134597",
+          "observed_in_collector": true,
+          "collector_detected_at": 1791428958.100757
+        },
+        {
+          "listing_id": "39862423",
+          "observed_in_collector": false,
+          "collector_detected_at": null
+        },
+        {
+          "listing_id": "39862480",
+          "observed_in_collector": true,
+          "collector_detected_at": 1791428958.100757
+        },
+        {
+          "listing_id": "39724636",
+          "observed_in_collector": true,
+          "collector_detected_at": 1791428958.100757
+        },
+        {
+          "listing_id": "39724605",
+          "observed_in_collector": true,
+          "collector_detected_at": 1791428958.100757
+        }
+      ],
+      "not_observed_control_ids": [
+        "40405395",
+        "35108262",
+        "40121173",
+        "39319447",
+        "39319470",
+        "40214825",
+        "40134598",
+        "39862423"
+      ],
+      "scope_equivalent": false,
+      "control_scope": {
+        "lang_id": "4",
+        "top": "1"
+      },
+      "collector_scopes": [
+        {
+          "abroad": "0",
+          "category": "1",
+          "customs_cleared": "1",
+          "order": "7",
+          "republished_last": "1",
+          "search_type": "1"
+        },
+        {
+          "abroad": "0",
+          "category": "1",
+          "customs_cleared": "1",
+          "order": "7",
+          "republished_last": "1",
+          "search_type": "1"
+        },
+        {
+          "abroad": "0",
+          "category": "1",
+          "customs_cleared": "1",
+          "order": "7",
+          "republished_last": "1",
+          "search_type": "1"
+        }
+      ],
+      "comparison_blockers": [
+        "scope_not_equivalent"
+      ],
+      "bounded_control_detection_fraction": null,
+      "whole_market_recall": null,
+      "publication_latency_seconds": null,
+      "independence_verified_by_module": false,
+      "production_approved": false
+    },
+    "pages": [
+      {
+        "receipt_index": 2,
+        "parsed_at": 1791428958.100757,
+        "page_index": 0,
+        "page_size": 20,
+        "scope": {
+          "abroad": "0",
+          "category": "1",
+          "customs_cleared": "1",
+          "order": "7",
+          "republished_last": "1",
+          "search_type": "1"
+        },
+        "scope_digest": "fd6fefcf857375804f08e0f68b85134ea526491bd8b6047f1ae980acc9903dd2",
+        "source_reported_count": 148,
+        "cards": [
+          {
+            "id": 40134596,
+            "url": "https://auto.ria.com/uk/auto_tesla_model-s_40134596.html",
+            "price_usd": 23000,
+            "published_at": null
+          },
+          {
+            "id": 40134601,
+            "url": "https://auto.ria.com/uk/auto_daewoo_nexia_40134601.html",
+            "price_usd": 1000,
+            "published_at": null
+          },
+          {
+            "id": 40267995,
+            "url": "https://auto.ria.com/uk/auto_renault_kangoo_40267995.html",
+            "price_usd": 4500,
+            "published_at": null
+          },
+          {
+            "id": 40401911,
+            "url": "https://auto.ria.com/uk/auto_kia_niro_40401911.html",
+            "price_usd": 29700,
+            "published_at": null
+          },
+          {
+            "id": 40134595,
+            "url": "https://auto.ria.com/uk/auto_bmw_x3_40134595.html",
+            "price_usd": 73500,
+            "published_at": null
+          },
+          {
+            "id": 39724637,
+            "url": "https://auto.ria.com/uk/auto_opel_zafira_39724637.html",
+            "price_usd": 6800,
+            "published_at": null
+          },
+          {
+            "id": 40134597,
+            "url": "https://auto.ria.com/uk/auto_land-rover_range-rover-sport_40134597.html",
+            "price_usd": 17500,
+            "published_at": null
+          },
+          {
+            "id": 39862480,
+            "url": "https://auto.ria.com/uk/auto_chevrolet_lacetti_39862480.html",
+            "price_usd": 4200,
+            "published_at": null
+          },
+          {
+            "id": 39724636,
+            "url": "https://auto.ria.com/uk/auto_vaz-lada_2110_39724636.html",
+            "price_usd": 1850,
+            "published_at": null
+          },
+          {
+            "id": 39724605,
+            "url": "https://auto.ria.com/uk/auto_daewoo_nexia_39724605.html",
+            "price_usd": 950,
+            "published_at": null
+          },
+          {
+            "id": 39580534,
+            "url": "https://auto.ria.com/uk/auto_peugeot_308_39580534.html",
+            "price_usd": 4600,
+            "published_at": null
+          },
+          {
+            "id": 39580626,
+            "url": "https://auto.ria.com/uk/auto_bmw_5-series_39580626.html",
+            "price_usd": 17900,
+            "published_at": null
+          },
+          {
+            "id": 39721034,
+            "url": "https://auto.ria.com/uk/auto_chevrolet_epica_39721034.html",
+            "price_usd": 4100,
+            "published_at": null
+          },
+          {
+            "id": 39724578,
+            "url": "https://auto.ria.com/uk/auto_renault_grand-scenic_39724578.html",
+            "price_usd": 6000,
+            "published_at": null
+          },
+          {
+            "id": 39862421,
+            "url": "https://auto.ria.com/uk/auto_audi_rs-e-tron-gt_39862421.html",
+            "price_usd": 60999,
+            "published_at": null
+          },
+          {
+            "id": 39862420,
+            "url": "https://auto.ria.com/uk/auto_mercedes-benz_e-class_39862420.html",
+            "price_usd": 2800,
+            "published_at": null
+          },
+          {
+            "id": 39277683,
+            "url": "https://auto.ria.com/uk/auto_bmw_x5_39277683.html",
+            "price_usd": 12000,
+            "published_at": null
+          },
+          {
+            "id": 39580458,
+            "url": "https://auto.ria.com/uk/auto_infiniti_qx50_39580458.html",
+            "price_usd": 27000,
+            "published_at": null
+          },
+          {
+            "id": 39580510,
+            "url": "https://auto.ria.com/uk/auto_opel_insignia_39580510.html",
+            "price_usd": 8300,
+            "published_at": null
+          },
+          {
+            "id": 39575597,
+            "url": "https://auto.ria.com/uk/auto_nissan_juke_39575597.html",
+            "price_usd": 9200,
+            "published_at": null
+          }
+        ],
+        "rejected": [],
+        "whole_market_recall": null,
+        "publication_times_verified": false,
+        "coverage_proven": false,
+        "paid_calls": 0
+      },
+      {
+        "receipt_index": 3,
+        "parsed_at": 1791428958.152377,
+        "page_index": 1,
+        "page_size": 20,
+        "scope": {
+          "abroad": "0",
+          "category": "1",
+          "customs_cleared": "1",
+          "order": "7",
+          "republished_last": "1",
+          "search_type": "1"
+        },
+        "scope_digest": "fd6fefcf857375804f08e0f68b85134ea526491bd8b6047f1ae980acc9903dd2",
+        "source_reported_count": 148,
+        "cards": [
+          {
+            "id": 39580604,
+            "url": "https://auto.ria.com/uk/auto_dodge_journey_39580604.html",
+            "price_usd": 8500,
+            "published_at": null
+          },
+          {
+            "id": 39580499,
+            "url": "https://auto.ria.com/uk/auto_volvo_v90-cross-country_39580499.html",
+            "price_usd": 37900,
+            "published_at": null
+          },
+          {
+            "id": 39580524,
+            "url": "https://auto.ria.com/uk/auto_mitsubishi_lancer_39580524.html",
+            "price_usd": 3980,
+            "published_at": null
+          },
+          {
+            "id": 39376423,
+            "url": "https://auto.ria.com/uk/auto_bmw_x5_39376423.html",
+            "price_usd": 13300,
+            "published_at": null
+          },
+          {
+            "id": 39376466,
+            "url": "https://auto.ria.com/uk/auto_audi_80_39376466.html",
+            "price_usd": 1400,
+            "published_at": null
+          },
+          {
+            "id": 39463358,
+            "url": "https://auto.ria.com/uk/auto_opel_omega_39463358.html",
+            "price_usd": 2400,
+            "published_at": null
+          },
+          {
+            "id": 39484829,
+            "url": "https://auto.ria.com/uk/auto_ford_focus_39484829.html",
+            "price_usd": 8000,
+            "published_at": null
+          },
+          {
+            "id": 39376563,
+            "url": "https://auto.ria.com/uk/auto_kia_sorento_39376563.html",
+            "price_usd": 14950,
+            "published_at": null
+          },
+          {
+            "id": 39463143,
+            "url": "https://auto.ria.com/uk/auto_opel_corsa_39463143.html",
+            "price_usd": 4500,
+            "published_at": null
+          },
+          {
+            "id": 39463263,
+            "url": "https://auto.ria.com/uk/auto_audi_q5_39463263.html",
+            "price_usd": 28300,
+            "published_at": null
+          },
+          {
+            "id": 39376396,
+            "url": "https://auto.ria.com/uk/auto_vaz-lada_21214-4x4_39376396.html",
+            "price_usd": 3100,
+            "published_at": null
+          },
+          {
+            "id": 39376295,
+            "url": "https://auto.ria.com/uk/auto_mercedes-benz_b-class_39376295.html",
+            "price_usd": 6500,
+            "published_at": null
+          },
+          {
+            "id": 39278063,
+            "url": "https://auto.ria.com/uk/auto_kia_sportage_39278063.html",
+            "price_usd": 18900,
+            "published_at": null
+          },
+          {
+            "id": 39153334,
+            "url": "https://auto.ria.com/uk/auto_chevrolet_epica_39153334.html",
+            "price_usd": 3600,
+            "published_at": null
+          },
+          {
+            "id": 39152913,
+            "url": "https://auto.ria.com/uk/auto_lexus_es_39152913.html",
+            "price_usd": 5300,
+            "published_at": null
+          },
+          {
+            "id": 39153211,
+            "url": "https://auto.ria.com/uk/auto_opel_zafira_39153211.html",
+            "price_usd": 3600,
+            "published_at": null
+          },
+          {
+            "id": 39277665,
+            "url": "https://auto.ria.com/uk/auto_opel_vectra_39277665.html",
+            "price_usd": 1500,
+            "published_at": null
+          },
+          {
+            "id": 39277498,
+            "url": "https://auto.ria.com/uk/auto_opel_astra_39277498.html",
+            "price_usd": 3350,
+            "published_at": null
+          },
+          {
+            "id": 39152979,
+            "url": "https://auto.ria.com/uk/auto_volkswagen_passat_39152979.html",
+            "price_usd": 7799,
+            "published_at": null
+          },
+          {
+            "id": 39153294,
+            "url": "https://auto.ria.com/uk/auto_mazda_6_39153294.html",
+            "price_usd": 6500,
+            "published_at": null
+          }
+        ],
+        "rejected": [],
+        "whole_market_recall": null,
+        "publication_times_verified": false,
+        "coverage_proven": false,
+        "paid_calls": 0
+      },
+      {
+        "receipt_index": 4,
+        "parsed_at": 1791428958.200254,
+        "page_index": 2,
+        "page_size": 20,
+        "scope": {
+          "abroad": "0",
+          "category": "1",
+          "customs_cleared": "1",
+          "order": "7",
+          "republished_last": "1",
+          "search_type": "1"
+        },
+        "scope_digest": "fd6fefcf857375804f08e0f68b85134ea526491bd8b6047f1ae980acc9903dd2",
+        "source_reported_count": 148,
+        "cards": [
+          {
+            "id": 39152864,
+            "url": "https://auto.ria.com/uk/auto_skoda_octavia_39152864.html",
+            "price_usd": 6600,
+            "published_at": null
+          },
+          {
+            "id": 39153059,
+            "url": "https://auto.ria.com/uk/auto_nissan_rogue_39153059.html",
+            "price_usd": 14500,
+            "published_at": null
+          },
+          {
+            "id": 39050033,
+            "url": "https://auto.ria.com/uk/auto_audi_80_39050033.html",
+            "price_usd": 900,
+            "published_at": null
+          },
+          {
+            "id": 39152985,
+            "url": "https://auto.ria.com/uk/auto_tesla_model-x_39152985.html",
+            "price_usd": 52500,
+            "published_at": null
+          },
+          {
+            "id": 39152855,
+            "url": "https://auto.ria.com/uk/auto_chery_tiggo-4_39152855.html",
+            "price_usd": 12000,
+            "published_at": null
+          },
+          {
+            "id": 39152965,
+            "url": "https://auto.ria.com/uk/auto_audi_a4_39152965.html",
+            "price_usd": 12000,
+            "published_at": null
+          },
+          {
+            "id": 39017161,
+            "url": "https://auto.ria.com/uk/auto_opel_vectra_39017161.html",
+            "price_usd": 3700,
+            "published_at": null
+          },
+          {
+            "id": 39017130,
+            "url": "https://auto.ria.com/uk/auto_porsche_cayenne_39017130.html",
+            "price_usd": 34000,
+            "published_at": null
+          },
+          {
+            "id": 38985073,
+            "url": "https://auto.ria.com/uk/auto_jeep_patriot_38985073.html",
+            "price_usd": 10000,
+            "published_at": null
+          },
+          {
+            "id": 39152869,
+            "url": "https://auto.ria.com/uk/auto_bmw_x3_39152869.html",
+            "price_usd": 13800,
+            "published_at": null
+          },
+          {
+            "id": 38873647,
+            "url": "https://auto.ria.com/uk/auto_gaz_21-volga_38873647.html",
+            "price_usd": 7000,
+            "published_at": null
+          },
+          {
+            "id": 39122579,
+            "url": "https://auto.ria.com/uk/auto_honda_clarity_39122579.html",
+            "price_usd": 16999,
+            "published_at": null
+          },
+          {
+            "id": 39017101,
+            "url": "https://auto.ria.com/uk/auto_citroen_c4-picasso_39017101.html",
+            "price_usd": 10300,
+            "published_at": null
+          },
+          {
+            "id": 38873263,
+            "url": "https://auto.ria.com/uk/auto_mercedes-benz_b-class_38873263.html",
+            "price_usd": 5500,
+            "published_at": null
+          },
+          {
+            "id": 39016743,
+            "url": "https://auto.ria.com/uk/auto_ford_fiesta_39016743.html",
+            "price_usd": 7200,
+            "published_at": null
+          },
+          {
+            "id": 38873411,
+            "url": "https://auto.ria.com/uk/auto_nissan_rogue_38873411.html",
+            "price_usd": 17500,
+            "published_at": null
+          },
+          {
+            "id": 39000556,
+            "url": "https://auto.ria.com/uk/auto_renault_grand-scenic_39000556.html",
+            "price_usd": 7500,
+            "published_at": null
+          },
+          {
+            "id": 39016683,
+            "url": "https://auto.ria.com/uk/auto_opel_corsa_39016683.html",
+            "price_usd": 3200,
+            "published_at": null
+          },
+          {
+            "id": 39016679,
+            "url": "https://auto.ria.com/uk/auto_peugeot_308_39016679.html",
+            "price_usd": 10300,
+            "published_at": null
+          },
+          {
+            "id": 38873280,
+            "url": "https://auto.ria.com/uk/auto_bmw_3-series_38873280.html",
+            "price_usd": 16200,
+            "published_at": null
+          }
+        ],
+        "rejected": [],
+        "whole_market_recall": null,
+        "publication_times_verified": false,
+        "coverage_proven": false,
+        "paid_calls": 0
+      }
+    ],
+    "observations": [
+      {
+        "listing_id": "40134596",
+        "method": "collector_scan",
+        "observed_at": 1791428958.100757
+      },
+      {
+        "listing_id": "40134601",
+        "method": "collector_scan",
+        "observed_at": 1791428958.100757
+      },
+      {
+        "listing_id": "40267995",
+        "method": "collector_scan",
+        "observed_at": 1791428958.100757
+      },
+      {
+        "listing_id": "40401911",
+        "method": "collector_scan",
+        "observed_at": 1791428958.100757
+      },
+      {
+        "listing_id": "40134595",
+        "method": "collector_scan",
+        "observed_at": 1791428958.100757
+      },
+      {
+        "listing_id": "39724637",
+        "method": "collector_scan",
+        "observed_at": 1791428958.100757
+      },
+      {
+        "listing_id": "40134597",
+        "method": "collector_scan",
+        "observed_at": 1791428958.100757
+      },
+      {
+        "listing_id": "39862480",
+        "method": "collector_scan",
+        "observed_at": 1791428958.100757
+      },
+      {
+        "listing_id": "39724636",
+        "method": "collector_scan",
+        "observed_at": 1791428958.100757
+      },
+      {
+        "listing_id": "39724605",
+        "method": "collector_scan",
+        "observed_at": 1791428958.100757
+      },
+      {
+        "listing_id": "39580534",
+        "method": "collector_scan",
+        "observed_at": 1791428958.100757
+      },
+      {
+        "listing_id": "39580626",
+        "method": "collector_scan",
+        "observed_at": 1791428958.100757
+      },
+      {
+        "listing_id": "39721034",
+        "method": "collector_scan",
+        "observed_at": 1791428958.100757
+      },
+      {
+        "listing_id": "39724578",
+        "method": "collector_scan",
+        "observed_at": 1791428958.100757
+      },
+      {
+        "listing_id": "39862421",
+        "method": "collector_scan",
+        "observed_at": 1791428958.100757
+      },
+      {
+        "listing_id": "39862420",
+        "method": "collector_scan",
+        "observed_at": 1791428958.100757
+      },
+      {
+        "listing_id": "39277683",
+        "method": "collector_scan",
+        "observed_at": 1791428958.100757
+      },
+      {
+        "listing_id": "39580458",
+        "method": "collector_scan",
+        "observed_at": 1791428958.100757
+      },
+      {
+        "listing_id": "39580510",
+        "method": "collector_scan",
+        "observed_at": 1791428958.100757
+      },
+      {
+        "listing_id": "39575597",
+        "method": "collector_scan",
+        "observed_at": 1791428958.100757
+      },
+      {
+        "listing_id": "39580604",
+        "method": "collector_scan",
+        "observed_at": 1791428958.152377
+      },
+      {
+        "listing_id": "39580499",
+        "method": "collector_scan",
+        "observed_at": 1791428958.152377
+      },
+      {
+        "listing_id": "39580524",
+        "method": "collector_scan",
+        "observed_at": 1791428958.152377
+      },
+      {
+        "listing_id": "39376423",
+        "method": "collector_scan",
+        "observed_at": 1791428958.152377
+      },
+      {
+        "listing_id": "39376466",
+        "method": "collector_scan",
+        "observed_at": 1791428958.152377
+      },
+      {
+        "listing_id": "39463358",
+        "method": "collector_scan",
+        "observed_at": 1791428958.152377
+      },
+      {
+        "listing_id": "39484829",
+        "method": "collector_scan",
+        "observed_at": 1791428958.152377
+      },
+      {
+        "listing_id": "39376563",
+        "method": "collector_scan",
+        "observed_at": 1791428958.152377
+      },
+      {
+        "listing_id": "39463143",
+        "method": "collector_scan",
+        "observed_at": 1791428958.152377
+      },
+      {
+        "listing_id": "39463263",
+        "method": "collector_scan",
+        "observed_at": 1791428958.152377
+      },
+      {
+        "listing_id": "39376396",
+        "method": "collector_scan",
+        "observed_at": 1791428958.152377
+      },
+      {
+        "listing_id": "39376295",
+        "method": "collector_scan",
+        "observed_at": 1791428958.152377
+      },
+      {
+        "listing_id": "39278063",
+        "method": "collector_scan",
+        "observed_at": 1791428958.152377
+      },
+      {
+        "listing_id": "39153334",
+        "method": "collector_scan",
+        "observed_at": 1791428958.152377
+      },
+      {
+        "listing_id": "39152913",
+        "method": "collector_scan",
+        "observed_at": 1791428958.152377
+      },
+      {
+        "listing_id": "39153211",
+        "method": "collector_scan",
+        "observed_at": 1791428958.152377
+      },
+      {
+        "listing_id": "39277665",
+        "method": "collector_scan",
+        "observed_at": 1791428958.152377
+      },
+      {
+        "listing_id": "39277498",
+        "method": "collector_scan",
+        "observed_at": 1791428958.152377
+      },
+      {
+        "listing_id": "39152979",
+        "method": "collector_scan",
+        "observed_at": 1791428958.152377
+      },
+      {
+        "listing_id": "39153294",
+        "method": "collector_scan",
+        "observed_at": 1791428958.152377
+      },
+      {
+        "listing_id": "39152864",
+        "method": "collector_scan",
+        "observed_at": 1791428958.200254
+      },
+      {
+        "listing_id": "39153059",
+        "method": "collector_scan",
+        "observed_at": 1791428958.200254
+      },
+      {
+        "listing_id": "39050033",
+        "method": "collector_scan",
+        "observed_at": 1791428958.200254
+      },
+      {
+        "listing_id": "39152985",
+        "method": "collector_scan",
+        "observed_at": 1791428958.200254
+      },
+      {
+        "listing_id": "39152855",
+        "method": "collector_scan",
+        "observed_at": 1791428958.200254
+      },
+      {
+        "listing_id": "39152965",
+        "method": "collector_scan",
+        "observed_at": 1791428958.200254
+      },
+      {
+        "listing_id": "39017161",
+        "method": "collector_scan",
+        "observed_at": 1791428958.200254
+      },
+      {
+        "listing_id": "39017130",
+        "method": "collector_scan",
+        "observed_at": 1791428958.200254
+      },
+      {
+        "listing_id": "38985073",
+        "method": "collector_scan",
+        "observed_at": 1791428958.200254
+      },
+      {
+        "listing_id": "39152869",
+        "method": "collector_scan",
+        "observed_at": 1791428958.200254
+      },
+      {
+        "listing_id": "38873647",
+        "method": "collector_scan",
+        "observed_at": 1791428958.200254
+      },
+      {
+        "listing_id": "39122579",
+        "method": "collector_scan",
+        "observed_at": 1791428958.200254
+      },
+      {
+        "listing_id": "39017101",
+        "method": "collector_scan",
+        "observed_at": 1791428958.200254
+      },
+      {
+        "listing_id": "38873263",
+        "method": "collector_scan",
+        "observed_at": 1791428958.200254
+      },
+      {
+        "listing_id": "39016743",
+        "method": "collector_scan",
+        "observed_at": 1791428958.200254
+      },
+      {
+        "listing_id": "38873411",
+        "method": "collector_scan",
+        "observed_at": 1791428958.200254
+      },
+      {
+        "listing_id": "39000556",
+        "method": "collector_scan",
+        "observed_at": 1791428958.200254
+      },
+      {
+        "listing_id": "39016683",
+        "method": "collector_scan",
+        "observed_at": 1791428958.200254
+      },
+      {
+        "listing_id": "39016679",
+        "method": "collector_scan",
+        "observed_at": 1791428958.200254
+      },
+      {
+        "listing_id": "38873280",
+        "method": "collector_scan",
+        "observed_at": 1791428958.200254
+      }
+    ],
+    "errors": [],
+    "control_query": "lang_id=4&page=0&countpage=100&top=1",
+    "queries": [
+      "abroad=0&category=1&customs_cleared=1&order=7&republished_last=1&search_type=1",
+      "abroad=0&category=1&customs_cleared=1&order=7&republished_last=1&search_type=1",
+      "abroad=0&category=1&customs_cleared=1&order=7&republished_last=1&search_type=1"
+    ],
+    "source_observed_at": 1791428811.207242
+  },
+  "cycle2": {
+    "audit": {
+      "controls": 18,
+      "observed_controls": 10,
+      "rows": [
+        {
+          "listing_id": "40405395",
+          "observed_in_collector": false,
+          "collector_detected_at": null
+        },
+        {
+          "listing_id": "35108262",
+          "observed_in_collector": false,
+          "collector_detected_at": null
+        },
+        {
+          "listing_id": "40121173",
+          "observed_in_collector": false,
+          "collector_detected_at": null
+        },
+        {
+          "listing_id": "39319447",
+          "observed_in_collector": false,
+          "collector_detected_at": null
+        },
+        {
+          "listing_id": "39319470",
+          "observed_in_collector": false,
+          "collector_detected_at": null
+        },
+        {
+          "listing_id": "40214825",
+          "observed_in_collector": false,
+          "collector_detected_at": null
+        },
+        {
+          "listing_id": "40134596",
+          "observed_in_collector": true,
+          "collector_detected_at": 1791429297.4829717
+        },
+        {
+          "listing_id": "40134601",
+          "observed_in_collector": true,
+          "collector_detected_at": 1791429297.4829717
+        },
+        {
+          "listing_id": "40267995",
+          "observed_in_collector": true,
+          "collector_detected_at": 1791429297.4829717
+        },
+        {
+          "listing_id": "40134598",
+          "observed_in_collector": false,
+          "collector_detected_at": null
+        },
+        {
+          "listing_id": "40401911",
+          "observed_in_collector": true,
+          "collector_detected_at": 1791429297.4829717
+        },
+        {
+          "listing_id": "40134595",
+          "observed_in_collector": true,
+          "collector_detected_at": 1791429297.4829717
+        },
+        {
+          "listing_id": "39724637",
+          "observed_in_collector": true,
+          "collector_detected_at": 1791429297.4829717
+        },
+        {
+          "listing_id": "40134597",
+          "observed_in_collector": true,
+          "collector_detected_at": 1791429297.4829717
+        },
+        {
+          "listing_id": "39862423",
+          "observed_in_collector": false,
+          "collector_detected_at": null
+        },
+        {
+          "listing_id": "39862480",
+          "observed_in_collector": true,
+          "collector_detected_at": 1791429297.4829717
+        },
+        {
+          "listing_id": "39724636",
+          "observed_in_collector": true,
+          "collector_detected_at": 1791429297.4829717
+        },
+        {
+          "listing_id": "39724605",
+          "observed_in_collector": true,
+          "collector_detected_at": 1791429297.4829717
+        }
+      ],
+      "not_observed_control_ids": [
+        "40405395",
+        "35108262",
+        "40121173",
+        "39319447",
+        "39319470",
+        "40214825",
+        "40134598",
+        "39862423"
+      ],
+      "scope_equivalent": false,
+      "scope_comparison_basis": "explicit_parameters_only_not_independent_semantics_proof",
+      "control_scope": {
+        "lang_id": "4",
+        "top": "1"
+      },
+      "collector_scopes": [
+        {
+          "abroad": "0",
+          "category": "1",
+          "customs_cleared": "1",
+          "order": "7",
+          "republished_last": "1",
+          "search_type": "1"
+        },
+        {
+          "abroad": "0",
+          "category": "1",
+          "customs_cleared": "1",
+          "order": "7",
+          "republished_last": "1",
+          "search_type": "1"
+        },
+        {
+          "abroad": "0",
+          "category": "1",
+          "customs_cleared": "1",
+          "order": "7",
+          "republished_last": "1",
+          "search_type": "1"
+        }
+      ],
+      "comparison_blockers": [
+        "scope_not_equivalent"
+      ],
+      "bounded_control_detection_fraction": null,
+      "whole_market_recall": null,
+      "publication_latency_seconds": null,
+      "independence_verified_by_module": false,
+      "production_approved": false
+    },
+    "pages": [
+      {
+        "receipt_index": 23,
+        "parsed_at": 1791429297.4829717,
+        "page_index": 0,
+        "page_size": 20,
+        "scope": {
+          "abroad": "0",
+          "category": "1",
+          "customs_cleared": "1",
+          "order": "7",
+          "republished_last": "1",
+          "search_type": "1"
+        },
+        "scope_digest": "fd6fefcf857375804f08e0f68b85134ea526491bd8b6047f1ae980acc9903dd2",
+        "source_reported_count": 148,
+        "cards": [
+          {
+            "id": 40134596,
+            "url": "https://auto.ria.com/uk/auto_tesla_model-s_40134596.html",
+            "price_usd": 23000,
+            "published_at": null
+          },
+          {
+            "id": 40134601,
+            "url": "https://auto.ria.com/uk/auto_daewoo_nexia_40134601.html",
+            "price_usd": 1000,
+            "published_at": null
+          },
+          {
+            "id": 40267995,
+            "url": "https://auto.ria.com/uk/auto_renault_kangoo_40267995.html",
+            "price_usd": 4500,
+            "published_at": null
+          },
+          {
+            "id": 40401911,
+            "url": "https://auto.ria.com/uk/auto_kia_niro_40401911.html",
+            "price_usd": 29700,
+            "published_at": null
+          },
+          {
+            "id": 40134595,
+            "url": "https://auto.ria.com/uk/auto_bmw_x3_40134595.html",
+            "price_usd": 73500,
+            "published_at": null
+          },
+          {
+            "id": 39724637,
+            "url": "https://auto.ria.com/uk/auto_opel_zafira_39724637.html",
+            "price_usd": 6800,
+            "published_at": null
+          },
+          {
+            "id": 40134597,
+            "url": "https://auto.ria.com/uk/auto_land-rover_range-rover-sport_40134597.html",
+            "price_usd": 17500,
+            "published_at": null
+          },
+          {
+            "id": 39862480,
+            "url": "https://auto.ria.com/uk/auto_chevrolet_lacetti_39862480.html",
+            "price_usd": 4200,
+            "published_at": null
+          },
+          {
+            "id": 39724636,
+            "url": "https://auto.ria.com/uk/auto_vaz-lada_2110_39724636.html",
+            "price_usd": 1850,
+            "published_at": null
+          },
+          {
+            "id": 39724605,
+            "url": "https://auto.ria.com/uk/auto_daewoo_nexia_39724605.html",
+            "price_usd": 950,
+            "published_at": null
+          },
+          {
+            "id": 39580534,
+            "url": "https://auto.ria.com/uk/auto_peugeot_308_39580534.html",
+            "price_usd": 4600,
+            "published_at": null
+          },
+          {
+            "id": 39580626,
+            "url": "https://auto.ria.com/uk/auto_bmw_5-series_39580626.html",
+            "price_usd": 17900,
+            "published_at": null
+          },
+          {
+            "id": 39721034,
+            "url": "https://auto.ria.com/uk/auto_chevrolet_epica_39721034.html",
+            "price_usd": 4100,
+            "published_at": null
+          },
+          {
+            "id": 39724578,
+            "url": "https://auto.ria.com/uk/auto_renault_grand-scenic_39724578.html",
+            "price_usd": 6000,
+            "published_at": null
+          },
+          {
+            "id": 39862421,
+            "url": "https://auto.ria.com/uk/auto_audi_rs-e-tron-gt_39862421.html",
+            "price_usd": 60999,
+            "published_at": null
+          },
+          {
+            "id": 39862420,
+            "url": "https://auto.ria.com/uk/auto_mercedes-benz_e-class_39862420.html",
+            "price_usd": 2800,
+            "published_at": null
+          },
+          {
+            "id": 39277683,
+            "url": "https://auto.ria.com/uk/auto_bmw_x5_39277683.html",
+            "price_usd": 12000,
+            "published_at": null
+          },
+          {
+            "id": 39580458,
+            "url": "https://auto.ria.com/uk/auto_infiniti_qx50_39580458.html",
+            "price_usd": 27000,
+            "published_at": null
+          },
+          {
+            "id": 39580510,
+            "url": "https://auto.ria.com/uk/auto_opel_insignia_39580510.html",
+            "price_usd": 8300,
+            "published_at": null
+          },
+          {
+            "id": 39575597,
+            "url": "https://auto.ria.com/uk/auto_nissan_juke_39575597.html",
+            "price_usd": 9200,
+            "published_at": null
+          }
+        ],
+        "rejected": [],
+        "whole_market_recall": null,
+        "publication_times_verified": false,
+        "coverage_proven": false,
+        "paid_calls": 0
+      },
+      {
+        "receipt_index": 24,
+        "parsed_at": 1791429297.53015,
+        "page_index": 1,
+        "page_size": 20,
+        "scope": {
+          "abroad": "0",
+          "category": "1",
+          "customs_cleared": "1",
+          "order": "7",
+          "republished_last": "1",
+          "search_type": "1"
+        },
+        "scope_digest": "fd6fefcf857375804f08e0f68b85134ea526491bd8b6047f1ae980acc9903dd2",
+        "source_reported_count": 148,
+        "cards": [
+          {
+            "id": 39580604,
+            "url": "https://auto.ria.com/uk/auto_dodge_journey_39580604.html",
+            "price_usd": 8500,
+            "published_at": null
+          },
+          {
+            "id": 39580499,
+            "url": "https://auto.ria.com/uk/auto_volvo_v90-cross-country_39580499.html",
+            "price_usd": 37900,
+            "published_at": null
+          },
+          {
+            "id": 39580524,
+            "url": "https://auto.ria.com/uk/auto_mitsubishi_lancer_39580524.html",
+            "price_usd": 3980,
+            "published_at": null
+          },
+          {
+            "id": 39376423,
+            "url": "https://auto.ria.com/uk/auto_bmw_x5_39376423.html",
+            "price_usd": 13300,
+            "published_at": null
+          },
+          {
+            "id": 39376466,
+            "url": "https://auto.ria.com/uk/auto_audi_80_39376466.html",
+            "price_usd": 1400,
+            "published_at": null
+          },
+          {
+            "id": 39463358,
+            "url": "https://auto.ria.com/uk/auto_opel_omega_39463358.html",
+            "price_usd": 2400,
+            "published_at": null
+          },
+          {
+            "id": 39484829,
+            "url": "https://auto.ria.com/uk/auto_ford_focus_39484829.html",
+            "price_usd": 8000,
+            "published_at": null
+          },
+          {
+            "id": 39376563,
+            "url": "https://auto.ria.com/uk/auto_kia_sorento_39376563.html",
+            "price_usd": 14950,
+            "published_at": null
+          },
+          {
+            "id": 39463143,
+            "url": "https://auto.ria.com/uk/auto_opel_corsa_39463143.html",
+            "price_usd": 4500,
+            "published_at": null
+          },
+          {
+            "id": 39463263,
+            "url": "https://auto.ria.com/uk/auto_audi_q5_39463263.html",
+            "price_usd": 28300,
+            "published_at": null
+          },
+          {
+            "id": 39376396,
+            "url": "https://auto.ria.com/uk/auto_vaz-lada_21214-4x4_39376396.html",
+            "price_usd": 3100,
+            "published_at": null
+          },
+          {
+            "id": 39376295,
+            "url": "https://auto.ria.com/uk/auto_mercedes-benz_b-class_39376295.html",
+            "price_usd": 6500,
+            "published_at": null
+          },
+          {
+            "id": 39278063,
+            "url": "https://auto.ria.com/uk/auto_kia_sportage_39278063.html",
+            "price_usd": 18900,
+            "published_at": null
+          },
+          {
+            "id": 39153334,
+            "url": "https://auto.ria.com/uk/auto_chevrolet_epica_39153334.html",
+            "price_usd": 3600,
+            "published_at": null
+          },
+          {
+            "id": 39152913,
+            "url": "https://auto.ria.com/uk/auto_lexus_es_39152913.html",
+            "price_usd": 5300,
+            "published_at": null
+          },
+          {
+            "id": 39153211,
+            "url": "https://auto.ria.com/uk/auto_opel_zafira_39153211.html",
+            "price_usd": 3600,
+            "published_at": null
+          },
+          {
+            "id": 39277665,
+            "url": "https://auto.ria.com/uk/auto_opel_vectra_39277665.html",
+            "price_usd": 1500,
+            "published_at": null
+          },
+          {
+            "id": 39277498,
+            "url": "https://auto.ria.com/uk/auto_opel_astra_39277498.html",
+            "price_usd": 3350,
+            "published_at": null
+          },
+          {
+            "id": 39152979,
+            "url": "https://auto.ria.com/uk/auto_volkswagen_passat_39152979.html",
+            "price_usd": 7799,
+            "published_at": null
+          },
+          {
+            "id": 39153294,
+            "url": "https://auto.ria.com/uk/auto_mazda_6_39153294.html",
+            "price_usd": 6500,
+            "published_at": null
+          }
+        ],
+        "rejected": [],
+        "whole_market_recall": null,
+        "publication_times_verified": false,
+        "coverage_proven": false,
+        "paid_calls": 0
+      },
+      {
+        "receipt_index": 25,
+        "parsed_at": 1791429297.5798392,
+        "page_index": 2,
+        "page_size": 20,
+        "scope": {
+          "abroad": "0",
+          "category": "1",
+          "customs_cleared": "1",
+          "order": "7",
+          "republished_last": "1",
+          "search_type": "1"
+        },
+        "scope_digest": "fd6fefcf857375804f08e0f68b85134ea526491bd8b6047f1ae980acc9903dd2",
+        "source_reported_count": 148,
+        "cards": [
+          {
+            "id": 39152864,
+            "url": "https://auto.ria.com/uk/auto_skoda_octavia_39152864.html",
+            "price_usd": 6600,
+            "published_at": null
+          },
+          {
+            "id": 39153059,
+            "url": "https://auto.ria.com/uk/auto_nissan_rogue_39153059.html",
+            "price_usd": 14500,
+            "published_at": null
+          },
+          {
+            "id": 39050033,
+            "url": "https://auto.ria.com/uk/auto_audi_80_39050033.html",
+            "price_usd": 900,
+            "published_at": null
+          },
+          {
+            "id": 39152985,
+            "url": "https://auto.ria.com/uk/auto_tesla_model-x_39152985.html",
+            "price_usd": 52500,
+            "published_at": null
+          },
+          {
+            "id": 39152855,
+            "url": "https://auto.ria.com/uk/auto_chery_tiggo-4_39152855.html",
+            "price_usd": 12000,
+            "published_at": null
+          },
+          {
+            "id": 39152965,
+            "url": "https://auto.ria.com/uk/auto_audi_a4_39152965.html",
+            "price_usd": 12000,
+            "published_at": null
+          },
+          {
+            "id": 39017161,
+            "url": "https://auto.ria.com/uk/auto_opel_vectra_39017161.html",
+            "price_usd": 3700,
+            "published_at": null
+          },
+          {
+            "id": 39017130,
+            "url": "https://auto.ria.com/uk/auto_porsche_cayenne_39017130.html",
+            "price_usd": 34000,
+            "published_at": null
+          },
+          {
+            "id": 38985073,
+            "url": "https://auto.ria.com/uk/auto_jeep_patriot_38985073.html",
+            "price_usd": 10000,
+            "published_at": null
+          },
+          {
+            "id": 39152869,
+            "url": "https://auto.ria.com/uk/auto_bmw_x3_39152869.html",
+            "price_usd": 13800,
+            "published_at": null
+          },
+          {
+            "id": 38873647,
+            "url": "https://auto.ria.com/uk/auto_gaz_21-volga_38873647.html",
+            "price_usd": 7000,
+            "published_at": null
+          },
+          {
+            "id": 39122579,
+            "url": "https://auto.ria.com/uk/auto_honda_clarity_39122579.html",
+            "price_usd": 16999,
+            "published_at": null
+          },
+          {
+            "id": 39017101,
+            "url": "https://auto.ria.com/uk/auto_citroen_c4-picasso_39017101.html",
+            "price_usd": 10300,
+            "published_at": null
+          },
+          {
+            "id": 38873263,
+            "url": "https://auto.ria.com/uk/auto_mercedes-benz_b-class_38873263.html",
+            "price_usd": 5500,
+            "published_at": null
+          },
+          {
+            "id": 39016743,
+            "url": "https://auto.ria.com/uk/auto_ford_fiesta_39016743.html",
+            "price_usd": 7200,
+            "published_at": null
+          },
+          {
+            "id": 38873411,
+            "url": "https://auto.ria.com/uk/auto_nissan_rogue_38873411.html",
+            "price_usd": 17500,
+            "published_at": null
+          },
+          {
+            "id": 39000556,
+            "url": "https://auto.ria.com/uk/auto_renault_grand-scenic_39000556.html",
+            "price_usd": 7500,
+            "published_at": null
+          },
+          {
+            "id": 39016683,
+            "url": "https://auto.ria.com/uk/auto_opel_corsa_39016683.html",
+            "price_usd": 3200,
+            "published_at": null
+          },
+          {
+            "id": 39016679,
+            "url": "https://auto.ria.com/uk/auto_peugeot_308_39016679.html",
+            "price_usd": 10300,
+            "published_at": null
+          },
+          {
+            "id": 38873280,
+            "url": "https://auto.ria.com/uk/auto_bmw_3-series_38873280.html",
+            "price_usd": 16200,
+            "published_at": null
+          }
+        ],
+        "rejected": [],
+        "whole_market_recall": null,
+        "publication_times_verified": false,
+        "coverage_proven": false,
+        "paid_calls": 0
+      }
+    ],
+    "observations": [
+      {
+        "listing_id": "40134596",
+        "method": "collector_scan",
+        "observed_at": 1791429297.4829717
+      },
+      {
+        "listing_id": "40134601",
+        "method": "collector_scan",
+        "observed_at": 1791429297.4829717
+      },
+      {
+        "listing_id": "40267995",
+        "method": "collector_scan",
+        "observed_at": 1791429297.4829717
+      },
+      {
+        "listing_id": "40401911",
+        "method": "collector_scan",
+        "observed_at": 1791429297.4829717
+      },
+      {
+        "listing_id": "40134595",
+        "method": "collector_scan",
+        "observed_at": 1791429297.4829717
+      },
+      {
+        "listing_id": "39724637",
+        "method": "collector_scan",
+        "observed_at": 1791429297.4829717
+      },
+      {
+        "listing_id": "40134597",
+        "method": "collector_scan",
+        "observed_at": 1791429297.4829717
+      },
+      {
+        "listing_id": "39862480",
+        "method": "collector_scan",
+        "observed_at": 1791429297.4829717
+      },
+      {
+        "listing_id": "39724636",
+        "method": "collector_scan",
+        "observed_at": 1791429297.4829717
+      },
+      {
+        "listing_id": "39724605",
+        "method": "collector_scan",
+        "observed_at": 1791429297.4829717
+      },
+      {
+        "listing_id": "39580534",
+        "method": "collector_scan",
+        "observed_at": 1791429297.4829717
+      },
+      {
+        "listing_id": "39580626",
+        "method": "collector_scan",
+        "observed_at": 1791429297.4829717
+      },
+      {
+        "listing_id": "39721034",
+        "method": "collector_scan",
+        "observed_at": 1791429297.4829717
+      },
+      {
+        "listing_id": "39724578",
+        "method": "collector_scan",
+        "observed_at": 1791429297.4829717
+      },
+      {
+        "listing_id": "39862421",
+        "method": "collector_scan",
+        "observed_at": 1791429297.4829717
+      },
+      {
+        "listing_id": "39862420",
+        "method": "collector_scan",
+        "observed_at": 1791429297.4829717
+      },
+      {
+        "listing_id": "39277683",
+        "method": "collector_scan",
+        "observed_at": 1791429297.4829717
+      },
+      {
+        "listing_id": "39580458",
+        "method": "collector_scan",
+        "observed_at": 1791429297.4829717
+      },
+      {
+        "listing_id": "39580510",
+        "method": "collector_scan",
+        "observed_at": 1791429297.4829717
+      },
+      {
+        "listing_id": "39575597",
+        "method": "collector_scan",
+        "observed_at": 1791429297.4829717
+      },
+      {
+        "listing_id": "39580604",
+        "method": "collector_scan",
+        "observed_at": 1791429297.53015
+      },
+      {
+        "listing_id": "39580499",
+        "method": "collector_scan",
+        "observed_at": 1791429297.53015
+      },
+      {
+        "listing_id": "39580524",
+        "method": "collector_scan",
+        "observed_at": 1791429297.53015
+      },
+      {
+        "listing_id": "39376423",
+        "method": "collector_scan",
+        "observed_at": 1791429297.53015
+      },
+      {
+        "listing_id": "39376466",
+        "method": "collector_scan",
+        "observed_at": 1791429297.53015
+      },
+      {
+        "listing_id": "39463358",
+        "method": "collector_scan",
+        "observed_at": 1791429297.53015
+      },
+      {
+        "listing_id": "39484829",
+        "method": "collector_scan",
+        "observed_at": 1791429297.53015
+      },
+      {
+        "listing_id": "39376563",
+        "method": "collector_scan",
+        "observed_at": 1791429297.53015
+      },
+      {
+        "listing_id": "39463143",
+        "method": "collector_scan",
+        "observed_at": 1791429297.53015
+      },
+      {
+        "listing_id": "39463263",
+        "method": "collector_scan",
+        "observed_at": 1791429297.53015
+      },
+      {
+        "listing_id": "39376396",
+        "method": "collector_scan",
+        "observed_at": 1791429297.53015
+      },
+      {
+        "listing_id": "39376295",
+        "method": "collector_scan",
+        "observed_at": 1791429297.53015
+      },
+      {
+        "listing_id": "39278063",
+        "method": "collector_scan",
+        "observed_at": 1791429297.53015
+      },
+      {
+        "listing_id": "39153334",
+        "method": "collector_scan",
+        "observed_at": 1791429297.53015
+      },
+      {
+        "listing_id": "39152913",
+        "method": "collector_scan",
+        "observed_at": 1791429297.53015
+      },
+      {
+        "listing_id": "39153211",
+        "method": "collector_scan",
+        "observed_at": 1791429297.53015
+      },
+      {
+        "listing_id": "39277665",
+        "method": "collector_scan",
+        "observed_at": 1791429297.53015
+      },
+      {
+        "listing_id": "39277498",
+        "method": "collector_scan",
+        "observed_at": 1791429297.53015
+      },
+      {
+        "listing_id": "39152979",
+        "method": "collector_scan",
+        "observed_at": 1791429297.53015
+      },
+      {
+        "listing_id": "39153294",
+        "method": "collector_scan",
+        "observed_at": 1791429297.53015
+      },
+      {
+        "listing_id": "39152864",
+        "method": "collector_scan",
+        "observed_at": 1791429297.5798392
+      },
+      {
+        "listing_id": "39153059",
+        "method": "collector_scan",
+        "observed_at": 1791429297.5798392
+      },
+      {
+        "listing_id": "39050033",
+        "method": "collector_scan",
+        "observed_at": 1791429297.5798392
+      },
+      {
+        "listing_id": "39152985",
+        "method": "collector_scan",
+        "observed_at": 1791429297.5798392
+      },
+      {
+        "listing_id": "39152855",
+        "method": "collector_scan",
+        "observed_at": 1791429297.5798392
+      },
+      {
+        "listing_id": "39152965",
+        "method": "collector_scan",
+        "observed_at": 1791429297.5798392
+      },
+      {
+        "listing_id": "39017161",
+        "method": "collector_scan",
+        "observed_at": 1791429297.5798392
+      },
+      {
+        "listing_id": "39017130",
+        "method": "collector_scan",
+        "observed_at": 1791429297.5798392
+      },
+      {
+        "listing_id": "38985073",
+        "method": "collector_scan",
+        "observed_at": 1791429297.5798392
+      },
+      {
+        "listing_id": "39152869",
+        "method": "collector_scan",
+        "observed_at": 1791429297.5798392
+      },
+      {
+        "listing_id": "38873647",
+        "method": "collector_scan",
+        "observed_at": 1791429297.5798392
+      },
+      {
+        "listing_id": "39122579",
+        "method": "collector_scan",
+        "observed_at": 1791429297.5798392
+      },
+      {
+        "listing_id": "39017101",
+        "method": "collector_scan",
+        "observed_at": 1791429297.5798392
+      },
+      {
+        "listing_id": "38873263",
+        "method": "collector_scan",
+        "observed_at": 1791429297.5798392
+      },
+      {
+        "listing_id": "39016743",
+        "method": "collector_scan",
+        "observed_at": 1791429297.5798392
+      },
+      {
+        "listing_id": "38873411",
+        "method": "collector_scan",
+        "observed_at": 1791429297.5798392
+      },
+      {
+        "listing_id": "39000556",
+        "method": "collector_scan",
+        "observed_at": 1791429297.5798392
+      },
+      {
+        "listing_id": "39016683",
+        "method": "collector_scan",
+        "observed_at": 1791429297.5798392
+      },
+      {
+        "listing_id": "39016679",
+        "method": "collector_scan",
+        "observed_at": 1791429297.5798392
+      },
+      {
+        "listing_id": "38873280",
+        "method": "collector_scan",
+        "observed_at": 1791429297.5798392
+      }
+    ],
+    "errors": [],
+    "control_query": "lang_id=4&page=0&countpage=100&top=1",
+    "queries": [
+      "abroad=0&category=1&customs_cleared=1&order=7&republished_last=1&search_type=1",
+      "abroad=0&category=1&customs_cleared=1&order=7&republished_last=1&search_type=1",
+      "abroad=0&category=1&customs_cleared=1&order=7&republished_last=1&search_type=1"
+    ],
+    "source_observed_at": 1791428811.207242
+  },
+  "inline": {
+    "rows": [
+      {
+        "listing_id": "40405395",
+        "details": {
+          "listing_id": "40405395",
+          "brand": "Hyundai",
+          "model": "Tucson",
+          "year": 2021,
+          "fuel": "Гібрид (HEV)",
+          "transmission": "Автомат",
+          "mileage_km": "35000",
+          "price": "30400",
+          "currency": "USD",
+          "body": "Позашляховик / Кросовер",
+          "generation": "IV покоління",
+          "engine_cc": 1600,
+          "region": "Полтавська область",
+          "observed_at": 1791428992.8461576
+        },
+        "valuation": {
+          "status": "unknown",
+          "classification": "insufficient_data",
+          "reason": "too_few_comparable_peers",
+          "currency": "USD",
+          "reference_price": null,
+          "reference_price_usd": null,
+          "discount_percent": null,
+          "sample_count": 0,
+          "as_of": 1791428992.9663265,
+          "lower_asking_price": null,
+          "median_asking_price": null,
+          "upper_asking_price": null,
+          "peer_age_min_seconds": null,
+          "peer_age_max_seconds": null,
+          "input_count": 97,
+          "excluded": {
+            "brand_mismatch": 97
+          },
+          "notices": [
+            "asking_prices_not_sales",
+            "quality_not_live_validated"
+          ],
+          "missing_fields": [],
+          "region_sample_count": 0,
+          "provenance": "experimental_peer_asking_v1",
+          "production_approved": false,
+          "confidence": "uncalibrated"
+        },
+        "error": null,
+        "fetch_started_at": 1791428985.8854942,
+        "fetch_completed_at": 1791428992.8461576,
+        "fetch_seconds": 6.960439927002881,
+        "parse_started_at": 1791428992.8771653,
+        "details_ready_at": 1791428992.9663265,
+        "parse_seconds": 0.08916324200254166,
+        "assessment_ready_at": 1791428992.9672825,
+        "valuation_compute_seconds": 0.0009547270019538701,
+        "timing": {
+          "environment": "local",
+          "assessment_status": "unknown",
+          "events": {
+            "assessment_ready": 1791428992.9672825,
+            "collector_detected": null,
+            "details_ready": 1791428992.9663265,
+            "message_prepared": null,
+            "publication": null,
+            "queue_entered": null,
+            "queue_released": null,
+            "source_observed": 1791428811.207242,
+            "telegram_delivered": null
+          },
+          "rejected_evidence": {},
+          "durations": {
+            "publication_to_detection_seconds": null,
+            "detection_to_details_seconds": null,
+            "details_to_assessment_seconds": 0.0009560585021972656,
+            "detection_to_assessment_seconds": null,
+            "publication_to_message_seconds": null,
+            "queue_wait_seconds": null,
+            "queue_release_to_delivery_seconds": null
+          },
+          "first_source_availability_at": null,
+          "source_observed_is_first_availability": false,
+          "market_price_verified": false,
+          "caller_evidence_independently_verified": false,
+          "production_approved": false
+        },
+        "collector_found": false,
+        "known_id_fetch_does_not_count_as_discovery": true,
+        "ready_for_delivery": false,
+        "paid_calls": 0,
+        "telegram_calls": 0,
+        "offline_guard": {
+          "attempted": 0,
+          "blocked": 0,
+          "paid_blocked": 0,
+          "successful_external_calls": 0,
+          "paid_calls": 0
+        }
+      },
+      {
+        "listing_id": "35108262",
+        "details": {
+          "listing_id": "35108262",
+          "brand": "Mitsubishi",
+          "model": "Grandis",
+          "year": 2006,
+          "fuel": "Газ пропан-бутан / Бензин",
+          "transmission": "Автомат",
+          "mileage_km": "260000",
+          "price": "5000",
+          "currency": "USD",
+          "body": "Мінівен",
+          "generation": "I поколiння",
+          "engine_cc": 2400,
+          "region": "Волинська область",
+          "observed_at": 1791429001.4925096
+        },
+        "valuation": {
+          "status": "unknown",
+          "classification": "insufficient_data",
+          "reason": "too_few_comparable_peers",
+          "currency": "USD",
+          "reference_price": null,
+          "reference_price_usd": null,
+          "discount_percent": null,
+          "sample_count": 0,
+          "as_of": 1791429001.5846167,
+          "lower_asking_price": null,
+          "median_asking_price": null,
+          "upper_asking_price": null,
+          "peer_age_min_seconds": null,
+          "peer_age_max_seconds": null,
+          "input_count": 97,
+          "excluded": {
+            "brand_mismatch": 97
+          },
+          "notices": [
+            "asking_prices_not_sales",
+            "quality_not_live_validated"
+          ],
+          "missing_fields": [],
+          "region_sample_count": 0,
+          "provenance": "experimental_peer_asking_v1",
+          "production_approved": false,
+          "confidence": "uncalibrated"
+        },
+        "error": null,
+        "fetch_started_at": 1791428996.8463385,
+        "fetch_completed_at": 1791429001.4925096,
+        "fetch_seconds": 4.645761211002537,
+        "parse_started_at": 1791429001.500987,
+        "details_ready_at": 1791429001.5846167,
+        "parse_seconds": 0.08363128399651032,
+        "assessment_ready_at": 1791429001.58545,
+        "valuation_compute_seconds": 0.000832362005894538,
+        "timing": {
+          "environment": "local",
+          "assessment_status": "unknown",
+          "events": {
+            "assessment_ready": 1791429001.58545,
+            "collector_detected": null,
+            "details_ready": 1791429001.5846167,
+            "message_prepared": null,
+            "publication": null,
+            "queue_entered": null,
+            "queue_released": null,
+            "source_observed": 1791428811.207242,
+            "telegram_delivered": null
+          },
+          "rejected_evidence": {},
+          "durations": {
+            "publication_to_detection_seconds": null,
+            "detection_to_details_seconds": null,
+            "details_to_assessment_seconds": 0.0008332729339599609,
+            "detection_to_assessment_seconds": null,
+            "publication_to_message_seconds": null,
+            "queue_wait_seconds": null,
+            "queue_release_to_delivery_seconds": null
+          },
+          "first_source_availability_at": null,
+          "source_observed_is_first_availability": false,
+          "market_price_verified": false,
+          "caller_evidence_independently_verified": false,
+          "production_approved": false
+        },
+        "collector_found": false,
+        "known_id_fetch_does_not_count_as_discovery": true,
+        "ready_for_delivery": false,
+        "paid_calls": 0,
+        "telegram_calls": 0,
+        "offline_guard": {
+          "attempted": 0,
+          "blocked": 0,
+          "paid_blocked": 0,
+          "successful_external_calls": 0,
+          "paid_calls": 0
+        }
+      },
+      {
+        "listing_id": "40121173",
+        "details": {
+          "listing_id": "40121173",
+          "brand": "Opel",
+          "model": "Astra",
+          "year": 2010,
+          "fuel": "Бензин",
+          "transmission": "Ручна / Механіка",
+          "mileage_km": "240000",
+          "price": "2500",
+          "currency": "USD",
+          "body": "Універсал",
+          "generation": "IV покоління/J",
+          "engine_cc": 1600,
+          "region": "Київська область",
+          "observed_at": 1791429011.969184
+        },
+        "valuation": {
+          "status": "unknown",
+          "classification": "insufficient_data",
+          "reason": "too_few_comparable_peers",
+          "currency": "USD",
+          "reference_price": null,
+          "reference_price_usd": null,
+          "discount_percent": null,
+          "sample_count": 0,
+          "as_of": 1791429012.0637176,
+          "lower_asking_price": null,
+          "median_asking_price": null,
+          "upper_asking_price": null,
+          "peer_age_min_seconds": null,
+          "peer_age_max_seconds": null,
+          "input_count": 97,
+          "excluded": {
+            "brand_mismatch": 97
+          },
+          "notices": [
+            "asking_prices_not_sales",
+            "quality_not_live_validated"
+          ],
+          "missing_fields": [],
+          "region_sample_count": 0,
+          "provenance": "experimental_peer_asking_v1",
+          "production_approved": false,
+          "confidence": "uncalibrated"
+        },
+        "error": null,
+        "fetch_started_at": 1791429005.4926965,
+        "fetch_completed_at": 1791429011.969184,
+        "fetch_seconds": 6.476048813005036,
+        "parse_started_at": 1791429011.9800808,
+        "details_ready_at": 1791429012.0637176,
+        "parse_seconds": 0.0836387610033853,
+        "assessment_ready_at": 1791429012.0643768,
+        "valuation_compute_seconds": 0.000657509001030121,
+        "timing": {
+          "environment": "local",
+          "assessment_status": "unknown",
+          "events": {
+            "assessment_ready": 1791429012.0643768,
+            "collector_detected": null,
+            "details_ready": 1791429012.0637176,
+            "message_prepared": null,
+            "publication": null,
+            "queue_entered": null,
+            "queue_released": null,
+            "source_observed": 1791428811.207242,
+            "telegram_delivered": null
+          },
+          "rejected_evidence": {},
+          "durations": {
+            "publication_to_detection_seconds": null,
+            "detection_to_details_seconds": null,
+            "details_to_assessment_seconds": 0.0006592273712158203,
+            "detection_to_assessment_seconds": null,
+            "publication_to_message_seconds": null,
+            "queue_wait_seconds": null,
+            "queue_release_to_delivery_seconds": null
+          },
+          "first_source_availability_at": null,
+          "source_observed_is_first_availability": false,
+          "market_price_verified": false,
+          "caller_evidence_independently_verified": false,
+          "production_approved": false
+        },
+        "collector_found": false,
+        "known_id_fetch_does_not_count_as_discovery": true,
+        "ready_for_delivery": false,
+        "paid_calls": 0,
+        "telegram_calls": 0,
+        "offline_guard": {
+          "attempted": 0,
+          "blocked": 0,
+          "paid_blocked": 0,
+          "successful_external_calls": 0,
+          "paid_calls": 0
+        }
+      },
+      {
+        "listing_id": "39319447",
+        "details": {
+          "listing_id": "39319447",
+          "brand": "Bobcat",
+          "model": "S175",
+          "year": 2003,
+          "fuel": null,
+          "transmission": null,
+          "mileage_km": null,
+          "price": "19500",
+          "currency": "USD",
+          "body": "Міні-вантажник",
+          "generation": null,
+          "engine_cc": null,
+          "region": "Волинська область",
+          "observed_at": 1791429020.2466989
+        },
+        "valuation": {
+          "status": "unknown",
+          "classification": "insufficient_data",
+          "reason": "too_few_comparable_peers",
+          "currency": "USD",
+          "reference_price": null,
+          "reference_price_usd": null,
+          "discount_percent": null,
+          "sample_count": 0,
+          "as_of": 1791429020.3061583,
+          "lower_asking_price": null,
+          "median_asking_price": null,
+          "upper_asking_price": null,
+          "peer_age_min_seconds": null,
+          "peer_age_max_seconds": null,
+          "input_count": 97,
+          "excluded": {
+            "brand_mismatch": 97
+          },
+          "notices": [
+            "asking_prices_not_sales",
+            "quality_not_live_validated",
+            "subject_optional_fields_missing"
+          ],
+          "missing_fields": [
+            "engine",
+            "fuel",
+            "generation",
+            "mileage_km",
+            "transmission"
+          ],
+          "region_sample_count": 0,
+          "provenance": "experimental_peer_asking_v1",
+          "production_approved": false,
+          "confidence": "uncalibrated"
+        },
+        "error": null,
+        "fetch_started_at": 1791429015.9693625,
+        "fetch_completed_at": 1791429020.2466989,
+        "fetch_seconds": 4.276871290996496,
+        "parse_started_at": 1791429020.2556095,
+        "details_ready_at": 1791429020.3061583,
+        "parse_seconds": 0.05055011699732859,
+        "assessment_ready_at": 1791429020.3067405,
+        "valuation_compute_seconds": 0.0005807139968965203,
+        "timing": {
+          "environment": "local",
+          "assessment_status": "unknown",
+          "events": {
+            "assessment_ready": 1791429020.3067405,
+            "collector_detected": null,
+            "details_ready": 1791429020.3061583,
+            "message_prepared": null,
+            "publication": null,
+            "queue_entered": null,
+            "queue_released": null,
+            "source_observed": 1791428811.207242,
+            "telegram_delivered": null
+          },
+          "rejected_evidence": {},
+          "durations": {
+            "publication_to_detection_seconds": null,
+            "detection_to_details_seconds": null,
+            "details_to_assessment_seconds": 0.0005822181701660156,
+            "detection_to_assessment_seconds": null,
+            "publication_to_message_seconds": null,
+            "queue_wait_seconds": null,
+            "queue_release_to_delivery_seconds": null
+          },
+          "first_source_availability_at": null,
+          "source_observed_is_first_availability": false,
+          "market_price_verified": false,
+          "caller_evidence_independently_verified": false,
+          "production_approved": false
+        },
+        "collector_found": false,
+        "known_id_fetch_does_not_count_as_discovery": true,
+        "ready_for_delivery": false,
+        "paid_calls": 0,
+        "telegram_calls": 0,
+        "offline_guard": {
+          "attempted": 0,
+          "blocked": 0,
+          "paid_blocked": 0,
+          "successful_external_calls": 0,
+          "paid_calls": 0
+        }
+      },
+      {
+        "listing_id": "39319470",
+        "details": {
+          "listing_id": "39319470",
+          "brand": "DAF",
+          "model": "LF",
+          "year": 2003,
+          "fuel": null,
+          "transmission": null,
+          "mileage_km": "687000",
+          "price": "14000",
+          "currency": "USD",
+          "body": "Тентований",
+          "generation": null,
+          "engine_cc": null,
+          "region": "Волинська область",
+          "observed_at": 1791429028.4750922
+        },
+        "valuation": {
+          "status": "unknown",
+          "classification": "insufficient_data",
+          "reason": "too_few_comparable_peers",
+          "currency": "USD",
+          "reference_price": null,
+          "reference_price_usd": null,
+          "discount_percent": null,
+          "sample_count": 0,
+          "as_of": 1791429028.5361018,
+          "lower_asking_price": null,
+          "median_asking_price": null,
+          "upper_asking_price": null,
+          "peer_age_min_seconds": null,
+          "peer_age_max_seconds": null,
+          "input_count": 97,
+          "excluded": {
+            "brand_mismatch": 97
+          },
+          "notices": [
+            "asking_prices_not_sales",
+            "quality_not_live_validated",
+            "subject_optional_fields_missing"
+          ],
+          "missing_fields": [
+            "engine",
+            "fuel",
+            "generation",
+            "transmission"
+          ],
+          "region_sample_count": 0,
+          "provenance": "experimental_peer_asking_v1",
+          "production_approved": false,
+          "confidence": "uncalibrated"
+        },
+        "error": null,
+        "fetch_started_at": 1791429024.2469108,
+        "fetch_completed_at": 1791429028.4750922,
+        "fetch_seconds": 4.227511946999584,
+        "parse_started_at": 1791429028.4838672,
+        "details_ready_at": 1791429028.5361018,
+        "parse_seconds": 0.05223618600575719,
+        "assessment_ready_at": 1791429028.5369737,
+        "valuation_compute_seconds": 0.0008708509994903579,
+        "timing": {
+          "environment": "local",
+          "assessment_status": "unknown",
+          "events": {
+            "assessment_ready": 1791429028.5369737,
+            "collector_detected": null,
+            "details_ready": 1791429028.5361018,
+            "message_prepared": null,
+            "publication": null,
+            "queue_entered": null,
+            "queue_released": null,
+            "source_observed": 1791428811.207242,
+            "telegram_delivered": null
+          },
+          "rejected_evidence": {},
+          "durations": {
+            "publication_to_detection_seconds": null,
+            "detection_to_details_seconds": null,
+            "details_to_assessment_seconds": 0.0008718967437744141,
+            "detection_to_assessment_seconds": null,
+            "publication_to_message_seconds": null,
+            "queue_wait_seconds": null,
+            "queue_release_to_delivery_seconds": null
+          },
+          "first_source_availability_at": null,
+          "source_observed_is_first_availability": false,
+          "market_price_verified": false,
+          "caller_evidence_independently_verified": false,
+          "production_approved": false
+        },
+        "collector_found": false,
+        "known_id_fetch_does_not_count_as_discovery": true,
+        "ready_for_delivery": false,
+        "paid_calls": 0,
+        "telegram_calls": 0,
+        "offline_guard": {
+          "attempted": 0,
+          "blocked": 0,
+          "paid_blocked": 0,
+          "successful_external_calls": 0,
+          "paid_calls": 0
+        }
+      },
+      {
+        "listing_id": "40214825",
+        "details": {
+          "listing_id": "40214825",
+          "brand": "Yamaha",
+          "model": "XVS 650",
+          "year": 2007,
+          "fuel": "Бензин",
+          "transmission": null,
+          "mileage_km": "32000",
+          "price": "5600",
+          "currency": "USD",
+          "body": "Мотоцикл Круізер",
+          "generation": null,
+          "engine_cc": 650,
+          "region": "Київська область",
+          "observed_at": 1791429038.3857167
+        },
+        "valuation": {
+          "status": "unknown",
+          "classification": "insufficient_data",
+          "reason": "too_few_comparable_peers",
+          "currency": "USD",
+          "reference_price": null,
+          "reference_price_usd": null,
+          "discount_percent": null,
+          "sample_count": 0,
+          "as_of": 1791429038.4654548,
+          "lower_asking_price": null,
+          "median_asking_price": null,
+          "upper_asking_price": null,
+          "peer_age_min_seconds": null,
+          "peer_age_max_seconds": null,
+          "input_count": 97,
+          "excluded": {
+            "brand_mismatch": 97
+          },
+          "notices": [
+            "asking_prices_not_sales",
+            "quality_not_live_validated",
+            "subject_optional_fields_missing"
+          ],
+          "missing_fields": [
+            "generation",
+            "transmission"
+          ],
+          "region_sample_count": 0,
+          "provenance": "experimental_peer_asking_v1",
+          "production_approved": false,
+          "confidence": "uncalibrated"
+        },
+        "error": null,
+        "fetch_started_at": 1791429032.4752693,
+        "fetch_completed_at": 1791429038.3857167,
+        "fetch_seconds": 5.909975001995917,
+        "parse_started_at": 1791429038.3953657,
+        "details_ready_at": 1791429038.4654548,
+        "parse_seconds": 0.07009138899593381,
+        "assessment_ready_at": 1791429038.4660604,
+        "valuation_compute_seconds": 0.0006043489993317053,
+        "timing": {
+          "environment": "local",
+          "assessment_status": "unknown",
+          "events": {
+            "assessment_ready": 1791429038.4660604,
+            "collector_detected": null,
+            "details_ready": 1791429038.4654548,
+            "message_prepared": null,
+            "publication": null,
+            "queue_entered": null,
+            "queue_released": null,
+            "source_observed": 1791428811.207242,
+            "telegram_delivered": null
+          },
+          "rejected_evidence": {},
+          "durations": {
+            "publication_to_detection_seconds": null,
+            "detection_to_details_seconds": null,
+            "details_to_assessment_seconds": 0.0006055831909179688,
+            "detection_to_assessment_seconds": null,
+            "publication_to_message_seconds": null,
+            "queue_wait_seconds": null,
+            "queue_release_to_delivery_seconds": null
+          },
+          "first_source_availability_at": null,
+          "source_observed_is_first_availability": false,
+          "market_price_verified": false,
+          "caller_evidence_independently_verified": false,
+          "production_approved": false
+        },
+        "collector_found": false,
+        "known_id_fetch_does_not_count_as_discovery": true,
+        "ready_for_delivery": false,
+        "paid_calls": 0,
+        "telegram_calls": 0,
+        "offline_guard": {
+          "attempted": 0,
+          "blocked": 0,
+          "paid_blocked": 0,
+          "successful_external_calls": 0,
+          "paid_calls": 0
+        }
+      },
+      {
+        "listing_id": "40134596",
+        "details": {
+          "listing_id": "40134596",
+          "brand": "Tesla",
+          "model": "Model S",
+          "year": 2018,
+          "fuel": "Електро",
+          "transmission": "Редуктор",
+          "mileage_km": "80000",
+          "price": "23000",
+          "currency": "USD",
+          "body": "Ліфтбек",
+          "generation": "I покоління (FL)",
+          "engine_cc": null,
+          "region": "Одеська область",
+          "observed_at": 1791429046.4992685
+        },
+        "valuation": {
+          "status": "unknown",
+          "classification": "insufficient_data",
+          "reason": "too_few_comparable_peers",
+          "currency": "USD",
+          "reference_price": null,
+          "reference_price_usd": null,
+          "discount_percent": null,
+          "sample_count": 0,
+          "as_of": 1791429046.6006649,
+          "lower_asking_price": null,
+          "median_asking_price": null,
+          "upper_asking_price": null,
+          "peer_age_min_seconds": null,
+          "peer_age_max_seconds": null,
+          "input_count": 97,
+          "excluded": {
+            "brand_mismatch": 97
+          },
+          "notices": [
+            "asking_prices_not_sales",
+            "quality_not_live_validated",
+            "subject_optional_fields_missing"
+          ],
+          "missing_fields": [
+            "engine"
+          ],
+          "region_sample_count": 0,
+          "provenance": "experimental_peer_asking_v1",
+          "production_approved": false,
+          "confidence": "uncalibrated"
+        },
+        "error": null,
+        "fetch_started_at": 1791429042.3858883,
+        "fetch_completed_at": 1791429046.4992685,
+        "fetch_seconds": 4.112912362004863,
+        "parse_started_at": 1791429046.508629,
+        "details_ready_at": 1791429046.6006649,
+        "parse_seconds": 0.09203826199518517,
+        "assessment_ready_at": 1791429046.6019366,
+        "valuation_compute_seconds": 0.001269870001124218,
+        "timing": {
+          "environment": "local",
+          "assessment_status": "unknown",
+          "events": {
+            "assessment_ready": 1791429046.6019366,
+            "collector_detected": 1791428958.100757,
+            "details_ready": 1791429046.6006649,
+            "message_prepared": null,
+            "publication": null,
+            "queue_entered": null,
+            "queue_released": null,
+            "source_observed": 1791428811.207242,
+            "telegram_delivered": null
+          },
+          "rejected_evidence": {},
+          "durations": {
+            "publication_to_detection_seconds": null,
+            "detection_to_details_seconds": 88.49990797042847,
+            "details_to_assessment_seconds": 0.0012717247009277344,
+            "detection_to_assessment_seconds": 88.5011796951294,
+            "publication_to_message_seconds": null,
+            "queue_wait_seconds": null,
+            "queue_release_to_delivery_seconds": null
+          },
+          "first_source_availability_at": null,
+          "source_observed_is_first_availability": false,
+          "market_price_verified": false,
+          "caller_evidence_independently_verified": false,
+          "production_approved": false
+        },
+        "collector_found": true,
+        "known_id_fetch_does_not_count_as_discovery": true,
+        "ready_for_delivery": false,
+        "paid_calls": 0,
+        "telegram_calls": 0,
+        "offline_guard": {
+          "attempted": 0,
+          "blocked": 0,
+          "paid_blocked": 0,
+          "successful_external_calls": 0,
+          "paid_calls": 0
+        }
+      },
+      {
+        "listing_id": "40134601",
+        "details": {
+          "listing_id": "40134601",
+          "brand": "Daewoo",
+          "model": "Nexia",
+          "year": 1995,
+          "fuel": "Газ пропан-бутан / Бензин",
+          "transmission": "Ручна / Механіка",
+          "mileage_km": "100000",
+          "price": "1000",
+          "currency": "USD",
+          "body": "Седан",
+          "generation": "I покоління",
+          "engine_cc": 1500,
+          "region": "Дніпропетровська область",
+          "observed_at": 1791429056.843103
+        },
+        "valuation": {
+          "status": "unknown",
+          "classification": "insufficient_data",
+          "reason": "too_few_comparable_peers",
+          "currency": "USD",
+          "reference_price": null,
+          "reference_price_usd": null,
+          "discount_percent": null,
+          "sample_count": 0,
+          "as_of": 1791429056.9308805,
+          "lower_asking_price": null,
+          "median_asking_price": null,
+          "upper_asking_price": null,
+          "peer_age_min_seconds": null,
+          "peer_age_max_seconds": null,
+          "input_count": 97,
+          "excluded": {
+            "brand_mismatch": 97
+          },
+          "notices": [
+            "asking_prices_not_sales",
+            "quality_not_live_validated"
+          ],
+          "missing_fields": [],
+          "region_sample_count": 0,
+          "provenance": "experimental_peer_asking_v1",
+          "production_approved": false,
+          "confidence": "uncalibrated"
+        },
+        "error": null,
+        "fetch_started_at": 1791429050.4994357,
+        "fetch_completed_at": 1791429056.843103,
+        "fetch_seconds": 6.342864359001396,
+        "parse_started_at": 1791429056.8525045,
+        "details_ready_at": 1791429056.9308805,
+        "parse_seconds": 0.07837819099950138,
+        "assessment_ready_at": 1791429056.931457,
+        "valuation_compute_seconds": 0.0005746940005337819,
+        "timing": {
+          "environment": "local",
+          "assessment_status": "unknown",
+          "events": {
+            "assessment_ready": 1791429056.931457,
+            "collector_detected": 1791428958.100757,
+            "details_ready": 1791429056.9308805,
+            "message_prepared": null,
+            "publication": null,
+            "queue_entered": null,
+            "queue_released": null,
+            "source_observed": 1791428811.207242,
+            "telegram_delivered": null
+          },
+          "rejected_evidence": {},
+          "durations": {
+            "publication_to_detection_seconds": null,
+            "detection_to_details_seconds": 98.83012366294861,
+            "details_to_assessment_seconds": 0.0005764961242675781,
+            "detection_to_assessment_seconds": 98.83070015907288,
+            "publication_to_message_seconds": null,
+            "queue_wait_seconds": null,
+            "queue_release_to_delivery_seconds": null
+          },
+          "first_source_availability_at": null,
+          "source_observed_is_first_availability": false,
+          "market_price_verified": false,
+          "caller_evidence_independently_verified": false,
+          "production_approved": false
+        },
+        "collector_found": true,
+        "known_id_fetch_does_not_count_as_discovery": true,
+        "ready_for_delivery": false,
+        "paid_calls": 0,
+        "telegram_calls": 0,
+        "offline_guard": {
+          "attempted": 0,
+          "blocked": 0,
+          "paid_blocked": 0,
+          "successful_external_calls": 0,
+          "paid_calls": 0
+        }
+      },
+      {
+        "listing_id": "40267995",
+        "details": {
+          "listing_id": "40267995",
+          "brand": "Renault",
+          "model": "Kangoo",
+          "year": 2004,
+          "fuel": "Дизель",
+          "transmission": "Ручна / Механіка",
+          "mileage_km": "267000",
+          "price": "4500",
+          "currency": "USD",
+          "body": "Мінівен",
+          "generation": "I покоління (FL)",
+          "engine_cc": 1460,
+          "region": "Чернівецька область",
+          "observed_at": 1791429066.704
+        },
+        "valuation": {
+          "status": "unknown",
+          "classification": "insufficient_data",
+          "reason": "too_few_comparable_peers",
+          "currency": "USD",
+          "reference_price": null,
+          "reference_price_usd": null,
+          "discount_percent": null,
+          "sample_count": 0,
+          "as_of": 1791429066.8018346,
+          "lower_asking_price": null,
+          "median_asking_price": null,
+          "upper_asking_price": null,
+          "peer_age_min_seconds": null,
+          "peer_age_max_seconds": null,
+          "input_count": 97,
+          "excluded": {
+            "brand_mismatch": 97
+          },
+          "notices": [
+            "asking_prices_not_sales",
+            "quality_not_live_validated"
+          ],
+          "missing_fields": [],
+          "region_sample_count": 0,
+          "provenance": "experimental_peer_asking_v1",
+          "production_approved": false,
+          "confidence": "uncalibrated"
+        },
+        "error": null,
+        "fetch_started_at": 1791429060.8432627,
+        "fetch_completed_at": 1791429066.704,
+        "fetch_seconds": 5.8601898349952535,
+        "parse_started_at": 1791429066.7146215,
+        "details_ready_at": 1791429066.8018346,
+        "parse_seconds": 0.0872149159986293,
+        "assessment_ready_at": 1791429066.8024263,
+        "valuation_compute_seconds": 0.0005908300008741207,
+        "timing": {
+          "environment": "local",
+          "assessment_status": "unknown",
+          "events": {
+            "assessment_ready": 1791429066.8024263,
+            "collector_detected": 1791428958.100757,
+            "details_ready": 1791429066.8018346,
+            "message_prepared": null,
+            "publication": null,
+            "queue_entered": null,
+            "queue_released": null,
+            "source_observed": 1791428811.207242,
+            "telegram_delivered": null
+          },
+          "rejected_evidence": {},
+          "durations": {
+            "publication_to_detection_seconds": null,
+            "detection_to_details_seconds": 108.70107769966125,
+            "details_to_assessment_seconds": 0.0005917549133300781,
+            "detection_to_assessment_seconds": 108.70166945457458,
+            "publication_to_message_seconds": null,
+            "queue_wait_seconds": null,
+            "queue_release_to_delivery_seconds": null
+          },
+          "first_source_availability_at": null,
+          "source_observed_is_first_availability": false,
+          "market_price_verified": false,
+          "caller_evidence_independently_verified": false,
+          "production_approved": false
+        },
+        "collector_found": true,
+        "known_id_fetch_does_not_count_as_discovery": true,
+        "ready_for_delivery": false,
+        "paid_calls": 0,
+        "telegram_calls": 0,
+        "offline_guard": {
+          "attempted": 0,
+          "blocked": 0,
+          "paid_blocked": 0,
+          "successful_external_calls": 0,
+          "paid_calls": 0
+        }
+      },
+      {
+        "listing_id": "40134598",
+        "details": null,
+        "valuation": null,
+        "error": "currency_not_crosschecked",
+        "fetch_started_at": 1791429070.70417,
+        "fetch_completed_at": 1791429075.1950395,
+        "fetch_seconds": 4.49034451800253,
+        "parse_started_at": 1791429075.205068,
+        "details_ready_at": null,
+        "parse_seconds": null,
+        "assessment_ready_at": null,
+        "valuation_compute_seconds": null,
+        "timing": null,
+        "collector_found": false,
+        "known_id_fetch_does_not_count_as_discovery": true,
+        "ready_for_delivery": false,
+        "paid_calls": 0,
+        "telegram_calls": 0,
+        "offline_guard": {
+          "attempted": 0,
+          "blocked": 0,
+          "paid_blocked": 0,
+          "successful_external_calls": 0,
+          "paid_calls": 0
+        }
+      },
+      {
+        "listing_id": "40401911",
+        "details": {
+          "listing_id": "40401911",
+          "brand": "Kia",
+          "model": "Niro",
+          "year": 2025,
+          "fuel": "Гібрид (PHEV)",
+          "transmission": null,
+          "mileage_km": "4000",
+          "price": "29700",
+          "currency": "USD",
+          "body": "Позашляховик / Кросовер",
+          "generation": "II покоління",
+          "engine_cc": 1600,
+          "region": "Житомирська область",
+          "observed_at": 1791429084.950301
+        },
+        "valuation": {
+          "status": "unknown",
+          "classification": "insufficient_data",
+          "reason": "too_few_comparable_peers",
+          "currency": "USD",
+          "reference_price": null,
+          "reference_price_usd": null,
+          "discount_percent": null,
+          "sample_count": 0,
+          "as_of": 1791429085.0420947,
+          "lower_asking_price": null,
+          "median_asking_price": null,
+          "upper_asking_price": null,
+          "peer_age_min_seconds": null,
+          "peer_age_max_seconds": null,
+          "input_count": 97,
+          "excluded": {
+            "brand_mismatch": 97
+          },
+          "notices": [
+            "asking_prices_not_sales",
+            "quality_not_live_validated",
+            "subject_optional_fields_missing"
+          ],
+          "missing_fields": [
+            "transmission"
+          ],
+          "region_sample_count": 0,
+          "provenance": "experimental_peer_asking_v1",
+          "production_approved": false,
+          "confidence": "uncalibrated"
+        },
+        "error": null,
+        "fetch_started_at": 1791429079.1952274,
+        "fetch_completed_at": 1791429084.950301,
+        "fetch_seconds": 5.75456017000397,
+        "parse_started_at": 1791429084.95937,
+        "details_ready_at": 1791429085.0420947,
+        "parse_seconds": 0.08272628400300164,
+        "assessment_ready_at": 1791429085.0426657,
+        "valuation_compute_seconds": 0.0005699879984604195,
+        "timing": {
+          "environment": "local",
+          "assessment_status": "unknown",
+          "events": {
+            "assessment_ready": 1791429085.0426657,
+            "collector_detected": 1791428958.100757,
+            "details_ready": 1791429085.0420947,
+            "message_prepared": null,
+            "publication": null,
+            "queue_entered": null,
+            "queue_released": null,
+            "source_observed": 1791428811.207242,
+            "telegram_delivered": null
+          },
+          "rejected_evidence": {},
+          "durations": {
+            "publication_to_detection_seconds": null,
+            "detection_to_details_seconds": 126.9413378238678,
+            "details_to_assessment_seconds": 0.0005710124969482422,
+            "detection_to_assessment_seconds": 126.94190883636475,
+            "publication_to_message_seconds": null,
+            "queue_wait_seconds": null,
+            "queue_release_to_delivery_seconds": null
+          },
+          "first_source_availability_at": null,
+          "source_observed_is_first_availability": false,
+          "market_price_verified": false,
+          "caller_evidence_independently_verified": false,
+          "production_approved": false
+        },
+        "collector_found": true,
+        "known_id_fetch_does_not_count_as_discovery": true,
+        "ready_for_delivery": false,
+        "paid_calls": 0,
+        "telegram_calls": 0,
+        "offline_guard": {
+          "attempted": 0,
+          "blocked": 0,
+          "paid_blocked": 0,
+          "successful_external_calls": 0,
+          "paid_calls": 0
+        }
+      },
+      {
+        "listing_id": "40134595",
+        "details": {
+          "listing_id": "40134595",
+          "brand": "BMW",
+          "model": "X3",
+          "year": 2025,
+          "fuel": "Гібрид (MHEV)",
+          "transmission": "Автомат",
+          "mileage_km": "21000",
+          "price": "73500",
+          "currency": "USD",
+          "body": "Позашляховик / Кросовер",
+          "generation": "G45",
+          "engine_cc": 2000,
+          "region": "Львівська область",
+          "observed_at": 1791429093.091671
+        },
+        "valuation": {
+          "status": "unknown",
+          "classification": "insufficient_data",
+          "reason": "too_few_comparable_peers",
+          "currency": "USD",
+          "reference_price": null,
+          "reference_price_usd": null,
+          "discount_percent": null,
+          "sample_count": 0,
+          "as_of": 1791429093.1860573,
+          "lower_asking_price": null,
+          "median_asking_price": null,
+          "upper_asking_price": null,
+          "peer_age_min_seconds": null,
+          "peer_age_max_seconds": null,
+          "input_count": 97,
+          "excluded": {
+            "brand_mismatch": 97
+          },
+          "notices": [
+            "asking_prices_not_sales",
+            "quality_not_live_validated"
+          ],
+          "missing_fields": [],
+          "region_sample_count": 0,
+          "provenance": "experimental_peer_asking_v1",
+          "production_approved": false,
+          "confidence": "uncalibrated"
+        },
+        "error": null,
+        "fetch_started_at": 1791429088.950477,
+        "fetch_completed_at": 1791429093.091671,
+        "fetch_seconds": 4.140648330001568,
+        "parse_started_at": 1791429093.1008806,
+        "details_ready_at": 1791429093.1860573,
+        "parse_seconds": 0.0851787220017286,
+        "assessment_ready_at": 1791429093.1866312,
+        "valuation_compute_seconds": 0.0005724719958379865,
+        "timing": {
+          "environment": "local",
+          "assessment_status": "unknown",
+          "events": {
+            "assessment_ready": 1791429093.1866312,
+            "collector_detected": 1791428958.100757,
+            "details_ready": 1791429093.1860573,
+            "message_prepared": null,
+            "publication": null,
+            "queue_entered": null,
+            "queue_released": null,
+            "source_observed": 1791428811.207242,
+            "telegram_delivered": null
+          },
+          "rejected_evidence": {},
+          "durations": {
+            "publication_to_detection_seconds": null,
+            "detection_to_details_seconds": 135.08530044555664,
+            "details_to_assessment_seconds": 0.0005738735198974609,
+            "detection_to_assessment_seconds": 135.08587431907654,
+            "publication_to_message_seconds": null,
+            "queue_wait_seconds": null,
+            "queue_release_to_delivery_seconds": null
+          },
+          "first_source_availability_at": null,
+          "source_observed_is_first_availability": false,
+          "market_price_verified": false,
+          "caller_evidence_independently_verified": false,
+          "production_approved": false
+        },
+        "collector_found": true,
+        "known_id_fetch_does_not_count_as_discovery": true,
+        "ready_for_delivery": false,
+        "paid_calls": 0,
+        "telegram_calls": 0,
+        "offline_guard": {
+          "attempted": 0,
+          "blocked": 0,
+          "paid_blocked": 0,
+          "successful_external_calls": 0,
+          "paid_calls": 0
+        }
+      },
+      {
+        "listing_id": "39724637",
+        "details": {
+          "listing_id": "39724637",
+          "brand": "Opel",
+          "model": "Zafira",
+          "year": 2009,
+          "fuel": null,
+          "transmission": "Ручна / Механіка",
+          "mileage_km": "197000",
+          "price": "6800",
+          "currency": "USD",
+          "body": "Мінівен",
+          "generation": "II покоління/B (FL)",
+          "engine_cc": null,
+          "region": "Івано-Франківська область",
+          "observed_at": 1791429101.2750053
+        },
+        "valuation": {
+          "status": "unknown",
+          "classification": "insufficient_data",
+          "reason": "too_few_comparable_peers",
+          "currency": "USD",
+          "reference_price": null,
+          "reference_price_usd": null,
+          "discount_percent": null,
+          "sample_count": 0,
+          "as_of": 1791429101.374122,
+          "lower_asking_price": null,
+          "median_asking_price": null,
+          "upper_asking_price": null,
+          "peer_age_min_seconds": null,
+          "peer_age_max_seconds": null,
+          "input_count": 97,
+          "excluded": {
+            "brand_mismatch": 97
+          },
+          "notices": [
+            "asking_prices_not_sales",
+            "quality_not_live_validated",
+            "subject_optional_fields_missing"
+          ],
+          "missing_fields": [
+            "engine",
+            "fuel"
+          ],
+          "region_sample_count": 0,
+          "provenance": "experimental_peer_asking_v1",
+          "production_approved": false,
+          "confidence": "uncalibrated"
+        },
+        "error": null,
+        "fetch_started_at": 1791429097.091876,
+        "fetch_completed_at": 1791429101.2750053,
+        "fetch_seconds": 4.182612959004473,
+        "parse_started_at": 1791429101.2842119,
+        "details_ready_at": 1791429101.374122,
+        "parse_seconds": 0.08991155599505873,
+        "assessment_ready_at": 1791429101.3746881,
+        "valuation_compute_seconds": 0.0005651100000250153,
+        "timing": {
+          "environment": "local",
+          "assessment_status": "unknown",
+          "events": {
+            "assessment_ready": 1791429101.3746881,
+            "collector_detected": 1791428958.100757,
+            "details_ready": 1791429101.374122,
+            "message_prepared": null,
+            "publication": null,
+            "queue_entered": null,
+            "queue_released": null,
+            "source_observed": 1791428811.207242,
+            "telegram_delivered": null
+          },
+          "rejected_evidence": {},
+          "durations": {
+            "publication_to_detection_seconds": null,
+            "detection_to_details_seconds": 143.27336502075195,
+            "details_to_assessment_seconds": 0.0005662441253662109,
+            "detection_to_assessment_seconds": 143.27393126487732,
+            "publication_to_message_seconds": null,
+            "queue_wait_seconds": null,
+            "queue_release_to_delivery_seconds": null
+          },
+          "first_source_availability_at": null,
+          "source_observed_is_first_availability": false,
+          "market_price_verified": false,
+          "caller_evidence_independently_verified": false,
+          "production_approved": false
+        },
+        "collector_found": true,
+        "known_id_fetch_does_not_count_as_discovery": true,
+        "ready_for_delivery": false,
+        "paid_calls": 0,
+        "telegram_calls": 0,
+        "offline_guard": {
+          "attempted": 0,
+          "blocked": 0,
+          "paid_blocked": 0,
+          "successful_external_calls": 0,
+          "paid_calls": 0
+        }
+      },
+      {
+        "listing_id": "40134597",
+        "details": {
+          "listing_id": "40134597",
+          "brand": "Land Rover",
+          "model": "Range Rover Sport",
+          "year": 2010,
+          "fuel": "Бензин",
+          "transmission": "Автомат",
+          "mileage_km": "205000",
+          "price": "17500",
+          "currency": "USD",
+          "body": "Позашляховик / Кросовер",
+          "generation": "I покоління (FL)",
+          "engine_cc": 5000,
+          "region": "Хмельницька область",
+          "observed_at": 1791429109.996897
+        },
+        "valuation": {
+          "status": "unknown",
+          "classification": "insufficient_data",
+          "reason": "too_few_comparable_peers",
+          "currency": "USD",
+          "reference_price": null,
+          "reference_price_usd": null,
+          "discount_percent": null,
+          "sample_count": 0,
+          "as_of": 1791429110.0909894,
+          "lower_asking_price": null,
+          "median_asking_price": null,
+          "upper_asking_price": null,
+          "peer_age_min_seconds": null,
+          "peer_age_max_seconds": null,
+          "input_count": 97,
+          "excluded": {
+            "brand_mismatch": 97
+          },
+          "notices": [
+            "asking_prices_not_sales",
+            "quality_not_live_validated"
+          ],
+          "missing_fields": [],
+          "region_sample_count": 0,
+          "provenance": "experimental_peer_asking_v1",
+          "production_approved": false,
+          "confidence": "uncalibrated"
+        },
+        "error": null,
+        "fetch_started_at": 1791429105.2751822,
+        "fetch_completed_at": 1791429109.996897,
+        "fetch_seconds": 4.7210768750010175,
+        "parse_started_at": 1791429110.0075383,
+        "details_ready_at": 1791429110.0909894,
+        "parse_seconds": 0.08345298499625642,
+        "assessment_ready_at": 1791429110.091583,
+        "valuation_compute_seconds": 0.0005921409974689595,
+        "timing": {
+          "environment": "local",
+          "assessment_status": "unknown",
+          "events": {
+            "assessment_ready": 1791429110.091583,
+            "collector_detected": 1791428958.100757,
+            "details_ready": 1791429110.0909894,
+            "message_prepared": null,
+            "publication": null,
+            "queue_entered": null,
+            "queue_released": null,
+            "source_observed": 1791428811.207242,
+            "telegram_delivered": null
+          },
+          "rejected_evidence": {},
+          "durations": {
+            "publication_to_detection_seconds": null,
+            "detection_to_details_seconds": 151.99023246765137,
+            "details_to_assessment_seconds": 0.0005936622619628906,
+            "detection_to_assessment_seconds": 151.99082612991333,
+            "publication_to_message_seconds": null,
+            "queue_wait_seconds": null,
+            "queue_release_to_delivery_seconds": null
+          },
+          "first_source_availability_at": null,
+          "source_observed_is_first_availability": false,
+          "market_price_verified": false,
+          "caller_evidence_independently_verified": false,
+          "production_approved": false
+        },
+        "collector_found": true,
+        "known_id_fetch_does_not_count_as_discovery": true,
+        "ready_for_delivery": false,
+        "paid_calls": 0,
+        "telegram_calls": 0,
+        "offline_guard": {
+          "attempted": 0,
+          "blocked": 0,
+          "paid_blocked": 0,
+          "successful_external_calls": 0,
+          "paid_calls": 0
+        }
+      },
+      {
+        "listing_id": "39862423",
+        "details": {
+          "listing_id": "39862423",
+          "brand": "Schmitz Cargobull",
+          "model": "Mega",
+          "year": 2007,
+          "fuel": null,
+          "transmission": null,
+          "mileage_km": null,
+          "price": "6000",
+          "currency": "USD",
+          "body": "Тентований борт (штора) - напівпричіп",
+          "generation": null,
+          "engine_cc": null,
+          "region": "Волинська область",
+          "observed_at": 1791429117.871657
+        },
+        "valuation": {
+          "status": "unknown",
+          "classification": "insufficient_data",
+          "reason": "too_few_comparable_peers",
+          "currency": "USD",
+          "reference_price": null,
+          "reference_price_usd": null,
+          "discount_percent": null,
+          "sample_count": 0,
+          "as_of": 1791429117.9443655,
+          "lower_asking_price": null,
+          "median_asking_price": null,
+          "upper_asking_price": null,
+          "peer_age_min_seconds": null,
+          "peer_age_max_seconds": null,
+          "input_count": 97,
+          "excluded": {
+            "brand_mismatch": 97
+          },
+          "notices": [
+            "asking_prices_not_sales",
+            "quality_not_live_validated",
+            "subject_optional_fields_missing"
+          ],
+          "missing_fields": [
+            "engine",
+            "fuel",
+            "generation",
+            "mileage_km",
+            "transmission"
+          ],
+          "region_sample_count": 0,
+          "provenance": "experimental_peer_asking_v1",
+          "production_approved": false,
+          "confidence": "uncalibrated"
+        },
+        "error": null,
+        "fetch_started_at": 1791429113.9971218,
+        "fetch_completed_at": 1791429117.871657,
+        "fetch_seconds": 3.873936424999556,
+        "parse_started_at": 1791429117.8809438,
+        "details_ready_at": 1791429117.9443655,
+        "parse_seconds": 0.0634230950017809,
+        "assessment_ready_at": 1791429117.9452217,
+        "valuation_compute_seconds": 0.0008554169980925508,
+        "timing": {
+          "environment": "local",
+          "assessment_status": "unknown",
+          "events": {
+            "assessment_ready": 1791429117.9452217,
+            "collector_detected": null,
+            "details_ready": 1791429117.9443655,
+            "message_prepared": null,
+            "publication": null,
+            "queue_entered": null,
+            "queue_released": null,
+            "source_observed": 1791428811.207242,
+            "telegram_delivered": null
+          },
+          "rejected_evidence": {},
+          "durations": {
+            "publication_to_detection_seconds": null,
+            "detection_to_details_seconds": null,
+            "details_to_assessment_seconds": 0.0008561611175537109,
+            "detection_to_assessment_seconds": null,
+            "publication_to_message_seconds": null,
+            "queue_wait_seconds": null,
+            "queue_release_to_delivery_seconds": null
+          },
+          "first_source_availability_at": null,
+          "source_observed_is_first_availability": false,
+          "market_price_verified": false,
+          "caller_evidence_independently_verified": false,
+          "production_approved": false
+        },
+        "collector_found": false,
+        "known_id_fetch_does_not_count_as_discovery": true,
+        "ready_for_delivery": false,
+        "paid_calls": 0,
+        "telegram_calls": 0,
+        "offline_guard": {
+          "attempted": 0,
+          "blocked": 0,
+          "paid_blocked": 0,
+          "successful_external_calls": 0,
+          "paid_calls": 0
+        }
+      },
+      {
+        "listing_id": "39862480",
+        "details": {
+          "listing_id": "39862480",
+          "brand": "Chevrolet",
+          "model": "Lacetti",
+          "year": 2005,
+          "fuel": "Газ пропан-бутан / Бензин",
+          "transmission": "Ручна / Механіка",
+          "mileage_km": "273000",
+          "price": "4200",
+          "currency": "USD",
+          "body": "Хетчбек",
+          "generation": "I покоління",
+          "engine_cc": 1800,
+          "region": "Чернігівська область",
+          "observed_at": 1791429126.4773228
+        },
+        "valuation": {
+          "status": "unknown",
+          "classification": "insufficient_data",
+          "reason": "too_few_comparable_peers",
+          "currency": "USD",
+          "reference_price": null,
+          "reference_price_usd": null,
+          "discount_percent": null,
+          "sample_count": 0,
+          "as_of": 1791429126.5745418,
+          "lower_asking_price": null,
+          "median_asking_price": null,
+          "upper_asking_price": null,
+          "peer_age_min_seconds": null,
+          "peer_age_max_seconds": null,
+          "input_count": 97,
+          "excluded": {
+            "brand_mismatch": 97
+          },
+          "notices": [
+            "asking_prices_not_sales",
+            "quality_not_live_validated"
+          ],
+          "missing_fields": [],
+          "region_sample_count": 0,
+          "provenance": "experimental_peer_asking_v1",
+          "production_approved": false,
+          "confidence": "uncalibrated"
+        },
+        "error": null,
+        "fetch_started_at": 1791429121.8718317,
+        "fetch_completed_at": 1791429126.4773228,
+        "fetch_seconds": 4.604711766005494,
+        "parse_started_at": 1791429126.4863791,
+        "details_ready_at": 1791429126.5745418,
+        "parse_seconds": 0.08816478499647928,
+        "assessment_ready_at": 1791429126.5751503,
+        "valuation_compute_seconds": 0.0006072340038372204,
+        "timing": {
+          "environment": "local",
+          "assessment_status": "unknown",
+          "events": {
+            "assessment_ready": 1791429126.5751503,
+            "collector_detected": 1791428958.100757,
+            "details_ready": 1791429126.5745418,
+            "message_prepared": null,
+            "publication": null,
+            "queue_entered": null,
+            "queue_released": null,
+            "source_observed": 1791428811.207242,
+            "telegram_delivered": null
+          },
+          "rejected_evidence": {},
+          "durations": {
+            "publication_to_detection_seconds": null,
+            "detection_to_details_seconds": 168.47378492355347,
+            "details_to_assessment_seconds": 0.0006084442138671875,
+            "detection_to_assessment_seconds": 168.47439336776733,
+            "publication_to_message_seconds": null,
+            "queue_wait_seconds": null,
+            "queue_release_to_delivery_seconds": null
+          },
+          "first_source_availability_at": null,
+          "source_observed_is_first_availability": false,
+          "market_price_verified": false,
+          "caller_evidence_independently_verified": false,
+          "production_approved": false
+        },
+        "collector_found": true,
+        "known_id_fetch_does_not_count_as_discovery": true,
+        "ready_for_delivery": false,
+        "paid_calls": 0,
+        "telegram_calls": 0,
+        "offline_guard": {
+          "attempted": 0,
+          "blocked": 0,
+          "paid_blocked": 0,
+          "successful_external_calls": 0,
+          "paid_calls": 0
+        }
+      },
+      {
+        "listing_id": "39724636",
+        "details": {
+          "listing_id": "39724636",
+          "brand": "ВАЗ / Lada",
+          "model": "2110",
+          "year": 2007,
+          "fuel": "Газ пропан-бутан / Бензин",
+          "transmission": "Ручна / Механіка",
+          "mileage_km": "210000",
+          "price": "1850",
+          "currency": "USD",
+          "body": "Седан",
+          "generation": "I поколiння (FL)",
+          "engine_cc": 1600,
+          "region": "Кіровоградська область",
+          "observed_at": 1791429136.3617222
+        },
+        "valuation": {
+          "status": "unknown",
+          "classification": "insufficient_data",
+          "reason": "too_few_comparable_peers",
+          "currency": "USD",
+          "reference_price": null,
+          "reference_price_usd": null,
+          "discount_percent": null,
+          "sample_count": 0,
+          "as_of": 1791429136.4523504,
+          "lower_asking_price": null,
+          "median_asking_price": null,
+          "upper_asking_price": null,
+          "peer_age_min_seconds": null,
+          "peer_age_max_seconds": null,
+          "input_count": 97,
+          "excluded": {
+            "brand_mismatch": 97
+          },
+          "notices": [
+            "asking_prices_not_sales",
+            "quality_not_live_validated"
+          ],
+          "missing_fields": [],
+          "region_sample_count": 0,
+          "provenance": "experimental_peer_asking_v1",
+          "production_approved": false,
+          "confidence": "uncalibrated"
+        },
+        "error": null,
+        "fetch_started_at": 1791429130.4774902,
+        "fetch_completed_at": 1791429136.3617222,
+        "fetch_seconds": 5.883658001002914,
+        "parse_started_at": 1791429136.3743792,
+        "details_ready_at": 1791429136.4523504,
+        "parse_seconds": 0.07797344499704195,
+        "assessment_ready_at": 1791429136.453342,
+        "valuation_compute_seconds": 0.0009896789997583255,
+        "timing": {
+          "environment": "local",
+          "assessment_status": "unknown",
+          "events": {
+            "assessment_ready": 1791429136.453342,
+            "collector_detected": 1791428958.100757,
+            "details_ready": 1791429136.4523504,
+            "message_prepared": null,
+            "publication": null,
+            "queue_entered": null,
+            "queue_released": null,
+            "source_observed": 1791428811.207242,
+            "telegram_delivered": null
+          },
+          "rejected_evidence": {},
+          "durations": {
+            "publication_to_detection_seconds": null,
+            "detection_to_details_seconds": 178.35159349441528,
+            "details_to_assessment_seconds": 0.0009915828704833984,
+            "detection_to_assessment_seconds": 178.35258507728577,
+            "publication_to_message_seconds": null,
+            "queue_wait_seconds": null,
+            "queue_release_to_delivery_seconds": null
+          },
+          "first_source_availability_at": null,
+          "source_observed_is_first_availability": false,
+          "market_price_verified": false,
+          "caller_evidence_independently_verified": false,
+          "production_approved": false
+        },
+        "collector_found": true,
+        "known_id_fetch_does_not_count_as_discovery": true,
+        "ready_for_delivery": false,
+        "paid_calls": 0,
+        "telegram_calls": 0,
+        "offline_guard": {
+          "attempted": 0,
+          "blocked": 0,
+          "paid_blocked": 0,
+          "successful_external_calls": 0,
+          "paid_calls": 0
+        }
+      },
+      {
+        "listing_id": "39724605",
+        "details": {
+          "listing_id": "39724605",
+          "brand": "Daewoo",
+          "model": "Nexia",
+          "year": 2007,
+          "fuel": "Газ пропан-бутан / Бензин",
+          "transmission": "Ручна / Механіка",
+          "mileage_km": "300000",
+          "price": "950",
+          "currency": "USD",
+          "body": "Седан",
+          "generation": "I покоління",
+          "engine_cc": 1500,
+          "region": "Одеська область",
+          "observed_at": 1791429146.552223
+        },
+        "valuation": {
+          "status": "unknown",
+          "classification": "insufficient_data",
+          "reason": "too_few_comparable_peers",
+          "currency": "USD",
+          "reference_price": null,
+          "reference_price_usd": null,
+          "discount_percent": null,
+          "sample_count": 0,
+          "as_of": 1791429146.627167,
+          "lower_asking_price": null,
+          "median_asking_price": null,
+          "upper_asking_price": null,
+          "peer_age_min_seconds": null,
+          "peer_age_max_seconds": null,
+          "input_count": 97,
+          "excluded": {
+            "brand_mismatch": 97
+          },
+          "notices": [
+            "asking_prices_not_sales",
+            "quality_not_live_validated"
+          ],
+          "missing_fields": [],
+          "region_sample_count": 0,
+          "provenance": "experimental_peer_asking_v1",
+          "production_approved": false,
+          "confidence": "uncalibrated"
+        },
+        "error": null,
+        "fetch_started_at": 1791429140.3619134,
+        "fetch_completed_at": 1791429146.552223,
+        "fetch_seconds": 6.189739918998384,
+        "parse_started_at": 1791429146.5619853,
+        "details_ready_at": 1791429146.627167,
+        "parse_seconds": 0.06518430399592035,
+        "assessment_ready_at": 1791429146.62774,
+        "valuation_compute_seconds": 0.0005710289988201112,
+        "timing": {
+          "environment": "local",
+          "assessment_status": "unknown",
+          "events": {
+            "assessment_ready": 1791429146.62774,
+            "collector_detected": 1791428958.100757,
+            "details_ready": 1791429146.627167,
+            "message_prepared": null,
+            "publication": null,
+            "queue_entered": null,
+            "queue_released": null,
+            "source_observed": 1791428811.207242,
+            "telegram_delivered": null
+          },
+          "rejected_evidence": {},
+          "durations": {
+            "publication_to_detection_seconds": null,
+            "detection_to_details_seconds": 188.52641010284424,
+            "details_to_assessment_seconds": 0.0005729198455810547,
+            "detection_to_assessment_seconds": 188.52698302268982,
+            "publication_to_message_seconds": null,
+            "queue_wait_seconds": null,
+            "queue_release_to_delivery_seconds": null
+          },
+          "first_source_availability_at": null,
+          "source_observed_is_first_availability": false,
+          "market_price_verified": false,
+          "caller_evidence_independently_verified": false,
+          "production_approved": false
+        },
+        "collector_found": true,
+        "known_id_fetch_does_not_count_as_discovery": true,
+        "ready_for_delivery": false,
+        "paid_calls": 0,
+        "telegram_calls": 0,
+        "offline_guard": {
+          "attempted": 0,
+          "blocked": 0,
+          "paid_blocked": 0,
+          "successful_external_calls": 0,
+          "paid_calls": 0
+        }
+      }
+    ],
+    "peer_count": 97,
+    "removed_control_peer_ids": [],
+    "inline_after_each_response": true
+  },
+  "metrics": {
+    "request_count": 26,
+    "known_body_bytes": 18711449,
+    "reserved_bytes": 39120000,
+    "source_io_span_seconds": 411.17352414131165,
+    "minimum_completion_pause_seconds": 4.000159740447998,
+    "first_collector_http_span_seconds": 26.601123809814453,
+    "second_collector_http_span_seconds": 24.84996724128723,
+    "head_receipt_separation_seconds": 339.87426257133484,
+    "detail_http": {
+      "n": 18,
+      "min": 3.873936424999556,
+      "median": 4.683419043001777,
+      "p95_nearest_rank": 6.960439927002881,
+      "max": 6.960439927002881
+    },
+    "parse_seconds": {
+      "n": 17,
+      "min": 0.05055011699732859,
+      "median": 0.08345298499625642,
+      "p95_nearest_rank": 0.09203826199518517,
+      "max": 0.09203826199518517
+    },
+    "valuation_compute_seconds": {
+      "n": 17,
+      "min": 0.0005651100000250153,
+      "median": 0.0006043489993317053,
+      "p95_nearest_rank": 0.001269870001124218,
+      "max": 0.001269870001124218
+    },
+    "source_snapshot_to_assessment_seconds": {
+      "n": 17,
+      "min": 181.7600405216217,
+      "median": 255.59518432617188,
+      "p95_nearest_rank": 335.4204978942871,
+      "max": 335.4204978942871
+    },
+    "collector_detection_to_assessment_seconds": {
+      "n": 10,
+      "min": 88.5011796951294,
+      "median": 139.17990279197693,
+      "p95_nearest_rank": 188.52698302268982,
+      "max": 188.52698302268982
+    },
+    "details_serial_span_seconds": 160.6667287349701,
+    "publication_latency": null,
+    "first_source_availability": null,
+    "queue_wait": null,
+    "telegram_delivery": null,
+    "render_latency": null,
+    "scope_matched_recall": null,
+    "qualified_message_ready_count": 0,
+    "valuation_status_counts": {
+      "unknown": 17,
+      "error": 1
+    }
+  },
+  "retention": {
+    "cycle1_unique": 60,
+    "cycle2_unique": 60,
+    "retained": 60,
+    "departed_ids": [],
+    "entered_ids": [],
+    "same_hash_by_page": [
+      true,
+      true,
+      true
+    ],
+    "whole_market_recall": null,
+    "cache_ttl_proven": null
+  },
+  "source_body_audit": [
+    {
+      "listing_id": "40405395",
+      "source_body": "Позашляховик / Кросовер",
+      "jsonld_currency": "USD"
+    },
+    {
+      "listing_id": "35108262",
+      "source_body": "Мінівен",
+      "jsonld_currency": "USD"
+    },
+    {
+      "listing_id": "40121173",
+      "source_body": "Універсал",
+      "jsonld_currency": "USD"
+    },
+    {
+      "listing_id": "39319447",
+      "source_body": "Міні-вантажник",
+      "jsonld_currency": "USD"
+    },
+    {
+      "listing_id": "39319470",
+      "source_body": "Тентований",
+      "jsonld_currency": "USD"
+    },
+    {
+      "listing_id": "40214825",
+      "source_body": "Мотоцикл Круізер",
+      "jsonld_currency": "USD"
+    },
+    {
+      "listing_id": "40134596",
+      "source_body": "Ліфтбек",
+      "jsonld_currency": "USD"
+    },
+    {
+      "listing_id": "40134601",
+      "source_body": "Седан",
+      "jsonld_currency": "USD"
+    },
+    {
+      "listing_id": "40267995",
+      "source_body": "Мінівен",
+      "jsonld_currency": "USD"
+    },
+    {
+      "listing_id": "40134598",
+      "source_body": "Мотоцикл Классік",
+      "jsonld_currency": "UAH"
+    },
+    {
+      "listing_id": "40401911",
+      "source_body": "Позашляховик / Кросовер",
+      "jsonld_currency": "USD"
+    },
+    {
+      "listing_id": "40134595",
+      "source_body": "Позашляховик / Кросовер",
+      "jsonld_currency": "USD"
+    },
+    {
+      "listing_id": "39724637",
+      "source_body": "Мінівен",
+      "jsonld_currency": "USD"
+    },
+    {
+      "listing_id": "40134597",
+      "source_body": "Позашляховик / Кросовер",
+      "jsonld_currency": "USD"
+    },
+    {
+      "listing_id": "39862423",
+      "source_body": "Тентований борт (штора) - напівпричіп",
+      "jsonld_currency": "USD"
+    },
+    {
+      "listing_id": "39862480",
+      "source_body": "Хетчбек",
+      "jsonld_currency": "USD"
+    },
+    {
+      "listing_id": "39724636",
+      "source_body": "Седан",
+      "jsonld_currency": "USD"
+    },
+    {
+      "listing_id": "39724605",
+      "source_body": "Седан",
+      "jsonld_currency": "USD"
+    }
+  ],
+  "supplemental_currency_evidence": [
+    {
+      "listing_id": "40134598",
+      "jsonld_currency": "UAH",
+      "jsonld_amount": "22000",
+      "same_currency_visible_amount": "22000",
+      "same_currency_agrees": true,
+      "reason": "same_currency_source_agreement",
+      "fx_inferred": false,
+      "default_detail_parser_changed": false,
+      "independent_price_verification": false,
+      "ready_for_delivery": false
+    }
+  ],
+  "scope_alternative": {
+    "known_scope_blocker": "legacy top1 vs search explicit car/customs/abroad/republished/order filters",
+    "concrete_matching_public_search_link_present": false,
+    "matching_endpoint_not_invented": true,
+    "alternative": "retain unmatched controls provisionally; repeat same collector cycle to measure bounded retention, not recall",
+    "paid_fallback": false
+  },
+  "receipts": [
+    {
+      "sequence": 0,
+      "url": "https://auto.ria.com/robots.txt",
+      "started_at": 1791428797.7210102,
+      "status": 200,
+      "reserved_body_cap": 20000,
+      "bytes": 1620,
+      "headers": {
+        "Date": "Thu, 08 Oct 2026 03:06:41 GMT",
+        "Age": null,
+        "Cache-Control": null,
+        "ETag": "\"6ac35b79-654\"",
+        "Content-Type": "text/plain",
+        "Content-Length": "1620"
+      },
+      "sha256": "75ad66544cf3edf2a3287136da4bcf0d976383ee948d86a63548ba347303b2b3",
+      "completed_at": 1791428801.3713663,
+      "seconds": 3.6501622060022783
+    },
+    {
+      "sequence": 1,
+      "url": "https://auto.ria.com/uk/last/hour/",
+      "started_at": 1791428805.3715553,
+      "status": 200,
+      "reserved_body_cap": 2500000,
+      "bytes": 1359875,
+      "headers": {
+        "Date": "Thu, 08 Oct 2026 03:06:50 GMT",
+        "Age": null,
+        "Cache-Control": null,
+        "ETag": null,
+        "Content-Type": "text/html; charset=utf-8",
+        "Content-Length": null
+      },
+      "sha256": "4be9698190219f4c4d171008bb763c5928a9715682d7c92f848d5abbe99d5350",
+      "completed_at": 1791428811.207242,
+      "seconds": 5.835316951001005
+    },
+    {
+      "sequence": 2,
+      "url": "https://auto.ria.com/uk/search/?search_type=1&category=1&abroad=0&customs_cleared=1&republished_last=1&order=7&limit=20&page=0",
+      "started_at": 1791428844.0698988,
+      "status": 200,
+      "reserved_body_cap": 2500000,
+      "bytes": 1388617,
+      "headers": {
+        "Date": "Thu, 08 Oct 2026 03:07:28 GMT",
+        "Age": null,
+        "Cache-Control": null,
+        "ETag": null,
+        "Content-Type": "text/html; charset=utf-8",
+        "Content-Length": null
+      },
+      "sha256": "92677c6e2c01066346ace96912d8942a9cdcedeadda61b0d4371826ae3b38e62",
+      "completed_at": 1791428849.76235,
+      "seconds": 5.692247655999381
+    },
+    {
+      "sequence": 3,
+      "url": "https://auto.ria.com/uk/search/?search_type=1&category=1&abroad=0&customs_cleared=1&republished_last=1&order=7&limit=20&page=1",
+      "started_at": 1791428853.7625165,
+      "status": 200,
+      "reserved_body_cap": 2500000,
+      "bytes": 1418126,
+      "headers": {
+        "Date": "Thu, 08 Oct 2026 03:07:39 GMT",
+        "Age": null,
+        "Cache-Control": null,
+        "ETag": null,
+        "Content-Type": "text/html; charset=utf-8",
+        "Content-Length": null
+      },
+      "sha256": "40e0640270011f12df0581373ac9b39f3d333d7660209276f69dfa9c88ad3408",
+      "completed_at": 1791428860.6979558,
+      "seconds": 6.935043510005926
+    },
+    {
+      "sequence": 4,
+      "url": "https://auto.ria.com/uk/search/?search_type=1&category=1&abroad=0&customs_cleared=1&republished_last=1&order=7&limit=20&page=2",
+      "started_at": 1791428864.6982062,
+      "status": 200,
+      "reserved_body_cap": 2500000,
+      "bytes": 1405480,
+      "headers": {
+        "Date": "Thu, 08 Oct 2026 03:07:49 GMT",
+        "Age": null,
+        "Cache-Control": null,
+        "ETag": null,
+        "Content-Type": "text/html; charset=utf-8",
+        "Content-Length": null
+      },
+      "sha256": "58b03a8458827d530f466d5b5dc56fce0024d26b359a658c795073b8f85b78ab",
+      "completed_at": 1791428870.6710227,
+      "seconds": 5.972406758002762
+    },
+    {
+      "sequence": 5,
+      "url": "https://auto.ria.com/uk/auto_hyundai_tucson_40405395.html",
+      "started_at": 1791428985.8854942,
+      "status": 200,
+      "reserved_body_cap": 1200000,
+      "bytes": 594865,
+      "headers": {
+        "Date": "Thu, 08 Oct 2026 03:09:52 GMT",
+        "Age": null,
+        "Cache-Control": null,
+        "ETag": "W/\"913b1-R4VTW6YM3WGjlcy/SplbjYUfbyY\"",
+        "Content-Type": "text/html; charset=utf-8",
+        "Content-Length": "594865"
+      },
+      "sha256": "f1f8f0f300fc78fc929c323eb7322b13db2afff8d0480c7d732c359d44d88ddf",
+      "completed_at": 1791428992.8461576,
+      "seconds": 6.960439927002881
+    },
+    {
+      "sequence": 6,
+      "url": "https://auto.ria.com/uk/auto_mitsubishi_grandis_35108262.html",
+      "started_at": 1791428996.8463385,
+      "status": 200,
+      "reserved_body_cap": 1200000,
+      "bytes": 514806,
+      "headers": {
+        "Date": "Thu, 08 Oct 2026 03:10:00 GMT",
+        "Age": null,
+        "Cache-Control": null,
+        "ETag": "W/\"7daf6-wQqOu2n6gy+fOYaHMeuCmF/U468\"",
+        "Content-Type": "text/html; charset=utf-8",
+        "Content-Length": "514806"
+      },
+      "sha256": "afd8a8f0cab4e02002e95c3a3c5d5bc6124bff47a00bf3386fa23b3228dadddd",
+      "completed_at": 1791429001.4925096,
+      "seconds": 4.645761211002537
+    },
+    {
+      "sequence": 7,
+      "url": "https://auto.ria.com/uk/auto_opel_astra_40121173.html",
+      "started_at": 1791429005.4926965,
+      "status": 200,
+      "reserved_body_cap": 1200000,
+      "bytes": 536740,
+      "headers": {
+        "Date": "Thu, 08 Oct 2026 03:10:11 GMT",
+        "Age": null,
+        "Cache-Control": null,
+        "ETag": "W/\"830a4-oaXiqa4rvInl4bTW8axhS/YoRU0\"",
+        "Content-Type": "text/html; charset=utf-8",
+        "Content-Length": "536740"
+      },
+      "sha256": "c81b5c9ecd195e304b7449cb216ea2b1ee8463cd59a9cf3a707bb99248e1666a",
+      "completed_at": 1791429011.969184,
+      "seconds": 6.476048813005036
+    },
+    {
+      "sequence": 8,
+      "url": "https://auto.ria.com/uk/auto_bobcat_s175_39319447.html",
+      "started_at": 1791429015.9693625,
+      "status": 200,
+      "reserved_body_cap": 1200000,
+      "bytes": 345503,
+      "headers": {
+        "Date": "Thu, 08 Oct 2026 03:10:19 GMT",
+        "Age": null,
+        "Cache-Control": null,
+        "ETag": "W/\"5459f-bveVY3XZheCOXfszOy1rZm6xsNI\"",
+        "Content-Type": "text/html; charset=utf-8",
+        "Content-Length": "345503"
+      },
+      "sha256": "33333ecb719891e37cfc8ec01495ef00d7a2bc85c6bfbb257c16a4c728f6ff33",
+      "completed_at": 1791429020.2466989,
+      "seconds": 4.276871290996496
+    },
+    {
+      "sequence": 9,
+      "url": "https://auto.ria.com/uk/auto_daf_lf_39319470.html",
+      "started_at": 1791429024.2469108,
+      "status": 200,
+      "reserved_body_cap": 1200000,
+      "bytes": 370116,
+      "headers": {
+        "Date": "Thu, 08 Oct 2026 03:10:27 GMT",
+        "Age": null,
+        "Cache-Control": null,
+        "ETag": "W/\"5a5c4-HEob4GY4FHUZ644GWIUyRnLCgfs\"",
+        "Content-Type": "text/html; charset=utf-8",
+        "Content-Length": "370116"
+      },
+      "sha256": "9c7e41dce8f421102597585a5ce703694139b6585bf4de3db77052366cd6ac21",
+      "completed_at": 1791429028.4750922,
+      "seconds": 4.227511946999584
+    },
+    {
+      "sequence": 10,
+      "url": "https://auto.ria.com/uk/auto_yamaha_xvs_650_40214825.html",
+      "started_at": 1791429032.4752693,
+      "status": 200,
+      "reserved_body_cap": 1200000,
+      "bytes": 500720,
+      "headers": {
+        "Date": "Thu, 08 Oct 2026 03:10:37 GMT",
+        "Age": null,
+        "Cache-Control": null,
+        "ETag": "W/\"7a3f0-ZSB8ca4zXG6xYRRBj8vongTRjWY\"",
+        "Content-Type": "text/html; charset=utf-8",
+        "Content-Length": "500720"
+      },
+      "sha256": "b4331357bf2513a9c7fb1a9454f131899457ecaef45fe73f28e449f7db1a1874",
+      "completed_at": 1791429038.3857167,
+      "seconds": 5.909975001995917
+    },
+    {
+      "sequence": 11,
+      "url": "https://auto.ria.com/uk/auto_tesla_model_s_40134596.html",
+      "started_at": 1791429042.3858883,
+      "status": 200,
+      "reserved_body_cap": 1200000,
+      "bytes": 587674,
+      "headers": {
+        "Date": "Thu, 08 Oct 2026 03:10:45 GMT",
+        "Age": null,
+        "Cache-Control": null,
+        "ETag": "W/\"8f79a-WQFg6YsUcBGOpNWVILd76hza/hI\"",
+        "Content-Type": "text/html; charset=utf-8",
+        "Content-Length": "587674"
+      },
+      "sha256": "ee28f133a04a9bed98dcde108a7734b1bbe86c38611d5a1426d0da71906814f2",
+      "completed_at": 1791429046.4992685,
+      "seconds": 4.112912362004863
+    },
+    {
+      "sequence": 12,
+      "url": "https://auto.ria.com/uk/auto_daewoo_nexia_40134601.html",
+      "started_at": 1791429050.4994357,
+      "status": 200,
+      "reserved_body_cap": 1200000,
+      "bytes": 463638,
+      "headers": {
+        "Date": "Thu, 08 Oct 2026 03:10:56 GMT",
+        "Age": null,
+        "Cache-Control": null,
+        "ETag": "W/\"71316-LxlcVKI4+OD5mTowq83wFSPEiNk\"",
+        "Content-Type": "text/html; charset=utf-8",
+        "Content-Length": "463638"
+      },
+      "sha256": "a5478a12388324892b07191e1dd599d444abfb65b42ac8c74220581b6219f01b",
+      "completed_at": 1791429056.843103,
+      "seconds": 6.342864359001396
+    },
+    {
+      "sequence": 13,
+      "url": "https://auto.ria.com/uk/auto_renault_kangoo_40267995.html",
+      "started_at": 1791429060.8432627,
+      "status": 200,
+      "reserved_body_cap": 1200000,
+      "bytes": 571007,
+      "headers": {
+        "Date": "Thu, 08 Oct 2026 03:11:06 GMT",
+        "Age": null,
+        "Cache-Control": null,
+        "ETag": "W/\"8b67f-1iGDt2B71nD8iY/kmsymAHfrLhs\"",
+        "Content-Type": "text/html; charset=utf-8",
+        "Content-Length": "571007"
+      },
+      "sha256": "930b11c92ebf1da67d6c0479284c5bdb3fe33023e7d637297822fec3753a8a59",
+      "completed_at": 1791429066.704,
+      "seconds": 5.8601898349952535
+    },
+    {
+      "sequence": 14,
+      "url": "https://auto.ria.com/uk/auto_forte_ft_125_fa2_40134598.html",
+      "started_at": 1791429070.70417,
+      "status": 200,
+      "reserved_body_cap": 1200000,
+      "bytes": 321415,
+      "headers": {
+        "Date": "Thu, 08 Oct 2026 03:11:14 GMT",
+        "Age": null,
+        "Cache-Control": null,
+        "ETag": "W/\"4e787-pJXP603gZEjBIhzmLZkeXhj04II\"",
+        "Content-Type": "text/html; charset=utf-8",
+        "Content-Length": "321415"
+      },
+      "sha256": "014ee8e5b655d061539f49449321c69547bcc5e7d41a28a2af8dabd0c7e42484",
+      "completed_at": 1791429075.1950395,
+      "seconds": 4.49034451800253
+    },
+    {
+      "sequence": 15,
+      "url": "https://auto.ria.com/uk/auto_kia_niro_40401911.html",
+      "started_at": 1791429079.1952274,
+      "status": 200,
+      "reserved_body_cap": 1200000,
+      "bytes": 597170,
+      "headers": {
+        "Date": "Thu, 08 Oct 2026 03:11:24 GMT",
+        "Age": null,
+        "Cache-Control": null,
+        "ETag": "W/\"91cb2-R4hT/NC0gj1COzBuiiUYxe5ydA8\"",
+        "Content-Type": "text/html; charset=utf-8",
+        "Content-Length": "597170"
+      },
+      "sha256": "1da7b2e40906562e0253bc8bb1b43411cad07330489a58a63954829e5401e819",
+      "completed_at": 1791429084.950301,
+      "seconds": 5.75456017000397
+    },
+    {
+      "sequence": 16,
+      "url": "https://auto.ria.com/uk/auto_bmw_x3_40134595.html",
+      "started_at": 1791429088.950477,
+      "status": 200,
+      "reserved_body_cap": 1200000,
+      "bytes": 620728,
+      "headers": {
+        "Date": "Thu, 08 Oct 2026 03:11:32 GMT",
+        "Age": null,
+        "Cache-Control": null,
+        "ETag": "W/\"978b8-qFBaEr8NnMgqOHxtjDIIdJGaCfM\"",
+        "Content-Type": "text/html; charset=utf-8",
+        "Content-Length": "620728"
+      },
+      "sha256": "a3fb9ce83fbb26a48f092f6c38b59ec0e6ef5ab7d70126fa94ced6760894c03d",
+      "completed_at": 1791429093.091671,
+      "seconds": 4.140648330001568
+    },
+    {
+      "sequence": 17,
+      "url": "https://auto.ria.com/uk/auto_opel_zafira_39724637.html",
+      "started_at": 1791429097.091876,
+      "status": 200,
+      "reserved_body_cap": 1200000,
+      "bytes": 599810,
+      "headers": {
+        "Date": "Thu, 08 Oct 2026 03:11:40 GMT",
+        "Age": null,
+        "Cache-Control": null,
+        "ETag": "W/\"92702-rJKLAqHnVK+TAmGXe2MzFMydR2w\"",
+        "Content-Type": "text/html; charset=utf-8",
+        "Content-Length": "599810"
+      },
+      "sha256": "f5e1d754e5a782b9105b14cebf6459a945d888e7c7a46ec680450fea1a72b72d",
+      "completed_at": 1791429101.2750053,
+      "seconds": 4.182612959004473
+    },
+    {
+      "sequence": 18,
+      "url": "https://auto.ria.com/uk/auto_land_rover_range_rover_sport_40134597.html",
+      "started_at": 1791429105.2751822,
+      "status": 200,
+      "reserved_body_cap": 1200000,
+      "bytes": 573708,
+      "headers": {
+        "Date": "Thu, 08 Oct 2026 03:11:49 GMT",
+        "Age": null,
+        "Cache-Control": null,
+        "ETag": "W/\"8c10c-mwhRviIotfBuR8CXuTDX5cY7q4c\"",
+        "Content-Type": "text/html; charset=utf-8",
+        "Content-Length": "573708"
+      },
+      "sha256": "09c32132b1150a3652b0554815e7fddce93260b26de6ddb912dab1edbe8a4570",
+      "completed_at": 1791429109.996897,
+      "seconds": 4.7210768750010175
+    },
+    {
+      "sequence": 19,
+      "url": "https://auto.ria.com/uk/auto_schmitz_cargobull_mega_39862423.html",
+      "started_at": 1791429113.9971218,
+      "status": 200,
+      "reserved_body_cap": 1200000,
+      "bytes": 322168,
+      "headers": {
+        "Date": "Thu, 08 Oct 2026 03:11:57 GMT",
+        "Age": null,
+        "Cache-Control": null,
+        "ETag": "W/\"4ea78-7lRUC7qXqMN7M+GTRUXoYi0M5Pg\"",
+        "Content-Type": "text/html; charset=utf-8",
+        "Content-Length": "322168"
+      },
+      "sha256": "4252f84c3d8509466e18bad0bdda9c44c93c96e91fa3c2f322921048f1f659f0",
+      "completed_at": 1791429117.871657,
+      "seconds": 3.873936424999556
+    },
+    {
+      "sequence": 20,
+      "url": "https://auto.ria.com/uk/auto_chevrolet_lacetti_39862480.html",
+      "started_at": 1791429121.8718317,
+      "status": 200,
+      "reserved_body_cap": 1200000,
+      "bytes": 480716,
+      "headers": {
+        "Date": "Thu, 08 Oct 2026 03:12:05 GMT",
+        "Age": null,
+        "Cache-Control": null,
+        "ETag": "W/\"755cc-VcDwVFC54GZEKu8h2nR6ne6ZoqY\"",
+        "Content-Type": "text/html; charset=utf-8",
+        "Content-Length": "480716"
+      },
+      "sha256": "d98b3dc8d19972d40ecd2901df236e6f41246230fc0307f68fd67c96686eb790",
+      "completed_at": 1791429126.4773228,
+      "seconds": 4.604711766005494
+    },
+    {
+      "sequence": 21,
+      "url": "https://auto.ria.com/uk/auto_vaz_lada_2110_39724636.html",
+      "started_at": 1791429130.4774902,
+      "status": 200,
+      "reserved_body_cap": 1200000,
+      "bytes": 470075,
+      "headers": {
+        "Date": "Thu, 08 Oct 2026 03:12:15 GMT",
+        "Age": null,
+        "Cache-Control": null,
+        "ETag": "W/\"72c3b-7iDrXidgGBTM2/C/BOrQEtaEpL4\"",
+        "Content-Type": "text/html; charset=utf-8",
+        "Content-Length": "470075"
+      },
+      "sha256": "1278a33f64d1d35dedd7a5fce69198dc5cd50f45cf096d0ea285486d4f51929e",
+      "completed_at": 1791429136.3617222,
+      "seconds": 5.883658001002914
+    },
+    {
+      "sequence": 22,
+      "url": "https://auto.ria.com/uk/auto_daewoo_nexia_39724605.html",
+      "started_at": 1791429140.3619134,
+      "status": 200,
+      "reserved_body_cap": 1200000,
+      "bytes": 454649,
+      "headers": {
+        "Date": "Thu, 08 Oct 2026 03:12:25 GMT",
+        "Age": null,
+        "Cache-Control": null,
+        "ETag": "W/\"6eff9-eC7xGw3nJwwbgRXM7+fJk7VmfQY\"",
+        "Content-Type": "text/html; charset=utf-8",
+        "Content-Length": "454649"
+      },
+      "sha256": "c09c644ca6b28e1d25858645c6bbf814a4c742c4763569da94801fdfa73b4004",
+      "completed_at": 1791429146.552223,
+      "seconds": 6.189739918998384
+    },
+    {
+      "sequence": 23,
+      "url": "https://auto.ria.com/uk/search/?search_type=1&category=1&abroad=0&customs_cleared=1&republished_last=1&order=7&limit=20&page=0",
+      "started_at": 1791429184.044567,
+      "status": 200,
+      "reserved_body_cap": 2500000,
+      "bytes": 1388617,
+      "headers": {
+        "Date": "Thu, 08 Oct 2026 03:13:08 GMT",
+        "Age": null,
+        "Cache-Control": null,
+        "ETag": null,
+        "Content-Type": "text/html; charset=utf-8",
+        "Content-Length": null
+      },
+      "sha256": "92677c6e2c01066346ace96912d8942a9cdcedeadda61b0d4371826ae3b38e62",
+      "completed_at": 1791429189.6366127,
+      "seconds": 5.5916444350004895
+    },
+    {
+      "sequence": 24,
+      "url": "https://auto.ria.com/uk/search/?search_type=1&category=1&abroad=0&customs_cleared=1&republished_last=1&order=7&limit=20&page=1",
+      "started_at": 1791429193.6368358,
+      "status": 200,
+      "reserved_body_cap": 2500000,
+      "bytes": 1418126,
+      "headers": {
+        "Date": "Thu, 08 Oct 2026 03:13:17 GMT",
+        "Age": null,
+        "Cache-Control": null,
+        "ETag": null,
+        "Content-Type": "text/html; charset=utf-8",
+        "Content-Length": null
+      },
+      "sha256": "40e0640270011f12df0581373ac9b39f3d333d7660209276f69dfa9c88ad3408",
+      "completed_at": 1791429198.6454444,
+      "seconds": 5.00802766400011
+    },
+    {
+      "sequence": 25,
+      "url": "https://auto.ria.com/uk/search/?search_type=1&category=1&abroad=0&customs_cleared=1&republished_last=1&order=7&limit=20&page=2",
+      "started_at": 1791429202.6456182,
+      "status": 200,
+      "reserved_body_cap": 2500000,
+      "bytes": 1405480,
+      "headers": {
+        "Date": "Thu, 08 Oct 2026 03:13:28 GMT",
+        "Age": null,
+        "Cache-Control": null,
+        "ETag": null,
+        "Content-Type": "text/html; charset=utf-8",
+        "Content-Length": null
+      },
+      "sha256": "58b03a8458827d530f466d5b5dc56fce0024d26b359a658c795073b8f85b78ab",
+      "completed_at": 1791429208.8945343,
+      "seconds": 6.248274189994845
+    }
+  ],
+  "public_peer_records": [
+    {
+      "listing_id": "40363054",
+      "brand": "Subaru",
+      "model": "Outback",
+      "year": 2018,
+      "fuel": "Бензин",
+      "transmission": "Автомат",
+      "mileage_km": "56000",
+      "price": "14399",
+      "currency": "USD",
+      "body": "Універсал",
+      "generation": "V покоління (FL)",
+      "engine_cc": 2500,
+      "region": "Івано-Франківська область",
+      "observed_at": 1791398540.623558
+    },
+    {
+      "listing_id": "40528545",
+      "brand": "Subaru",
+      "model": "Outback",
+      "year": 2018,
+      "fuel": "Бензин",
+      "transmission": "Варіатор",
+      "mileage_km": "85000",
+      "price": "18500",
+      "currency": "USD",
+      "body": "Універсал",
+      "generation": "V покоління (FL)",
+      "engine_cc": 2500,
+      "region": "Дніпропетровська область",
+      "observed_at": 1791398551.4264424
+    },
+    {
+      "listing_id": "40528281",
+      "brand": "Subaru",
+      "model": "Outback",
+      "year": 2018,
+      "fuel": "Газ пропан-бутан / Бензин",
+      "transmission": "Варіатор",
+      "mileage_km": "155000",
+      "price": "19000",
+      "currency": "USD",
+      "body": "Універсал",
+      "generation": "V покоління (FL)",
+      "engine_cc": 2500,
+      "region": "Сумська область",
+      "observed_at": 1791398562.2634401
+    },
+    {
+      "listing_id": "39257075",
+      "brand": "Subaru",
+      "model": "Outback",
+      "year": 2018,
+      "fuel": "Газ пропан-бутан / Бензин",
+      "transmission": "Варіатор",
+      "mileage_km": "175000",
+      "price": "20000",
+      "currency": "USD",
+      "body": "Універсал",
+      "generation": "V покоління (FL)",
+      "engine_cc": 2500,
+      "region": "Чернігівська область",
+      "observed_at": 1791398574.0425816
+    },
+    {
+      "listing_id": "38696413",
+      "brand": "Subaru",
+      "model": "Outback",
+      "year": 2018,
+      "fuel": "Бензин",
+      "transmission": "Варіатор",
+      "mileage_km": "76000",
+      "price": "15800",
+      "currency": "USD",
+      "body": "Універсал",
+      "generation": "V покоління (FL)",
+      "engine_cc": 2500,
+      "region": "Київська область",
+      "observed_at": 1791398585.6875918
+    },
+    {
+      "listing_id": "40373452",
+      "brand": "Subaru",
+      "model": "Outback",
+      "year": 2018,
+      "fuel": "Бензин",
+      "transmission": "Варіатор",
+      "mileage_km": "42000",
+      "price": "19500",
+      "currency": "USD",
+      "body": "Універсал",
+      "generation": "V покоління (FL)",
+      "engine_cc": 2500,
+      "region": "Харківська область",
+      "observed_at": 1791398605.7458785
+    },
+    {
+      "listing_id": "40496142",
+      "brand": "Subaru",
+      "model": "Outback",
+      "year": 2018,
+      "fuel": "Газ пропан-бутан / Бензин",
+      "transmission": "Варіатор",
+      "mileage_km": "126000",
+      "price": "14000",
+      "currency": "USD",
+      "body": "Універсал",
+      "generation": "V покоління (FL)",
+      "engine_cc": 2500,
+      "region": "Вінницька область",
+      "observed_at": 1791398615.9909787
+    },
+    {
+      "listing_id": "39672718",
+      "brand": "Subaru",
+      "model": "Outback",
+      "year": 2018,
+      "fuel": "Бензин",
+      "transmission": "Варіатор",
+      "mileage_km": "185000",
+      "price": "19500",
+      "currency": "USD",
+      "body": "Універсал",
+      "generation": "V покоління (FL)",
+      "engine_cc": 2500,
+      "region": "Київська область",
+      "observed_at": 1791398625.7155263
+    },
+    {
+      "listing_id": "40332059",
+      "brand": "Subaru",
+      "model": "Outback",
+      "year": 2018,
+      "fuel": "Бензин",
+      "transmission": "Варіатор",
+      "mileage_km": "149000",
+      "price": "20699",
+      "currency": "USD",
+      "body": "Універсал",
+      "generation": "V покоління (FL)",
+      "engine_cc": 2500,
+      "region": "Львівська область",
+      "observed_at": 1791398636.9486527
+    },
+    {
+      "listing_id": "39869087",
+      "brand": "Subaru",
+      "model": "Outback",
+      "year": 2018,
+      "fuel": "Газ пропан-бутан / Бензин",
+      "transmission": "Варіатор",
+      "mileage_km": "89000",
+      "price": "22300",
+      "currency": "USD",
+      "body": "Універсал",
+      "generation": "V покоління (FL)",
+      "engine_cc": 3630,
+      "region": "Київська область",
+      "observed_at": 1791398649.2779062
+    },
+    {
+      "listing_id": "38629439",
+      "brand": "Subaru",
+      "model": "Outback",
+      "year": 2018,
+      "fuel": "Газ пропан-бутан / Бензин",
+      "transmission": "Варіатор",
+      "mileage_km": "189000",
+      "price": "14999",
+      "currency": "USD",
+      "body": "Універсал",
+      "generation": "V покоління (FL)",
+      "engine_cc": 2500,
+      "region": "Київська область",
+      "observed_at": 1791398660.9270904
+    },
+    {
+      "listing_id": "39510018",
+      "brand": "Subaru",
+      "model": "Outback",
+      "year": 2018,
+      "fuel": "Бензин",
+      "transmission": "Варіатор",
+      "mileage_km": "266000",
+      "price": "13200",
+      "currency": "USD",
+      "body": "Універсал",
+      "generation": "V покоління (FL)",
+      "engine_cc": 2500,
+      "region": "Запорізька область",
+      "observed_at": 1791398672.2008445
+    },
+    {
+      "listing_id": "40462277",
+      "brand": "Subaru",
+      "model": "Outback",
+      "year": 2018,
+      "fuel": "Бензин",
+      "transmission": "Типтронік",
+      "mileage_km": "96000",
+      "price": "18500",
+      "currency": "USD",
+      "body": "Універсал",
+      "generation": "V покоління (FL)",
+      "engine_cc": 2500,
+      "region": "Івано-Франківська область",
+      "observed_at": 1791398683.4104676
+    },
+    {
+      "listing_id": "37174656",
+      "brand": "Subaru",
+      "model": "Outback",
+      "year": 2018,
+      "fuel": "Газ пропан-бутан / Бензин",
+      "transmission": "Варіатор",
+      "mileage_km": "94000",
+      "price": "21200",
+      "currency": "USD",
+      "body": "Універсал",
+      "generation": "V покоління (FL)",
+      "engine_cc": 3630,
+      "region": "Дніпропетровська область",
+      "observed_at": 1791398696.396927
+    },
+    {
+      "listing_id": "40450137",
+      "brand": "Subaru",
+      "model": "Outback",
+      "year": 2018,
+      "fuel": "Бензин",
+      "transmission": "Автомат",
+      "mileage_km": "196000",
+      "price": "15900",
+      "currency": "USD",
+      "body": "Універсал",
+      "generation": "V покоління (FL)",
+      "engine_cc": 2500,
+      "region": "Львівська область",
+      "observed_at": 1791398707.5873177
+    },
+    {
+      "listing_id": "40178401",
+      "brand": "Subaru",
+      "model": "Outback",
+      "year": 2018,
+      "fuel": "Бензин",
+      "transmission": "Варіатор",
+      "mileage_km": "153000",
+      "price": "16000",
+      "currency": "USD",
+      "body": "Універсал",
+      "generation": "V покоління (FL)",
+      "engine_cc": 2500,
+      "region": "Львівська область",
+      "observed_at": 1791398719.759667
+    },
+    {
+      "listing_id": "40442210",
+      "brand": "Subaru",
+      "model": "Outback",
+      "year": 2018,
+      "fuel": "Бензин",
+      "transmission": "Автомат",
+      "mileage_km": "201000",
+      "price": "14900",
+      "currency": "USD",
+      "body": "Універсал",
+      "generation": "V покоління (FL)",
+      "engine_cc": 2500,
+      "region": "Дніпропетровська область",
+      "observed_at": 1791398730.169829
+    },
+    {
+      "listing_id": "40439743",
+      "brand": "Subaru",
+      "model": "Outback",
+      "year": 2018,
+      "fuel": "Бензин",
+      "transmission": "Варіатор",
+      "mileage_km": "163000",
+      "price": "14800",
+      "currency": "USD",
+      "body": "Універсал",
+      "generation": "V покоління (FL)",
+      "engine_cc": 2500,
+      "region": "Хмельницька область",
+      "observed_at": 1791398740.6600716
+    },
+    {
+      "listing_id": "39952517",
+      "brand": "Subaru",
+      "model": "Outback",
+      "year": 2018,
+      "fuel": "Газ пропан-бутан / Бензин",
+      "transmission": "Варіатор",
+      "mileage_km": "173000",
+      "price": "16999",
+      "currency": "USD",
+      "body": "Універсал",
+      "generation": "V покоління (FL)",
+      "engine_cc": 2500,
+      "region": "Рівненська область",
+      "observed_at": 1791398949.0775025
+    },
+    {
+      "listing_id": "40302489",
+      "brand": "Subaru",
+      "model": "Outback",
+      "year": 2018,
+      "fuel": "Газ пропан-бутан / Бензин",
+      "transmission": "Автомат",
+      "mileage_km": "175000",
+      "price": "19000",
+      "currency": "USD",
+      "body": "Універсал",
+      "generation": "V покоління (FL)",
+      "engine_cc": 3630,
+      "region": "Київська область",
+      "observed_at": 1791398963.47901
+    },
+    {
+      "listing_id": "36673912",
+      "brand": "Subaru",
+      "model": "Outback",
+      "year": 2018,
+      "fuel": "Газ пропан-бутан / Бензин",
+      "transmission": "Варіатор",
+      "mileage_km": "101000",
+      "price": "19700",
+      "currency": "USD",
+      "body": "Універсал",
+      "generation": "V покоління (FL)",
+      "engine_cc": 3600,
+      "region": "Дніпропетровська область",
+      "observed_at": 1791398978.8789716
+    },
+    {
+      "listing_id": "39749271",
+      "brand": "Subaru",
+      "model": "Outback",
+      "year": 2018,
+      "fuel": "Бензин",
+      "transmission": "Варіатор",
+      "mileage_km": "98000",
+      "price": "17200",
+      "currency": "USD",
+      "body": "Універсал",
+      "generation": "V покоління (FL)",
+      "engine_cc": 2500,
+      "region": "Сумська область",
+      "observed_at": 1791398990.834388
+    },
+    {
+      "listing_id": "36295093",
+      "brand": "Subaru",
+      "model": "Outback",
+      "year": 2018,
+      "fuel": "Бензин",
+      "transmission": "Варіатор",
+      "mileage_km": "173000",
+      "price": "18500",
+      "currency": "USD",
+      "body": "Універсал",
+      "generation": "V покоління (FL)",
+      "engine_cc": 2500,
+      "region": "Рівненська область",
+      "observed_at": 1791399002.0408947
+    },
+    {
+      "listing_id": "37182546",
+      "brand": "Subaru",
+      "model": "Outback",
+      "year": 2018,
+      "fuel": "Бензин",
+      "transmission": "Автомат",
+      "mileage_km": "91000",
+      "price": "18499",
+      "currency": "USD",
+      "body": "Універсал",
+      "generation": "V покоління (FL)",
+      "engine_cc": 2500,
+      "region": "Полтавська область",
+      "observed_at": 1791399013.654827
+    },
+    {
+      "listing_id": "40419569",
+      "brand": "Subaru",
+      "model": "Outback",
+      "year": 2018,
+      "fuel": "Бензин",
+      "transmission": "Варіатор",
+      "mileage_km": "108000",
+      "price": "18499",
+      "currency": "USD",
+      "body": "Універсал",
+      "generation": "V покоління (FL)",
+      "engine_cc": 2500,
+      "region": "Дніпропетровська область",
+      "observed_at": 1791399024.734198
+    },
+    {
+      "listing_id": "38741599",
+      "brand": "Subaru",
+      "model": "Outback",
+      "year": 2018,
+      "fuel": "Бензин",
+      "transmission": "Варіатор",
+      "mileage_km": "117000",
+      "price": "24000",
+      "currency": "USD",
+      "body": "Універсал",
+      "generation": "V покоління (FL)",
+      "engine_cc": 3630,
+      "region": "Київська область",
+      "observed_at": 1791399047.3735237
+    },
+    {
+      "listing_id": "40407713",
+      "brand": "Subaru",
+      "model": "Outback",
+      "year": 2018,
+      "fuel": "Бензин",
+      "transmission": "Варіатор",
+      "mileage_km": "125000",
+      "price": "17999",
+      "currency": "USD",
+      "body": "Універсал",
+      "generation": "V покоління (FL)",
+      "engine_cc": 2500,
+      "region": "Полтавська область",
+      "observed_at": 1791399059.0305166
+    },
+    {
+      "listing_id": "39718915",
+      "brand": "Mazda",
+      "model": "CX-5",
+      "year": 2016,
+      "fuel": "Бензин",
+      "transmission": "Автомат",
+      "mileage_km": "223000",
+      "price": "12490",
+      "currency": "USD",
+      "body": "Позашляховик / Кросовер",
+      "generation": "I покоління (FL)",
+      "engine_cc": 2500,
+      "region": "Київська область",
+      "observed_at": 1791407424.0744674
+    },
+    {
+      "listing_id": "40519253",
+      "brand": "Mazda",
+      "model": "CX-5",
+      "year": 2016,
+      "fuel": "Бензин",
+      "transmission": "Автомат",
+      "mileage_km": "100000",
+      "price": "16490",
+      "currency": "USD",
+      "body": "Позашляховик / Кросовер",
+      "generation": "I покоління (FL)",
+      "engine_cc": 2500,
+      "region": "Київська область",
+      "observed_at": 1791407434.8991866
+    },
+    {
+      "listing_id": "40524659",
+      "brand": "Mazda",
+      "model": "CX-5",
+      "year": 2016,
+      "fuel": "Дизель",
+      "transmission": "Автомат",
+      "mileage_km": "249000",
+      "price": "15500",
+      "currency": "USD",
+      "body": "Позашляховик / Кросовер",
+      "generation": "I покоління (FL)",
+      "engine_cc": 2190,
+      "region": "Рівненська область",
+      "observed_at": 1791407443.587918
+    },
+    {
+      "listing_id": "40534684",
+      "brand": "Mazda",
+      "model": "CX-5",
+      "year": 2016,
+      "fuel": "Бензин",
+      "transmission": "Автомат",
+      "mileage_km": "101000",
+      "price": "15300",
+      "currency": "USD",
+      "body": "Позашляховик / Кросовер",
+      "generation": "I покоління (FL)",
+      "engine_cc": 2500,
+      "region": "Рівненська область",
+      "observed_at": 1791407461.0855742
+    },
+    {
+      "listing_id": "40432522",
+      "brand": "Mazda",
+      "model": "CX-5",
+      "year": 2016,
+      "fuel": "Бензин",
+      "transmission": "Автомат",
+      "mileage_km": "138000",
+      "price": "15200",
+      "currency": "USD",
+      "body": "Позашляховик / Кросовер",
+      "generation": "I покоління (FL)",
+      "engine_cc": 2000,
+      "region": "Одеська область",
+      "observed_at": 1791407471.4178927
+    },
+    {
+      "listing_id": "40393277",
+      "brand": "Mazda",
+      "model": "CX-5",
+      "year": 2016,
+      "fuel": "Бензин",
+      "transmission": "Автомат",
+      "mileage_km": "215000",
+      "price": "14900",
+      "currency": "USD",
+      "body": "Позашляховик / Кросовер",
+      "generation": "I покоління (FL)",
+      "engine_cc": 2490,
+      "region": "Харківська область",
+      "observed_at": 1791407480.1337042
+    },
+    {
+      "listing_id": "40503093",
+      "brand": "Mazda",
+      "model": "CX-5",
+      "year": 2016,
+      "fuel": "Бензин",
+      "transmission": "Автомат",
+      "mileage_km": "203000",
+      "price": "15300",
+      "currency": "USD",
+      "body": "Позашляховик / Кросовер",
+      "generation": "I покоління (FL)",
+      "engine_cc": 2500,
+      "region": "Вінницька область",
+      "observed_at": 1791407490.810336
+    },
+    {
+      "listing_id": "40133846",
+      "brand": "Mazda",
+      "model": "CX-5",
+      "year": 2016,
+      "fuel": "Дизель",
+      "transmission": "Ручна / Механіка",
+      "mileage_km": "233000",
+      "price": "15250",
+      "currency": "USD",
+      "body": "Позашляховик / Кросовер",
+      "generation": "I покоління (FL)",
+      "engine_cc": 2190,
+      "region": "Київська область",
+      "observed_at": 1791407500.6962206
+    },
+    {
+      "listing_id": "40399419",
+      "brand": "Mazda",
+      "model": "CX-5",
+      "year": 2016,
+      "fuel": "Дизель",
+      "transmission": "Автомат",
+      "mileage_km": "193000",
+      "price": "16600",
+      "currency": "USD",
+      "body": "Позашляховик / Кросовер",
+      "generation": "I покоління (FL)",
+      "engine_cc": 2190,
+      "region": "Львівська область",
+      "observed_at": 1791407511.242649
+    },
+    {
+      "listing_id": "40131962",
+      "brand": "Mazda",
+      "model": "CX-5",
+      "year": 2016,
+      "fuel": "Дизель",
+      "transmission": "Автомат",
+      "mileage_km": "224000",
+      "price": "12300",
+      "currency": "USD",
+      "body": "Позашляховик / Кросовер",
+      "generation": "I покоління (FL)",
+      "engine_cc": 2200,
+      "region": "Волинська область",
+      "observed_at": 1791407520.531428
+    },
+    {
+      "listing_id": "40131379",
+      "brand": "Mazda",
+      "model": "CX-5",
+      "year": 2016,
+      "fuel": "Дизель",
+      "transmission": "Автомат",
+      "mileage_km": "185000",
+      "price": "13500",
+      "currency": "USD",
+      "body": "Позашляховик / Кросовер",
+      "generation": "I покоління (FL)",
+      "engine_cc": 2190,
+      "region": "Івано-Франківська область",
+      "observed_at": 1791407533.4432652
+    },
+    {
+      "listing_id": "37198412",
+      "brand": "Mazda",
+      "model": "CX-5",
+      "year": 2016,
+      "fuel": "Бензин",
+      "transmission": "Автомат",
+      "mileage_km": "132000",
+      "price": "15300",
+      "currency": "USD",
+      "body": "Позашляховик / Кросовер",
+      "generation": "I покоління (FL)",
+      "engine_cc": 2490,
+      "region": "Дніпропетровська область",
+      "observed_at": 1791407544.1543837
+    },
+    {
+      "listing_id": "40311517",
+      "brand": "Mazda",
+      "model": "CX-5",
+      "year": 2016,
+      "fuel": "Дизель",
+      "transmission": "Автомат",
+      "mileage_km": "300000",
+      "price": "13999",
+      "currency": "USD",
+      "body": "Позашляховик / Кросовер",
+      "generation": "I покоління (FL)",
+      "engine_cc": 2190,
+      "region": "Київська область",
+      "observed_at": 1791407559.037106
+    },
+    {
+      "listing_id": "40528235",
+      "brand": "Mazda",
+      "model": "CX-5",
+      "year": 2016,
+      "fuel": "Дизель",
+      "transmission": "Автомат",
+      "mileage_km": "164000",
+      "price": "16200",
+      "currency": "USD",
+      "body": "Позашляховик / Кросовер",
+      "generation": "I покоління (FL)",
+      "engine_cc": 2200,
+      "region": "Дніпропетровська область",
+      "observed_at": 1791407568.9308782
+    },
+    {
+      "listing_id": "40527659",
+      "brand": "Mazda",
+      "model": "CX-5",
+      "year": 2016,
+      "fuel": "Бензин",
+      "transmission": "Автомат",
+      "mileage_km": "172000",
+      "price": "14700",
+      "currency": "USD",
+      "body": "Позашляховик / Кросовер",
+      "generation": "I покоління (FL)",
+      "engine_cc": 2490,
+      "region": "Київська область",
+      "observed_at": 1791407578.0014255
+    },
+    {
+      "listing_id": "36432257",
+      "brand": "Mazda",
+      "model": "CX-5",
+      "year": 2016,
+      "fuel": "Бензин",
+      "transmission": "Автомат",
+      "mileage_km": "270000",
+      "price": "14300",
+      "currency": "USD",
+      "body": "Позашляховик / Кросовер",
+      "generation": "I покоління (FL)",
+      "engine_cc": 2490,
+      "region": "Київська область",
+      "observed_at": 1791407588.1719856
+    },
+    {
+      "listing_id": "40124646",
+      "brand": "Mazda",
+      "model": "CX-5",
+      "year": 2016,
+      "fuel": "Бензин",
+      "transmission": "Автомат",
+      "mileage_km": "190000",
+      "price": "13300",
+      "currency": "USD",
+      "body": "Позашляховик / Кросовер",
+      "generation": "I покоління (FL)",
+      "engine_cc": 2490,
+      "region": "Вінницька область",
+      "observed_at": 1791407600.1356554
+    },
+    {
+      "listing_id": "40525388",
+      "brand": "Mazda",
+      "model": "CX-5",
+      "year": 2016,
+      "fuel": "Бензин",
+      "transmission": "Автомат",
+      "mileage_km": "212000",
+      "price": "13500",
+      "currency": "USD",
+      "body": "Позашляховик / Кросовер",
+      "generation": "I покоління (FL)",
+      "engine_cc": 2490,
+      "region": "Полтавська область",
+      "observed_at": 1791407609.9160864
+    },
+    {
+      "listing_id": "37746218",
+      "brand": "Mazda",
+      "model": "CX-5",
+      "year": 2016,
+      "fuel": "Бензин",
+      "transmission": "Автомат",
+      "mileage_km": "94000",
+      "price": "15200",
+      "currency": "USD",
+      "body": "Позашляховик / Кросовер",
+      "generation": "I покоління (FL)",
+      "engine_cc": 2490,
+      "region": "Дніпропетровська область",
+      "observed_at": 1791407620.2992392
+    },
+    {
+      "listing_id": "39937163",
+      "brand": "Mazda",
+      "model": "CX-5",
+      "year": 2022,
+      "fuel": "Бензин",
+      "transmission": "Автомат",
+      "mileage_km": "54000",
+      "price": "22900",
+      "currency": "USD",
+      "body": "Позашляховик / Кросовер",
+      "generation": "II покоління (3rd FL)",
+      "engine_cc": 2490,
+      "region": "Київська область",
+      "observed_at": 1791413920.9041467
+    },
+    {
+      "listing_id": "40418295",
+      "brand": "Mazda",
+      "model": "CX-5",
+      "year": 2022,
+      "fuel": "Бензин",
+      "transmission": "Автомат",
+      "mileage_km": "33000",
+      "price": "26400",
+      "currency": "USD",
+      "body": "Позашляховик / Кросовер",
+      "generation": "II покоління (3rd FL)",
+      "engine_cc": 2000,
+      "region": "Вінницька область",
+      "observed_at": 1791413928.7397208
+    },
+    {
+      "listing_id": "40480647",
+      "brand": "Mazda",
+      "model": "CX-5",
+      "year": 2022,
+      "fuel": "Бензин",
+      "transmission": "Автомат",
+      "mileage_km": "46000",
+      "price": "22300",
+      "currency": "USD",
+      "body": "Позашляховик / Кросовер",
+      "generation": "II покоління (3rd FL)",
+      "engine_cc": 2490,
+      "region": "Київська область",
+      "observed_at": 1791413937.9997547
+    },
+    {
+      "listing_id": "40513269",
+      "brand": "Mazda",
+      "model": "CX-5",
+      "year": 2022,
+      "fuel": "Бензин",
+      "transmission": "Автомат",
+      "mileage_km": "91000",
+      "price": "21000",
+      "currency": "USD",
+      "body": "Позашляховик / Кросовер",
+      "generation": "II покоління (3rd FL)",
+      "engine_cc": 2500,
+      "region": "Дніпропетровська область",
+      "observed_at": 1791413948.245204
+    },
+    {
+      "listing_id": "40494266",
+      "brand": "Mazda",
+      "model": "CX-5",
+      "year": 2022,
+      "fuel": "Бензин",
+      "transmission": "Автомат",
+      "mileage_km": "173000",
+      "price": "21900",
+      "currency": "USD",
+      "body": "Позашляховик / Кросовер",
+      "generation": "II покоління (3rd FL)",
+      "engine_cc": 2490,
+      "region": "Волинська область",
+      "observed_at": 1791413960.199975
+    },
+    {
+      "listing_id": "40516776",
+      "brand": "Mazda",
+      "model": "CX-5",
+      "year": 2022,
+      "fuel": "Бензин",
+      "transmission": "Автомат",
+      "mileage_km": "70000",
+      "price": "23900",
+      "currency": "USD",
+      "body": "Позашляховик / Кросовер",
+      "generation": "II покоління (3rd FL)",
+      "engine_cc": 2500,
+      "region": "Київська область",
+      "observed_at": 1791413968.3374643
+    },
+    {
+      "listing_id": "40509607",
+      "brand": "Mazda",
+      "model": "CX-5",
+      "year": 2022,
+      "fuel": "Бензин",
+      "transmission": "Автомат",
+      "mileage_km": "43000",
+      "price": "25500",
+      "currency": "USD",
+      "body": "Позашляховик / Кросовер",
+      "generation": "II покоління (3rd FL)",
+      "engine_cc": 2490,
+      "region": "Київська область",
+      "observed_at": 1791413979.511087
+    },
+    {
+      "listing_id": "40504877",
+      "brand": "Mazda",
+      "model": "CX-5",
+      "year": 2022,
+      "fuel": "Бензин",
+      "transmission": "Автомат",
+      "mileage_km": "37000",
+      "price": "23999",
+      "currency": "USD",
+      "body": "Позашляховик / Кросовер",
+      "generation": "II покоління (3rd FL)",
+      "engine_cc": 2500,
+      "region": "Львівська область",
+      "observed_at": 1791413987.7057297
+    },
+    {
+      "listing_id": "39766995",
+      "brand": "Mazda",
+      "model": "CX-5",
+      "year": 2022,
+      "fuel": "Бензин",
+      "transmission": "Автомат",
+      "mileage_km": "40000",
+      "price": "25500",
+      "currency": "USD",
+      "body": "Позашляховик / Кросовер",
+      "generation": "II покоління (3rd FL)",
+      "engine_cc": 2490,
+      "region": "Одеська область",
+      "observed_at": 1791414000.3401732
+    },
+    {
+      "listing_id": "39894276",
+      "brand": "Mazda",
+      "model": "CX-5",
+      "year": 2022,
+      "fuel": "Бензин",
+      "transmission": "Автомат",
+      "mileage_km": "67000",
+      "price": "26900",
+      "currency": "USD",
+      "body": "Позашляховик / Кросовер",
+      "generation": "II покоління (3rd FL)",
+      "engine_cc": 2500,
+      "region": "Київська область",
+      "observed_at": 1791414010.3553314
+    },
+    {
+      "listing_id": "39919183",
+      "brand": "Mazda",
+      "model": "CX-5",
+      "year": 2022,
+      "fuel": "Бензин",
+      "transmission": "Автомат",
+      "mileage_km": "40000",
+      "price": "21500",
+      "currency": "USD",
+      "body": "Позашляховик / Кросовер",
+      "generation": "II покоління (3rd FL)",
+      "engine_cc": 2490,
+      "region": "Сумська область",
+      "observed_at": 1791414020.0339916
+    },
+    {
+      "listing_id": "40500381",
+      "brand": "Mazda",
+      "model": "CX-5",
+      "year": 2022,
+      "fuel": "Бензин",
+      "transmission": "Автомат",
+      "mileage_km": "52000",
+      "price": "22900",
+      "currency": "USD",
+      "body": "Позашляховик / Кросовер",
+      "generation": "II покоління (3rd FL)",
+      "engine_cc": 2500,
+      "region": "Дніпропетровська область",
+      "observed_at": 1791414028.4948466
+    },
+    {
+      "listing_id": "40349713",
+      "brand": "Mazda",
+      "model": "CX-5",
+      "year": 2022,
+      "fuel": "Бензин",
+      "transmission": "Автомат",
+      "mileage_km": "82000",
+      "price": "21340",
+      "currency": "USD",
+      "body": "Позашляховик / Кросовер",
+      "generation": "II покоління (2nd FL)",
+      "engine_cc": 2500,
+      "region": "Київська область",
+      "observed_at": 1791414040.0520556
+    },
+    {
+      "listing_id": "39021111",
+      "brand": "Mazda",
+      "model": "CX-5",
+      "year": 2022,
+      "fuel": "Бензин",
+      "transmission": "Автомат",
+      "mileage_km": "96000",
+      "price": "22500",
+      "currency": "USD",
+      "body": "Позашляховик / Кросовер",
+      "generation": "II покоління (3rd FL)",
+      "engine_cc": 2500,
+      "region": "Чернівецька область",
+      "observed_at": 1791414052.7295673
+    },
+    {
+      "listing_id": "38582183",
+      "brand": "Mazda",
+      "model": "CX-5",
+      "year": 2022,
+      "fuel": "Бензин",
+      "transmission": "Автомат",
+      "mileage_km": "19000",
+      "price": "22500",
+      "currency": "USD",
+      "body": "Позашляховик / Кросовер",
+      "generation": "II покоління (2nd FL)",
+      "engine_cc": 2490,
+      "region": "Львівська область",
+      "observed_at": 1791414061.0361254
+    },
+    {
+      "listing_id": "40530470",
+      "brand": "Mazda",
+      "model": "CX-5",
+      "year": 2022,
+      "fuel": "Бензин",
+      "transmission": "Автомат",
+      "mileage_km": "33000",
+      "price": "25800",
+      "currency": "USD",
+      "body": "Позашляховик / Кросовер",
+      "generation": "II покоління (3rd FL)",
+      "engine_cc": 2490,
+      "region": "Вінницька область",
+      "observed_at": 1791414071.3192997
+    },
+    {
+      "listing_id": "39574569",
+      "brand": "Mazda",
+      "model": "CX-5",
+      "year": 2022,
+      "fuel": "Бензин",
+      "transmission": "Автомат",
+      "mileage_km": "88000",
+      "price": "25800",
+      "currency": "USD",
+      "body": "Позашляховик / Кросовер",
+      "generation": "II покоління (2nd FL)",
+      "engine_cc": 2490,
+      "region": "Рівненська область",
+      "observed_at": 1791414081.0706441
+    },
+    {
+      "listing_id": "40263559",
+      "brand": "Mazda",
+      "model": "CX-5",
+      "year": 2022,
+      "fuel": "Бензин",
+      "transmission": "Автомат",
+      "mileage_km": "22000",
+      "price": "25500",
+      "currency": "USD",
+      "body": "Позашляховик / Кросовер",
+      "generation": "II покоління (3rd FL)",
+      "engine_cc": 2490,
+      "region": "Київська область",
+      "observed_at": 1791414092.1193924
+    },
+    {
+      "listing_id": "40396450",
+      "brand": "Mazda",
+      "model": "CX-5",
+      "year": 2022,
+      "fuel": "Бензин",
+      "transmission": "Автомат",
+      "mileage_km": "25000",
+      "price": "25700",
+      "currency": "USD",
+      "body": "Позашляховик / Кросовер",
+      "generation": "II покоління (3rd FL)",
+      "engine_cc": 2490,
+      "region": "Полтавська область",
+      "observed_at": 1791414105.2028308
+    },
+    {
+      "listing_id": "40261056",
+      "brand": "Mazda",
+      "model": "CX-5",
+      "year": 2016,
+      "fuel": "Дизель",
+      "transmission": "Автомат",
+      "mileage_km": "110000",
+      "price": "17200",
+      "currency": "USD",
+      "body": "Позашляховик / Кросовер",
+      "generation": "I покоління (FL)",
+      "engine_cc": 2190,
+      "region": "Київська область",
+      "observed_at": 1791414244.0358539
+    },
+    {
+      "listing_id": "39985011",
+      "brand": "Mazda",
+      "model": "CX-5",
+      "year": 2016,
+      "fuel": "Дизель",
+      "transmission": "Автомат",
+      "mileage_km": "172000",
+      "price": "15350",
+      "currency": "USD",
+      "body": "Позашляховик / Кросовер",
+      "generation": "I покоління (FL)",
+      "engine_cc": 2190,
+      "region": "Черкаська область",
+      "observed_at": 1791414254.921019
+    },
+    {
+      "listing_id": "40520742",
+      "brand": "Mazda",
+      "model": "CX-5",
+      "year": 2016,
+      "fuel": "Бензин",
+      "transmission": "Автомат",
+      "mileage_km": "123000",
+      "price": "17500",
+      "currency": "USD",
+      "body": "Позашляховик / Кросовер",
+      "generation": "I покоління (FL)",
+      "engine_cc": null,
+      "region": "Київська область",
+      "observed_at": 1791414265.9034746
+    },
+    {
+      "listing_id": "40520556",
+      "brand": "Mazda",
+      "model": "CX-5",
+      "year": 2016,
+      "fuel": "Бензин",
+      "transmission": "Автомат",
+      "mileage_km": "165000",
+      "price": "14500",
+      "currency": "USD",
+      "body": "Позашляховик / Кросовер",
+      "generation": "I покоління (FL)",
+      "engine_cc": 2000,
+      "region": "Львівська область",
+      "observed_at": 1791414275.3820546
+    },
+    {
+      "listing_id": "39366689",
+      "brand": "Mazda",
+      "model": "CX-5",
+      "year": 2016,
+      "fuel": "Бензин",
+      "transmission": "Автомат",
+      "mileage_km": "122000",
+      "price": "15500",
+      "currency": "USD",
+      "body": "Позашляховик / Кросовер",
+      "generation": "I покоління (FL)",
+      "engine_cc": 2500,
+      "region": "Тернопільська область",
+      "observed_at": 1791414286.5257416
+    },
+    {
+      "listing_id": "40253539",
+      "brand": "Mazda",
+      "model": "CX-5",
+      "year": 2016,
+      "fuel": "Дизель",
+      "transmission": "Автомат",
+      "mileage_km": "220000",
+      "price": "14000",
+      "currency": "USD",
+      "body": "Позашляховик / Кросовер",
+      "generation": "I покоління (FL) Base",
+      "engine_cc": 2190,
+      "region": "Полтавська область",
+      "observed_at": 1791414296.1315181
+    },
+    {
+      "listing_id": "40517931",
+      "brand": "Mazda",
+      "model": "CX-5",
+      "year": 2016,
+      "fuel": "Дизель",
+      "transmission": "Автомат",
+      "mileage_km": "314000",
+      "price": "14200",
+      "currency": "USD",
+      "body": "Позашляховик / Кросовер",
+      "generation": "I покоління (FL)",
+      "engine_cc": 2190,
+      "region": "Рівненська область",
+      "observed_at": 1791414305.9571292
+    },
+    {
+      "listing_id": "39789148",
+      "brand": "Toyota",
+      "model": "Camry",
+      "year": 2016,
+      "fuel": "Гібрид (HEV)",
+      "transmission": "Автомат",
+      "mileage_km": "173000",
+      "price": "14999",
+      "currency": "USD",
+      "body": "Седан",
+      "generation": "VII покоління/XV50 (FL)",
+      "engine_cc": 2500,
+      "region": "Одеська область",
+      "observed_at": 1791421101.7024062
+    },
+    {
+      "listing_id": "40483321",
+      "brand": "Toyota",
+      "model": "Camry",
+      "year": 2016,
+      "fuel": "Бензин",
+      "transmission": "Автомат",
+      "mileage_km": "190000",
+      "price": "13500",
+      "currency": "USD",
+      "body": "Седан",
+      "generation": "VII покоління/XV50 (FL)",
+      "engine_cc": 2500,
+      "region": "Одеська область",
+      "observed_at": 1791421109.8738775
+    },
+    {
+      "listing_id": "40514888",
+      "brand": "Toyota",
+      "model": "Camry",
+      "year": 2016,
+      "fuel": "Бензин",
+      "transmission": "Автомат",
+      "mileage_km": "198000",
+      "price": "13650",
+      "currency": "USD",
+      "body": "Седан",
+      "generation": "VII покоління/XV50 (FL)",
+      "engine_cc": 2490,
+      "region": "Рівненська область",
+      "observed_at": 1791421118.6588042
+    },
+    {
+      "listing_id": "38075659",
+      "brand": "Toyota",
+      "model": "Camry",
+      "year": 2016,
+      "fuel": "Газ пропан-бутан / Бензин",
+      "transmission": "Автомат",
+      "mileage_km": "190000",
+      "price": "12999",
+      "currency": "USD",
+      "body": "Седан",
+      "generation": "VII покоління/XV50 (FL)",
+      "engine_cc": 2490,
+      "region": "Вінницька область",
+      "observed_at": 1791421126.900936
+    },
+    {
+      "listing_id": "39478847",
+      "brand": "Toyota",
+      "model": "Camry",
+      "year": 2016,
+      "fuel": "Газ пропан-бутан / Бензин",
+      "transmission": "Автомат",
+      "mileage_km": "295000",
+      "price": "11500",
+      "currency": "USD",
+      "body": "Седан",
+      "generation": "VII покоління/XV50 (FL)",
+      "engine_cc": 2490,
+      "region": "Київська область",
+      "observed_at": 1791421134.6197538
+    },
+    {
+      "listing_id": "40516545",
+      "brand": "Toyota",
+      "model": "Camry",
+      "year": 2016,
+      "fuel": "Бензин",
+      "transmission": "Автомат",
+      "mileage_km": "112000",
+      "price": "12800",
+      "currency": "USD",
+      "body": "Седан",
+      "generation": "VII покоління/XV50 (FL)",
+      "engine_cc": 2490,
+      "region": "Вінницька область",
+      "observed_at": 1791421144.9006617
+    },
+    {
+      "listing_id": "40505112",
+      "brand": "Toyota",
+      "model": "Camry",
+      "year": 2016,
+      "fuel": "Гібрид (HEV)",
+      "transmission": "Автомат",
+      "mileage_km": "200000",
+      "price": "15000",
+      "currency": "USD",
+      "body": "Седан",
+      "generation": "VII покоління/XV50 (FL)",
+      "engine_cc": 2500,
+      "region": "Одеська область",
+      "observed_at": 1791421152.6159227
+    },
+    {
+      "listing_id": "40518042",
+      "brand": "Toyota",
+      "model": "Camry",
+      "year": 2016,
+      "fuel": "Газ пропан-бутан / Бензин",
+      "transmission": "Автомат",
+      "mileage_km": "205000",
+      "price": "11500",
+      "currency": "USD",
+      "body": "Седан",
+      "generation": "VII покоління/XV50 (FL)",
+      "engine_cc": 2490,
+      "region": "Тернопільська область",
+      "observed_at": 1791421160.4889786
+    },
+    {
+      "listing_id": "40514403",
+      "brand": "Toyota",
+      "model": "Camry",
+      "year": 2016,
+      "fuel": "Бензин",
+      "transmission": "Автомат",
+      "mileage_km": "160000",
+      "price": "12999",
+      "currency": "USD",
+      "body": "Седан",
+      "generation": "VII покоління/XV50 (FL)",
+      "engine_cc": 2490,
+      "region": "Черкаська область",
+      "observed_at": 1791421168.8591166
+    },
+    {
+      "listing_id": "40247041",
+      "brand": "Toyota",
+      "model": "Camry",
+      "year": 2016,
+      "fuel": "Газ пропан-бутан / Бензин",
+      "transmission": "Автомат",
+      "mileage_km": "148000",
+      "price": "12600",
+      "currency": "USD",
+      "body": "Седан",
+      "generation": "VII покоління/XV50 (FL)",
+      "engine_cc": 2490,
+      "region": "Вінницька область",
+      "observed_at": 1791421177.8257294
+    },
+    {
+      "listing_id": "40307625",
+      "brand": "Toyota",
+      "model": "Camry",
+      "year": 2016,
+      "fuel": "Бензин",
+      "transmission": "Автомат",
+      "mileage_km": "264000",
+      "price": "13999",
+      "currency": "USD",
+      "body": "Седан",
+      "generation": "VII покоління/XV50 (FL)",
+      "engine_cc": null,
+      "region": "Київська область",
+      "observed_at": 1791421189.548152
+    },
+    {
+      "listing_id": "39999652",
+      "brand": "Toyota",
+      "model": "Camry",
+      "year": 2016,
+      "fuel": "Газ пропан-бутан / Бензин",
+      "transmission": "Автомат",
+      "mileage_km": "242000",
+      "price": "11300",
+      "currency": "USD",
+      "body": "Седан",
+      "generation": "VII покоління/XV50 (FL)",
+      "engine_cc": 2490,
+      "region": "Київська область",
+      "observed_at": 1791421197.6612184
+    },
+    {
+      "listing_id": "39861684",
+      "brand": "Toyota",
+      "model": "Camry",
+      "year": 2016,
+      "fuel": "Газ пропан-бутан / Бензин",
+      "transmission": "Автомат",
+      "mileage_km": "127000",
+      "price": "17500",
+      "currency": "USD",
+      "body": "Седан",
+      "generation": "VII покоління/XV50 (FL)",
+      "engine_cc": 2490,
+      "region": "Черкаська область",
+      "observed_at": 1791421207.5335925
+    },
+    {
+      "listing_id": "39723729",
+      "brand": "Toyota",
+      "model": "Camry",
+      "year": 2016,
+      "fuel": "Газ пропан-бутан / Бензин",
+      "transmission": "Автомат",
+      "mileage_km": "116000",
+      "price": "15500",
+      "currency": "USD",
+      "body": "Седан",
+      "generation": "VII покоління/XV50 (FL)",
+      "engine_cc": 2500,
+      "region": "Одеська область",
+      "observed_at": 1791421216.4239762
+    },
+    {
+      "listing_id": "40133401",
+      "brand": "Toyota",
+      "model": "Camry",
+      "year": 2016,
+      "fuel": "Газ пропан-бутан / Бензин",
+      "transmission": "Автомат",
+      "mileage_km": "210000",
+      "price": "15500",
+      "currency": "USD",
+      "body": "Седан",
+      "generation": "VII покоління/XV50 (FL)",
+      "engine_cc": 2500,
+      "region": "Івано-Франківська область",
+      "observed_at": 1791421224.661348
+    },
+    {
+      "listing_id": "39632183",
+      "brand": "Toyota",
+      "model": "Camry",
+      "year": 2016,
+      "fuel": "Бензин",
+      "transmission": "Автомат",
+      "mileage_km": "151000",
+      "price": "17000",
+      "currency": "USD",
+      "body": "Седан",
+      "generation": "VII покоління/XV50 (FL)",
+      "engine_cc": 2490,
+      "region": "Полтавська область",
+      "observed_at": 1791421233.6455338
+    },
+    {
+      "listing_id": "40398278",
+      "brand": "Toyota",
+      "model": "Camry",
+      "year": 2016,
+      "fuel": "Бензин",
+      "transmission": "Автомат",
+      "mileage_km": "179000",
+      "price": "17300",
+      "currency": "USD",
+      "body": "Седан",
+      "generation": "VII покоління/XV50 (FL)",
+      "engine_cc": 2490,
+      "region": "Івано-Франківська область",
+      "observed_at": 1791421242.0258315
+    },
+    {
+      "listing_id": "40531667",
+      "brand": "Toyota",
+      "model": "Camry",
+      "year": 2016,
+      "fuel": "Бензин",
+      "transmission": "Автомат",
+      "mileage_km": "170000",
+      "price": "16700",
+      "currency": "USD",
+      "body": "Седан",
+      "generation": "VII покоління/XV50 (FL)",
+      "engine_cc": 2500,
+      "region": "Дніпропетровська область",
+      "observed_at": 1791421250.3413134
+    },
+    {
+      "listing_id": "40531420",
+      "brand": "Toyota",
+      "model": "Camry",
+      "year": 2016,
+      "fuel": "Газ пропан-бутан / Бензин",
+      "transmission": "Автомат",
+      "mileage_km": "193000",
+      "price": "13000",
+      "currency": "USD",
+      "body": "Седан",
+      "generation": "VII покоління/XV50 (FL)",
+      "engine_cc": null,
+      "region": "Київська область",
+      "observed_at": 1791421258.7374425
+    },
+    {
+      "listing_id": "40266509",
+      "brand": "Toyota",
+      "model": "Camry",
+      "year": 2016,
+      "fuel": "Бензин",
+      "transmission": "Автомат",
+      "mileage_km": "176000",
+      "price": "13500",
+      "currency": "USD",
+      "body": "Седан",
+      "generation": "VII покоління/XV50 (FL)",
+      "engine_cc": 2490,
+      "region": "Вінницька область",
+      "observed_at": 1791421323.2345433
+    },
+    {
+      "listing_id": "33111909",
+      "brand": "Toyota",
+      "model": "Camry",
+      "year": 2016,
+      "fuel": "Газ пропан-бутан / Бензин",
+      "transmission": "Автомат",
+      "mileage_km": "112000",
+      "price": "16100",
+      "currency": "USD",
+      "body": "Седан",
+      "generation": "VII покоління/XV50 (FL)",
+      "engine_cc": 2500,
+      "region": "Одеська область",
+      "observed_at": 1791421333.2023559
+    },
+    {
+      "listing_id": "37195844",
+      "brand": "Toyota",
+      "model": "Camry",
+      "year": 2016,
+      "fuel": "Газ пропан-бутан / Бензин",
+      "transmission": "Автомат",
+      "mileage_km": "180000",
+      "price": "13000",
+      "currency": "USD",
+      "body": "Седан",
+      "generation": "VII покоління/XV50 (FL)",
+      "engine_cc": 2490,
+      "region": "Тернопільська область",
+      "observed_at": 1791421344.0801597
+    },
+    {
+      "listing_id": "40525489",
+      "brand": "Toyota",
+      "model": "Camry",
+      "year": 2016,
+      "fuel": "Газ пропан-бутан / Бензин",
+      "transmission": "Автомат",
+      "mileage_km": "240000",
+      "price": "12000",
+      "currency": "USD",
+      "body": "Седан",
+      "generation": "VII покоління/XV50 (FL)",
+      "engine_cc": 2490,
+      "region": "Івано-Франківська область",
+      "observed_at": 1791421354.7859852
+    },
+    {
+      "listing_id": "40527073",
+      "brand": "Toyota",
+      "model": "Camry",
+      "year": 2016,
+      "fuel": "Бензин",
+      "transmission": "Автомат",
+      "mileage_km": "216000",
+      "price": "8999",
+      "currency": "USD",
+      "body": "Седан",
+      "generation": "VII покоління/XV50 (FL)",
+      "engine_cc": 2490,
+      "region": "Харківська область",
+      "observed_at": 1791421364.5071058
+    },
+    {
+      "listing_id": "37045421",
+      "brand": "Toyota",
+      "model": "Camry",
+      "year": 2016,
+      "fuel": "Бензин",
+      "transmission": "Автомат",
+      "mileage_km": "108000",
+      "price": "16200",
+      "currency": "USD",
+      "body": "Седан",
+      "generation": "VII покоління/XV50 (FL)",
+      "engine_cc": 2490,
+      "region": "Закарпатська область",
+      "observed_at": 1791421374.2442627
+    }
+  ],
+  "paid_api_calls": 0,
+  "paid_cache_used": false,
+  "telegram_calls": 0,
+  "production_approved": false,
+  "ready_for_delivery": false,
+  "offline_guard": {
+    "attempted": 0,
+    "blocked": 0,
+    "paid_blocked": 0,
+    "successful_external_calls": 0,
+    "paid_calls": 0
+  },
+  "source_card_provenance": [
+    {
+      "listing_id": "40405395",
+      "promoted": false,
+      "source_asserted_added_at": 1791427923.0,
+      "source_asserted_updated_at": 1791427923.0,
+      "issues": [],
+      "verified_publication_at": null
+    },
+    {
+      "listing_id": "35108262",
+      "promoted": false,
+      "source_asserted_added_at": 1791427709.0,
+      "source_asserted_updated_at": 1791428589.0,
+      "issues": [],
+      "verified_publication_at": null
+    },
+    {
+      "listing_id": "40121173",
+      "promoted": false,
+      "source_asserted_added_at": 1791427206.0,
+      "source_asserted_updated_at": 1791427206.0,
+      "issues": [],
+      "verified_publication_at": null
+    },
+    {
+      "listing_id": "39319447",
+      "promoted": false,
+      "source_asserted_added_at": 1791428654.0,
+      "source_asserted_updated_at": 1791428654.0,
+      "issues": [],
+      "verified_publication_at": null
+    },
+    {
+      "listing_id": "39319470",
+      "promoted": false,
+      "source_asserted_added_at": 1791428523.0,
+      "source_asserted_updated_at": 1791428523.0,
+      "issues": [],
+      "verified_publication_at": null
+    },
+    {
+      "listing_id": "40214825",
+      "promoted": false,
+      "source_asserted_added_at": 1791428491.0,
+      "source_asserted_updated_at": 1791428491.0,
+      "issues": [],
+      "verified_publication_at": null
+    },
+    {
+      "listing_id": "40134596",
+      "promoted": false,
+      "source_asserted_added_at": 1791428491.0,
+      "source_asserted_updated_at": 1791428491.0,
+      "issues": [],
+      "verified_publication_at": null
+    },
+    {
+      "listing_id": "40134601",
+      "promoted": false,
+      "source_asserted_added_at": 1791428491.0,
+      "source_asserted_updated_at": 1791428491.0,
+      "issues": [],
+      "verified_publication_at": null
+    },
+    {
+      "listing_id": "40267995",
+      "promoted": false,
+      "source_asserted_added_at": 1791428491.0,
+      "source_asserted_updated_at": 1791428491.0,
+      "issues": [],
+      "verified_publication_at": null
+    },
+    {
+      "listing_id": "40134598",
+      "promoted": false,
+      "source_asserted_added_at": 1791428491.0,
+      "source_asserted_updated_at": 1791428491.0,
+      "issues": [],
+      "verified_publication_at": null
+    },
+    {
+      "listing_id": "40401911",
+      "promoted": false,
+      "source_asserted_added_at": 1791428491.0,
+      "source_asserted_updated_at": 1791428491.0,
+      "issues": [],
+      "verified_publication_at": null
+    },
+    {
+      "listing_id": "40134595",
+      "promoted": false,
+      "source_asserted_added_at": 1791428490.0,
+      "source_asserted_updated_at": 1791428490.0,
+      "issues": [],
+      "verified_publication_at": null
+    },
+    {
+      "listing_id": "39724637",
+      "promoted": false,
+      "source_asserted_added_at": 1791428490.0,
+      "source_asserted_updated_at": 1791428490.0,
+      "issues": [],
+      "verified_publication_at": null
+    },
+    {
+      "listing_id": "40134597",
+      "promoted": false,
+      "source_asserted_added_at": 1791428490.0,
+      "source_asserted_updated_at": 1791428490.0,
+      "issues": [],
+      "verified_publication_at": null
+    },
+    {
+      "listing_id": "39862423",
+      "promoted": false,
+      "source_asserted_added_at": 1791428490.0,
+      "source_asserted_updated_at": 1791428490.0,
+      "issues": [],
+      "verified_publication_at": null
+    },
+    {
+      "listing_id": "39862480",
+      "promoted": false,
+      "source_asserted_added_at": 1791428490.0,
+      "source_asserted_updated_at": 1791428490.0,
+      "issues": [],
+      "verified_publication_at": null
+    },
+    {
+      "listing_id": "39724636",
+      "promoted": false,
+      "source_asserted_added_at": 1791428489.0,
+      "source_asserted_updated_at": 1791428489.0,
+      "issues": [],
+      "verified_publication_at": null
+    },
+    {
+      "listing_id": "39724605",
+      "promoted": false,
+      "source_asserted_added_at": 1791428489.0,
+      "source_asserted_updated_at": 1791428489.0,
+      "issues": [],
+      "verified_publication_at": null
+    }
+  ],
+  "policy_sha256": "b0e22ef3e2de65b57ad74ec7eecf3951d4718d4c0a728ff87f2e375d77b75949"
+}

@@ -1,19 +1,15 @@
 {
-  "status": "ready",
+  "status": "bounded_night_completed",
   "authorized_scope": "isolated free AUTO.RIA research only",
   "stop_new_work_at": "2026-10-08T07:00:00+03:00",
-  "lease": {
-    "owner": "night4-91afd6bd-c362-4e77-b252-fc420193e57c",
-    "claimed_at": "2026-10-08T03:06:33.646837+00:00",
-    "expires_at": "2026-10-08T03:36:33.646837+00:00"
-  },
+  "lease": null,
   "budget": {
     "max_public_gets": 120,
     "max_reserved_response_bytes": 160000000,
     "reserved_gets": 109,
     "reserved_response_bytes": 144430000,
-    "actual_gets": 83,
-    "actual_known_body_bytes": 50429255
+    "actual_gets": 109,
+    "actual_known_body_bytes": 69140704
   },
   "source_hold": false,
   "reservations": [
@@ -510,7 +506,9 @@
       ],
       "max_requests": 2,
       "reserved_bytes": 2520000,
-      "status": "reserved"
+      "status": "completed",
+      "actual_gets": 2,
+      "actual_known_body_bytes": 1361495
     },
     {
       "owner": "night4-91afd6bd-c362-4e77-b252-fc420193e57c",
@@ -532,7 +530,9 @@
       ],
       "max_requests": 3,
       "reserved_bytes": 7500000,
-      "status": "reserved"
+      "status": "completed",
+      "actual_gets": 3,
+      "actual_known_body_bytes": 4212223
     },
     {
       "owner": "night4-91afd6bd-c362-4e77-b252-fc420193e57c",
@@ -614,7 +614,9 @@
       ],
       "max_requests": 18,
       "reserved_bytes": 21600000,
-      "status": "reserved"
+      "status": "completed",
+      "actual_gets": 18,
+      "actual_known_body_bytes": 8925508
     },
     {
       "owner": "night4-91afd6bd-c362-4e77-b252-fc420193e57c",
@@ -636,11 +638,13 @@
       ],
       "max_requests": 3,
       "reserved_bytes": 7500000,
-      "status": "reserved"
+      "status": "completed",
+      "actual_gets": 3,
+      "actual_known_body_bytes": 4212223
     }
   ],
-  "last_completed_step": "NIGHT_CHECKPOINT_20261008_03.txt: Camry2016 19+6 new peers; same-drive4unknown->6 estimate12999.25 vs12700; nominal3/50 estimated47unknown; source VIN audit47/50+25/25 no known collisions;331 tests",
-  "next_step": "Read checkpoint03 and keep Camry2.302% asking-reference gap distinct from a bargain. Prior Mazda2016 remains same-drive4unknown, Mazda2022 generation unresolved. Prioritize independently frozen matched-scope discovery controls and stage timings, or explicit public generation evidence; source-order peers only. Remaining37GET/54690000 reserved bytes; new run <=30GET/40MB with new CAS lease; no work start after07:00 Kyiv. Actual client segments, price calibration and condition remain blockers.",
-  "last_released_owner": "night3-542a9ed1-2eff-452d-a57b-21b7e9740362",
-  "last_completed_at": "2026-10-08T01:06:41.598435+00:00"
+  "last_completed_step": "NIGHT_CHECKPOINT_20261008_04.txt: independent18 frozen controls;10 overlaps/8 unobserved with scope mismatch, NO recall;17 inline unknown/1 currency error;6search pages identical across339.874s;345 tests",
+  "next_step": "Read checkpoint04 and PILOT_GATES_20261008.txt for morning synthesis. No additional night automation or implicit extension. Remaining11GET/15570000 reserved bytes does not authorize post07:00 work. Matched-scope independent discovery control remains blocked by missing eligible control scope; five non-car bodies among eight unobserved, three passenger-style cases unresolved. New18 sample has17unknown+1error, not successful bargain flow. Paid/source/client/production changes still require new explicit approval. Keep Mazda corrections and Camry2.3% context; no policy/min5 tuning.",
+  "last_released_owner": "night4-91afd6bd-c362-4e77-b252-fc420193e57c",
+  "last_completed_at": "2026-10-08T03:17:08.448339+00:00"
 }
