@@ -1,0 +1,30 @@
+test_current_filters_really_applied (test_owner_pilot.OwnerPilotTests.test_current_filters_really_applied) ... ok
+test_drive_mismatch_is_not_comparable (test_owner_pilot.OwnerPilotTests.test_drive_mismatch_is_not_comparable) ... ok
+test_existing_ria_delivery_never_replayed (test_owner_pilot.OwnerPilotTests.test_existing_ria_delivery_never_replayed) ... ok
+test_expired_payment_denied (test_owner_pilot.OwnerPilotTests.test_expired_payment_denied) ... ok
+test_foreign_url_rejected (test_owner_pilot.OwnerPilotTests.test_foreign_url_rejected) ... ok
+test_holdout_leakage_and_duplicate_rejected (test_owner_pilot.OwnerPilotTests.test_holdout_leakage_and_duplicate_rejected) ... ok
+test_local_preview_is_never_live_or_proven_new (test_owner_pilot.OwnerPilotTests.test_local_preview_is_never_live_or_proven_new) ... ok
+test_missing_and_bad_peers_stay_in_denominator (test_owner_pilot.OwnerPilotTests.test_missing_and_bad_peers_stay_in_denominator) ... ok
+test_missing_optional_fuel_and_damage_do_not_ban_whole_car (test_owner_pilot.OwnerPilotTests.test_missing_optional_fuel_and_damage_do_not_ban_whole_car) ... ok
+test_missing_target_generation_not_invented (test_owner_pilot.OwnerPilotTests.test_missing_target_generation_not_invented) ... ok
+test_non_strict_policy_denied (test_owner_pilot.OwnerPilotTests.test_non_strict_policy_denied) ... ok
+test_old_price_rejected (test_owner_pilot.OwnerPilotTests.test_old_price_rejected) ... ok
+test_other_client_delivery_does_not_authorize_or_block_owner (test_owner_pilot.OwnerPilotTests.test_other_client_delivery_does_not_authorize_or_block_owner) ... ok
+test_owner_role_does_not_bypass_payment (test_owner_pilot.OwnerPilotTests.test_owner_role_does_not_bypass_payment) ... ok
+test_paid_client_never_selected_as_owner (test_owner_pilot.OwnerPilotTests.test_paid_client_never_selected_as_owner) ... ok
+test_prepare_has_no_db_mutations (test_owner_pilot.OwnerPilotTests.test_prepare_has_no_db_mutations) ... ok
+test_price_mismatch_stops (test_owner_pilot.OwnerPilotTests.test_price_mismatch_stops) ... ok
+test_search_disabled_after_snapshot_denied (test_owner_pilot.OwnerPilotTests.test_search_disabled_after_snapshot_denied) ... ok
+test_search_edit_and_new_epoch_invalidates_snapshot (test_owner_pilot.OwnerPilotTests.test_search_edit_and_new_epoch_invalidates_snapshot) ... ok
+test_stop_after_snapshot_denied (test_owner_pilot.OwnerPilotTests.test_stop_after_snapshot_denied) ... ok
+test_stop_during_valuation_blocks_draft (test_owner_pilot.OwnerPilotTests.test_stop_during_valuation_blocks_draft) ... ok
+test_threshold_uses_current_saved_percent (test_owner_pilot.OwnerPilotTests.test_threshold_uses_current_saved_percent) ... ok
+test_unknown_owner_identity_denied (test_owner_pilot.OwnerPilotTests.test_unknown_owner_identity_denied) ... ok
+test_unplanned_peer_cannot_enter_comparison (test_owner_pilot.OwnerPilotTests.test_unplanned_peer_cannot_enter_comparison) ... ok
+
+----------------------------------------------------------------------
+Ran 24 tests in 0.868s
+
+OK
+OFFLINE {'attempted': 0, 'blocked': 0, 'paid_blocked': 0, 'successful_external_calls': 0, 'paid_calls': 0}

@@ -1,0 +1,71 @@
+AutoDeal — підготовка безкоштовного пошуку лише для власника, 12.10.2026
+
+Запит користувача: «впроваджуємо безкоштовний пошук авто для мене, не для всіх!!».
+Авторизація owner-only прийнята; розширення на інших клієнтів не дозволене.
+СТАТУС: частково підготовлено, НЕ активовано і НЕ впроваджено на Render.
+
+Актуалізація: plan v10, journal v34; research d90c9a7a13ebca82e03d0268a54205c10853b4d5
+без новіших змін; main і live Render f4f65c7d0865ca083a8dfed201036b6057cf5bc5.
+Render main-only autodeploy, previews off. Єдиний workflow слухає інші конкретні
+гілки; ця дослідна гілка не запускає deployment. Окрема гілка від актуального main:
+wip/free-owner-20261012. Стару WIP ancestry не зливали.
+Read-only health 12.10 близько20:11 Київ: owner confirmed-paid/ready,
+два активні пошуки; звичайна доставка власнику має збережені прийняті Telegram
+квитанції. Поточні фільтри цих двох пошуків цим логом не встановлені.
+
+Що зроблено:
+1. owner_access.py — read-only вибір виключно власних активних пошуків через
+   чинну verified_admin + strict paid policy, поточну оплату, ready (/stop),
+   fingerprint/epoch. Повторна перевірка перед локальною карткою.
+2. owner_pilot.py — public HTML -> ID/visible price -> локальна asking-price
+   оцінка -> збережені фільтри/поріг -> лише локальний draft.
+   Немає sender, live collector, job loop, платного fallback чи paid cache.
+   Public HTML передається caller; це не доказ роботи на свіжому джерелі.
+3. Перевірка generation/drive відсікає несумісні аналоги лише в окремому
+   дослідному сценарії; default valuation.py/min5 не змінені. Missing peers та
+   помилки залишаються в загальному planned denominator. Невідомі optional
+   паливо/коробка і пошкодження цілого авто не є автоматичною забороною.
+4. Дедуплікація читає існуючу пару owner + auto_ria/listing ID. Записи sent,
+   uncertain, pending, failed/cancelled не скидаються. Це preview read, НЕ
+   заміна майбутньої атомарної reservation безпосередньо перед доставкою.
+5. 24 meaningful tests PASS: чужий оплачений клієнт, непідтверджений owner,
+   unpaid/expiry/stop, відключення пошуку, зміна epoch/filters/порога, старі
+   ціни, інший host, leakage/дублі аналогів, неправильний привід, відсутнє
+   покоління, currency/price mismatch, stop під час оцінки, SELECT-only DB.
+   Guard мережі та відмова при production credentials ДО імпорту backend/tests.
+   successful_external_calls0, paid0. Синтетична in-memory SQLite; не production.
+   Початкове виконання виявило відсутню SQLAlchemy; залежності встановлені
+   лише локально. Виправлено синтетичний Offer fixture, після чого24 PASS.
+
+Незмінні parser/valuation/guard залежності вибірково перенесено з d90c9a7,
+без старої backend/WIP історії та приватних source snapshots. Новий модуль
+не імпортується backend/app.py, тому пуш у дослідну гілку нічого не вмикає.
+
+Блокери активації:
+• Чинне правило — нижня межа оцінки AUTO.RIA мінус5%. Безкоштовний еквівалент
+  не доведений. У preview інше: нижній квартиль цін щонайменше5 сумісних
+  публічних аналогів, з чесним написом «Орієнтир за цінами аналогів».
+  Попередня вимога користувача зберегти формулу не замінюється мовчки.
+  Потрібно визначити, чи саме цей альтернативний метод прийнятний для owner.
+• Publication/new-only поки не підтверджено. Навіть успішний synthetic draft
+  має publication_at=null, ready_for_delivery=false. Невідомий час не підмінено
+  firstSeen. Дозвіл owner-only сам по собі не робить старе оголошення новим.
+• Безперервний bounded collector, свіжа база аналогів, durable бюджети/черга,
+  атомарна owner-only доставка та узгоджене переключення власного paid route
+  ще не реалізовані; поточний файл не є завершеним робочим монітором.
+• Остання реальна вибірка з08.10 лишається17unknown+1error, не новий успішний
+  результат. Поточні24тести не доводять повноту/швидкість/прибуток на ринку.
+
+Наступний конкретний крок після визначення формули: поточні owner filters,
+обмежений fresh-source протокол (robots, observed URLs, caps, persistent hold),
+доказ new-only або явне окреме рішення щодо first-seen semantics; потім
+підключення collector/durable state/atomic delivery, regression paid-clients
+unchanged і тільки тоді owner-only activation. User authorization на owner-only
+вже є, повторно питати загальний дозвіл не потрібно. Питання про іншу формулу
+є конкретним невирішеним рішенням попередньої вимоги, не повтором дозволу.
+
+Фактичні нові source GET0; платні API0; Telegram0; main/DB/config/env/deploy0.
+Чинний paid AUTO.RIA та OLX не змінені. Жодного розширення на інших клієнтів.
+Тести: python3 -I experiments/free_search/test_owner_offline.py
+Потрібні встановлені залежності SQLAlchemy2.0.54, pydantic2.13.5, httpx0.28.1.
+Raw HTML/VIN/контакти/секрети/справжні user IDs не додані до репозиторію.
