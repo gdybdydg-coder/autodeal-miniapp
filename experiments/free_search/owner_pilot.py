@@ -72,7 +72,7 @@ def prepare(engine, settings, snapshot, subject, peers, frozen_peer_ids, now):
     """Recompute only from public inputs and retain every missing/error peer.
 
     Result is private and only for the verified owner's current saved search.
-    New-publication evidence and replacement-method selection remain explicit
+    New-publication evidence and live integration remain explicit
     release blockers, including when a local draft can be constructed.
     """
     result = {'scope': 'owner_only', 'status': 'blocked', 'draft': None,
@@ -80,7 +80,6 @@ def prepare(engine, settings, snapshot, subject, peers, frozen_peer_ids, now):
               'publication_at': None, 'valuation': None,
               'peer_errors': {}, 'planned_peers': len(frozen_peer_ids),
               'release_blockers': ['publication_not_verified',
-                                   'replacement_valuation_method_not_selected',
                                    'live_collector_and_atomic_sender_not_integrated']}
     reason = revalidate(engine, settings, snapshot, subject.listing_id, now)
     if reason != 'eligible':

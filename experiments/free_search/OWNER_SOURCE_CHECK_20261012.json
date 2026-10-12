@@ -1,0 +1,39 @@
+{
+  "scope": "isolated_owner_source_probe",
+  "paid_api_calls": 0,
+  "max_gets": 2,
+  "max_reserved_bytes": 2520000,
+  "reservations": [
+    {
+      "url": "https://auto.ria.com/robots.txt",
+      "cap": 20000
+    }
+  ],
+  "source_hold": false,
+  "attempts": [
+    {
+      "url": "https://auto.ria.com/robots.txt",
+      "started_at": 1791836199.4335642,
+      "status": null,
+      "bytes": 0,
+      "error": "URLError",
+      "completed_at": 1791836199.4405146,
+      "seconds": 0.007
+    }
+  ],
+  "dns_diagnostic": {
+    "errno": -3,
+    "reason": "Temporary failure in name resolution"
+  },
+  "actual_http_responses": 0,
+  "successful_public_gets": 0,
+  "transport_attempts": 1,
+  "remaining_work": [
+    "fresh public source validation",
+    "live analog acquisition",
+    "publication evidence",
+    "durable owner queue and atomic delivery",
+    "owner paid-route isolation",
+    "Render activation verification"
+  ]
+}

@@ -1,0 +1,48 @@
+AutoDeal owner-only — 12.10.2026, після повторного дозволу на ввімкнення
+СТАТУС: НЕ УВІМКНЕНО. Новий collector компонент підготовлений, backend не підключений.
+
+Користувач: «вмикай безкоштовний пошук мені. не витрачаючи апі запити».
+Дозвіл на owner-only прийнято, повторне загальне погодження не потрібне.
+Дослідний asking-price метод для власника прийнято в контексті попереднього
+пояснення. Видалено застарілий blocker replacement_valuation_method_not_selected.
+Це не доказ еквівалентності чинній формулі і не дозвіл перемикати інших клієнтів.
+
+Main актуально f4f65c7d0865ca083a8dfed201036b6057cf5bc5; owner remote до змін
+5a75629648157a39cff0351c6e3a31f50c716caf. Render get_service: main-only
+commit autodeploy, previews off; workflow гілку owner не слухає.
+
+Нові компоненти тільки experiments/free_search:
+owner_budget.py — SQLite BEGIN IMMEDIATE резерв до HTTP, незбільшувані ліміти,
+невідшкодовуваний резерв після crash, concurrent worker deny, robots expiry,
+пауза після completion, persistent hold. Незавершений crash резерв зупиняє
+продовження, автоматичного reset/recovery немає.
+owner_public_fetch.py — bounded urllib public GET, identity encoding,
+без source API/BFF/graphql, cookies/auth/proxy/redirect/retry; timeout20,
+cap<=2.5MB, min4s і більші robots crawl-delay/request-rate враховано.
+Caller має дотримуватись збереженого next_at; компонент не запускає job loop.
+HTML використовується лише в памʼяті. Robots deny/invalid, cap, CAPTCHA,
+401/403/429 блокують джерело; paid fallback відсутній. Публікація лишаєтьсяnull.
+Transport ще НЕ перевірений живим успішним GET на Render.
+
+43 offline tests PASS (24 prior owner +19 budget/transport), 0.884s local.
+Guard мережі/production config до імпорту. Жодних external calls у тестах.
+Додані meaningful сценарії: незалежні зʼєднання/втрачений inflight, caps,
+незбільшувані ліміти, невідшкодування500/DNS, robots deny/expiry/delay,
+403/429/CAPTCHA hold, credentials/host rejection, cap hit без зайвого byte.
+
+Свіжа спроба direct public robots GET: одна транспортна спроба, відповідіHTTP0,
+успішніGET0, відоміbodybytes0, paid API0. URLError до відповіді, окрема DNS
+діагностика errno-3 Temporary failure in name resolution. 0.007s — лише час
+невдалої локальної спроби, НЕ discovery/delivery latency. Зарезервовано20000B;
+новий probe cap2GET/2520000B, використаний резерв1GET/20000B; не старий night budget.
+Запити до source не повторювалися, способів обходу обмеження не застосовано.
+Ця невдача не доводить недоступність AUTO.RIA на Render чи всім користувачам.
+
+Точний наступний крок: у дозволеному runtime із доступом до AUTO.RIA виконати
+robots і один bounded discovery GET через новий ledger, потім current owner
+filter/analog acquisition і новизна. Після цього atomic owner delivery та
+виключення лише власних paid-source jobs, regression інших клієнтів і activation.
+Поки ці частини не інтегровані, одного DNS виправлення недостатньо для запуску.
+Немає нового доказу повноти, ринкової оцінки, new-only чи швидкості Render.
+Main/production/DB/config/deploy/OLX не змінені. Telegram0. Чинний платний
+пошук не вимкнений; нуль paid API стосується цього сеансу, не всього бота.
