@@ -1,0 +1,11 @@
+*
+!repo/
+!repo/**
+!requirements.txt
+!cloud_entry.py
+!state_transfer.py
+!test_cloud.py
+repo/**/__pycache__/
+repo/**/*.pyc
+repo/**/node_modules/
+repo/**/*.ps1

@@ -1,0 +1,7 @@
+{
+  "name": "autodeal-owner-free-browser",
+  "private": true,
+  "type": "module",
+  "description": "Isolated owner browser process; never loaded by the production bot",
+  "dependencies": {"playwright": "1.62.1"}
+}

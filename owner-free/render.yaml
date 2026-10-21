@@ -1,0 +1,35 @@
+# New worker only. Do not sync this into the existing bot's Blueprint.
+# User approved $7.25/month and this new worker's DB/Telegram access.
+services:
+  - type: worker
+    name: autodeal-owner-free
+    runtime: docker
+    rootDir: owner-free
+    region: frankfurt
+    plan: 0.5c-512mb
+    numInstances: 1
+    autoDeployTrigger: "off"
+    dockerfilePath: ./Dockerfile
+    dockerContext: .
+    disk:
+      name: owner-free-history
+      mountPath: /var/data
+      sizeGB: 1
+    envVars:
+      - key: AUTODEAL_OWNER_DATABASE_URL
+        fromDatabase:
+          name: autodeal-db
+          property: connectionString
+      - key: AUTODEAL_OWNER_TELEGRAM_TOKEN
+        fromService:
+          type: web
+          name: autodeal-api
+          envVarKey: TELEGRAM_BOT_TOKEN
+      - key: AUTODEAL_OWNER_ID
+        sync: false
+      - key: SUBSCRIPTION_EXPECTED_ADMIN_ID
+        sync: false
+      - key: AUTODEAL_OWNER_STATE_DIR
+        value: /var/data
+      - key: AUTODEAL_OWNER_BROWSER_BINARIES
+        value: /opt/browsers
