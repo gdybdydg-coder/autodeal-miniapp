@@ -269,10 +269,7 @@ def snapshot(db, settings, now):
             "automobile_admin_copies_enabled": False,
         },
         "supplemental_processors": {
-            "recent_publications": {"enabled": recent_publications.enabled(settings),
-                "status": recent.status if recent else "not_initialized",
-                "checked_at": recent.checked_at if recent else None,
-                "last_success_at": recent.result.get("last_success_at") if recent else None},
+            "recent_publications": recent_publications.health(recent, settings, now),
             "html_shadow": {"configured": bool(shadow_key),
                 "status": shadow.status if shadow else "not_initialized",
                 "checked_at": shadow.checked_at if shadow else None},

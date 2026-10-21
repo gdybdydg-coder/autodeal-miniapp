@@ -255,7 +255,8 @@ def create_app(settings: Settings, engine=None, *, paid_source_only=False):
         alert_task = asyncio.create_task(owner_alerts.run(engine, settings, stop)) if settings.owner_alerts_enabled else None
         task = asyncio.create_task(monitor.run(engine, settings, stop)) if settings.monitor_enabled else None
         shadow_task = asyncio.create_task(html_shadow.run(settings, stop)) if html_shadow.key(settings) else None
-        recent_task = asyncio.create_task(recent_publications.run(settings, stop)) if recent_publications.enabled(settings) else None
+        recent_task = asyncio.create_task(recent_publications.run(settings, stop,
+            access_options=engine.get_execution_options())) if recent_publications.enabled(settings) else None
         scan_task = asyncio.create_task(full_scan.run(engine, settings.auto_ria_api_key, stop)) if settings.auto_ria_api_key and settings.full_scan_enabled else None
         validation_stop = threading.Event()
         validation_task = asyncio.create_task(asyncio.to_thread(

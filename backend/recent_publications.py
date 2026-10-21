@@ -11,6 +11,7 @@ from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime
 from html.parser import HTMLParser
 import math
+import logging
 import re
 import time
 import uuid
@@ -18,7 +19,7 @@ from urllib.parse import urlsplit
 from zoneinfo import ZoneInfo
 
 from sqlalchemy import create_engine, select, tuple_
-from sqlalchemy.exc import IntegrityError
+from sqlalchemy.exc import IntegrityError, OperationalError, InterfaceError, TimeoutError as PoolTimeout
 from sqlalchemy.orm import Session
 
 from . import html_shadow
@@ -37,6 +38,7 @@ MAX_AGE, MAX_QUEUE, MAX_SEEN = 3600, 128, 10000
 HTTP_HOURLY, HTTP_DAILY, HTTP_BYTES = 125, 1600, 3 * 1024**3
 API_HOURLY, API_DAILY = 200, 1000
 DENIED = {"access_denied", "robots_denied"}
+LOG = logging.getLogger("uvicorn.error")
 
 
 def enabled(settings):
@@ -195,6 +197,7 @@ def collect(engine, settings, fetcher=html_shadow.fetch, now=None):
         from .monitor import active_members
         if not active_members(db) or not html_shadow.healthy(db, now):
             row.status, data["next_at"] = "yielding_to_bot", now + interval(now)
+            row.checked_at = now
             row.result = data
             db.commit()
             return
@@ -206,6 +209,7 @@ def collect(engine, settings, fetcher=html_shadow.fetch, now=None):
                 or sum(e[1] for e in data["http"]) + reserve > HTTP_DAILY
                 or sum(e[2] for e in data["http"]) + byte_reserve > HTTP_BYTES):
             row.status, data["next_at"] = "http_budget_wait", now + 300
+            row.checked_at = now
             row.result = data
             db.commit()
             return
@@ -553,13 +557,29 @@ def take(monitor, source, *, after_primary=False):
     return True
 
 
+def health(row, settings, now):
+    """A persisted label is not a heartbeat. Denials never become retry signals."""
+    configured = enabled(settings)
+    if row is None:
+        return {"enabled": configured, "status": "starting" if configured else "disabled",
+                "stale": False, "checked_at": None, "last_success_at": None}
+    data = row.result or {}
+    due = max(row.checked_at or 0, data.get("next_at", 0), data.get("lease_until", 0))
+    stale = configured and now > due + max(120, 2 * interval(now))
+    status = ("disabled" if not configured else row.status if row.status in DENIED
+              else "stale" if stale else row.status)
+    return {"enabled": configured, "status": status, "stored_status": row.status,
+            "stale": stale, "checked_at": row.checked_at,
+            "last_success_at": data.get("last_success_at")}
+
+
 def status(engine, settings):
     with Session(engine) as db:
         row = db.get(SourceProbe, PROBE_ID)
         if row is None:
-            return {"enabled": enabled(settings), "status": "starting" if enabled(settings) else "disabled"}
+            return health(None, settings, time.time())
         data, now = row.result, time.time()
-        return {"enabled": enabled(settings), "status": row.status, "scope": "two_dated_public_pages",
+        return {**health(row, settings, now), "scope": "two_dated_public_pages",
                 "source_timezone": "Europe/Kyiv", "baseline_at": data.get("baseline_at"),
                 "interval_seconds": interval(now), "pending_candidates": len(data.get("pending", {})),
                 "reserved_http_requests": row.requests, "http_calls_last_hour": sum(
@@ -576,14 +596,29 @@ def status(engine, settings):
                 "whole_market_coverage_measured": False}
 
 
-async def run(settings, stop):
+async def run(settings, stop, *, access_options=None):
     engine = create_engine(settings.database_url, pool_pre_ping=True, pool_size=1, max_overflow=0)
+    engine.update_execution_options(**(access_options or {}))
     pool = ThreadPoolExecutor(max_workers=1, thread_name_prefix="recent-publications")
+    failures = 0
     try:
         while not stop.is_set():
-            await asyncio.get_running_loop().run_in_executor(pool, collect, engine, settings)
+            delay = 5
             try:
-                await asyncio.wait_for(stop.wait(), timeout=5)
+                await asyncio.get_running_loop().run_in_executor(pool, collect, engine, settings)
+                failures = 0
+            except (OperationalError, InterfaceError, PoolTimeout) as exc:
+                failures += 1
+                delay = min(300, 30 * 2 ** min(failures - 1, 4))
+                # Do not log SQL/parameters/URLs. Existing leases and accounting
+                # are preserved; this is the same executor, never a second loop.
+                LOG.error("Recent-publications storage unavailable type=%s retry_seconds=%s",
+                          type(exc).__name__, delay)
+            except Exception as exc:
+                LOG.error("Recent-publications stopped type=%s", type(exc).__name__)
+                raise
+            try:
+                await asyncio.wait_for(stop.wait(), timeout=delay)
             except TimeoutError:
                 pass
     finally:
