@@ -68,6 +68,13 @@ class Observations:
                     head=self.db.execute('SELECT first_at,last_at,sightings FROM head_confirmations WHERE id=?',(listing_id,)).fetchone()
                     if head and head[2]>=2 and head[0]<head[1] and 0<=now-head[0]<=max_age and 0<=now-head[1]<=max_age:
                         reason='eligible'
+        # A validated live public page is sufficient discovery evidence. Details,
+        # native valuation, current access and shared delivery claim remain separate.
+        if reason == 'scan_not_completed' and self.db.execute(
+                "SELECT 1 FROM sqlite_master WHERE type='table' AND name='live_page_observations'").fetchone():
+            live=self.db.execute('SELECT observed_at FROM live_page_observations WHERE id=?',(listing_id,)).fetchone()
+            if live and row[0] <= live[0] <= now and now-live[0] <= max_age:
+                reason='eligible'
         return dict(kind='first_observed', listing_id=listing_id, reason=reason,
                     first_seen=None if row is None else row[0], publication_at=None)
 

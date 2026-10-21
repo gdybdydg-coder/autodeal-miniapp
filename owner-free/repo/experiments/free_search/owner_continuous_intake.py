@@ -187,12 +187,13 @@ def run_owned(token, deadline, *, max_requests=40, pages=3):
         budget = Budget(WORKSPACE/'free-public-audit-20261020.sqlite3', 2**63-1, 2**63-1, allow_feed_pagination=True)
         queue = CandidateQueue(WORKSPACE/'night21-candidates.sqlite3')
         obs = Observations(WORKSPACE/'night-20261020.owner-observations.sqlite3')
-        state = IntakeState(queue, pages=pages)
-        pipeline, window, fetch = StagePipeline(queue,obs), HeadWindow(obs), PublicFetch(budget)
+        from .owner_dynamic_intake import DynamicIntakeState, SourceRetry, transient_receipt
+        state = DynamicIntakeState(queue, pages=pages)
+        pipeline, window, fetch = StagePipeline(queue,obs), HeadWindow(obs,dynamic=True), PublicFetch(budget)
         outbox=BrowserOutbox(WORKSPACE/'continuous-browser-outbox')
         report = {'started_at':time.time(), 'budget_before':budget.summary(), 'receipts':[],
                   'details':[], 'tickets':[], 'valuations':[], 'paid_calls':0, 'telegram_calls':0,
-                  'publication_at':None, 'coverage':'repeated first '+str(pages)+' public pages; whole-market recall unknown'}
+                  'publication_at':None, 'coverage':'dynamic observed next links with head/overlap; whole-market recall unknown'}
         def get(url, cap):
             if not guard.owns(token):
                 raise Denied('executor_lock_lost')
@@ -201,7 +202,8 @@ def run_owned(token, deadline, *, max_requests=40, pages=3):
             if len(report['receipts']) >= max_requests:
                 raise Denied('run_request_bound')
             budget.observe(url)
-            wait_for_fetch(budget.db.execute('SELECT next_at FROM budget').fetchone()[0],deadline)
+            wait_for_fetch(max(budget.db.execute('SELECT next_at FROM budget').fetchone()[0],
+                               state.recovery()['retry_at']),deadline)
             if state.action(time.time(),False)[0] == 'stop':
                 raise Denied('intake_stopped')
             body, receipt = fetch.get(url,cap)
@@ -209,7 +211,11 @@ def run_owned(token, deadline, *, max_requests=40, pages=3):
             if body is None and receipt.get('status')==404 and url!=ROBOTS:
                 return None,receipt
             if body is None:
+                if transient_receipt(receipt):
+                    state.defer(receipt,receipt['completed_at'])
+                    raise SourceRetry('source_retry_wait')
                 raise Denied('source_unavailable_no_retry')
+            state.success(receipt,receipt['completed_at'])
             return body, receipt
         try:
             if state.action(time.time(),False)[0] == 'stop':
@@ -226,7 +232,7 @@ def run_owned(token, deadline, *, max_requests=40, pages=3):
                 if action == 'stop':
                     raise Denied('intake_stopped')
                 if action == 'head':
-                    url = HEAD+f'?page={value}'
+                    url = state.url_for(value)
                     body, receipt = get(url,2500000)
                     if body is None:
                         state.missing_head(value,receipt['completed_at'],receipt)
@@ -236,7 +242,7 @@ def run_owned(token, deadline, *, max_requests=40, pages=3):
                     cards = parse_public_cards(body); meta = inspect_page(body,url)
                     coverage = window.accept(meta,cards,receipt['completed_at'])
                     added = pipeline.ingest(cards,receipt['completed_at'])
-                    state.accept_head(value,cards,receipt['completed_at'],
+                    state.accept_page(meta,cards,receipt['completed_at'],
                         {'url':url, 'ids':[c.listing_id for c in cards], 'queued':added, 'coverage':coverage})
                 elif action == 'detail':
                     before = len(report['receipts'])
@@ -250,7 +256,7 @@ def run_owned(token, deadline, *, max_requests=40, pages=3):
             report['reason'] = 'session_bound_reached'
         except ValueError as exc:
             report['reason'] = str(exc)
-            if str(exc) not in ('batch_deadline','run_request_bound','intake_stopped'):
+            if str(exc) not in ('batch_deadline','run_request_bound','intake_stopped','source_retry_wait'):
                 state.stop(str(exc),time.time())
         finally:
             report['completed_at'] = time.time(); report['budget_after'] = budget.summary()

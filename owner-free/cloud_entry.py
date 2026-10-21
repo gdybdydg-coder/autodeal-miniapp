@@ -71,9 +71,10 @@ def main():
     except Exception as exc:
         # Exceptions may contain secrets. Expose only the class; preserve holds/claims.
         from experiments.free_search.owner_local_bridge import atomic_json
-        atomic_json(root/'cloud-service-hold.json',{'state':'blocked','error_type':type(exc).__name__,
+        reason=str(exc) if type(exc) is ValueError and str(exc).replace('_','').isalnum() and len(str(exc))<100 else type(exc).__name__
+        atomic_json(root/'cloud-service-hold.json',{'state':'blocked','error_type':type(exc).__name__,'reason':reason,
             'resume_requires_review':True,'paid_api_calls':0})
-        print(json.dumps({'state':'blocked','error_type':type(exc).__name__}),flush=True)
+        print(json.dumps({'state':'blocked','error_type':type(exc).__name__,'reason':reason}),flush=True)
         # Do not let platform restart policy hammer a challenged site or replay a claim.
         while not stop.wait(30):pass
 

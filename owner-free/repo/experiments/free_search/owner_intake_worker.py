@@ -8,4 +8,4 @@ if __name__=='__main__':
     token,pages=sys.argv[1:]
     result=run_owned(token,time.time()+300,max_requests=100,pages=int(pages))
     print(result['reason'])
-    raise SystemExit(0 if result['reason']=='session_bound_reached' else 2)
+    raise SystemExit(0 if result['reason'] in ('session_bound_reached','source_retry_wait','batch_deadline','run_request_bound') else 2)

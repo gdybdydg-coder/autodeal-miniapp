@@ -157,6 +157,9 @@ if __name__=='__main__':
         import test_owner_local_bridge
         suite=unittest.defaultTestLoader.loadTestsFromModule(sys.modules[__name__])
         suite.addTests(unittest.defaultTestLoader.loadTestsFromModule(test_owner_local_bridge))
+        import test_owner_dynamic_intake, test_owner_fetch
+        suite.addTests(unittest.defaultTestLoader.loadTestsFromModule(test_owner_dynamic_intake))
+        suite.addTests(unittest.defaultTestLoader.loadTestsFromModule(test_owner_fetch))
         result=unittest.TextTestRunner(verbosity=2).run(suite)
     print('OFFLINE',guard.summary())
     raise SystemExit(0 if result.wasSuccessful() and guard.attempted==0 else 1)

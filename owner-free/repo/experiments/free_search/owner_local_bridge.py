@@ -83,6 +83,14 @@ class OwnerBridge:
                 # A reporting failure cannot grant access or cause a send retry.
                 pairs={'at':self.clock(),'state':'unavailable','error_type':type(exc).__name__}
             atomic_json(self.root/'owner-service-pairs.json',pairs)
+            # Reporting reads paid receipts only; it cannot seed the free queue.
+            if self.pipeline.queue.db.execute("SELECT 1 FROM sqlite_master WHERE name='intake_dynamic'").fetchone():
+                from .owner_paid_coverage import observe_paid_coverage
+                try:coverage=observe_paid_coverage(self.engine,self.settings.admin_telegram_id,
+                             self.pipeline.queue,self.pipeline.observations,clock=self.clock)
+                except Exception as exc:
+                    coverage={'at':self.clock(),'state':'unavailable','error_type':type(exc).__name__}
+                atomic_json(self.root/'owner-paid-coverage.json',coverage)
         return data
 
     def deliver_ready(self,limit=5):

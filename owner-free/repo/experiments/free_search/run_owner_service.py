@@ -117,8 +117,8 @@ def command(action,*,allow_product_browser=False,shutdown=None):
         snapshot=bridge.refresh()
         if snapshot['status']!='readonly_ok':raise ValueError('current_owner_access_required')
         pages=queue.db.execute('SELECT pages FROM intake_control').fetchone()[0]
-        state=IntakeState(queue,pages=pages)
-        if pages<6:state.expand(6,time.time());pages=6
+        from experiments.free_search.owner_dynamic_intake import DynamicIntakeState
+        state=DynamicIntakeState(queue,pages=pages)
         state.resume(time.time())
         env=child_environment(os.environ)
         creation=subprocess.CREATE_NO_WINDOW if os.name=='nt' else 0
@@ -147,21 +147,30 @@ def command(action,*,allow_product_browser=False,shutdown=None):
                 if snapshot['status']!='readonly_ok':raise ValueError('current_owner_access_revoked')
             if source is None or source.poll() is not None:
                 if source is not None and source.returncode!=0:raise ValueError('source_process_stopped')
-                if source is not None:reap(source)
-                source=launch([sys.executable,'-I',str(REPO/'experiments/free_search/owner_intake_worker.py'),token,str(pages)],'owner-intake-service')
+                if source is not None:reap(source);source=None
+                if time.time()>=state.recovery()['retry_at']:
+                    source=launch([sys.executable,'-I',str(REPO/'experiments/free_search/owner_intake_worker.py'),token,str(pages)],'owner-intake-service')
             bridge.deliver_ready()
             if time.time()>=next_status:
                 if shutil.disk_usage(WORKSPACE).free < 128*1024*1024:
                     raise ValueError('disk_space_low')
-                atomic_json(WORKSPACE/'owner-service-status.json',{'state':'running','at':time.time(),
-                    'token':token,'pid':os.getpid(),'browser_pid':browser.pid,'intake_pid':source.pid,
-                    'access_at':snapshot['at'],'pages':pages,'paid_api_calls':0})
+                recovery=state.recovery()
+                health={'state':'retrying' if recovery['failures'] else 'running','at':time.time(),
+                    'token':token,'pid':os.getpid(),'browser_pid':browser.pid,'intake_pid':source.pid if source else None,
+                    'access_at':snapshot['at'],'traversal':'dynamic_observed_links',
+                    'recovery':recovery,'paid_api_calls':0}
+                atomic_json(WORKSPACE/'owner-service-status.json',health)
+                # Worker Live is not a health check; publish real workload status.
+                print(json.dumps({k:v for k,v in health.items() if k not in ('token',)}),flush=True)
                 next_status=time.time()+10
             time.sleep(.5)
         clean_stop=True
         return {'state':'stopped'}
     except BaseException as exc:
-        failure=type(exc).__name__;raise
+        failure=type(exc).__name__
+        if type(exc) is ValueError and str(exc).replace('_','').isalnum() and len(str(exc))<100:
+            failure=str(exc)
+        raise
     finally:
         if owned:
             if publisher is not None:publisher.stop()
