@@ -75,6 +75,16 @@ def allowed(db, uid, now=None):
     return not row or not row.enforce or expiry(db, uid) > now
 
 
+FREE_ACCESS_KEY = "free_access_all_users"
+
+
+def free_access_enabled(db):
+    """Explicit owner switch; ordinary billing pauses do not open API access."""
+    row = control(db)
+    return bool(row and not row.sales and not row.enforce
+                and (row.offer or {}).get(FREE_ACCESS_KEY) is True)
+
+
 def public_status(db, uid, now=None):
     now = time.time() if now is None else now
     row = control(db)
@@ -108,6 +118,10 @@ def date_text(value):
 
 
 def card(db, uid, now):
+    if free_access_enabled(db):
+        return message(uid, "🚘 <b>AutoDeal — безкоштовний доступ</b>\n\n"
+                       "Пошук і сповіщення доступні без оплати. Увімкни потрібні пошуки у застосунку.\n"
+                       "Зупинити сповіщення: /stop. Питання щодо попередніх оплат: /paysupport.")
     state = public_status(db, uid, now)
     parts = ["🚘 <b>AutoDeal · Абонемент</b>"]
     if state["expires_at"]:
@@ -382,3 +396,4 @@ def handle(engine, settings, event, request=None, now=None):
                     "payload": order_id, "currency": "XTR", "provider_token": "",
                     "prices": [{"label": "Абонемент на 30 днів", "amount": offer["stars"]}], "start_parameter": "subscribe"}
         return card(db, uid, now)
+

@@ -216,7 +216,8 @@ def snapshot(db, settings, now):
         active_window_enabled=settings.ria_active_window_enabled,
         schedule_enabled=settings.ria_poll_schedule_enabled, now=now)
     paid = paid_source_access.confirmed_clause(User.id, now, excluded=paid_source_access.exclusions(db.get_bind()))
-    access = paid if paid_source_access.strict(db.get_bind()) else True
+    access = paid_source_access.access_clause(User.id, now,
+        excluded=paid_source_access.exclusions(db.get_bind())) if paid_source_access.strict(db.get_bind()) else True
     current_seen = (Search.enabled.is_(True), User.ready.is_(True),
         MonitorSeen.epoch == MonitorWatch.epoch, access)
     seen = select(MonitorSeen.state, func.count()).join(Search, Search.id == MonitorSeen.search_id).join(
@@ -383,3 +384,4 @@ def log_snapshot(engine, settings):
         logger.info("Source pipeline health %s", json.dumps(result, ensure_ascii=False, sort_keys=True))
     except Exception as exc:
         logger.error("Source pipeline health unavailable (%s)", type(exc).__name__)
+

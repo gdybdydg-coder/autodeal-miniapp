@@ -407,7 +407,7 @@ def create_app(settings: Settings, engine=None, *, paid_source_only=False):
     def billing_status(uid=Depends(identity), db=Depends(session)):
         result = billing.public_status(db, uid)
         if paid_source_access.strict(engine):
-            result["paid_access_required"] = True
+            result["paid_access_required"] = not billing.free_access_enabled(db)
             result["access_available"] = paid_source_access.allowed(db, uid)
         return result
 
@@ -795,3 +795,4 @@ def create_app(settings: Settings, engine=None, *, paid_source_only=False):
 
 def factory():
     return create_app(Settings.env(), paid_source_only=True)
+

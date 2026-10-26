@@ -58,6 +58,7 @@ def status(engine, settings, uid):
         except m.ReviewError:
             sales = False
         return {"sales_enabled": sales, "paid_access_required": bool(ctrl and ctrl.enforce),
+                "free_access_all_users": billing.free_access_enabled(db),
                 "expires_at": until, "request": m.public(request) if request else None,
                 "terms_version": TERMS_VERSION, "terms": TERMS, "amount_minor": 25000, "days": 30}
 
@@ -92,6 +93,8 @@ def response(uid, sections, buttons):
 
 def overview(engine, settings, uid, now):
     data = status(engine, settings, uid)
+    if data["free_access_all_users"]:
+        return free_card(uid)
     until = data["expires_at"]
     lines = ["🚘 <b>AutoDeal</b>"]
     if until > now:
@@ -128,6 +131,8 @@ def overview(engine, settings, uid, now):
 
 def terms(engine, settings, uid, full=False):
     data = status(engine, settings, uid)
+    if data["free_access_all_users"] and not full:
+        return free_card(uid)
     lines = ["🚘 <b>Підписка AutoDeal</b>", "💳 <b>250 грн / 30 днів</b>"]
     if full:
         lines = ["📄 <b>Повні умови</b>", escape(TERMS)]
@@ -145,6 +150,12 @@ def terms(engine, settings, uid, full=False):
         buttons.append([{"text": "Повні умови", "callback_data": PREFIX+"full_terms"}])
     buttons.append([{"text": "← Назад", "callback_data": PREFIX+"view"}])
     return response(uid, lines, buttons)
+
+
+def free_card(uid):
+    return response(uid, ["🚘 <b>AutoDeal — безкоштовний доступ</b>",
+        "Пошук і сповіщення доступні без оплати. Увімкни потрібні пошуки у застосунку.",
+        "Зупинити сповіщення: /stop. Питання щодо попередніх оплат: /paysupport."], [])
 
 
 def request_card(engine, settings, uid, code):
@@ -295,3 +306,4 @@ def handle(engine, settings, event, request=None, now=None):
         return billing.message(uid, messages.get(exc.code, "Заявку не знайдено або дія недоступна. /subscription · /paysupport"))
     except SQLAlchemyError:
         return billing.message(uid, "Не вдалося перевірити збереження. Не сплачуй повторно. Онови /subscription або напиши /paysupport.")
+

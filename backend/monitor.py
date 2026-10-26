@@ -123,7 +123,7 @@ def access_allowed_clause(uid, now=None, *, paid_only=False, excluded=()):
     """
     now = time.time() if now is None else now
     if paid_only:
-        return paid_source_access.confirmed_clause(uid, now, excluded=excluded)
+        return paid_source_access.access_clause(uid, now, excluded=excluded)
     enforced = func.coalesce(select(BillingControl.enforce).where(
         BillingControl.id == billing.CONTROL).scalar_subquery(), False)
     entitlement = exists(select(Entitlement.user_id).where(
@@ -1118,3 +1118,4 @@ async def delivery_batch(engine, settings, sender):
     from .worker import deliver_one
     return await asyncio.gather(*(asyncio.to_thread(
         deliver_one, engine, settings, sender) for _ in range(4)))
+

@@ -367,7 +367,7 @@ class RiaSearch:
             authorization_context = None
             if self.request_policy is not None:
                 authorization_context = self.request_policy(db, now, self.limits)
-            if paid_source_access.strict(self.engine) and not paid_source_access.any_paid(db, now):
+            if paid_source_access.strict(self.engine) and not paid_source_access.any_eligible(db, now):
                 raise RiaError("paid_access_required")
             if paid_source_access.strict(self.engine) and authorization_context is None:
                 raise RiaError("no_eligible_subscription")
@@ -883,3 +883,4 @@ def verify_search_once(engine, key):
         row = db.get(SourceProbe, check_id)
         row.status, row.result, row.checked_at = status, result, time.time()
         db.commit()
+

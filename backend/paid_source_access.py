@@ -1,4 +1,4 @@
-"""Production API work requires a current owner-confirmed manual purchase.
+"""Production access: confirmed purchases or the owner's explicit free mode.
 
 This policy does not edit entitlements or payment history. The production factory
 enables it on the Engine, shared by every monitor/scanner/source and delivery.
@@ -13,7 +13,7 @@ from sqlalchemy import exists, func, literal, select
 from sqlalchemy.orm import Session
 
 from . import billing
-from .billing_models import Entitlement
+from .billing_models import BillingControl, Entitlement
 from .manual_payment_models import PaymentRequest
 from .models import Search, User
 from .purchase_stats import excluded_user_ids
@@ -69,7 +69,22 @@ def confirmed_clause(uid, now=None, *, excluded=()):
 def allowed(db, uid, now=None):
     if not strict(db.get_bind()):
         return billing.allowed(db, uid, now)
-    return bool(db.scalar(select(confirmed_clause(uid, now, excluded=exclusions(db.get_bind())))))
+    return bool(db.scalar(select(access_clause(uid, now, excluded=exclusions(db.get_bind())))))
+
+
+def access_clause(uid, now=None, *, excluded=()):
+    """Purchase evidence stays immutable; free access is a separate policy."""
+    free = exists(select(BillingControl.id).where(
+        BillingControl.id == billing.CONTROL,
+        BillingControl.sales.is_(False), BillingControl.enforce.is_(False),
+        BillingControl.offer[billing.FREE_ACCESS_KEY].as_boolean().is_(True)))
+    identity = literal(uid, type_=User.id.type) if isinstance(uid, int) else uid
+    return (free | confirmed_clause(uid, now, excluded=excluded)) & identity.not_in(excluded)
+
+
+def any_eligible(db, now):
+    return bool(db.scalar(select(exists(select(User.id).where(
+        access_clause(User.id, now, excluded=exclusions(db.get_bind())))))))
 
 
 def ready_clause(uid):
@@ -90,6 +105,7 @@ def log_snapshot(engine):
     try:
         with Session(engine) as db:
             now = time.time()
+            free_access = billing.free_access_enabled(db)
             clients = db.scalar(select(func.count(User.id)))
             purchase = confirmed_clause(User.id, now, excluded=exclusions(engine))
             paid = db.scalar(select(func.count(User.id)).where(purchase))
@@ -98,13 +114,16 @@ def log_snapshot(engine):
                 Search.enabled.is_(True), User.ready.is_(True))
             all_searches = db.scalar(searches)
             paid_searches = db.scalar(searches.where(purchase))
+            eligible_searches = db.scalar(searches.where(access_clause(User.id, now, excluded=exclusions(engine))))
             groups = db.scalar(select(func.count(func.distinct(Search.fingerprint)))
                 .join(User, User.id == Search.user_id).where(Search.enabled.is_(True),
                     User.ready.is_(True), purchase))
         logger.info("Paid source access guard %s", json.dumps({
             "checked_at": datetime.fromtimestamp(now, timezone.utc).isoformat(),
-            "policy": "current_owner_confirmed_manual_purchase",
+            "policy": "owner_enabled_free_access" if free_access else "current_owner_confirmed_manual_purchase",
             "enabled": True, "automatic_paid_startup_checks": False,
+            "free_access_all_users": free_access,
+            "eligible_ready_enabled_searches": eligible_searches,
             "all_user_records": clients, "current_paid_clients": paid,
             "excluded_paid_test_or_service_accounts": all_approved-paid,
             "ready_enabled_searches": all_searches,
@@ -114,3 +133,4 @@ def log_snapshot(engine):
         }))
     except Exception:
         logger.error("Paid source access guard snapshot unavailable")
+
