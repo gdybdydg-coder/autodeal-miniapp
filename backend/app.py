@@ -17,7 +17,7 @@ from sqlalchemy import create_engine, func, select, update
 from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 from sqlalchemy.orm import Session
 
-from . import billing, billing_campaign, paid_source_access, tariff_reminders, tariff_reminder_commands
+from . import billing, billing_campaign, paid_source_access, poll_schedule, tariff_reminders, tariff_reminder_commands
 from . import manual_payments, manual_payment_routes, manual_checkout, manual_launch
 from .auth import telegram_user
 from .auto_ria import probe_once, probe_status
@@ -141,6 +141,7 @@ class Settings:
 
 def create_app(settings: Settings, engine=None, *, paid_source_only=False):
     BudgetLimits.env()  # Validate before serving requests or running startup probes.
+    poll_schedule.fixed_interval()
     peer_scan_limit()
     validate_run_id(settings.ria_validation_run_id)
     validate_profile(settings.ria_validation_profile)
@@ -795,4 +796,3 @@ def create_app(settings: Settings, engine=None, *, paid_source_only=False):
 
 def factory():
     return create_app(Settings.env(), paid_source_only=True)
-
