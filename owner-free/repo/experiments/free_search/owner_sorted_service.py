@@ -221,7 +221,7 @@ def main():
             for s in searches:
                 key=search_key(s)
                 atomic_json(root/'status.json',dict(at=time.time(),pid=os.getpid(),phase='collecting',
-                    current_search=s['id'],searches=statuses,paid_api_calls=0))
+                    current_search=s['id'],searches=statuses,paid_api_calls=0,next_poll=cycle_started+120,cadence='owner_fast_v1'))
                 try:
                     poll_started=time.time()
                     result=browser(s['url'],key=key)
