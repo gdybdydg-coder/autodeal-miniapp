@@ -28,6 +28,10 @@ export function responseHold(host,pathname,status) {
   return host==='auto.ria.com' && [401,403,429].includes(status);
 }
 
+export function optionalResource(kind) {
+  return ['image','media','font'].includes(kind);
+}
+
 export async function atomicJson(filename, value) {
   const temp=filename+'.'+process.pid+'.tmp';
   try {
@@ -88,13 +92,13 @@ export function tabAdapter(page, guard) {
       domSnapshot:()=>page.locator('body').innerText()}};
 }
 
-export async function serve({root,token,launch,clock=()=>Date.now()/1000,sleep=ms=>new Promise(r=>setTimeout(r,ms)),maxCycles=Infinity,probeUrl=null}) {
+export async function serve({root,token,launch,clock=()=>Date.now()/1000,sleep=ms=>new Promise(r=>setTimeout(r,ms)),maxCycles=Infinity,probeUrl=null,processJobs=processAvailable}) {
   const outbox=path.join(root,'continuous-browser-outbox'),store=new DiskStore(outbox);
   await fs.mkdir(outbox,{recursive:true});
   const control=path.join(root,'owner-service-control.json');
   const hold=path.join(root,'owner-browser-hold.json');
   const lock=path.join(outbox,'browser-service.lock');
-  let handle,context,chain=Promise.resolve(),halt=false,requestId=0,cycles=0;
+  let handle,context,page,tab,chain=Promise.resolve(),halt=false,requestId=0,cycles=0,completed=0;
   const record=value=>{chain=chain.then(()=>store.record(value));chain.catch(()=>{halt=true;});};
   async function guard() {
     if(halt)throw Error('browser_source_hold');
@@ -106,14 +110,15 @@ export async function serve({root,token,launch,clock=()=>Date.now()/1000,sleep=m
   try {
     await guard();
     handle=await fs.open(lock,'wx');await handle.writeFile(JSON.stringify({token,pid:process.pid,at:clock()}));
-    context=await launch();
+    async function startContext() {
+    await guard();context=await launch();
     await context.route('**/*',async route=>{
       const request=route.request(),raw=request.url();
       // Prevent paid endpoints and unrelated requests. Native site UI still
       // performs its own public popup requests; these are logged, never forged.
-      if(halt||!permittedRequest(raw)) {
+      if(halt||!permittedRequest(raw)||optionalResource(request.resourceType())) {
         const u=new URL(raw);
-        record({kind:'http_blocked',at:clock(),host:u.hostname,path:u.pathname,resource:request.resourceType(),reason:halt?'source_hold':'host_allowlist'});
+        record({kind:'http_blocked',at:clock(),host:u.hostname,path:u.pathname,resource:request.resourceType(),reason:halt?'source_hold':optionalResource(request.resourceType())?'optional_resource':'host_allowlist'});
         return route.abort();
       }
       try {await guard();}catch {return route.abort();}
@@ -129,9 +134,11 @@ export async function serve({root,token,launch,clock=()=>Date.now()/1000,sleep=m
         chain=chain.then(()=>atomicJson(hold,{at:clock(),reason:'source_status_'+response.status(),path:u.pathname,resume_requires_review:true}));
       }
     });
-    const page=await context.newPage();
+    page=await context.newPage();
     page.on?.('pageerror',error=>record({kind:'page_error',at:clock(),message:String(error.message).slice(0,240)}));
-    const tab=tabAdapter(page,guard);
+    tab=tabAdapter(page,guard);
+    }
+    await startContext();
     if(probeUrl) {
       const match=/^https:\/\/auto\.ria\.com\/uk\/auto_[A-Za-z0-9_-]+_([1-9][0-9]{0,11})\.html$/.exec(probeUrl);
       if(!match)throw Error('invalid_probe_url');
@@ -163,12 +170,21 @@ export async function serve({root,token,launch,clock=()=>Date.now()/1000,sleep=m
     };
     while(cycles++<maxCycles) {
       await guard();
-      const results=await processAvailable(tab,store,{limit:1,clock});
+      const results=await processJobs(tab,store,{limit:1,clock});
       record({kind:'browser_cycle',at:clock(),processed:results.length});
       await atomicJson(path.join(root,'owner-browser-status.json'),{at:clock(),token,state:'running',cycles,request_count_session:requestId});
       if(results.some(r=>r.state==='blocked')) {
         await atomicJson(hold,{at:clock(),reason:'native_capture_blocked',resume_requires_review:true});
         break; // Do not hammer a changed/challenged UI with subsequent jobs.
+      }
+      if(results.length) {
+        await guard();
+        // Release the listing DOM after evidence is persisted. No provider request.
+        await page.goto('about:blank',{waitUntil:'load',timeout:5000});
+        if(++completed>=5) {
+          await context.close();context=null;await chain;
+          await startContext();completed=0;
+        }
       }
       await sleep(results.length?4000:500);
     }
