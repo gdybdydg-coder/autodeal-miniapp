@@ -9,6 +9,7 @@ import json
 import os
 import random
 import signal
+import re
 from pathlib import Path
 import shutil
 import sqlite3
@@ -225,9 +226,11 @@ def main():
                 ledger=root/'cache'/'transport.json'
                 if ledger.exists():prior['next_poll']=max(prior['next_poll'],json.loads(ledger.read_text(encoding='utf-8')).get('hold_until',0))
             atomic_json(status_file,prior)
+            metric('schedule_restored', next_poll=prior.get('next_poll'), configured_chats=len(recipients))
             while time.time()<prior.get('next_poll',0) and not (root/'stop').exists():
                 time.sleep(1)
         last_polled = {}
+        last_detail = {}
         while not (root/'stop').exists():
             cycle_started=time.time()
             searches = [dict(search, recipient=uid) for uid in recipients for search in current(engine, uid)]
@@ -247,15 +250,18 @@ def main():
                 try:
                     results = browser(url, group=group)
                 except Exception as exc:
+                    # Only emit fixed parser diagnostics, never browser stack traces or URLs.
+                    code = str(exc).removeprefix('browser_failed:').partition('\n')[0].partition(':')[0]
+                    cause = code if re.fullmatch('[a-z_0-9]{1,60}', code) else 'browser_error'
                     for search in group:
                         statuses.append(dict(search_id=search['id'], state='blocked', reason=str(exc)[:500]))
-                        metric('poll_error', search_id=search['id'], reason=str(exc)[:500])
+                        metric('poll_error', search_id=search['id'], reason=str(exc)[:500], cause=cause)
                     continue
                 for search in group:
                     key = search_key(search)
                     result = results[key]
                     if not result['complete']:
-                        metric('poll_error', search_id=search['id'], reason=result['reason'])
+                        metric('poll_error', search_id=search['id'], reason=result['reason'], cause=result['reason'])
                         continue
                     stores[search['recipient']].accept(key, result)
                     new_ids = [card['id'] for card in result['newly_observed']]
@@ -267,12 +273,13 @@ def main():
                         new=len(new_ids), total=result['pages'][0]['total'], state='checked'))
             details = {}
             # Discover both searches before slow detail/valuation work.
-            for s in searches:
+            for s in sorted(searches, key=lambda search: last_detail.get(search_key(search), 0)):
                 uid = s['recipient']
                 recipient_store = stores[uid]
                 key=search_key(s)
                 for ident,url,first_seen in recipient_store.db.execute("SELECT id,url,first_seen FROM jobs WHERE key=? AND state='pending' ORDER BY first_seen DESC,rowid ASC LIMIT 3",(key,)).fetchall():
                     if (root/'stop').exists() or time.time()-cycle_started>=85: break
+                    last_detail[key] = time.time()
                     state,reason='rejected',''
                     try:
                         if recipient_store.db.execute('SELECT 1 FROM sent WHERE id=?',(ident,)).fetchone():
@@ -297,11 +304,12 @@ def main():
                         reason=str(exc)[:500]
                         # Keep unsent candidates pending on temporary source access failures.
                         # Their original first_seen and expiry are never reset.
-                        if reason.startswith(('source_hold_until:','browser_failed:')):
+                        if reason.startswith(('source_hold_until:','browser_failed:')) and not reason.startswith('browser_failed:listing_gone'):
                             state='pending'
                     with recipient_store.db:
                         recipient_store.db.execute('UPDATE jobs SET state=?,reason=? WHERE key=? AND id=?',(state,reason,key,ident))
                     metric('candidate',search_id=s['id'],listing_id=ident,state=state,reason=reason,
+                        cause=reason.partition(':')[0],
                         first_seen=first_seen,discovery_to_decision_seconds=time.time()-first_seen)
                     if state=='pending':break
             # Start-to-start target, rather than work time plus a fixed sleep.

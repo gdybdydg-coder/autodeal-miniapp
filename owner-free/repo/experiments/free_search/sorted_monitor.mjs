@@ -256,6 +256,7 @@ async function main() {
           ledger.last_failure={at:Date.now()/1000,status,visible_captcha:visibleCaptcha,valid_content:validContent,title:await tab.title()};
           await save(transportFile,ledger);throw Error(ledger.hold_reason);
         }
+        if(detail && [404,410].includes(status))throw Error('listing_gone');
         if(status!==200){
           ledger.hold_until=Date.now()/1000+Math.max(300,sourceHoldSeconds(response?.headers()['retry-after'],1));ledger.hold_reason='http_'+status;
           await save(transportFile,ledger);throw Error(ledger.hold_reason);
@@ -263,7 +264,8 @@ async function main() {
         if(detail){
           const {tabAdapter}=await import('./owner_browser_service.mjs');
           const {openListingRange,captureRange}=await import('./owner_browser_capture.mjs');
-          await tab.waitForLoadState('networkidle',{timeout:15000});
+          // Background traffic can continue after the page is interactive.
+          await tab.waitForLoadState('networkidle',{timeout:8000}).catch(e=>{if(e.name!=='TimeoutError')throw e;});
           const adapter=tabAdapter(tab,async()=>{});
           await openListingRange(adapter,detail);
           return {listing_id:detail,url:tab.url(),html:await tab.content(),received_at:Date.now()/1000,
