@@ -227,6 +227,18 @@ def main():
                 if ledger.exists():prior['next_poll']=max(prior['next_poll'],json.loads(ledger.read_text(encoding='utf-8')).get('hold_until',0))
             atomic_json(status_file,prior)
             metric('schedule_restored', next_poll=prior.get('next_poll'), configured_chats=len(recipients))
+            ledger=root/'cache'/'transport.json'
+            if ledger.exists():
+                transport_state=json.loads(ledger.read_text(encoding='utf-8'))
+                if transport_state.get('hold_until',0)>time.time():
+                    failure=transport_state.get('last_failure') or {}
+                    cause=transport_state.get('hold_reason')
+                    # A previous denial can remain in the ledger after an unrelated HTTP failure.
+                    denial=cause=='source_denied_or_challenge'
+                    metric('source_pause',cause=cause,until=transport_state['hold_until'],
+                           http_status=failure.get('status') if denial else None,
+                           captcha=failure.get('visible_captcha') if denial else None,
+                           valid_content=failure.get('valid_content') if denial else None)
             while time.time()<prior.get('next_poll',0) and not (root/'stop').exists():
                 time.sleep(1)
         last_polled = {}
