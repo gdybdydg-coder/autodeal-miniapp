@@ -217,13 +217,30 @@ test('subscription list keeps cards but exposes a connection-status failure and 
     notificationStatus:async()=>{if(fail)throw Error('Немає відповіді сервера');return {available:true,telegram_ready:true,test_sent:true};}},'subscriptions');
   await ui.nav.saved.listeners.click();
   assert.equal(ui.ids.cloudSearchList.children.length,1);
-  assert.match(ui.ids.cloudStatus.textContent,/підключення не підтверджено.*Немає відповіді/);
+  assert.equal(ui.ids.cloudStatus.hidden,true);
   assert.match(ui.ids.subscriptionsHint.textContent,/Не вдалося перевірити/);
   assert.equal(ui.ids.subscriptionCheckBot.hidden,false);
   fail=false;await ui.ids.subscriptionCheckBot.listeners.click();
   assert.match(ui.ids.subscriptionsHint.textContent,/Крок 3 із 3/);
   assert.equal(ui.ids.subscriptionCheckBot.hidden,true);
   assert.equal(ui.ids.cloudStatus.hidden,true);
+});
+
+test('a pending notification status cannot lock the saved list or restore older cards',async()=>{
+  let id=1;
+  const pending=[];
+  const ui=setup({list:async()=>[{id,name:'Golf '+id,filters:ui.filters(),enabled:true}],
+    notificationStatus:()=>new Promise(resolve=>pending.push(resolve))},'subscriptions');
+  await ui.nav.saved.listeners.click();
+  assert.equal(ui.ids.refreshCloud.disabled,false);
+  assert.equal(ui.ids.cloudCount.textContent,'1');
+  id=2;
+  await ui.ids.refreshCloud.listeners.click();
+  pending[1]({available:true,telegram_ready:true,test_sent:true});
+  pending[0]({available:false});
+  await new Promise(resolve=>setImmediate(resolve));
+  assert.equal(part(ui.ids.cloudSearchList.children[0],'subscription-name').textContent,'Golf 2');
+  assert.equal(ui.ids.subscriptionCheckBot.hidden,true);
 });
 
 test('support trace explains observed and unseen ads without sending or activating',async()=>{

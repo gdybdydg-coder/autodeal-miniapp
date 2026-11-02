@@ -2,6 +2,7 @@
 // No token or initData persistence. Notification consent is always explicit.
 window.Telegram?.WebApp?.ready();
 let cloudBusy=false;
+let cloudRevision=0;
 let notificationState=null;
 let connectionIssue="";
 function renderNotificationStatus() {
@@ -52,6 +53,7 @@ function cloudMessage(message) {
 }
 async function cloudAction(action) {
   if(cloudBusy) return;
+  cloudRevision++;
   cloudBusy=true;
   $("saveCloudSearch").disabled=true;$("confirmSaveSearch").disabled=true;$("refreshCloud").disabled=true;
   $("refreshSettings").disabled=true;
@@ -61,17 +63,27 @@ async function cloudAction(action) {
   finally {cloudBusy=false;$("saveCloudSearch").disabled=false;$("confirmSaveSearch").disabled=false;$("refreshCloud").disabled=false;$("refreshSettings").disabled=false;renderNotificationStatus();}
 }
 async function loadCloud() {
-  $("cloudSearchList").replaceChildren();
-  $("cloudTitle").textContent="Підписки в акаунті Telegram";
-  $("cloudCount").textContent="…";
   const items=await window.AutoDealCloud.list();
   if(!Array.isArray(items)) throw Error("Некоректна відповідь сервера.");
-  notificationState=null;
-  if(window.AutoDealCloud.notificationStatus) {
-    try {notificationState=await window.AutoDealCloud.notificationStatus();connectionIssue="";}
-    catch(error) {connectionIssue=error.message||"сервер не відповідає";}
+  renderCloudItems(items);
+  cloudMessage(items.length?"Список оновлено.":"В акаунті ще немає підписок. Натисни «+ Нова підписка» та обери фільтри.");
+  if(window.AutoDealCloud.notificationStatus) void refreshListStatus(items,cloudRevision);
+}
+async function refreshListStatus(items,revision) {
+  try {
+    const state=await window.AutoDealCloud.notificationStatus();
+    if(revision!==cloudRevision) return;
+    notificationState=state;
+    connectionIssue="";
+  } catch(error) {
+    if(revision!==cloudRevision) return;
+    notificationState=null;
+    connectionIssue=error.message||"сервер не відповідає";
   }
   renderNotificationStatus();
+  renderCloudItems(items);
+}
+function renderCloudItems(items) {
   const cards=items.map(item=>{
     const filters=savedAPI.normalize(item.filters);
     const statuses={starting:"починаємо стежити за новими оголошеннями",watching:"моніторинг працює",
@@ -83,7 +95,7 @@ async function loadCloud() {
       connection_error:"AUTO.RIA не відповідає · повторимо перевірку",upstream_error:"помилка AUTO.RIA · повторимо перевірку",
       key_rejected:"AUTO.RIA відхилила API-ключ",access_denied:"AUTO.RIA обмежила доступ"};
     let status=item.enabled?
-      (notificationState?.available?(statuses[item.monitor_status]||"очікуємо перевірку джерела"):"Моніторинг тимчасово недоступний"):"На паузі · сповіщення вимкнені";
+      (!notificationState?"Увімкнено · стан перевірки ще невідомий":notificationState.available?(statuses[item.monitor_status]||"очікуємо перевірку джерела"):"Моніторинг тимчасово недоступний"):"На паузі · сповіщення вимкнені";
     if(item.enabled&&notificationState?.available&&item.pending_count>0) status+=" · у черзі: "+item.pending_count;
     if(item.enabled&&notificationState?.available&&item.unvalued_count>0) status+=" · бракує даних для оцінки: "+item.unvalued_count;
     const reasons={missing_details:"неповні характеристики авто",insufficient_comparables:"замало схожих авто",
@@ -105,8 +117,6 @@ async function loadCloud() {
   $("cloudSearchList").replaceChildren(...cards);
   $("cloudTitle").textContent="Підписки в акаунті Telegram ("+items.length+")";
   $("cloudCount").textContent=String(items.length);
-  cloudMessage(connectionIssue?"Підписки завантажено, але підключення не підтверджено: "+connectionIssue:
-    items.length?"Список оновлено.":"В акаунті ще немає підписок. Натисни «+ Нова підписка» та обери фільтри.");
 }
 async function loadSettings() {
   notificationState=null;
