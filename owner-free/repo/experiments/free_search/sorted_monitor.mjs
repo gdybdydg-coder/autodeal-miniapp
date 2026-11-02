@@ -7,8 +7,8 @@ import path from 'node:path';
 import {fileURLToPath} from 'node:url';
 
 const SORT = 'dates.created.desc';
-export function accessDenied({status,body,visibleCaptcha,validContent}) {
-  if([401,403,429].includes(status))return true;
+export function accessDenied({status,body,visibleCaptcha,validContent,challengeHeader}) {
+  if([401,403,429].includes(status)||challengeHeader==='challenge')return true;
   // A widget or quoted phrase in listing text is not an access challenge.
   return !validContent && (visibleCaptcha || /verify you are human|access denied|just a moment|підтверд.*не робот/i.test(body));
 }
@@ -227,7 +227,7 @@ async function main() {
     });
     const tab=await context.newPage();
     let requests=0;
-    async function readPage(url) {
+    async function reserveNavigation() {
       const now=Date.now()/1000;
       if(ledger.hold_until>now)throw Error(ledger.hold_reason ?? 'source_hold');
       ledger.attempts=ledger.attempts.filter(t=>now-t<86400);
@@ -245,26 +245,50 @@ async function main() {
       if(wait>60)throw Error('wait_until_next_at');
       if(wait)await new Promise(r=>setTimeout(r,wait*1000));
       ledger.attempts.push(Date.now()/1000);requests++;ledger.next_at=Date.now()/1000+30;await save(transportFile,ledger);
+    }
+    async function readPage(url, comparison=null) {
+      await reserveNavigation();
       try {
-        const response=await tab.goto(url,{waitUntil:'domcontentloaded',timeout:30000});
-        const status=response?.status();
-        const body=await tab.locator('body').innerText();
-        const visibleCaptcha=await tab.locator('iframe[src*="captcha"],.g-recaptcha').evaluateAll(es=>es.some(e=>e.getClientRects().length && getComputedStyle(e).visibility!=='hidden'));
-        let validContent=false;
-        if(detail)validContent=body.replace(/\s+/g,' ').includes('ID авто '+detail);
-        else {
-          try{validatePage(await tab.evaluate(readSortedDOM),searchIdentity(url),Number(new URL(url).searchParams.get('page')));validContent=true;}catch{}
+        let status,retryAfter,body,challengeHeader,visibleCaptcha=false,validContent=false;
+        if(comparison) {
+          const started=Date.now();
+          const response=await fetch(url,{redirect:'manual',signal:AbortSignal.timeout(20000)});
+          status=response.status;retryAfter=response.headers.get('retry-after');
+          challengeHeader=response.headers.get('cf-mitigated');
+          comparison.http_status=status;
+          const html=await response.text();
+          comparison.http_ms=Date.now()-started;
+          const parsed=await tab.evaluate(markup=>{
+            const template=document.createElement('template');template.innerHTML=markup;
+            const root=template.content;
+            root.querySelectorAll('script,style,noscript').forEach(el=>el.remove());
+            return {ids:[...root.querySelectorAll('main .items-list > a[data-car-id]')].map(el=>el.dataset.carId),
+              title:root.querySelector('title')?.textContent??'',text:(root.textContent??'').slice(0,5000)};
+          },html);
+          comparison.http_cards=parsed.ids.length;
+          comparison.common_ids=parsed.ids.filter(id=>comparison.browser_ids.includes(id)).length;
+          validContent=parsed.ids.some(id=>/^[1-9]\d*$/.test(id));
+          body=parsed.title+' '+parsed.text;
+        } else {
+          const response=await tab.goto(url,{waitUntil:'domcontentloaded',timeout:30000});
+          status=response?.status();retryAfter=response?.headers()['retry-after'];
+          challengeHeader=response?.headers()['cf-mitigated'];
+          body=await tab.locator('body').innerText();
+          visibleCaptcha=await tab.locator('iframe[src*="captcha"],.g-recaptcha').evaluateAll(es=>es.some(e=>e.getClientRects().length && getComputedStyle(e).visibility!=='hidden'));
+          if(detail)validContent=body.replace(/\s+/g,' ').includes('ID авто '+detail);
+          else {
+            try{validatePage(await tab.evaluate(readSortedDOM),searchIdentity(url),Number(new URL(url).searchParams.get('page')));validContent=true;}catch{}
+          }
         }
-        if(accessDenied({status,body,visibleCaptcha,validContent})) {
+        if(accessDenied({status,body,visibleCaptcha,validContent,challengeHeader})) {
           ledger.denials=(ledger.denials??(ledger.hold_reason==='source_denied_or_challenge'?1:0))+1;
-          ledger.hold_until=Date.now()/1000+sourceHoldSeconds(response?.headers()['retry-after'],ledger.denials);
+          ledger.hold_until=Date.now()/1000+sourceHoldSeconds(retryAfter,ledger.denials);
           ledger.hold_reason='source_denied_or_challenge';
-          ledger.last_failure={at:Date.now()/1000,status,visible_captcha:visibleCaptcha,valid_content:validContent,title:await tab.title()};
+          ledger.last_failure={at:Date.now()/1000,status,visible_captcha:visibleCaptcha,valid_content:validContent};
           await save(transportFile,ledger);throw Error(ledger.hold_reason);
         }
         if(detail && [404,410].includes(status))throw Error('listing_gone');
         if(status!==200){
-          const retryAfter=response?.headers()['retry-after'];
           const now=Date.now()/1000;
           const temporary=[500,502,503,504].includes(status);
           if(temporary)ledger.server_errors=(ledger.server_errors??0)+1;
@@ -273,6 +297,7 @@ async function main() {
           ledger.last_failure={at:now,status,retry_after_seconds:retryAfterSeconds(retryAfter,now),visible_captcha:visibleCaptcha,valid_content:validContent};
           await save(transportFile,ledger);throw Error(ledger.hold_reason);
         }
+        if(comparison)return;
         ledger.server_errors=0;
         if(detail){
           const {tabAdapter}=await import('./owner_browser_service.mjs');
@@ -300,6 +325,23 @@ async function main() {
       const results=await pollGroup(readPage, options.url, await load(options.state),
         {maxPages:Number(options['max-pages'] ?? 10)});
       await save(options.output, results);
+      if(options['compare-http']==='true') {
+        const file=path.join(cache,'access-comparison-v1.json');
+        if(!await load(file)){
+          const ids=Object.values(results)[0].pages[0].ids;
+          const summary={browser_status:200,browser_cards:ids.length,state:'started'};
+          await save(file,summary);
+          summary.browser_ids=ids;
+          try {
+            await readPage(options.url,summary);
+            summary.state='finished';
+          } catch(e) {
+            summary.state=/^(source_denied_or_challenge|local_navigation_budget|http_\d{3})$/.test(e.message)?e.message:'probe_failed';
+          }
+          delete summary.browser_ids;
+          await save(file,summary);
+        }
+      }
       return;
     }
     const poll=options['head-only']==='true'?pollHead:pollSorted;

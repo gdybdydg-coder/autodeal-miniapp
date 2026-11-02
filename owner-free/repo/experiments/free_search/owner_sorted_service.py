@@ -43,7 +43,11 @@ def source_url(db, filters):
         row = db.get(SourceCache, digest)
         if row is None:
             # Public search checkbox IDs observed 2026-11-01; not paid lookups.
-            public={'states':{'Вінницька':1,'Тернопільська':3,'Хмельницька':4,'Чернівецька':25},
+            public={'states':{'Вінницька':1,'Житомирська':2,'Тернопільська':3,'Хмельницька':4,
+                'Львівська':5,'Чернігівська':6,'Харківська':7,'Сумська':8,'Рівненська':9,'Київська':10,
+                'Дніпропетровська':11,'Донецька':13,'Запорізька':14,'Івано-Франківська':15,
+                'Кіровоградська':16,'Волинська':18,'Полтавська':20,'Закарпатська':22,
+                'Черкаська':24,'Чернівецька':25},
                 'categories/1/marks':{'Audi':6},'categories/1/marks/6/models':{'A6':49}}
             if route in public and all(n in public[route] for n in names):
                 return [public[route][n] for n in names]
@@ -89,11 +93,16 @@ def current(engine, owner):
         for search, watch in db.execute(select(Search, MonitorWatch).join(
                 MonitorWatch, MonitorWatch.search_id == Search.id).where(
                 Search.user_id == owner, Search.enabled.is_(True))):
-            f = Filters.model_validate(search.filters)
-            if f.fingerprint() != search.fingerprint:
-                raise ValueError('filter_fingerprint_mismatch')
+            try:
+                f = Filters.model_validate(search.filters)
+                if f.fingerprint() != search.fingerprint:
+                    raise ValueError('filter_fingerprint_mismatch')
+                url = source_url(db, f)
+            except ValueError:
+                print(json.dumps(dict(event='invalid_search_filter',search_id=search.id)),flush=True)
+                continue
             result.append(dict(id=search.id, name=search.name, filters=f.canonical(),
-                fingerprint=search.fingerprint, epoch=watch.epoch, url=source_url(db,f)))
+                fingerprint=search.fingerprint, epoch=watch.epoch, url=url))
         return result
 
 
@@ -187,6 +196,8 @@ def main():
     node = os.environ.get('AUTODEAL_OWNER_NODE') or shutil.which('node')
     if not node: raise ValueError('node_missing')
     def browser(url, group=None, ident=None):
+        probe_file=root/'cache'/'access-comparison-v1.json'
+        compare=group and os.environ.get('AUTODEAL_COMPARE_HTTP')=='1' and not probe_file.exists()
         ledger=root/'cache'/'transport.json'
         if ledger.exists():
             hold=json.loads(ledger.read_text(encoding='utf-8')).get('hold_until',0)
@@ -197,6 +208,7 @@ def main():
              '--output',str(output),'--cache-dir',str(root/'cache'),'--daily-limit','2400']
         if ident: cmd += ['--detail-id',ident]
         else:
+            if compare: cmd += ['--compare-http','true']
             checkpoints = {}
             for search in group:
                 key = search_key(search)
@@ -206,6 +218,8 @@ def main():
             cmd += ['--state', str(state), '--max-pages', '10', '--grouped-heads', 'true']
         p=subprocess.run(cmd,cwd=REPO,env=child_environment(os.environ),capture_output=True,
             timeout=1500,creationflags=subprocess.CREATE_NO_WINDOW if os.name=='nt' else 0)
+        if compare and probe_file.exists():
+            metric('access_comparison', search_id=group[0]['id'], **json.loads(probe_file.read_text(encoding='utf-8')))
         if p.returncode:
             # Fixed parser diagnostics only, no credentials or request tokens.
             error=p.stderr.decode('utf-8',errors='replace')[:500]
@@ -320,8 +334,9 @@ def main():
                             state='pending'
                     with recipient_store.db:
                         recipient_store.db.execute('UPDATE jobs SET state=?,reason=? WHERE key=? AND id=?',(state,reason,key,ident))
+                    cause=reason.removeprefix('browser_failed:').partition(':')[0].strip()
                     metric('candidate',search_id=s['id'],listing_id=ident,state=state,reason=reason,
-                        cause=reason.partition(':')[0],
+                        cause=cause if re.fullmatch(r'[A-Za-z0-9_.]{1,64}',cause) else 'other',
                         first_seen=first_seen,discovery_to_decision_seconds=time.time()-first_seen)
                     if state=='pending':break
             # Start-to-start target, rather than work time plus a fixed sleep.
