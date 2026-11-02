@@ -7,8 +7,9 @@ import path from 'node:path';
 import {fileURLToPath} from 'node:url';
 
 const SORT = 'dates.created.desc';
-export function accessDenied({status,body,visibleCaptcha,validContent,challengeHeader}) {
+export function accessDenied({status,body,visibleCaptcha,validContent,challengeHeader,title=""}) {
   if([401,403,429].includes(status)||challengeHeader==='challenge')return true;
+  if (/^(?:ваш запит (?:попав|потрапив) (?:в|у|до) категорі[юї] підозрілих|ваш запрос попал в категорию подозрительных)(?:[.!]|$)/iu.test(title.trim()))return true;
   // A widget or quoted phrase in listing text is not an access challenge.
   return !validContent && (visibleCaptcha || /verify you are human|access denied|just a moment|підтверд.*не робот/i.test(body));
 }
@@ -273,7 +274,7 @@ async function main() {
     async function readPage(url, comparison=null) {
       await reserveNavigation();
       try {
-        let status,retryAfter,body,challengeHeader,visibleCaptcha=false,validContent=false;
+        let status,retryAfter,body,title,challengeHeader,visibleCaptcha=false,validContent=false;
         if(comparison) {
           const started=Date.now();
           const response=await fetch(url,{redirect:'manual',signal:AbortSignal.timeout(20000)});
@@ -292,11 +293,12 @@ async function main() {
           comparison.http_cards=parsed.ids.length;
           comparison.common_ids=parsed.ids.filter(id=>comparison.browser_ids.includes(id)).length;
           validContent=parsed.ids.some(id=>/^[1-9]\d*$/.test(id));
-          body=parsed.title+' '+parsed.text;
+          title=parsed.title;body=parsed.text;
         } else {
           const response=await tab.goto(url,{waitUntil:'domcontentloaded',timeout:30000});
           status=response?.status();retryAfter=response?.headers()['retry-after'];
           challengeHeader=response?.headers()['cf-mitigated'];
+          title=await tab.title();
           body=await tab.locator('body').innerText();
           visibleCaptcha=await tab.locator('iframe[src*="captcha"],.g-recaptcha').evaluateAll(es=>es.some(e=>e.getClientRects().length && getComputedStyle(e).visibility!=='hidden'));
           if(detail)validContent=body.replace(/\s+/g,' ').includes('ID авто '+detail);
@@ -304,7 +306,7 @@ async function main() {
             try{validatePage(await tab.evaluate(readSortedDOM),searchIdentity(url),Number(new URL(url).searchParams.get('page')));validContent=true;}catch{}
           }
         }
-        if(accessDenied({status,body,visibleCaptcha,validContent,challengeHeader})) {
+        if(accessDenied({status,body,title,visibleCaptcha,validContent,challengeHeader})) {
           recordDenial(status,retryAfter,visibleCaptcha,validContent);
           await save(transportFile,ledger);throw Error(ledger.hold_reason);
         }
@@ -332,25 +334,8 @@ async function main() {
           } catch(error) {
             const visible=await tab.locator('body').innerText({timeout:2000}).catch(()=>'');
             const hasIdentity=new RegExp('ID\\s+авто\\s+'+detail+'\\b','i').test(visible);
-            if(error.message==='listing_identity_not_visible') {
-              const info=await tab.evaluate(expected=>{
-                const text=document.body.innerText;
-                const tags=[...document.querySelectorAll('script[type="application/ld+json"]')];
-                const vehicle=tags.some(s=>/"@type"\s*:\s*"(?:Car|Vehicle)"/.test(s.textContent));
-                const idFragment=text.match(new RegExp('(?:^|\\n)([^\\n]{0,25})'+expected+'(?=\\s|$)'));
-                const title=document.title.trim();
-                return {lang:document.documentElement.lang.slice(0,12),vehicle,
-                  title_kind:/AUTO.RIA/i.test(title)?'auto_ria':(/^[\p{L}\s.!–-]{1,90}$/u.test(title)?title:'other'),
-                  canonical:document.querySelector('link[rel=canonical]')?.href===location.href,
-                  has_id:text.includes(expected),id_label:idFragment?.[1]?.replace(/[^\p{L} :№#]/gu,'').slice(0,25),
-                  visible_chars:text.length,price_control:/Середня ціна|Средняя цена/i.test(text),
-                  h1:!!document.querySelector('h1'),cookie:/cookie|файл[иів]+ cookie/i.test(text),
-                  sample:!vehicle&&text.length<2000?text.split('\n').map(s=>s.trim()).filter(s=>/^[\p{L}\s.!?,’'–-]{3,110}$/u.test(s)).slice(0,3):[]};
-              },detail);
-              console.log(JSON.stringify({event:'detail_layout',...info}));
-            }
             const captcha=await tab.locator('iframe[src*="captcha"],.g-recaptcha').filter({visible:true}).count();
-            if(accessDenied({status,body:visible,visibleCaptcha:captcha>0,validContent:hasIdentity}))
+            if(accessDenied({status,title:await tab.title(),body:visible,visibleCaptcha:captcha>0,validContent:hasIdentity}))
               recordDenial(status,retryAfter,captcha>0,hasIdentity);
             throw error;
           }
