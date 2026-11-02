@@ -178,6 +178,19 @@ export async function pollHead(readPage,url,previous=null,{maxPages=10,now=Date.
       head_ids:cards.filter(c=>!c.promoted&&!unclassified.some(u=>u.id===c.id)).slice(0,50).map(c=>c.id),checked_at:now}:null};
 }
 
+export async function pollGroup(readPage, url, checkpoints, options) {
+  const pages = new Map();
+  const results = {};
+  async function sharedRead(pageUrl) {
+    if (!pages.has(pageUrl)) pages.set(pageUrl, await readPage(pageUrl));
+    return pages.get(pageUrl);
+  }
+  for (const [key, previous] of Object.entries(checkpoints)) {
+    results[key] = await pollHead(sharedRead, url, previous, options);
+  }
+  return results;
+}
+
 async function load(file,fallback=null) {
   try{return JSON.parse(await fs.readFile(file,'utf8'));}catch(e){if(e.code==='ENOENT')return fallback;throw e;}
 }
@@ -268,6 +281,12 @@ async function main() {
       }
     }
     if(detail){await save(options.output,await readPage(options.url));console.log(JSON.stringify({detail_id:detail,captured:true}));return;}
+    if(options['grouped-heads']==='true'){
+      const results=await pollGroup(readPage, options.url, await load(options.state),
+        {maxPages:Number(options['max-pages'] ?? 10)});
+      await save(options.output, results);
+      return;
+    }
     const poll=options['head-only']==='true'?pollHead:pollSorted;
     const result=await poll(readPage,options.url,await load(options.state),{
       baselineReport:options['baseline-report']?await load(options['baseline-report']):null,

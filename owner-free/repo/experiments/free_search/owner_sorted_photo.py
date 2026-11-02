@@ -17,7 +17,7 @@ class SortedTelegramPhoto(TelegramCard):
         if not isinstance(text,str) or not 1<=len(text)<=4096:raise ValueError('invalid_owner_text')
         if not re.fullmatch(r'https://auto\.ria\.com/uk/auto_[A-Za-z0-9_-]+_[1-9][0-9]{0,11}\.html',url):raise ValueError('invalid_listing_url')
         if photo is not None and safe_url(photo)!=photo:raise ValueError('invalid_owner_photo')
-        payload={'parse_mode':'HTML','reply_markup':{'inline_keyboard':[[{'text':'🔗 Відкрити оголошення','url':url}]]}}
+        payload={'reply_markup':{'inline_keyboard':[[{'text':'🔗 Відкрити оголошення','url':url}]]}}
         # Conservative caption bound, including entities, avoids truncating content.
         if photo and len(text.encode('utf-16-le'))//2<=1024:
             result=self.request('sendPhoto',{**payload,'photo':photo,'caption':text})

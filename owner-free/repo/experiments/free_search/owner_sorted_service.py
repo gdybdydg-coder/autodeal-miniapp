@@ -5,7 +5,6 @@ at-most-once Telegram attempts. Credentials never reach the browser subprocess.
 """
 import argparse
 import hashlib
-from html import escape
 import json
 import os
 import random
@@ -22,6 +21,7 @@ REPO = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(REPO))
 from sqlalchemy import create_engine, select
 from sqlalchemy.orm import Session
+from backend.listing_card import listing_caption, market_lines
 from backend.models import Filters, Search, User, SourceCache, MonitorWatch
 from experiments.free_search.owner_local_bridge import child_environment, atomic_json
 from experiments.free_search.owner_sorted_photo import SortedTelegramPhoto, notification
@@ -122,12 +122,11 @@ def qualify(raw, filters, now):
     rule = evaluate(quote['lower_usd'],row['price'],filters.get('minDiscount',15))
     if not rule['eligible']:
         raise ValueError('below_saved_discount')
-    text = (f"🚘 {escape(row['brand'])} {escape(row['model'])} · {row['year']}\n"
-        f"Ціна: ${row['price']}\nНижня межа оцінки RIA: ${quote['lower_usd']}\n"
-        f"Ваш поріг: {rule['required_discount_percent']}% після резерву 5%\n"
-        f"Максимальна ціна за правилом: ${Decimal(rule['maximum_price_usd']):.2f}\n"
-        "Нове для цього спостереження. Оцінка не підтверджує технічний стан.\n"
-        f"{escape(page.url)}\n/stop — зупинити сповіщення")
+    pricing = market_lines(row['price'], rule['reference_usd'])
+    pricing.append("⚠️ Стан авто не підтверджено даними джерела")
+    text = listing_caption(row['brand'], row['model'], row['year'], row['fuel'],
+                           row['transmission'], row['mileage_km'], visible.region,
+                           row['price'], pricing)
     return text, {**quote, **rule}
 
 
@@ -173,10 +172,20 @@ def main():
     lock = root/'worker.lock'
     handle = lock.open('x'); handle.write(str(os.getpid())); handle.flush()
     store = Store(root/'state.sqlite3',owner)
-    transport = SortedTelegramPhoto(os.environ['AUTODEAL_OWNER_TELEGRAM_TOKEN'],owner)
+    recipients = [owner]
+    extra = os.environ.get('AUTODEAL_SECOND_CHAT_ID')
+    if extra:
+        if not extra.isdecimal() or int(extra) <= 0 or int(extra) == owner:
+            raise ValueError('invalid_second_recipient')
+        recipients.append(int(extra))
+    stores = {owner: store}
+    for uid in recipients[1:]:
+        stores[uid] = Store(root/f'recipient-{uid}.sqlite3', uid)
+    transports = {uid: SortedTelegramPhoto(os.environ['AUTODEAL_OWNER_TELEGRAM_TOKEN'], uid)
+                  for uid in recipients}
     node = os.environ.get('AUTODEAL_OWNER_NODE') or shutil.which('node')
     if not node: raise ValueError('node_missing')
-    def browser(url, key=None, ident=None):
+    def browser(url, group=None, ident=None):
         ledger=root/'cache'/'transport.json'
         if ledger.exists():
             hold=json.loads(ledger.read_text(encoding='utf-8')).get('hold_until',0)
@@ -187,9 +196,13 @@ def main():
              '--output',str(output),'--cache-dir',str(root/'cache'),'--daily-limit','2400']
         if ident: cmd += ['--detail-id',ident]
         else:
-            previous=store.db.execute('SELECT state FROM checkpoints WHERE key=?',(key,)).fetchone()
-            if previous: atomic_json(state,json.loads(previous[0]))
-            cmd += ['--state',str(state),'--max-pages','10','--head-only','true']
+            checkpoints = {}
+            for search in group:
+                key = search_key(search)
+                row = stores[search['recipient']].db.execute('SELECT state FROM checkpoints WHERE key=?', (key,)).fetchone()
+                checkpoints[key] = json.loads(row[0]) if row else None
+            atomic_json(state, checkpoints)
+            cmd += ['--state', str(state), '--max-pages', '10', '--grouped-heads', 'true']
         p=subprocess.run(cmd,cwd=REPO,env=child_environment(os.environ),capture_output=True,
             timeout=1500,creationflags=subprocess.CREATE_NO_WINDOW if os.name=='nt' else 0)
         if p.returncode:
@@ -214,59 +227,80 @@ def main():
             atomic_json(status_file,prior)
             while time.time()<prior.get('next_poll',0) and not (root/'stop').exists():
                 time.sleep(1)
+        last_polled = {}
         while not (root/'stop').exists():
             cycle_started=time.time()
-            searches=current(engine,owner)
+            searches = [dict(search, recipient=uid) for uid in recipients for search in current(engine, uid)]
             statuses=[]
-            for s in searches:
-                key=search_key(s)
-                atomic_json(root/'status.json',dict(at=time.time(),pid=os.getpid(),phase='collecting',
-                    current_search=s['id'],searches=statuses,paid_api_calls=0,next_poll=cycle_started+120,cadence='owner_fast_v1'))
+            groups = {}
+            for search in searches:
+                groups.setdefault(search['url'], []).append(search)
+            # Reserve navigation budget for detail pages and rotate independent searches.
+            for url, group in sorted(groups.items(), key=lambda item: last_polled.get(item[0], 0))[:2]:
+                if (root/'stop').exists() or time.time() - cycle_started >= 60:
+                    break
+                poll_started = time.time()
+                last_polled[url] = poll_started
+                atomic_json(root/'status.json', dict(at=poll_started, pid=os.getpid(), phase='collecting',
+                    current_search=group[0]['id'], searches=statuses, paid_api_calls=0,
+                    next_poll=cycle_started+120, cadence='owner_fast_v1'))
                 try:
-                    poll_started=time.time()
-                    result=browser(s['url'],key=key)
-                    store.accept(key,result)
-                    metric('poll',search_id=s['id'],started_at=poll_started,duration=time.time()-poll_started,
-                        pages=result['pages_read'],ids=[c['id'] for c in result['observed_cards']],
-                        new_ids=[c['id'] for c in result['newly_observed']],
-                        unclassified_ids=[c['id'] for c in result.get('unclassified_after_overlap',[])])
-                    statuses.append(dict(search_id=s['id'],pages=result['pages_read'],
-                        new=len(result['newly_observed']),total=result['pages'][0]['total'],state='checked'))
+                    results = browser(url, group=group)
                 except Exception as exc:
-                    statuses.append(dict(search_id=s['id'],state='blocked',reason=str(exc)[:500]))
-                    metric('poll_error',search_id=s['id'],reason=str(exc)[:500])
+                    for search in group:
+                        statuses.append(dict(search_id=search['id'], state='blocked', reason=str(exc)[:500]))
+                        metric('poll_error', search_id=search['id'], reason=str(exc)[:500])
                     continue
+                for search in group:
+                    key = search_key(search)
+                    result = results[key]
+                    if not result['complete']:
+                        metric('poll_error', search_id=search['id'], reason=result['reason'])
+                        continue
+                    stores[search['recipient']].accept(key, result)
+                    new_ids = [card['id'] for card in result['newly_observed']]
+                    metric('poll', search_id=search['id'], started_at=poll_started,
+                           duration=time.time()-poll_started, pages=result['pages_read'], new_ids=new_ids,
+                           ids=[c['id'] for c in result['observed_cards']],
+                           unclassified_ids=[c['id'] for c in result['unclassified_after_overlap']])
+                    statuses.append(dict(search_id=search['id'], pages=result['pages_read'],
+                        new=len(new_ids), total=result['pages'][0]['total'], state='checked'))
+            details = {}
             # Discover both searches before slow detail/valuation work.
             for s in searches:
+                uid = s['recipient']
+                recipient_store = stores[uid]
                 key=search_key(s)
-                for ident,url,first_seen in store.db.execute("SELECT id,url,first_seen FROM jobs WHERE key=? AND state='pending' ORDER BY first_seen DESC,rowid ASC LIMIT 3",(key,)).fetchall():
+                for ident,url,first_seen in recipient_store.db.execute("SELECT id,url,first_seen FROM jobs WHERE key=? AND state='pending' ORDER BY first_seen DESC,rowid ASC LIMIT 3",(key,)).fetchall():
                     if (root/'stop').exists() or time.time()-cycle_started>=85: break
                     state,reason='rejected',''
                     try:
-                        if store.db.execute('SELECT 1 FROM sent WHERE id=?',(ident,)).fetchone():
+                        if recipient_store.db.execute('SELECT 1 FROM sent WHERE id=?',(ident,)).fetchone():
                             raise ValueError('previous_send_attempt')
                         if time.time()-first_seen>1800: raise ValueError('candidate_expired')
-                        if not any(search_key(v)==key for v in current(engine,owner)):
+                        if not any(search_key(v)==key for v in current(engine,uid)):
                             raise ValueError('search_stopped_or_changed')
-                        raw=browser(url,ident=ident)
+                        if ident not in details:
+                            details[ident] = browser(url, ident=ident)
+                        raw = details[ident]
                         text,evidence=qualify(raw,s['filters'],time.time())
-                        if not any(search_key(v)==key for v in current(engine,owner)):
+                        if not any(search_key(v)==key for v in current(engine,uid)):
                             raise ValueError('search_stopped_or_changed')
-                        with store.db:
-                            store.db.execute('INSERT INTO sent VALUES(?,?,?,?)',(ident,'attempting',None,json.dumps(evidence)))
-                        response=transport(owner,notification(raw,text))
+                        with recipient_store.db:
+                            recipient_store.db.execute('INSERT INTO sent VALUES(?,?,?,?)',(ident,'attempting',None,json.dumps(evidence)))
+                        response=transports[uid](uid,notification(raw,text))
                         message=response.get('result',{})
                         state='sent' if response.get('ok') is True and type(message.get('message_id')) is int else 'uncertain'
-                        with store.db:
-                            store.db.execute('UPDATE sent SET state=?,message_id=? WHERE id=?',(state,message.get('message_id'),ident))
+                        with recipient_store.db:
+                            recipient_store.db.execute('UPDATE sent SET state=?,message_id=? WHERE id=?',(state,message.get('message_id'),ident))
                     except Exception as exc:
                         reason=str(exc)[:500]
                         # Keep unsent candidates pending on temporary source access failures.
                         # Their original first_seen and expiry are never reset.
                         if reason.startswith(('source_hold_until:','browser_failed:')):
                             state='pending'
-                    with store.db:
-                        store.db.execute('UPDATE jobs SET state=?,reason=? WHERE key=? AND id=?',(state,reason,key,ident))
+                    with recipient_store.db:
+                        recipient_store.db.execute('UPDATE jobs SET state=?,reason=? WHERE key=? AND id=?',(state,reason,key,ident))
                     metric('candidate',search_id=s['id'],listing_id=ident,state=state,reason=reason,
                         first_seen=first_seen,discovery_to_decision_seconds=time.time()-first_seen)
                     if state=='pending':break
@@ -288,7 +322,9 @@ def main():
                 if (root/'stop').exists(): break
                 time.sleep(1)
     finally:
-        store.db.close();engine.dispose();handle.close();lock.unlink()
+        for recipient_store in stores.values():
+            recipient_store.db.close()
+        engine.dispose();handle.close();lock.unlink()
 
 if __name__=='__main__':
     try:main()
