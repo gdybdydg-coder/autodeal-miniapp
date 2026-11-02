@@ -52,9 +52,12 @@ async function listingIdentity(tab, expectedId) {
   if (!/^[1-9][0-9]{0,11}$/.test(expectedId) ||
       !new RegExp(`^https://auto\\.ria\\.com/uk/auto_[A-Za-z0-9_-]+_${expectedId}\\.html$`).test(url))
     throw Error('range_url_mismatch');
-  const identity = await tab.playwright.getByText(new RegExp(`^ID авто\\s+${expectedId}$`)).innerText();
-  if (identity.trim().split(/\s+/).at(-1) !== expectedId) throw Error('range_identity_mismatch');
-  return {url, identity};
+  const labels = await tab.playwright.getByText(/^ID\s+авто\s+[1-9]\d{0,11}$/i)
+    .filter({visible:true}).allTextContents({});
+  const ids = new Set(labels.map(text=>text.trim().split(/\s+/).at(-1)));
+  if (!ids.size) throw Error('listing_identity_not_visible');
+  if (ids.size!==1 || !ids.has(expectedId)) throw Error('range_identity_mismatch');
+  return {url, identity:'ID авто '+expectedId};
 }
 
 export async function captureRange(tab, expectedId) {

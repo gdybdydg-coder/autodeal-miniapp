@@ -12,6 +12,10 @@ export function accessDenied({status,body,visibleCaptcha,validContent,challengeH
   // A widget or quoted phrase in listing text is not an access challenge.
   return !validContent && (visibleCaptcha || /verify you are human|access denied|just a moment|підтверд.*не робот/i.test(body));
 }
+export function limitedSourceRequest(responseUrl,kind,status,challengeHeader) {
+  return new URL(responseUrl).origin==='https://auto.ria.com' &&
+    ['document','fetch','xhr'].includes(kind) && (status===429 || challengeHeader==='challenge');
+}
 function retryAfterSeconds(retryAfter, now) {
   const text=String(retryAfter??'').trim();
   const retry=/^\d+$/.test(text)?Number(text):Math.max(0,Date.parse(text)/1000-now);
@@ -216,6 +220,21 @@ async function main() {
   let browser;
   try {
     const ledger=await load(transportFile,{next_at:0,hold_until:0,attempts:[]});
+    let sourceDenied=false;
+    function recordDenial(status,retryAfter,visibleCaptcha=false,validContent=false) {
+      const now=Date.now()/1000;
+      if(!sourceDenied){
+        sourceDenied=true;
+        const last=ledger.last_denied_at??ledger.last_failure?.at??0;
+        ledger.denials=(now-last<86400?(ledger.denials??0):0)+1;
+        ledger.last_denied_at=now;
+        ledger.last_failure={at:now,status,visible_captcha:visibleCaptcha,valid_content:validContent};
+        ledger.hold_reason='source_denied_or_challenge';
+        ledger.hold_until=now+sourceHoldSeconds(retryAfter,ledger.denials);
+      }else{
+        ledger.hold_until=Math.max(ledger.hold_until,now+retryAfterSeconds(retryAfter,now));
+      }
+    }
     process.env.PLAYWRIGHT_BROWSERS_PATH=process.env.AUTODEAL_OWNER_BROWSER_BINARIES || '/opt/browsers';
     const {chromium}=await import('playwright');
     browser=await chromium.launch({headless:true});
@@ -223,9 +242,14 @@ async function main() {
     // These routes belong to the paid developer API and are never needed here.
     await context.route('**/*',async route=>{
       const host=new URL(route.request().url()).hostname;
-      if(host==='developers.ria.com' || host==='api.telegram.org' || ['image','media','font'].includes(route.request().resourceType()))await route.abort();else await route.continue();
+      if(sourceDenied || host==='developers.ria.com' || host==='api.telegram.org' || ['image','media','font'].includes(route.request().resourceType()))await route.abort();else await route.continue();
     });
     const tab=await context.newPage();
+    tab.on('response',r=>{
+      const headers=r.headers();
+      if(limitedSourceRequest(r.url(),r.request().resourceType(),r.status(),headers['cf-mitigated']))
+        recordDenial(r.status(),headers['retry-after']);
+    });
     let requests=0;
     async function reserveNavigation() {
       const now=Date.now()/1000;
@@ -281,12 +305,10 @@ async function main() {
           }
         }
         if(accessDenied({status,body,visibleCaptcha,validContent,challengeHeader})) {
-          ledger.denials=(ledger.denials??(ledger.hold_reason==='source_denied_or_challenge'?1:0))+1;
-          ledger.hold_until=Date.now()/1000+sourceHoldSeconds(retryAfter,ledger.denials);
-          ledger.hold_reason='source_denied_or_challenge';
-          ledger.last_failure={at:Date.now()/1000,status,visible_captcha:visibleCaptcha,valid_content:validContent};
+          recordDenial(status,retryAfter,visibleCaptcha,validContent);
           await save(transportFile,ledger);throw Error(ledger.hold_reason);
         }
+        if(sourceDenied)throw Error('source_denied_or_challenge');
         if(detail && [404,410].includes(status))throw Error('listing_gone');
         if(status!==200){
           const now=Date.now()/1000;
@@ -305,7 +327,16 @@ async function main() {
           // Background traffic can continue after the page is interactive.
           await tab.waitForLoadState('networkidle',{timeout:8000}).catch(e=>{if(e.name!=='TimeoutError')throw e;});
           const adapter=tabAdapter(tab,async()=>{});
-          await openListingRange(adapter,detail);
+          try {
+            await openListingRange(adapter,detail);
+          } catch(error) {
+            const visible=await tab.locator('body').innerText({timeout:2000}).catch(()=>'');
+            const hasIdentity=new RegExp('ID\\s+авто\\s+'+detail+'\\b','i').test(visible);
+            const captcha=await tab.locator('iframe[src*="captcha"],.g-recaptcha').filter({visible:true}).count();
+            if(accessDenied({status,body:visible,visibleCaptcha:captcha>0,validContent:hasIdentity}))
+              recordDenial(status,retryAfter,captcha>0,hasIdentity);
+            throw error;
+          }
           return {listing_id:detail,url:tab.url(),html:await tab.content(),received_at:Date.now()/1000,
             capture:await captureRange(adapter,detail),paid_api_calls:0};
         }
@@ -318,6 +349,7 @@ async function main() {
       } finally {
         // Spread load rather than synchronizing bursts; no fingerprint spoofing.
         ledger.next_at=Date.now()/1000+10+Math.random()*5;await save(transportFile,ledger);
+        if(sourceDenied)throw Error('source_denied_or_challenge');
       }
     }
     if(detail){await save(options.output,await readPage(options.url));console.log(JSON.stringify({detail_id:detail,captured:true}));return;}

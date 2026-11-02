@@ -22,7 +22,7 @@ REPO = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(REPO))
 from sqlalchemy import create_engine, select
 from sqlalchemy.orm import Session
-from backend.listing_card import listing_caption, market_lines
+from backend.listing_card import listing_caption
 from backend.models import Filters, Search, User, SourceCache, MonitorWatch
 from experiments.free_search.owner_local_bridge import child_environment, atomic_json
 from experiments.free_search.owner_sorted_photo import SortedTelegramPhoto, notification
@@ -132,8 +132,18 @@ def qualify(raw, filters, now):
     rule = evaluate(quote['lower_usd'],row['price'],filters.get('minDiscount',15))
     if not rule['eligible']:
         raise ValueError('below_saved_discount')
-    pricing = market_lines(row['price'], rule['reference_usd'])
-    pricing.append("⚠️ Стан авто не підтверджено даними джерела")
+    def dollars(value):
+        return '$' + f'{Decimal(str(value)):,.2f}'.rstrip('0').rstrip('.').replace(',', ' ').replace('.', ',')
+    def percent(value):
+        return format(Decimal(str(value)).normalize(),'f').replace('.', ',')
+    reference = Decimal(rule['reference_usd'])
+    saving = reference - Decimal(str(row['price']))
+    benefit = f"{Decimal(rule['discount_percent']):.1f}".rstrip('0').rstrip('.').replace('.', ',')
+    pricing = [f"📊 Діапазон AUTO.RIA: {dollars(quote['lower_usd'])}–{dollars(quote['upper_usd'])}",
+               f"Орієнтир (нижня межа − 5%): {dollars(reference)}",
+               f"🔥 Вигода: {benefit}% ({dollars(saving)} нижче орієнтира)",
+               f"Поріг підписки: {percent(rule['required_discount_percent'])}%",
+               "Технічний стан потребує перевірки."]
     text = listing_caption(row['brand'], row['model'], row['year'], row['fuel'],
                            row['transmission'], row['mileage_km'], visible.region,
                            row['price'], pricing)
@@ -147,6 +157,7 @@ class Store:
         self.db.executescript('CREATE TABLE IF NOT EXISTS identity(owner INTEGER PRIMARY KEY);'
             'CREATE TABLE IF NOT EXISTS checkpoints(key TEXT PRIMARY KEY,state TEXT);'
             'CREATE TABLE IF NOT EXISTS jobs(key TEXT,id TEXT,url TEXT,first_seen REAL,state TEXT,reason TEXT,PRIMARY KEY(key,id));'
+            'CREATE TABLE IF NOT EXISTS detail_delays(id TEXT PRIMARY KEY, next_at REAL NOT NULL);'
             'CREATE TABLE IF NOT EXISTS sent(id TEXT PRIMARY KEY,state TEXT,message_id INTEGER,evidence TEXT);')
         rows = self.db.execute('SELECT owner FROM identity').fetchall()
         if rows and rows != [(owner,)]:
@@ -298,12 +309,18 @@ def main():
                     statuses.append(dict(search_id=search['id'], pages=result['pages_read'],
                         new=len(new_ids), total=result['pages'][0]['total'], state='checked'))
             details = {}
+            failed_details = {}
+            for recipient_store in stores.values():
+                with recipient_store.db:
+                    recipient_store.db.execute('DELETE FROM detail_delays WHERE next_at<=?',(time.time(),))
             # Discover both searches before slow detail/valuation work.
             for s in sorted(searches, key=lambda search: last_detail.get(search_key(search), 0)):
                 uid = s['recipient']
                 recipient_store = stores[uid]
                 key=search_key(s)
-                for ident,url,first_seen in recipient_store.db.execute("SELECT id,url,first_seen FROM jobs WHERE key=? AND state='pending' ORDER BY first_seen DESC,rowid ASC LIMIT 3",(key,)).fetchall():
+                for ident,url,first_seen in recipient_store.db.execute(
+                    "SELECT id,url,first_seen FROM jobs WHERE key=? AND state='pending' "
+                    "AND id NOT IN (SELECT id FROM detail_delays) ORDER BY first_seen DESC,rowid ASC LIMIT 3",(key,)).fetchall():
                     if (root/'stop').exists() or time.time()-cycle_started>=85: break
                     last_detail[key] = time.time()
                     state,reason='rejected',''
@@ -314,7 +331,13 @@ def main():
                         if not any(search_key(v)==key for v in current(engine,uid)):
                             raise ValueError('search_stopped_or_changed')
                         if ident not in details:
-                            details[ident] = browser(url, ident=ident)
+                            if ident in failed_details:
+                                raise ValueError(failed_details[ident])
+                            try:
+                                details[ident] = browser(url, ident=ident)
+                            except ValueError as error:
+                                failed_details[ident] = str(error)
+                                raise
                         raw = details[ident]
                         text,evidence=qualify(raw,s['filters'],time.time())
                         if not any(search_key(v)==key for v in current(engine,uid)):
@@ -334,6 +357,8 @@ def main():
                             state='pending'
                     with recipient_store.db:
                         recipient_store.db.execute('UPDATE jobs SET state=?,reason=? WHERE key=? AND id=?',(state,reason,key,ident))
+                        if state=='pending':
+                            recipient_store.db.execute('INSERT OR REPLACE INTO detail_delays VALUES(?,?)',(ident,time.time()+300))
                     cause=reason.removeprefix('browser_failed:').partition(':')[0].strip()
                     metric('candidate',search_id=s['id'],listing_id=ident,state=state,reason=reason,
                         cause=cause if re.fullmatch(r'[A-Za-z0-9_.]{1,64}',cause) else 'other',
