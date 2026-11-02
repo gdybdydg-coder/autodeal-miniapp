@@ -26,6 +26,7 @@ from backend.listing_card import listing_caption
 from backend.models import Filters, Search, User, SourceCache, MonitorWatch
 from experiments.free_search.owner_local_bridge import child_environment, atomic_json
 from experiments.free_search.owner_sorted_photo import SortedTelegramPhoto, notification
+from experiments.free_search import owner_peer_delivery as peer
 from experiments.free_search.owner_pilot import PublicPage, _page, _filters
 from experiments.free_search.owner_public_mean import browser_range_quote
 from experiments.free_search.owner_price_rule import evaluate
@@ -158,6 +159,7 @@ class Store:
             'CREATE TABLE IF NOT EXISTS checkpoints(key TEXT PRIMARY KEY,state TEXT);'
             'CREATE TABLE IF NOT EXISTS jobs(key TEXT,id TEXT,url TEXT,first_seen REAL,state TEXT,reason TEXT,PRIMARY KEY(key,id));'
             'CREATE TABLE IF NOT EXISTS detail_delays(id TEXT PRIMARY KEY, next_at REAL NOT NULL);'
+            'CREATE TABLE IF NOT EXISTS peer_previews(key TEXT,id TEXT,payload TEXT,PRIMARY KEY(key,id));'
             'CREATE TABLE IF NOT EXISTS sent(id TEXT PRIMARY KEY,state TEXT,message_id INTEGER,evidence TEXT);')
         rows = self.db.execute('SELECT owner FROM identity').fetchall()
         if rows and rows != [(owner,)]:
@@ -165,13 +167,16 @@ class Store:
             raise ValueError('owner_state_mismatch')
         self.db.execute('INSERT OR IGNORE INTO identity VALUES(?)',(owner,)); self.db.commit()
 
-    def accept(self, key, report):
+    def accept(self, key, report, keep_previews=False):
         if not report.get('complete') or not report.get('checkpoint'):
             raise ValueError('incomplete_scan')
         with self.db:
             for c in report['newly_observed']:
                 self.db.execute('INSERT OR IGNORE INTO jobs VALUES(?,?,?,?,?,?)',
                     (key,c['id'],c['url'],time.time(),'pending',''))
+                if keep_previews and c.get('preview'):
+                    self.db.execute('INSERT OR REPLACE INTO peer_previews VALUES(?,?,?)',
+                        (key,c['id'],json.dumps(c,ensure_ascii=False)))
             self.db.execute('INSERT OR REPLACE INTO checkpoints VALUES(?,?)',
                 (key,json.dumps(report['checkpoint'])))
 
@@ -206,7 +211,7 @@ def main():
                   for uid in recipients}
     node = os.environ.get('AUTODEAL_OWNER_NODE') or shutil.which('node')
     if not node: raise ValueError('node_missing')
-    def browser(url, group=None, ident=None):
+    def browser(url, group=None, ident=None, catalogue=False):
         probe_file=root/'cache'/'access-comparison-v1.json'
         compare=group and os.environ.get('AUTODEAL_COMPARE_HTTP')=='1' and not probe_file.exists()
         ledger=root/'cache'/'transport.json'
@@ -217,7 +222,8 @@ def main():
         output.unlink(missing_ok=True); state.unlink(missing_ok=True)
         cmd=[node,str(REPO/'experiments/free_search/sorted_monitor.mjs'),'--url',url,
              '--output',str(output),'--cache-dir',str(root/'cache'),'--daily-limit','2400']
-        if ident: cmd += ['--detail-id',ident]
+        if catalogue: cmd += ['--peer-catalogue','true']
+        elif ident: cmd += ['--detail-id',ident]
         else:
             if compare: cmd += ['--compare-http','true']
             checkpoints = {}
@@ -245,6 +251,18 @@ def main():
         with (root/'timings.jsonl').open('a',encoding='utf-8') as out:
             out.write(json.dumps(dict(event=event,at=time.time(),**values),ensure_ascii=False)+'\n')
     try:
+        # Recently reviewed public examples use the same owner ledger as live alerts.
+        for packet in json.loads(os.environ.get('OWNER_REVIEWED_PEERS','[]')):
+            if not 0 <= time.time()-packet['at'] <= 3600:continue
+            match=next((s for s in current(engine,owner) if s['id']==packet['search'] and s['fingerprint']==packet['fingerprint']),None)
+            if match:
+                subject=packet['subject']
+                try:
+                    card,evidence=peer.make_card(subject,packet['peers'],match['filters'])
+                    state,mid=peer.deliver(store.db,transports[owner],owner,subject['id'],card,evidence)
+                    metric('owner_peer_delivery',listing_id=subject['id'],state=state,message_id=mid)
+                except ValueError as error:
+                    metric('owner_peer_skipped',cause=str(error)[:80])
         # Restarting the worker must not turn a five-minute schedule into a burst.
         status_file=root/'status.json'
         if a.action=='run' and status_file.exists():
@@ -304,7 +322,7 @@ def main():
                     if not result['complete']:
                         metric('poll_error', search_id=search['id'], reason=result['reason'], cause=result['reason'])
                         continue
-                    stores[search['recipient']].accept(key, result)
+                    stores[search['recipient']].accept(key, result, search['recipient']==owner)
                     new_ids = [card['id'] for card in result['newly_observed']]
                     metric('poll', search_id=search['id'], started_at=poll_started,
                            duration=time.time()-poll_started, pages=result['pages_read'], new_ids=new_ids,
@@ -334,6 +352,18 @@ def main():
                         if time.time()-first_seen>1800: raise ValueError('candidate_expired')
                         if not any(search_key(v)==key for v in current(engine,uid)):
                             raise ValueError('search_stopped_or_changed')
+                        if uid==owner:
+                            stored=recipient_store.db.execute('SELECT payload FROM peer_previews WHERE key=? AND id=?',(key,ident)).fetchone()
+                            if not stored:raise ValueError('peer_preview_missing')
+                            subject=peer.preview_subject(json.loads(stored[0]))
+                            pool=peer.pool_for(subject,root/'cache',lambda u:browser(u,catalogue=True))
+                            card,evidence=peer.make_card(subject,peer.reference(subject,pool),s['filters'])
+                            if not any(search_key(v)==key for v in current(engine,uid)):raise ValueError('search_stopped_or_changed')
+                            state,mid=peer.deliver(recipient_store.db,transports[uid],uid,ident,card,evidence)
+                            with recipient_store.db:
+                                recipient_store.db.execute('UPDATE jobs SET state=? WHERE key=? AND id=?',(state,key,ident))
+                            metric('owner_peer_delivery',listing_id=ident,state=state,message_id=mid)
+                            continue
                         if ident not in details:
                             if ident in failed_details:
                                 raise ValueError(failed_details[ident])
@@ -370,6 +400,8 @@ def main():
                     if state=='pending':break
             # Start-to-start target, rather than work time plus a fixed sleep.
             delay=max(10,random.randint(110,120)-(time.time()-cycle_started))
+            with store.db:
+                store.db.execute("DELETE FROM peer_previews WHERE NOT EXISTS (SELECT 1 FROM jobs j WHERE j.key=peer_previews.key AND j.id=peer_previews.id AND j.state='pending' AND j.first_seen>?)",(time.time()-1800,))
             ledger=root/'cache'/'transport.json'
             if ledger.exists():
                 hold=json.loads(ledger.read_text(encoding='utf-8')).get('hold_until',0)

@@ -60,7 +60,17 @@ export function readSortedDOM() {
     total:countMatch?Number(countMatch[1].replace(/\s/g,'')):null,
     cards:items.map(e=>({id:e.getAttribute('data-car-id'),url:new URL(e.getAttribute('href'),location.href).href,
       age_text:e.querySelector('.jc-between.wrap.ai-center.gap-12.mt-8')?.textContent.trim() ?? null,
-      promoted:[...e.querySelectorAll('span')].some(s=>/^ТОП(?:\s+\d+)?$/.test(s.textContent.trim()))}))};
+      promoted:[...e.querySelectorAll('span')].some(s=>/^ТОП(?:\s+\d+)?$/.test(s.textContent.trim())),
+      preview:{
+        title:e.querySelector('.titleS')?.textContent.trim(),
+        model_info:e.querySelector('.size-14-16.ellipsis-1')?.textContent.trim(),
+        price:e.querySelector('.c-green.titleM')?.textContent.trim(),
+        specs:[...e.querySelectorAll('.body.ellipsis-1')].map(n=>n.textContent.trim()),
+        photo:e.querySelector('img')?.getAttribute('data-src') || e.querySelector('img')?.getAttribute('src'),
+        image_title:e.querySelector('img')?.getAttribute('title'),
+        description:e.querySelector('p.footnote')?.textContent.trim(),
+        badges:[...e.querySelectorAll('.badge,.common-badge')].map(n=>n.textContent.trim()).join(' ')
+      }}))};
 }
 
 export function validatePage(page, identity, index) {
@@ -211,7 +221,10 @@ async function main() {
   for(let i=0;i<args.length;i+=2){if(!args[i]?.startsWith('--') || !args[i+1])throw Error('expected --name value');options[args[i].slice(2)]=args[i+1];}
   for(const key of ['url','output','cache-dir'])if(!options[key])throw Error('missing --'+key);
   const detail=options['detail-id'];
-  if(detail){
+  const catalogue=options['peer-catalogue']==='true';
+  if(catalogue){
+    if(detail||!/^https:\/\/auto\.ria\.com\/uk\/car\/[a-z0-9-]+\/[a-z0-9-]+\/year\/\d{4}\/\?page=[12]$/.test(options.url))throw Error('invalid_peer_catalogue');
+  }else if(detail){
     if(!/^[1-9]\d{0,11}$/.test(detail)||!new RegExp('^https://auto\\.ria\\.com/uk/auto_[A-Za-z0-9_-]+_'+detail+'\\.html$').test(options.url))throw Error('invalid_detail');
   }else{searchIdentity(options.url);if(!options.state)throw Error('missing --state');}
   const cache=path.resolve(options['cache-dir']);await fs.mkdir(cache,{recursive:true});
@@ -255,6 +268,7 @@ async function main() {
     async function reserveNavigation() {
       const now=Date.now()/1000;
       if(ledger.hold_until>now)throw Error(ledger.hold_reason ?? 'source_hold');
+      if(detail && ledger.detail_hold_until>now)throw Error('detail_pause');
       ledger.attempts=ledger.attempts.filter(t=>now-t<86400);
       const daily=Number(options['daily-limit']??500);
       if(!Number.isInteger(daily)||daily<1||daily>2400)throw Error('invalid_daily_limit');
@@ -302,15 +316,22 @@ async function main() {
           body=await tab.locator('body').innerText();
           visibleCaptcha=await tab.locator('iframe[src*="captcha"],.g-recaptcha').evaluateAll(es=>es.some(e=>e.getClientRects().length && getComputedStyle(e).visibility!=='hidden'));
           if(detail)validContent=body.replace(/\s+/g,' ').includes('ID авто '+detail);
+          else if(catalogue)validContent=await tab.locator('section.ticket-item[data-advertisement-id]').count()>0;
           else {
             try{validatePage(await tab.evaluate(readSortedDOM),searchIdentity(url),Number(new URL(url).searchParams.get('page')));validContent=true;}catch{}
           }
         }
         if(accessDenied({status,body,title,visibleCaptcha,validContent,challengeHeader})) {
+          if(detail && !sourceDenied && status===200 && !retryAfter && !challengeHeader && !visibleCaptcha &&
+              accessDenied({status,title,body:'',validContent:true})){
+            ledger.detail_hold_until=Date.now()/1000+8*3600;
+            throw Error('detail_pause');
+          }
           recordDenial(status,retryAfter,visibleCaptcha,validContent);
           await save(transportFile,ledger);throw Error(ledger.hold_reason);
         }
         if(sourceDenied)throw Error('source_denied_or_challenge');
+        if(catalogue && [404,410].includes(status))return [];
         if(detail && [404,410].includes(status))throw Error('listing_gone');
         if(status!==200){
           const now=Date.now()/1000;
@@ -323,6 +344,19 @@ async function main() {
         }
         if(comparison)return;
         ledger.server_errors=0;
+        if(catalogue){
+          if(!validContent)return [];
+          if(![url,url.split('?')[0]].includes(tab.url()))throw Error('peer_page_unverified');
+          return tab.locator('section.ticket-item[data-advertisement-id]').evaluateAll(items=>items.map(e=>{
+            const d=e.querySelector('[data-advertisement-data]')?.dataset??{};
+            const content=s=>e.querySelector(s)?.textContent.trim()??'';
+            return {id:d.id,model:d.markName+' '+d.modelName,year:Number(d.year),gen:d.generationName,
+              mod:d.modificationName,trim:d.equipmentName,seller:d.userId,vin:content('.vin-code'),
+              body:e.querySelector('.ticket-photo a[title]')?.title.split(d.markName+' '+d.modelName)[0].trim(),
+              price:content('[data-currency="USD"]'),specs:[...e.querySelectorAll('.characteristic .item-char')].map(n=>n.textContent.trim()),
+              description:content('.descriptions-ticket'),badges:content('.label-damage')+' '+content('.label-dtp')};
+          }));
+        }
         if(detail){
           const {tabAdapter}=await import('./owner_browser_service.mjs');
           const {openListingRange,captureRange}=await import('./owner_browser_capture.mjs');
@@ -354,7 +388,7 @@ async function main() {
         if(sourceDenied)throw Error('source_denied_or_challenge');
       }
     }
-    if(detail){await save(options.output,await readPage(options.url));console.log(JSON.stringify({detail_id:detail,captured:true}));return;}
+    if(detail||catalogue){await save(options.output,await readPage(options.url));return;}
     if(options['grouped-heads']==='true'){
       const results=await pollGroup(readPage, options.url, await load(options.state),
         {maxPages:Number(options['max-pages'] ?? 10)});
