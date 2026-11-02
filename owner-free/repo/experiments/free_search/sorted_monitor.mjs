@@ -332,6 +332,23 @@ async function main() {
           } catch(error) {
             const visible=await tab.locator('body').innerText({timeout:2000}).catch(()=>'');
             const hasIdentity=new RegExp('ID\\s+авто\\s+'+detail+'\\b','i').test(visible);
+            if(error.message==='listing_identity_not_visible') {
+              const info=await tab.evaluate(expected=>{
+                const text=document.body.innerText;
+                const tags=[...document.querySelectorAll('script[type="application/ld+json"]')];
+                const vehicle=tags.some(s=>/"@type"\s*:\s*"(?:Car|Vehicle)"/.test(s.textContent));
+                const idFragment=text.match(new RegExp('(?:^|\\n)([^\\n]{0,25})'+expected+'(?=\\s|$)'));
+                const title=document.title.trim();
+                return {lang:document.documentElement.lang.slice(0,12),vehicle,
+                  title_kind:/AUTO.RIA/i.test(title)?'auto_ria':(/^[\p{L}\s.!–-]{1,90}$/u.test(title)?title:'other'),
+                  canonical:document.querySelector('link[rel=canonical]')?.href===location.href,
+                  has_id:text.includes(expected),id_label:idFragment?.[1]?.replace(/[^\p{L} :№#]/gu,'').slice(0,25),
+                  visible_chars:text.length,price_control:/Середня ціна|Средняя цена/i.test(text),
+                  h1:!!document.querySelector('h1'),cookie:/cookie|файл[иів]+ cookie/i.test(text),
+                  sample:!vehicle&&text.length<2000?text.split('\n').map(s=>s.trim()).filter(s=>/^[\p{L}\s.!?,’'–-]{3,110}$/u.test(s)).slice(0,3):[]};
+              },detail);
+              console.log(JSON.stringify({event:'detail_layout',...info}));
+            }
             const captcha=await tab.locator('iframe[src*="captcha"],.g-recaptcha').filter({visible:true}).count();
             if(accessDenied({status,body:visible,visibleCaptcha:captcha>0,validContent:hasIdentity}))
               recordDenial(status,retryAfter,captcha>0,hasIdentity);

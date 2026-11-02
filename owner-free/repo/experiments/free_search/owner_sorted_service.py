@@ -231,6 +231,11 @@ def main():
             timeout=1500,creationflags=subprocess.CREATE_NO_WINDOW if os.name=='nt' else 0)
         if compare and probe_file.exists():
             metric('access_comparison', search_id=group[0]['id'], **json.loads(probe_file.read_text(encoding='utf-8')))
+        if ident and p.returncode:
+            for line in p.stdout.decode('utf-8',errors='replace').splitlines():
+                if line.startswith('{"event":"detail_layout",'):
+                    info=json.loads(line)
+                    metric('detail_layout',listing_id=ident,**{k:v for k,v in info.items() if k!='event'})
         if p.returncode:
             # Fixed parser diagnostics only, no credentials or request tokens.
             error=p.stderr.decode('utf-8',errors='replace')[:500]
