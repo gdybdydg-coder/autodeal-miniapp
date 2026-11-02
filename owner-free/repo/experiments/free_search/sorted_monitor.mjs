@@ -12,10 +12,16 @@ export function accessDenied({status,body,visibleCaptcha,validContent}) {
   // A widget or quoted phrase in listing text is not an access challenge.
   return !validContent && (visibleCaptcha || /verify you are human|access denied|just a moment|підтверд.*не робот/i.test(body));
 }
-export function sourceHoldSeconds(retryAfter, failures, now=Date.now()/1000) {
+function retryAfterSeconds(retryAfter, now) {
   const text=String(retryAfter??'').trim();
   const retry=/^\d+$/.test(text)?Number(text):Math.max(0,Date.parse(text)/1000-now);
-  return Math.max(3600*Math.pow(2,Math.min(4,Math.max(0,failures-1))),Number.isFinite(retry)?retry:0);
+  return Number.isFinite(retry)?retry:0;
+}
+export function sourceHoldSeconds(retryAfter, failures, now=Date.now()/1000) {
+  return Math.max(3600*Math.pow(2,Math.min(4,Math.max(0,failures-1))),retryAfterSeconds(retryAfter,now));
+}
+export function serverErrorHoldSeconds(retryAfter, failures, now=Date.now()/1000) {
+  return Math.max(Math.min(3600,300*2**Math.min(4,Math.max(0,failures-1))),retryAfterSeconds(retryAfter,now));
 }
 export function searchIdentity(value) {
   const u = new URL(value);
@@ -258,9 +264,16 @@ async function main() {
         }
         if(detail && [404,410].includes(status))throw Error('listing_gone');
         if(status!==200){
-          ledger.hold_until=Date.now()/1000+Math.max(300,sourceHoldSeconds(response?.headers()['retry-after'],1));ledger.hold_reason='http_'+status;
+          const retryAfter=response?.headers()['retry-after'];
+          const now=Date.now()/1000;
+          const temporary=[500,502,503,504].includes(status);
+          if(temporary)ledger.server_errors=(ledger.server_errors??0)+1;
+          const wait=temporary?serverErrorHoldSeconds(retryAfter,ledger.server_errors,now):sourceHoldSeconds(retryAfter,1,now);
+          ledger.hold_until=now+wait;ledger.hold_reason='http_'+status;
+          ledger.last_failure={at:now,status,retry_after_seconds:retryAfterSeconds(retryAfter,now),visible_captcha:visibleCaptcha,valid_content:validContent};
           await save(transportFile,ledger);throw Error(ledger.hold_reason);
         }
+        ledger.server_errors=0;
         if(detail){
           const {tabAdapter}=await import('./owner_browser_service.mjs');
           const {openListingRange,captureRange}=await import('./owner_browser_capture.mjs');
