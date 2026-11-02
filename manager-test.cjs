@@ -500,6 +500,22 @@ test('unconnected subscription routes to setup without enabling notifications',a
   assert.equal(ui.ids.settingsPage.hidden,false);
 });
 
+test('a delayed notification status allows one explicit activation using the server response',async()=>{
+  const pending=[],calls=[];
+  let reads=0;
+  const row=enabled=>({id:7,name:'Audi A6',filters:ui.filters(),enabled});
+  const ui=setup({list:async()=>{reads++;return [row(false)];},
+    notificationStatus:()=>new Promise(resolve=>pending.push(resolve)),
+    enable:async(id,enabled)=>{calls.push([id,enabled]);return row(enabled);}},'subscriptions');
+  await ui.nav.saved.listeners.click();
+  await part(ui.ids.cloudSearchList.children[0],'subscription-toggle').listeners.click();
+  pending[0]({available:false,telegram_ready:false,test_sent:false});
+  await tick();
+  assert.deepEqual(calls,[[7,true]]);
+  assert.equal(reads,1);
+  assert.equal(part(ui.ids.cloudSearchList.children[0],'subscription-toggle').attributes['aria-checked'],'true');
+});
+
 test('subscription switch waits for server confirmation and keeps its state on failure',async()=>{
   let fail,calls=0;
   const ui=setup({list:async()=>[{id:7,name:'Пошук',filters:ui.filters(),enabled:false}],

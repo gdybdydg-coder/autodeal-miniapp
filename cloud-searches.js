@@ -104,9 +104,19 @@ function renderCloudItems(items) {
     if(item.enabled&&notificationState?.available&&item.unvalued_count>0&&reasons[item.latest_valuation_reason])
       status+=" · остання оцінка: "+reasons[item.latest_valuation_reason];
     return subscriptionCard({...item,filters},{cloud:true,status,active:item.enabled&&notificationState?.available,
-      canToggle:item.enabled||!!(notificationState?.available&&notificationState.telegram_ready&&notificationState.test_sent),
+      canToggle:item.enabled||!notificationState||!!(notificationState.telegram_ready&&notificationState.test_sent),
       toggle:window.AutoDealCloud.enable?()=>cloudAction(async()=>{
-        await window.AutoDealCloud.enable(item.id,!item.enabled);await loadCloud();
+        let updated;
+        try {updated=await window.AutoDealCloud.enable(item.id,!item.enabled);}
+        catch(error) {toast(error.message);throw error;}
+        if(updated?.id===item.id&&updated.enabled===!item.enabled){
+          const next=items.map(row=>row.id===item.id?updated:row);
+          renderCloudItems(next);
+          cloudMessage("Список оновлено.");
+          if(window.AutoDealCloud.notificationStatus) void refreshListStatus(next,cloudRevision);
+        } else {
+          await loadCloud();
+        }
         toast(item.enabled?"Підписку зупинено · фільтри збережені":"Сповіщення ввімкнені · чекаємо нові оголошення");
         closeSubscriptionActions();
       }):null,
