@@ -272,6 +272,8 @@ def assessment_for(car,profile,search,now):
 
 def send_card(engine,settings,token,state,car,profile,sender):
     """At-most-once source+ad+recipient ledger including the old OLX receipts."""
+    from .notification_baseline import olx_allowed
+    if not olx_allowed(engine,settings.admin_telegram_id,car):return False
     now=time.time();search=current_search(engine,settings,fingerprint=state['fingerprint'])
     proof=assessment_for(car,profile,search,now) if search and profile_ready(profile,now) else None
     if not proof or not 0<=now-car['checked_at']<=DETAIL_MAX_AGE:return False
@@ -295,7 +297,8 @@ def send_card(engine,settings,token,state,car,profile,sender):
             chat=r.get('result',{}) if isinstance(r,dict) else {}
             if (r.get('ok') is True and type(chat.get('id')) is int and chat['id']==settings.admin_telegram_id
                     and chat.get('type')=='private' and current_search(engine,settings,fingerprint=state['fingerprint'])
-                    and profile_ready(profile,time.time()) and time.time()-car['checked_at']<=DETAIL_MAX_AGE):
+                    and profile_ready(profile,time.time()) and time.time()-car['checked_at']<=DETAIL_MAX_AGE
+                    and olx_allowed(engine,settings.admin_telegram_id,car)):
                 text=caption(car,*proof,profile['selected_method'])
                 payload={'chat_id':settings.admin_telegram_id,'parse_mode':'HTML',
                     'reply_markup':{'inline_keyboard':[[{'text':'Переглянути на OLX','url':car['url']}]]}}

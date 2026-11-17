@@ -18,6 +18,7 @@ from .reference_valuation import VERSION as REFERENCE_VERSION
 from . import ria_market_range
 from . import delivery_diagnostic
 from .telegram_photo import PhotoLoader
+from .notification_baseline import listing_allowed
 
 delivery_log = logging.getLogger("autodeal.delivery")
 delivery_log.setLevel(logging.INFO)
@@ -92,6 +93,8 @@ def matching_searches(user_id, listing_id):
 
 
 def eligible(db, user_id, listing, now, *, require_provider_range=False, require_confirmed_deal=False):
+    if not listing_allowed(db, user_id, listing, now):
+        return False
     car = Car.model_validate(listing.car)
     if require_confirmed_deal and car.source == "auto_ria" and car.market is None:
         return False
@@ -161,6 +164,8 @@ def enqueue(engine, now=None, *, allow_active_window=True, allow_recent_publicat
             if not paid_source_access.allowed(db, uid, now):
                 continue
             listing = db.get(Listing, listing_id)
+            if not listing_allowed(db, uid, listing, now):
+                continue
             if not allow_active_window and supplemental_listing(listing):
                 continue
             recent, expired = recent_listing(listing, now)
@@ -402,7 +407,8 @@ def deliver_one(engine, settings: Settings, sender, now=None, *, enforce_chat_in
             .join(Delivery, Delivery.id == DeliveryTiming.delivery_id)
             .where(Delivery.user_id == row.user_id, Delivery.id != delivery_id)) if user else None
         refresh = []
-        retired = not settings.ria_active_window_enabled and supplemental_listing(listing)
+        retired = (not listing_allowed(db, row.user_id, listing, now)
+                   or not settings.ria_active_window_enabled and supplemental_listing(listing))
         recent, expired = recent_listing(listing, now)
         retired |= expired or (recent and not getattr(settings, "ria_recent_publications_enabled", False))
         unconfirmed = settings.ria_confirmed_deals_only and unpriced_listing(listing)

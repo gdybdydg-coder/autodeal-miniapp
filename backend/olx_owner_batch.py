@@ -222,6 +222,8 @@ def prior_attempt(db, car_id, owner_id):
 
 
 def send_sample(engine, settings, token, state, car, sender=telegram_setup.call):
+    from .notification_baseline import olx_allowed
+    if not olx_allowed(engine,settings.admin_telegram_id,car):return False
     proof = price_proof(car, time.time())
     rows = searches(engine, settings, state)
     if (car.get('source') != 'olx' or car.get('url') not in state.get('test_urls', [])
@@ -251,7 +253,8 @@ def send_sample(engine, settings, token, state, car, sender=telegram_setup.call)
     response, method = {'not_attempted': True}, None
 
     def current():
-        return matches_sample(car, searches(engine, settings, state), price_proof(car, time.time()))
+        return (olx_allowed(engine,settings.admin_telegram_id,car)
+                and matches_sample(car, searches(engine, settings, state), price_proof(car, time.time())))
 
     try:
         if current():

@@ -420,7 +420,7 @@ class Monitor:
         current_slice = context["slices"][0]
         params, _ = source.discovery_parameters(filters)
         params.update(countpage=PAGE_SIZE, page=context["page"], order_by=7,
-                      published_after=stamp(current_slice["after"]),
+                      published_after=stamp(math.ceil(current_slice["after"])),
                       published_before=stamp(current_slice["before"] + 1))
         result = source.discovery_page(params, ttl=INTERVAL)
         ids, total = result["ids"], result["total"]
@@ -562,6 +562,11 @@ class Monitor:
                 if outcome == "cancelled":
                     continue
                 candidate, rating = evidence.get("candidate"), evidence.get("rating")
+                from .notification_baseline import allowed, publication_at
+                if not allowed(db, uid, published_at=publication_at(candidate or {}),
+                               publication_after=evidence.get("publication_after")):
+                    seen.state = "baseline_excluded"
+                    continue
                 resolved = evidence.get("filters", {}).get(fingerprint)
                 filters = Filters.model_validate(search.filters)
                 partial = evidence.get("informational_notification") is True
@@ -584,6 +589,8 @@ class Monitor:
                     valuation_evidence=proof,
                     pipeline={"discovered_at": job.first_seen, "evaluated_at": evidence["evaluated_at"],
                               "discovery_kind": evidence.get("discovery_kind", "new_publication"),
+                              "publication_after": evidence.get("publication_after"),
+                              "publication_at": publication_at(candidate),
                               "html_expires_at": evidence.get("html_expires_at"),
                               "source_added_at": candidate.get("source_added_at")})
                 if listing is None:
