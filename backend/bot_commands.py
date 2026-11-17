@@ -62,7 +62,7 @@ def stats_text(db, uid, admin_uid, *, settings=None):
         logging.getLogger(__name__).warning("AUTODeal admin bootstrap requested by Telegram user %s", uid)
         return f"🔐 Адмін ще не налаштований. Ваш Telegram ID: {uid}"
     if uid != admin_uid:
-        return f"⛔ Команда доступна лише адміністратору. Ваш Telegram ID: {uid}"
+        return f"⛔ Ви не є адміністратором. Ваш Telegram ID: {uid}"
     try:
         return _stats_text(db, admin_uid, settings=settings)
     except (SQLAlchemyError, ValueError):
