@@ -21,6 +21,11 @@ from .purchase_stats import excluded_user_ids
 OPTION = "autodeal_confirmed_paid_sources_only"
 EXCLUSIONS = "autodeal_paid_sources_excluded_accounts"
 
+FREE_USER_IDS = {
+    777292211,
+    1272569411,
+}
+
 
 def source_excluded_user_ids(settings=None):
     # Statistics exclude the owner because their denominator is customers.
@@ -79,7 +84,12 @@ def access_clause(uid, now=None, *, excluded=()):
         BillingControl.sales.is_(False), BillingControl.enforce.is_(False),
         BillingControl.offer[billing.FREE_ACCESS_KEY].as_boolean().is_(True)))
     identity = literal(uid, type_=User.id.type) if isinstance(uid, int) else uid
-    return (free | confirmed_clause(uid, now, excluded=excluded)) & identity.not_in(excluded)
+    individual_free = identity.in_(FREE_USER_IDS)
+    return (
+        free
+        | individual_free
+        | confirmed_clause(uid, now, excluded=excluded)
+    ) & identity.not_in(excluded)
 
 
 def any_eligible(db, now):
