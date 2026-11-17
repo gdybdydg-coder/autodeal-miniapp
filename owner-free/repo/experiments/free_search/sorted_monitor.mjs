@@ -59,6 +59,8 @@ export function readSortedDOM() {
   return {url:location.href, sort:sortConfirmed?'dates.created.desc':null,
     total:countMatch?Number(countMatch[1].replace(/\s/g,'')):null,
     cards:items.map(e=>({id:e.getAttribute('data-car-id'),url:new URL(e.getAttribute('href'),location.href).href,
+      publication_observed_at:Date.now()/1000,
+      source_add_date:e.getAttribute('data-add-date') ?? e.querySelector('[data-add-date]')?.getAttribute('data-add-date') ?? null,
       age_text:e.querySelector('.jc-between.wrap.ai-center.gap-12.mt-8')?.textContent.trim() ?? null,
       promoted:[...e.querySelectorAll('span')].some(s=>/^ТОП(?:\s+\d+)?$/.test(s.textContent.trim())),
       preview:{
