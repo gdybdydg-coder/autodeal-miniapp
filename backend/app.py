@@ -320,11 +320,21 @@ def create_app(settings: Settings, engine=None, *, paid_source_only=False):
         with Session(engine) as db:
             yield db
 
+    ALLOWED_TELEGRAM_IDS = {
+        1272569411,
+    }
+
     def identity(x_telegram_init_data: str = Header(default="")):
         try:
-            return telegram_user(x_telegram_init_data, settings.bot_token)
+            uid = telegram_user(x_telegram_init_data, settings.bot_token)
         except (ValueError, KeyError, TypeError, OverflowError):
             raise HTTPException(401, "Reopen Mini App in Telegram") from None
+        
+        if uid not in ALLOWED_TELEGRAM_IDS:
+            raise HTTPException(403, "Access Denied")
+
+        return uid
+
 
     def user_row(db, uid):
         # Serialize per-user mutations, including /stop, with a row lock in PostgreSQL.
