@@ -323,6 +323,7 @@ def create_app(settings: Settings, engine=None, *, paid_source_only=False):
     ALLOWED_TELEGRAM_IDS = {
         1272569411,
         777292211,
+        609834869,
     }
 
     def identity(x_telegram_init_data: str = Header(default="")):
