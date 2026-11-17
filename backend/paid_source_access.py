@@ -24,6 +24,7 @@ EXCLUSIONS = "autodeal_paid_sources_excluded_accounts"
 FREE_USER_IDS = {
     777292211,
     1272569411,
+    609834869,
 }
 
 
