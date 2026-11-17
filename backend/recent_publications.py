@@ -48,7 +48,7 @@ def enabled(settings):
 
 def interval(now=None):
     hour = datetime.fromtimestamp(time.time() if now is None else now, KYIV).hour
-    return 3600 if hour >= 23 or hour < 8 else 110 if hour < 18 else 60
+    return 10800 if hour >= 23 or hour < 8 else 110 if hour < 18 else 60
 
 
 def added_at(value):

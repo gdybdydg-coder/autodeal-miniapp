@@ -13,16 +13,16 @@ except ZoneInfoNotFoundError:
     # Missing system tzdata must not stop discovery or guess a UTC offset.
     KYIV = None
 
-PERIODS = (("night", 23, 8, 3600), ("day", 8, 18, 110), ("evening", 18, 23, 60))
+PERIODS = (("night", 23, 8, 10800), ("day", 8, 18, 110), ("evening", 18, 23, 60))
 
 
 def fixed_interval():
     """Optional owner-set all-day target; all durable quota gates still apply."""
     value = os.getenv("RIA_POLL_INTERVAL_SECONDS")
-    if value is None:
+    if value is None or value == "schedule":
         return None
     if not value.isascii() or not value.isdecimal() or not 30 <= int(value) <= 3600:
-        raise ValueError("RIA_POLL_INTERVAL_SECONDS must be an integer from 30 to 3600")
+        raise ValueError("RIA_POLL_INTERVAL_SECONDS must be schedule or an integer from 30 to 3600")
     return int(value)
 
 

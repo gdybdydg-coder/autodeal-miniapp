@@ -123,13 +123,17 @@ an individual notification.
 ## Kyiv polling schedule with existing quota protection (2026-09-25)
 
 The owner requested these local-time targets, using `Europe/Kyiv` including
-seasonal UTC-offset changes. The night target was later increased to 3600 seconds:
+seasonal UTC-offset changes. The night target was updated on 2026-11-17 to three hours:
 
 | Local period | Requested polling interval |
 | --- | --- |
-| 23:00–08:00 | 3600 seconds |
+| 23:00–08:00 | 10800 seconds (3 hours) |
 | 08:00–18:00 | 110 seconds |
 | 18:00–23:00 | 60 seconds |
+
+`RIA_POLL_INTERVAL_SECONDS=schedule` selects this time-of-day schedule, replacing
+a numeric all-day override such as `40`. Omitting that variable also selects the
+schedule; numeric overrides remain available for explicitly fixed polling.
 
 `RIA_POLL_SCHEDULE_ENABLED` defaults to `true`. It applies to monitoring with paid
 listing-specific pricing, including the optional active supplement. Set it to `false` to restore the
@@ -139,17 +143,17 @@ falls back to that policy rather than stopping the monitor or assuming an offset
 These are targets, not permission to exceed or increase purchased quota. The
 configured caps are unchanged by this schedule. For an example with
 900/hour, 12,000/rolling-24-hours and 90,000 cumulative caps:
-At 15 distinct groups, the requested schedule costs approximately 9,545 search
+At 15 distinct groups, the requested schedule costs approximately 9,455 search
 calls per normal 24-hour day before details, AI quotes, extra pages and retries.
 To preserve the 75% planned discovery allocation, every target is scaled by the
 same daily-budget factor, then clamped against the hourly discovery allowance.
-With these caps and 15 groups the effective intervals are 3818/117/80 seconds
-(night/day/evening). At least 1,200/hour and 12,726/day would be needed for the
+With these caps and 15 groups the effective intervals are 11345/116/80 seconds
+(night/day/evening). At least 1,200/hour and 12,606/day would be needed for the
 targets under this planning model; these are software-budget calculations, not a
 verified provider plan or a guarantee that the remaining allowance covers bursts.
 Supplemental active-window discovery is paused from 23:00 to 08:00 Kyiv.
 It resumes every 300 seconds at 08:00 without clearing snapshots, seen IDs or
-delivery claims. New-publication discovery remains hourly overnight. In-flight
+delivery claims. New-publication discovery runs every three hours overnight. In-flight
 publication pages and provider backoffs keep their persisted deadlines. New
 publication windows are paginated from the saved cursor; an hour of new ads is
 not limited to one page. Catch-up windows and page verification can require
@@ -1357,7 +1361,7 @@ historical catalog scan. Following pages are not fetched. Seen IDs, stopped subs
 claims are preserved. Existing non-deals are not periodically reevaluated for
 price drops. Reappearing previously seen IDs do not generate duplicate interest.
 
-Paid mode keeps the Kyiv 3600/110/60-second publication schedule and up to four
+Paid mode keeps the Kyiv 10800/110/60-second publication schedule and up to four
 parallel discovery/evaluation operations. Active-page searches run one bounded
 step at a time; due publication searches and primary jobs retain priority. Fresh
 details and provider quotes are shared across groups. Supplemental calls retain

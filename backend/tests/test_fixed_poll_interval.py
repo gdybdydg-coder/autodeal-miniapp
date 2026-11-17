@@ -40,6 +40,25 @@ def test_fixed_target_keeps_rate_caps(monkeypatch):
     assert 74*86400/report['interval_seconds']<=90000*.75
 
 
+@pytest.mark.parametrize('instant,period,interval', [
+    ('2026-11-17T07:59:59+02:00', 'night', 10800),
+    ('2026-11-17T08:00:00+02:00', 'day', 110),
+    ('2026-11-17T17:59:59+02:00', 'day', 110),
+    ('2026-11-17T18:00:00+02:00', 'evening', 60),
+    ('2026-11-17T22:59:59+02:00', 'evening', 60),
+    ('2026-11-17T23:00:00+02:00', 'night', 10800),
+])
+def test_explicit_schedule_mode_and_supplementary_intake_follow_requested_times(monkeypatch, instant, period, interval):
+    from backend import recent_publications
+    monkeypatch.setenv('RIA_POLL_INTERVAL_SECONDS', 'schedule')
+    report = poll_schedule.policy(4, BudgetLimits(4500,90000,1102160), utc(instant))
+    assert report['mode'] == 'kyiv_schedule'
+    assert report['active_period'] == period
+    assert report['interval_seconds'] == interval
+    assert [p['interval_seconds'] for p in report['periods']] == [10800,110,60]
+    assert recent_publications.interval(utc(instant)) == interval
+
+
 def test_live_switch_retains_cursor_receipts_and_hard_quota(p,monkeypatch):
     configured(p,monkeypatch,'2026-09-25T20:00:00+00:00')
     drain(p)
@@ -47,7 +66,7 @@ def test_live_switch_retains_cursor_receipts_and_hard_quota(p,monkeypatch):
         feed=db.scalar(select(MonitorFeed))
         epoch=db.get(MonitorWatch,1).epoch
         cursor=feed.cursor
-        assert feed.next_poll-feed.checked_at==3600
+        assert feed.next_poll-feed.checked_at==10800
     monkeypatch.setenv('RIA_POLL_INTERVAL_SECONDS','40')
     p.ads['124']=p.clock[0]+1
     p.clock[0]+=41
