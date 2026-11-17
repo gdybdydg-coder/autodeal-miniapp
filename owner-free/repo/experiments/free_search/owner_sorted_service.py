@@ -33,6 +33,7 @@ from experiments.free_search.owner_price_rule import evaluate
 from experiments.free_search.visible_adapter import parse_visible_facts
 from experiments.free_search.filter_gate import PublicEvidence, gate
 from decimal import Decimal
+from experiments.free_search import notification_baseline as baseline
 
 
 def source_url(db, filters):
@@ -103,6 +104,7 @@ def current(engine, owner):
                 print(json.dumps(dict(event='invalid_search_filter',search_id=search.id)),flush=True)
                 continue
             result.append(dict(id=search.id, name=search.name, filters=f.canonical(),
+                baseline_at=baseline.boundary(db, owner),
                 fingerprint=search.fingerprint, epoch=watch.epoch, url=url))
         return result
 
@@ -253,6 +255,7 @@ def main():
     try:
         # Recently reviewed public examples use the same owner ledger as live alerts.
         for packet in json.loads(os.environ.get('OWNER_REVIEWED_PEERS','[]')):
+            if not baseline.allowed(engine,owner,packet.get('subject') or {}):continue
             if not 0 <= time.time()-packet['at'] <= 3600:continue
             match=next((s for s in current(engine,owner) if s['id']==packet['search'] and s['fingerprint']==packet['fingerprint']),None)
             if match:
@@ -293,6 +296,11 @@ def main():
         while not (root/'stop').exists():
             cycle_started=time.time()
             searches = [dict(search, recipient=uid) for uid in recipients for search in current(engine, uid)]
+            # Also sync recipients without enabled searches; do not leave their
+            # old jobs available for a later reactivation.
+            with Session(engine) as db:
+                for uid, recipient_store in stores.items():
+                    baseline.sync_store(recipient_store, baseline.boundary(db, uid))
             statuses=[]
             groups = {}
             for search in searches:
@@ -322,7 +330,12 @@ def main():
                     if not result['complete']:
                         metric('poll_error', search_id=search['id'], reason=result['reason'], cause=result['reason'])
                         continue
-                    stores[search['recipient']].accept(key, result, search['recipient']==owner)
+                    # Preserve the current head even when old/undated cards are
+                    # excluded, so they do not repeatedly enter the queue.
+                    result['newly_observed'] = [c for c in baseline.candidates(result,search.get('baseline_at'))
+                        if baseline.allowed(engine,search['recipient'],c)]
+                    stores[search['recipient']].accept(key, result,
+                        search['recipient']==owner or search.get('baseline_at') is not None)
                     new_ids = [card['id'] for card in result['newly_observed']]
                     metric('poll', search_id=search['id'], started_at=poll_started,
                            duration=time.time()-poll_started, pages=result['pages_read'], new_ids=new_ids,
@@ -350,6 +363,10 @@ def main():
                         if recipient_store.db.execute('SELECT 1 FROM sent WHERE id=?',(ident,)).fetchone():
                             raise ValueError('previous_send_attempt')
                         if time.time()-first_seen>1800: raise ValueError('candidate_expired')
+                        stored = recipient_store.db.execute('SELECT payload FROM peer_previews WHERE key=? AND id=?',(key,ident)).fetchone()
+                        publication_card = json.loads(stored[0]) if stored else {}
+                        if not baseline.allowed(engine,uid,publication_card):
+                            raise ValueError('before_notification_baseline_or_unproven_publication')
                         if not any(search_key(v)==key for v in current(engine,uid)):
                             raise ValueError('search_stopped_or_changed')
                         if uid==owner:
@@ -359,6 +376,7 @@ def main():
                             pool=peer.pool_for(subject,root/'cache',lambda u:browser(u,catalogue=True))
                             card,evidence=peer.make_card(subject,peer.reference(subject,pool),s['filters'])
                             if not any(search_key(v)==key for v in current(engine,uid)):raise ValueError('search_stopped_or_changed')
+                            if not baseline.allowed(engine,uid,publication_card):raise ValueError('before_notification_baseline')
                             state,mid=peer.deliver(recipient_store.db,transports[uid],uid,ident,card,evidence)
                             with recipient_store.db:
                                 recipient_store.db.execute('UPDATE jobs SET state=? WHERE key=? AND id=?',(state,key,ident))
@@ -376,6 +394,7 @@ def main():
                         text,evidence=qualify(raw,s['filters'],time.time())
                         if not any(search_key(v)==key for v in current(engine,uid)):
                             raise ValueError('search_stopped_or_changed')
+                        if not baseline.allowed(engine,uid,publication_card):raise ValueError('before_notification_baseline')
                         with recipient_store.db:
                             recipient_store.db.execute('INSERT INTO sent VALUES(?,?,?,?)',(ident,'attempting',None,json.dumps(evidence)))
                         response=transports[uid](uid,notification(raw,text))
