@@ -3,6 +3,8 @@
 Only one dimension is widened at a time while all other dimensions are equal.
 That rule avoids a cross-product of unrelated filters and keeps local matching
 authoritative. Frozen pages/backoffs must finish before a group changes.
+An explicitly requested all-brand branch can absorb brand/model selections
+only when every other dimension is equal.
 """
 import hashlib
 import json
@@ -39,10 +41,11 @@ def plan(rows):
     # vice versa. Every successful merge reduces the number of groups.
     while True:
         before = len(groups)
-        for dimension in ("price", "year", "region", "model"):
+        for dimension in ("price", "year", "region", "model", "brand"):
             partitions = defaultdict(list)
             for group in groups:
-                partitions[_key(group["filters"], (dimension,))].append(group)
+                omitted = ("brand", "model") if dimension == "brand" else (dimension,)
+                partitions[_key(group["filters"], omitted)].append(group)
             next_groups = []
             for partition in partitions.values():
                 if dimension in ("price", "year"):
@@ -71,10 +74,21 @@ def plan(rows):
                     else:
                         next_groups.append({"filters": partition[0]["filters"].model_copy(update={"region": union}),
                                             "rows": [r for g in partition for r in g["rows"]]})
-                else:
+                elif dimension == "model":
                     # Without a requested whole-brand branch, retain one query
                     # per model. Never broaden A+B to every model of a brand.
                     wildcard = next((g for g in partition if not g["filters"].model), None)
+                    if wildcard:
+                        next_groups.append({"filters": wildcard["filters"],
+                                            "rows": [r for g in partition for r in g["rows"]]})
+                    else:
+                        next_groups.extend(partition)
+                else:
+                    # A requested all-brand radar already covers every model.
+                    # Reuse that exact price/year/region query for specifics;
+                    # never create a wildcard from selected brands alone.
+                    wildcard = next((g for g in partition if not g["filters"].brand
+                                     and not g["filters"].model), None)
                     if wildcard:
                         next_groups.append({"filters": wildcard["filters"],
                                             "rows": [r for g in partition for r in g["rows"]]})

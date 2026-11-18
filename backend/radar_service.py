@@ -43,7 +43,8 @@ class BrandSelection(StrictInput):
 
 class RadarInput(StrictInput):
     name: str = Field(min_length=1, max_length=60)
-    brands: list[BrandSelection] = Field(min_length=1, max_length=30)
+    all_brands: bool = False
+    brands: list[BrandSelection] = Field(max_length=30)
     price_category: int = Field(ge=1, le=6)
     region_ids: list[Identifier] = Field(default_factory=list, max_length=30)
     year_from: int = Field(ge=1900, le=2100)
@@ -61,6 +62,10 @@ class RadarInput(StrictInput):
             raise ValueError("Виберіть рік зі списку доступних років.")
         if self.min_profit not in PERCENTAGES:
             raise ValueError("Виберіть один із запропонованих відсотків.")
+        if self.all_brands and self.brands:
+            raise ValueError("Виберіть усі марки або окремі марки, а не обидва варіанти одночасно.")
+        if not self.all_brands and not self.brands:
+            raise ValueError("Виберіть принаймні одну марку або позначте «Усі марки».")
         if len({b.brand_id for b in self.brands}) != len(self.brands):
             raise ValueError("Не вибирайте одну марку двічі.")
         if len(set(self.region_ids)) != len(self.region_ids):
@@ -151,13 +156,14 @@ def configurations(db, radars):
     by_id = {r.id: {"id":r.id,"slot":r.slot,"name":r.name,"price_category":r.price_category,
         "year_from":r.year_from,"year_to":r.year_to,"min_profit":r.min_profit,
         "status":r.status,"revision":r.revision,"created_at":r.created_at,"updated_at":r.updated_at,
-        "brands":[],"region_ids":[],"regions":[]} for r in radars}
+        "all_brands":True,"brands":[],"region_ids":[],"regions":[]} for r in radars}
     brands = {}
     for rid,bid,name in db.execute(select(RadarBrand.radar_id,BrandCatalog.id,BrandCatalog.name)
             .join(BrandCatalog,BrandCatalog.id==RadarBrand.brand_id).where(RadarBrand.radar_id.in_(by_id))
             .order_by(BrandCatalog.name)):
         entry = {"brand_id":bid,"brand_name":name,"model_ids":[],"models":[]}
         brands[(rid,bid)] = entry
+        by_id[rid]["all_brands"] = False
         by_id[rid]["brands"].append(entry)
     for rid,bid,mid,name in db.execute(select(RadarModel.radar_id,RadarModel.brand_id,RadarModel.model_id,ModelCatalog.name)
             .join(ModelCatalog,(ModelCatalog.id==RadarModel.model_id)&(ModelCatalog.brand_id==RadarModel.brand_id))
@@ -179,7 +185,12 @@ def config(db, radar):
 def create(db, uid, payload):
     lock_user(db,uid)
     create_key = getattr(payload,"client_request_id",None)
-    create_hash = hashlib.sha256(json.dumps(payload.model_dump(exclude={"client_request_id"}),sort_keys=True).encode()).hexdigest()
+    canonical = payload.model_dump(exclude={"client_request_id"})
+    if not payload.all_brands:
+        # Older mobile retries predate this optional field; preserve their
+        # persisted idempotency fingerprint for the unchanged specific mode.
+        canonical.pop("all_brands", None)
+    create_hash = hashlib.sha256(json.dumps(canonical,sort_keys=True).encode()).hexdigest()
     if create_key:
         prior=db.scalar(select(Radar).where(Radar.user_id==uid,Radar.create_key==create_key))
         if prior:

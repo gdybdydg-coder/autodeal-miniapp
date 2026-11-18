@@ -85,7 +85,12 @@ def sync_radar(db, radar):
     regions = [r["name"] for r in data["regions"]]
     active = (radar.status == "active" and radar.active_until > time.time()
               and bool(db.scalar(select(subscription_clause(radar.user_id)))))
-    for brand in data["brands"]:
+    # No selected brand rows explicitly represent every brand, just as no
+    # selected regions represent all Ukraine. Compile one provider wildcard;
+    # never enumerate the catalog into hundreds of independent pollers.
+    selections = data["brands"] if not data["all_brands"] else [
+        {"brand_id": None, "brand_name": "", "models": []}]
+    for brand in selections:
         models = brand["models"] or [{"model_id": None, "name": ""}]
         for model in models:
             filters = Filters(brand=brand["brand_name"], model=model["name"], region=regions,

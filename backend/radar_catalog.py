@@ -3,6 +3,7 @@ import hashlib
 import json
 import re
 from datetime import datetime
+from functools import lru_cache
 from pathlib import Path
 
 from sqlalchemy import select
@@ -12,6 +13,19 @@ from .models import SourceCache
 from .radar_models import BrandCatalog, ModelCatalog, RegionCatalog
 
 SEED_PATH = Path(__file__).with_name("data") / "radar_catalog_seed.json"
+POPULARITY_PATH = Path(__file__).with_name("data") / "radar_brand_popularity.json"
+
+
+@lru_cache(maxsize=1)
+def brand_popularity():
+    """Versioned public-selector snapshot; opening a Radar spends no API quota."""
+    data = json.loads(POPULARITY_PATH.read_text(encoding="utf-8"))
+    ids = data["brand_ids"]
+    if not ids or any(type(value) is not int or value <= 0 for value in ids) or len(set(ids)) != len(ids):
+        raise ValueError("Invalid bundled AUTO.RIA brand order")
+    return {value: index + 1 for index, value in enumerate(ids)}, {
+        "source_url": data["source_url"], "observed_at": data["observed_at"],
+        "basis": data["basis"]}
 
 
 def dictionary_key(path):
@@ -96,15 +110,21 @@ def import_existing_cache(db):
 
 
 def view(db, brand_id=None):
+    ranks, order = brand_popularity()
     brands = [{"id": row.id, "name": row.name, "models_available": row.models_available}
               for row in db.scalars(select(BrandCatalog).order_by(BrandCatalog.name))]
+    for brand in brands:
+        brand["popularity_rank"] = ranks.get(brand["id"])
+    # Preserve every catalog brand, including entries added after the snapshot.
+    # Unranked entries follow the verified order, with a deterministic tie-break.
+    brands.sort(key=lambda brand: (ranks.get(brand["id"], len(ranks) + 1), brand["name"].casefold(), brand["id"]))
     regions = [{"id": row.id, "name": row.name if row.name.endswith("область") or not row.name.endswith(("ська", "цька")) else row.name + " область"}
                for row in db.scalars(select(RegionCatalog).order_by(RegionCatalog.name))]
     models = []
     if brand_id is not None:
         models = [{"id": row.id, "brand_id": row.brand_id, "name": row.name}
                   for row in db.scalars(select(ModelCatalog).where(ModelCatalog.brand_id == brand_id).order_by(ModelCatalog.name))]
-    return {"brands": brands, "regions": regions, "models": models,
+    return {"brands": brands, "brand_order": order, "regions": regions, "models": models,
             "year_min": 1900, "year_max": min(2100, datetime.now().year + 1),
             "price_categories": [{"id": i, "minimum": low, "maximum_exclusive": high}
                 for i, low, high in [(1,0,2000),(2,2000,5000),(3,5000,10000),(4,10000,15000),(5,15000,20000),(6,20000,None)]],
