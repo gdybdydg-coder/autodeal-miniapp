@@ -1,7 +1,8 @@
+// Regression coverage for retained legacy modules; the live Radar shell is covered by radar-test.cjs.
 const {test}=require('node:test'),assert=require('node:assert/strict');
 const fs=require('node:fs'),vm=require('node:vm');
 function setup(fetchSearch,mode='legacy') {
-  const html=fs.readFileSync(__dirname+'/index.html','utf8'),nodes=[];
+  const html=fs.readFileSync(__dirname+'/tools/fixtures/legacy-search-shell.txt','utf8'),nodes=[];
   function element(tag='div') {
     const classes=new Set();
     const node={tag,value:'',checked:false,style:{},validity:{badInput:false},children:[],listeners:{},attributes:{},textContent:'',

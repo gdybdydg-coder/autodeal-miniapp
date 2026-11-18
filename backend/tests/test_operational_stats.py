@@ -109,6 +109,53 @@ def test_delivery_queue_deduplicates_matches_and_excludes_stopped_stale_uncertai
         assert ops.queues(db)['delivery']['sending'] == 0
 
 
+@pytest.mark.parametrize('reason', ['unbound', 'paused', 'subscription_expired', 'activation_expired'])
+def test_radar_queues_ignore_stale_enabled_executors_without_mutating_them(h, reason):
+    from backend.billing_models import Entitlement
+    from backend.radar_models import MIGRATION_VERSION, Radar, RadarMigration, RadarSearch
+
+    engine, _, clock = h
+    now = clock[0]
+    delivery(h, ident=1, state='pending', age=60)
+    delivery(h, ident=2, state='sending', age=30)
+    with Session(engine) as db:
+        db.add(MonitorJob(source_id='new', state='pending', first_seen=now-10))
+        db.add(MonitorSeen(search_id=1, source_id='new', epoch='a', state='pending', first_seen=now-10))
+        db.add(RadarMigration(version=MIGRATION_VERSION, applied_at=now))
+        db.add(Entitlement(user_id=222, expires_at=now+100, updated_at=now))
+        radar = Radar(id='r', user_id=222, slot=1, name='Радар', price_category=3,
+                      year_from=2010, year_to=2020, min_profit=10, status='active',
+                      active_until=now+100, created_at=now, updated_at=now)
+        db.add(radar)
+        db.flush()
+        binding = RadarSearch(search_id=1, radar_id=radar.id)
+        db.add(binding)
+        db.commit()
+        before = ops.queues(db, 222, now=now)
+        assert before['valuation']['total'] == 1
+        assert before['delivery']['pending'] == before['delivery']['sending'] == 1
+        if reason == 'unbound':
+            db.delete(binding)
+        elif reason == 'paused':
+            radar.status = 'paused'
+        elif reason == 'subscription_expired':
+            db.get(Entitlement, 222).expires_at = now
+        else:
+            radar.active_until = now
+        db.commit()
+
+        # Status reads must agree with the worker even before a cleanup tick.
+        # They must neither repair execution rows nor erase actual queue data.
+        for uid in (None, 222):
+            report = ops.queues(db, uid, now=now)
+            assert report['valuation']['total'] == 0
+            assert report['delivery'] == {'pending': 0, 'sending': 0,
+                'oldest_wait_seconds': None, 'unit': 'messages'}
+        assert db.get(Search, 1).enabled
+        assert db.get(MonitorSeen, (1, 'new')).state == 'pending'
+        assert db.get(Delivery, 1).state == 'pending'
+
+
 @pytest.mark.parametrize('instant,expected', [('2026-09-28T04:59:59+00:00', 'нічна пауза до 08:00'),
     ('2026-09-28T05:00:00+00:00', 'кожні 300 с')])
 def test_owner_text_schedule_and_last_success_survive_current_feed_error(h, instant, expected):
@@ -145,7 +192,7 @@ def test_stats_does_not_mutate_state_and_non_owner_never_reads_operational_data(
             assert db.get(Search, 1).enabled
         monkeypatch.setattr(ops, 'text', lambda *_: pytest.fail('private statistics accessed'))
         with Session(engine) as db:
-            assert 'лише адміністратору' in bot_commands.stats_text(db, 222, 111, settings=settings)
+            assert 'не є адміністратором' in bot_commands.stats_text(db, 222, 111, settings=settings)
     finally:
         event.remove(engine, 'before_cursor_execute', capture)
 

@@ -6,7 +6,7 @@ from datetime import datetime, timezone
 
 from sqlalchemy import exists, func, select
 
-from . import active_window, poll_schedule
+from . import active_window, poll_schedule, radar_monitor
 from .models import (Delivery, DeliveryTiming, MonitorControl, MonitorFeed, MonitorJob,
                      MonitorMatch, MonitorSeen, MonitorWatch, Search, User)
 
@@ -47,12 +47,13 @@ def queues(db, uid=None, *, now=None):
     interest = select(MonitorSeen.search_id).join(Search, Search.id == MonitorSeen.search_id).join(
         User, User.id == Search.user_id).join(MonitorWatch, MonitorWatch.search_id == Search.id).where(
         MonitorSeen.source_id == MonitorJob.source_id, MonitorSeen.state == "pending",
-        MonitorSeen.epoch == MonitorWatch.epoch, Search.enabled.is_(True), User.ready.is_(True))
+        MonitorSeen.epoch == MonitorWatch.epoch, Search.enabled.is_(True), User.ready.is_(True),
+        radar_monitor.search_clause(now=now))
     match = select(MonitorMatch.search_id).join(Search, Search.id == MonitorMatch.search_id).join(
         MonitorWatch, MonitorWatch.search_id == Search.id).where(
         Search.user_id == Delivery.user_id, Search.enabled.is_(True),
         MonitorMatch.listing_id == Delivery.listing_id, MonitorMatch.epoch == MonitorWatch.epoch,
-        MonitorMatch.fingerprint == Search.fingerprint)
+        MonitorMatch.fingerprint == Search.fingerprint, radar_monitor.search_clause(now=now))
     if uid is not None:
         interest = interest.where(Search.user_id == uid)
         match = match.where(Search.user_id == uid)

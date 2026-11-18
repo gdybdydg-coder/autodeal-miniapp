@@ -84,15 +84,21 @@ def ingest(engine, cars: list[Car], now=None):
         db.commit()
 
 
-def matching_searches(user_id, listing_id):
+def matching_searches(user_id, listing_id, now=None):
+    from .radar_monitor import search_clause
     return select(MonitorMatch.search_id).join(Search, Search.id == MonitorMatch.search_id).join(
         MonitorWatch, MonitorWatch.search_id == Search.id).where(
         MonitorMatch.listing_id == listing_id, Search.user_id == user_id, Search.enabled.is_(True),
-        MonitorMatch.epoch == MonitorWatch.epoch, MonitorMatch.fingerprint == Search.fingerprint)
+        MonitorMatch.epoch == MonitorWatch.epoch, MonitorMatch.fingerprint == Search.fingerprint,
+        search_clause(now=now))
 
 
 def eligible(db, user_id, listing, now, *, require_provider_range=False, require_confirmed_deal=False):
+    from .radar_monitor import enabled as radars_enabled, parameters as radar_parameters
     car = Car.model_validate(listing.car)
+    radar_mode = radars_enabled(db)
+    require_confirmed_deal = require_confirmed_deal or radar_mode
+    require_provider_range = require_provider_range or radar_mode
     if require_confirmed_deal and car.source == "auto_ria" and car.market is None:
         return False
     if not fresh(car, now, db, require_provider_range=require_provider_range):
@@ -101,12 +107,39 @@ def eligible(db, user_id, listing, now, *, require_provider_range=False, require
         # Production matches use official catalog IDs, not translated labels.
         # The trusted monitor records the filter fingerprint and enable epoch.
         price_only = not require_confirmed_deal and price_only_evidence_valid(car, now)
+        candidates = db.scalars(select(Search).where(Search.id.in_(matching_searches(user_id, listing.id, now))))
+        if radar_mode:
+            from .ria_search import matches as source_matches
+            from .radar_catalog import resolve as resolve_radar_catalog
+            from .auto_ria import RiaError
+            raw = (car.valuation_evidence or {}).get("candidate")
+            if not raw:
+                return False
+            raw = dict(raw)
+            region_id = (car.pipeline or {}).get("region_id")
+            if type(region_id) is int and region_id > 0:
+                raw["region_id"] = region_id
+            # Valuation proof deliberately excludes region: the market quote
+            # is nationwide. Newly evaluated cards retain the official region
+            # ID in their pipeline evidence. Only older cards need a local,
+            # unambiguous label lookup; never perform another provider call.
+            if raw.get("region_id") is None and car.region:
+                try:
+                    raw["region_id"] = resolve_radar_catalog(db, "states", [car.region])[0]
+                except RiaError:
+                    raw["region_id"] = None
+            for search in candidates:
+                filters = Filters.model_validate(search.filters)
+                _, resolved = radar_parameters(db, filters)
+                if source_matches(raw, filters, resolved) and is_deal(car.price, car.market, filters.minDiscount):
+                    return True
+            return False
         return any(price_only or is_deal(car.price, car.market, Filters.model_validate(search.filters).minDiscount)
-                   for search in db.scalars(select(Search).where(
-                       Search.id.in_(matching_searches(user_id, listing.id)))))
+                   for search in candidates)
+    from .radar_monitor import search_clause
     return any(matches(car, Filters.model_validate(row.filters)) for row in db.scalars(
         select(Search).where(Search.user_id == user_id, Search.enabled.is_(True),
-                             Search.after_listing < listing.id)))
+                             Search.after_listing < listing.id, search_clause(now=now))))
 
 
 def supplemental_listing(listing):
@@ -130,6 +163,7 @@ def recent_listing(listing, now):
 def enqueue(engine, now=None, *, allow_active_window=True, allow_recent_publications=True,
             require_provider_range=False, require_confirmed_deal=False):
     from .owner_car_notifications import reclaim, reusable_clause, retire_if_due
+    from .radar_monitor import search_clause
     now = time.time() if now is None else now
     retire_if_due(engine, None)
     with Session(engine) as db:
@@ -147,7 +181,7 @@ def enqueue(engine, now=None, *, allow_active_window=True, allow_recent_publicat
             .where(User.ready.is_(True), Search.enabled.is_(True),
                    MonitorMatch.epoch == MonitorWatch.epoch,
                    MonitorMatch.fingerprint == Search.fingerprint,
-                   Listing.source == "auto_ria", pending_pair)
+                   Listing.source == "auto_ria", pending_pair, search_clause(now=now))
             .distinct().order_by(Listing.id.desc(), User.id)).all()
         # Trusted non-AUTO.RIA fixture records retain their activation rule.
         other_listings = list(db.scalars(select(Listing).where(Listing.source != "auto_ria")))
@@ -181,7 +215,7 @@ def enqueue(engine, now=None, *, allow_active_window=True, allow_recent_publicat
                 continue
             refreshable = (listing.source == "auto_ria"
                 and not fresh(Car.model_validate(listing.car), now, db, require_provider_range=require_provider_range)
-                and db.scalar(matching_searches(uid, listing.id).limit(1)) is not None)
+                and db.scalar(matching_searches(uid, listing.id, now).limit(1)) is not None)
             if not refreshable and not eligible(db, uid, listing, now,
                     require_provider_range=require_provider_range, require_confirmed_deal=require_confirmed_deal):
                 continue
@@ -267,11 +301,8 @@ class TelegramSender:
             if "unverified_condition" in reasons and not (car.valuation_evidence or {}).get("condition_notices"):
                 pricing.append("⚠️ Стан авто не підтверджено даними джерела")
         condition_notices = (car.valuation_evidence or {}).get("condition_notices") or []
-        if condition_notices:
-            if "onRepairParts" in condition_notices:
-                pricing.append("⚠️ AUTO.RIA: авто на запчастини / під ремонт — перевір опис")
-            if any(flag in condition_notices for flag in ("damage", "technical_condition")):
-                pricing.append("⚠️ У джерелі є позначка про пошкодження / ремонт — перевір опис")
+        if "onRepairParts" in condition_notices:
+            pricing.append("⚠️ AUTO.RIA: авто на запчастини / під ремонт — перевір опис")
             if car.market is not None:
                 pricing.append("Витрати на ремонт не враховані" if provider_range else
                                "Орієнтир аналогів без позначених пошкоджень; витрати на ремонт не враховані")
@@ -408,7 +439,7 @@ def deliver_one(engine, settings: Settings, sender, now=None, *, enforce_chat_in
         unconfirmed = settings.ria_confirmed_deals_only and unpriced_listing(listing)
         if not retired and not unconfirmed and user and user.ready and listing and listing.source == "auto_ria" and not fresh(
                 Car.model_validate(listing.car), now, db, require_provider_range=settings.ria_ai_price_enabled):
-            refresh = list(db.scalars(matching_searches(user.id, listing.id)))
+            refresh = list(db.scalars(matching_searches(user.id, listing.id, now)))
         try:
             paid = not user or paid_source_access.allowed(db, user.id, now)
         except Exception:

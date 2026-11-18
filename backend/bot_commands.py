@@ -14,37 +14,40 @@ from .ria_budget import BudgetLimits, total_cap
 
 COMMANDS = [
     {"command": "start", "description": "Почати та відкрити AUTODeal"},
-    {"command": "help", "description": "Як налаштувати пошук"},
+    {"command": "help", "description": "Як налаштувати радари"},
     {"command": "stats", "description": "Статистика (адмін)"},
     {"command": "stop", "description": "Зупинити всі сповіщення"},
 ]
 WELCOME = (
     "🚘 Вітаємо в AUTODeal!\n\n"
-    "Знаходимо нові оголошення AUTO.RIA за твоїми побажаннями та надсилаємо їх у цей чат.\n\n"
-    "1️⃣ Натисни «Налаштувати пошук».\n"
-    "2️⃣ Обери авто, бюджет та одну або кілька областей.\n"
-    "3️⃣ Збережи підписку й натисни «Увімкнути сповіщення».\n\n"
-    "📊 У картці показуємо орієнтовну ринкову ціну, коли оцінка доступна.\n"
-    "🔔 Відстежуємо нові публікації після ввімкнення пошуку.\n\n"
+    "Знаходимо вигідні авто на AUTO.RIA й повідомляємо про них у цьому чаті.\n\n"
+    "1️⃣ Відкрийте «Мої радари». У кожного користувача є 3 місця.\n"
+    "2️⃣ Оберіть марки й моделі, категорію ціни, області, роки та мінімальну вигоду.\n"
+    "3️⃣ Збережіть радар і натисніть «Увімкнути» за наявності активної підписки.\n\n"
+    "⚙️ Створювати й редагувати радари можна без активної підписки.\n"
+    "🔔 Відстежуємо нові публікації після ввімкнення радара.\n\n"
     "/help — допомога\n/stop — зупинити всі сповіщення"
 )
 HELP = (
     "🔎 Як користуватися AUTODeal\n\n"
-    "Відкрий застосунок, обери фільтри та створи підписку. "
-    "У картці збереженої підписки натисни «Увімкнути сповіщення». "
-    "Можна вибрати кілька областей в одному пошуку.\n\n"
+    "Відкрийте «Мої радари» та створіть до 3 радарів. У кожного — власні марки, "
+    "моделі, одна категорія ціни, області, роки й відсоток вигоди. "
+    "Кількість місць не залежить від тарифу.\n\n"
     "🔔 Після ввімкнення стежимо за новими публікаціями. "
-    "Статус перевірок видно в картці підписки та в налаштуваннях.\n"
-    "📊 Ринкова ціна приблизна; якщо оцінки немає, це буде зазначено в картці.\n"
-    "✏️ Зміна фільтрів ставить пошук на паузу — ввімкни його після перевірки змін.\n\n"
-    "Якщо зв’язок із чатом не підтверджений, надішли /start. "
-    "У налаштуваннях також є кнопка «Надіслати тест».\n\n"
-    "/stop — зупинити всі сповіщення. Збережені фільтри залишаться."
+    "Пауза зберігає налаштування; видалення звільняє місце.\n"
+    "📊 Поріг ціни: підтверджена нижня межа AUTO.RIA × 0,95 × "
+    "(1 − вибраний відсоток / 100). Це ціновий орієнтир, не гарантований прибуток.\n"
+    "✏️ Змінюйте умови кнопкою «Редагувати» у картці радара.\n\n"
+    "💳 Моніторинг потребує активної підписки. Після її завершення радари "
+    "стають на паузу. Після поновлення ввімкніть їх вручну. "
+    "Створення та редагування доступні й без активної підписки.\n\n"
+    "Якщо чат не підключений, надішліть /start. У налаштуваннях є кнопка «Надіслати тест».\n\n"
+    "/stop — зупинити всі сповіщення. Радари залишаться збереженими."
 )
 STOPPED = (
     "⏸ Усі сповіщення AUTODeal зупинено.\n\n"
-    "Твої фільтри збережені. Щоб відновити пошук, надішли /start "
-    "і ввімкни потрібні підписки в застосунку."
+    "Ваші радари й налаштування збережені. Щоб відновити моніторинг, надішліть /start "
+    "і вручну ввімкніть потрібні радари за наявності активної підписки."
 )
 
 
@@ -78,10 +81,20 @@ def _stats_text(db, admin_uid, *, settings=None):
         purchase_stats.excluded_user_ids(settings, admin_uid=admin_uid)))
     active = db.scalar(select(func.count()).select_from(User).where(
         User.ready.is_(True), User.id.in_(clients))) or 0
-    searches = db.scalar(select(func.count()).select_from(Search).where(
-        Search.enabled.is_(True), Search.user_id.in_(clients))) or 0
-    owners = db.scalar(select(func.count(func.distinct(Search.user_id))).where(
-        Search.enabled.is_(True), Search.user_id.in_(clients))) or 0
+    from . import radar_monitor
+    if radar_monitor.enabled(db):
+        from .radar_models import Radar
+        eligible = (Radar.status == "active", Radar.active_until > time.time(),
+                    Radar.user_id.in_(clients), radar_monitor.subscription_clause(Radar.user_id))
+        searches = db.scalar(select(func.count()).select_from(Radar).where(*eligible)) or 0
+        owners = db.scalar(select(func.count(func.distinct(Radar.user_id))).where(*eligible)) or 0
+        search_label, owner_label = "Активних радарів", "Користувачів з активним радаром"
+    else:
+        searches = db.scalar(select(func.count()).select_from(Search).where(
+            Search.enabled.is_(True), Search.user_id.in_(clients))) or 0
+        owners = db.scalar(select(func.count(func.distinct(Search.user_id))).where(
+            Search.enabled.is_(True), Search.user_id.in_(clients))) or 0
+        search_label, owner_label = "Активних пошуків", "Користувачів з активним пошуком"
     budget = db.get(SourceBudget, "auto_ria")
     if budget:
         limits = BudgetLimits.env()
@@ -105,15 +118,15 @@ def _stats_text(db, admin_uid, *, settings=None):
         "📊 AUTODeal — статистика\n\n"
         f"👥 Усього клієнтів: {purchases['total']}\n"
         f"🟢 Підключені до бота: {active}\n"
-        f"🔎 Активних пошуків: {searches}\n"
-        f"🚘 Користувачів з активним пошуком: {owners}"
+        f"🔎 {search_label}: {searches}\n"
+        f"🚘 {owner_label}: {owners}"
         + "\n\n" + purchase_stats.text(purchases)
         + "\n\n" + operational_stats.text(db, settings) + quota
     )
 
 
 def payload(command, uid, release, text=None):
-    label = "Налаштувати пошук" if command == "/start" else "Відкрити AUTODeal"
+    label = "Мої радари" if command == "/start" else "Відкрити AUTODeal"
     return {"chat_id": uid, "text": text or {"/start": WELCOME, "/help": HELP, "/stop": STOPPED}[command],
             "reply_markup": {"inline_keyboard": [[{"text": label, "web_app": {
                 "url": telegram_setup.APP_URL + ("?" + urlencode({"v": release}) if release else "")}}]]}}
@@ -170,6 +183,9 @@ def configure(engine, settings, request=None):
         {"command": "paysupport", "description": "Допомога з оплатою"},
     ] if bank_menu else [])
     with Session(engine) as db:
+        from .radar_monitor import enabled as radars_enabled
+        if radars_enabled(db):
+            probe_id += "-radars-v1"
         row = db.get(SourceProbe, probe_id)
         if row and row.status == "configured":
             return

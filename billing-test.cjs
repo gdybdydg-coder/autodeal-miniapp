@@ -10,10 +10,10 @@ test('billing card refreshes after returning from bot and does not label free ac
  const window={AutoDealCloud:{billingStatus:async()=>response},addEventListener:(n,f)=>handlers[n]=f};
  const document={getElementById:()=>target,addEventListener:(n,f)=>handlers[n]=f,visibilityState:'visible'};
  vm.runInNewContext(fs.readFileSync('billing-ui.js','utf8'),{window,document,Date});
- await new Promise(r=>setImmediate(r)); assert.match(target.textContent,/безкоштовний/);assert.match(target.textContent,/ще не відкрито/);
+ await new Promise(r=>setImmediate(r)); assert.match(target.textContent,/Налаштування радарів доступні без оплати/);assert.match(target.textContent,/Активність підписки/);assert.doesNotMatch(target.textContent,/сповіщення.*безкоштовні/);
  response={sales_enabled:true,paid_access_required:true,access_available:false,amount_stars:137};
  handlers.visibilitychange();await new Promise(r=>setImmediate(r));
- assert.match(target.textContent,/137 ⭐/);assert.match(target.textContent,/Фільтри збережені/);
+ assert.match(target.textContent,/137 ⭐/);assert.match(target.textContent,/Радари збережені/);
  assert.doesNotMatch(target.textContent,/250 грн/);
  response={sales_enabled:true,paid_access_required:true,access_available:false,payment_method:'bank_manual',amount_uah:250};
  handlers.visibilitychange();await new Promise(r=>setImmediate(r));

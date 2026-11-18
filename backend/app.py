@@ -7,7 +7,7 @@ import re
 import threading
 import time
 from contextlib import asynccontextmanager
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, replace
 
 from fastapi import Depends, FastAPI, Header, HTTPException, Query, Request
 from fastapi.exceptions import RequestValidationError
@@ -83,6 +83,7 @@ class Settings:
     olx_owner_feed_enabled: bool = False
     olx_owner_feed_search_id: int = 0
     olx_owner_feed_until: float = 0
+    radar_enabled: bool = False
 
     @classmethod
     def env(cls):
@@ -134,6 +135,7 @@ class Settings:
             olx_owner_feed_enabled=os.getenv("OLX_OWNER_FEED_ENABLED") == "true",
             olx_owner_feed_search_id=int(os.getenv("OLX_OWNER_FEED_SEARCH_ID", "0") or 0),
             olx_owner_feed_until=float(os.getenv("OLX_OWNER_FEED_UNTIL", "0") or 0),
+            radar_enabled=os.getenv("RADAR_ENABLED", "true") == "true",
         )
 
     @property
@@ -142,6 +144,22 @@ class Settings:
 
 
 def create_app(settings: Settings, engine=None, *, paid_source_only=False):
+    def radar_runtime(value):
+        # A single existing primary publication pipeline owns Radar discovery.
+        # Legacy manual scans, optional owner intakes and informational cards
+        # cannot bypass Radar eligibility or its selected profit threshold.
+        if value.monitor_enabled and value.live and not value.ria_ai_price_enabled:
+            raise ValueError("Live Radar monitoring requires RIA_AI_PRICE_ENABLED=true and existing valuation credentials")
+        return replace(value, radar_enabled=True, full_scan_enabled=False, ria_active_window_enabled=False,
+            ria_recent_publications_enabled=False, ria_confirmed_deals_only=True,
+            owner_car_notifications_enabled=False, olx_owner_canary_enabled=False,
+            olx_owner_batch_enabled=False, olx_owner_feed_enabled=False,
+            ria_html_shadow_run_id="", ria_source_comparison_listing_id="",
+            ria_validation_run_id="", ria_diagnostic_listing_id="", ria_recovery_listing_id="",
+            ria_failed_delivery_recovery_id="", ria_photo_repair_ids="", ria_ai_price_probe_id="")
+
+    if settings.radar_enabled:
+        settings = radar_runtime(settings)
     cost_settings.validate()
     BudgetLimits.env()  # Validate before serving requests or running startup probes.
     poll_schedule.fixed_interval()
@@ -165,13 +183,30 @@ def create_app(settings: Settings, engine=None, *, paid_source_only=False):
     if not settings.bot_token or len(settings.webhook_secret) < 32:
         raise ValueError("Configure server-only Telegram secrets")
     engine = engine or create_engine(settings.database_url, pool_pre_ping=True)
-    if paid_source_only:
+    if paid_source_only or settings.radar_enabled:
         paid_source_access.configure(engine, settings)
+    if settings.radar_enabled:
+        engine.update_execution_options(autodeal_radars_enabled=True)
 
     @asynccontextmanager
     async def lifespan(app):
+        nonlocal settings
         # Initial schema only. Use versioned migrations before altering deployed tables.
-        Base.metadata.create_all(engine)
+        if settings.radar_enabled:
+            from .radar_models import RADAR_TABLES
+            # New Radar DDL belongs inside the migration's advisory lock.
+            Base.metadata.create_all(engine, tables=[table for table in Base.metadata.sorted_tables
+                                                     if table not in RADAR_TABLES])
+            from .radar_migration import migrate
+            await asyncio.to_thread(migrate, engine)
+        else:
+            Base.metadata.create_all(engine)
+        from .radar_models import RadarMigration, MIGRATION_VERSION
+        with Session(engine) as radar_state:
+            if radar_state.get(RadarMigration, MIGRATION_VERSION) is not None:
+                engine.update_execution_options(autodeal_radars_enabled=True)
+                settings = radar_runtime(settings)
+                paid_source_access.configure(engine, settings)
         manual_payments.initialize(engine, settings)
         from .purchase_stats import log_snapshot as log_purchase_stats
         await asyncio.to_thread(log_purchase_stats, engine, settings)
@@ -240,9 +275,9 @@ def create_app(settings: Settings, engine=None, *, paid_source_only=False):
         from . import olx_owner_canary, olx_owner_batch, olx_owner_feed
         from . import olx_ria_probe, olx_owner_monitor
         olx_owner_monitor_task = (asyncio.create_task(olx_owner_monitor.run(engine, settings, stop))
-                                  if olx_owner_monitor.enabled() else None)
+                                  if not settings.radar_enabled and olx_owner_monitor.enabled() else None)
         olx_ria_probe_task = (asyncio.create_task(olx_ria_probe.run(engine, settings, stop))
-                              if olx_ria_probe.enabled() else None)
+                              if not settings.radar_enabled and olx_ria_probe.enabled() else None)
         await asyncio.to_thread(olx_owner_batch.log_status, engine, settings)
         await asyncio.to_thread(olx_owner_feed.log_preflight, engine, settings)
         olx_task = (asyncio.create_task(olx_owner_feed.run(engine, settings, stop))
@@ -307,6 +342,16 @@ def create_app(settings: Settings, engine=None, *, paid_source_only=False):
 
     @app.middleware("http")
     async def no_store(request, call_next):
+        radar_mode = engine.get_execution_options().get("autodeal_radars_enabled") is True
+        if request.url.path.startswith("/api/radars") and not radar_mode:
+            return JSONResponse({"detail": "Радари ще не активовано. Спробуйте пізніше."},
+                                status_code=503, headers={"Cache-Control": "no-store"})
+        if radar_mode and (request.url.path == "/api/subscriptions"
+                or request.url.path.startswith("/api/subscriptions/")
+                or request.url.path.startswith("/api/cars")
+                or request.url.path == "/api/catalog"):
+            return JSONResponse({"detail": "Пошук замінено радарами. Оновіть застосунок."},
+                                status_code=410, headers={"Cache-Control": "no-store"})
         response = await call_next(request)
         response.headers["Cache-Control"] = "no-store"
         return response
@@ -314,27 +359,17 @@ def create_app(settings: Settings, engine=None, *, paid_source_only=False):
     @app.exception_handler(RequestValidationError)
     async def validation_error(request, exc):
         # Do not reflect request bodies / credentials in error payloads.
-        return JSONResponse({"detail": "Invalid request"}, status_code=422)
+        return JSONResponse({"detail": "Некоректні дані. Перевірте заповнені поля."}, status_code=422)
 
     def session():
         with Session(engine) as db:
             yield db
 
-    ALLOWED_TELEGRAM_IDS = {
-        1272569411,
-        777292211,
-        609834869,
-    }
-
     def identity(x_telegram_init_data: str = Header(default="")):
         try:
             uid = telegram_user(x_telegram_init_data, settings.bot_token)
         except (ValueError, KeyError, TypeError, OverflowError):
-            raise HTTPException(401, "Reopen Mini App in Telegram") from None
-        
-        if uid not in ALLOWED_TELEGRAM_IDS:
-            raise HTTPException(403, "Access Denied")
-
+            raise HTTPException(401, "Відкрийте застосунок повторно через Telegram.") from None
         return uid
 
 
@@ -354,6 +389,8 @@ def create_app(settings: Settings, engine=None, *, paid_source_only=False):
         return user
 
     manual_payment_routes.install(app, engine, settings, identity)
+    from .radar_api import install as install_radars
+    install_radars(app, engine, identity)
 
     def check_access(db, uid):
         if not paid_source_access.allowed(db, uid):
@@ -425,6 +462,9 @@ def create_app(settings: Settings, engine=None, *, paid_source_only=False):
         if paid_source_access.strict(engine):
             result["paid_access_required"] = not billing.free_access_enabled(db)
             result["access_available"] = paid_source_access.allowed(db, uid)
+        if engine.get_execution_options().get("autodeal_radars_enabled") is True:
+            result["paid_access_required"] = True
+            result["access_available"] = billing.expiry(db, uid) > time.time()
         return result
 
     @app.get("/api/admin/api-usage")
@@ -806,6 +846,9 @@ def create_app(settings: Settings, engine=None, *, paid_source_only=False):
             if command in ("/start", "/stop"):
                 user.ready = command == "/start"
             if command == "/stop":
+                if engine.get_execution_options().get("autodeal_radars_enabled") is True:
+                    from .radar_monitor import pause_user
+                    pause_user(db, uid)
                 for sid in db.scalars(select(Search.id).where(Search.user_id == uid)):
                     monitor.reset_watch(db, sid, False)
                 db.execute(update(Search).where(Search.user_id == uid).values(enabled=False))
@@ -819,4 +862,7 @@ def create_app(settings: Settings, engine=None, *, paid_source_only=False):
 
 
 def factory():
+    if os.getenv("RADAR_CUTOVER_HOLD", "false") == "true":
+        from .cutover import maintenance_app
+        return maintenance_app()
     return create_app(Settings.env(), paid_source_only=True)

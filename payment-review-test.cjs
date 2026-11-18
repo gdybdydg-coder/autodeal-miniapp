@@ -53,7 +53,7 @@ test('full owner path uses authenticated receipt and approval without removed fi
   assert.ok(ui.find('Повернутися без підтвердження'));assert.deepEqual(ui.revoked,['blob:synthetic-receipt']);
   await ui.find('Так, надходження').click();
   assert.ok(nodes(ui.screen).some(n=>n.textContent.includes('Рішення збережено')));
-  for(const c of ui.calls){assert.equal(c.opts.headers['X-Telegram-Init-Data'],'SIGNED-SYNTHETIC');assert.ok(!c.url.includes('SIGNED'));assert.equal(c.opts.cache,'no-store');}
+  for(const c of ui.calls){assert.equal(c.opts.headers['X-Telegram-Init-Data'],'SIGNED-SYNTHETIC');assert.ok(!c.url.includes('SIGNED'));assert.equal(c.opts.cache,'no-store');assert.equal(c.opts.redirect,'error');}
 });
 test('server rejection clears revoked owner data and private receipt object URLs',async()=>{
   let revoked=false;
@@ -64,7 +64,7 @@ test('server rejection clears revoked owner data and private receipt object URLs
 test('all states, search and pagination use the server queue',async()=>{
   const ui=await fixture(()=>({...listing,pages:3,total:45}));
   await ui.find('Усі заявки').click();assert.ok(ui.calls.at(-1).url.includes('state=all'));
-  ui.field('Номер заявки, ім’я, username або Telegram ID').value='AD-FIXTURE';
+  ui.field('Номер заявки, ім’я, ім’я користувача або Telegram ID').value='AD-FIXTURE';
   await ui.find('Знайти').click();assert.ok(ui.calls.at(-1).url.includes('search=AD-FIXTURE'));
   await ui.find('Наступна').click();assert.ok(ui.calls.at(-1).url.includes('page=2'));
 });
@@ -116,4 +116,21 @@ test('receipt auth failure clears owner card instead of exposing cached private 
   const ui=await fixture(url=>url.endsWith('/receipt')?{status:403,data:{detail:'owner_only'}}:basic(url),true,'?code='+row.code);
   assert.equal(ui.screen.children.length,0);assert.match(ui.error.textContent,/власнику/);
   assert.equal(ui.calls.some(c=>c.url.endsWith('/notices')),false);
+});
+test('owner history and unknown states never expose English internal codes',async()=>{
+  const ui=await fixture(url=>url.endsWith('/notices')?[{kind:'client',state:'internal_new_state'}]:{
+    ...row,state:'internal_new_state',receipt_attached:false,history:[
+      {at:1790922000,action:'created'},{at:1790922100,action:'receipt_received'},
+      {at:1790922200,action:'unknown_internal_action'}]},true,'?code='+row.code);
+  const text=nodes(ui.screen).map(n=>n.textContent).join(' ');
+  assert.match(text,/Заявку створено/);assert.match(text,/Скриншот оплати отримано/);
+  assert.match(text,/Оновлення заявки/);assert.match(text,/Статус заявки потребує перевірки/);
+  assert.match(text,/Стан повідомлення потребує перевірки/);
+  assert.doesNotMatch(text,/internal_new_state|receipt_received|unknown_internal_action/);
+  assert.equal(ui.calls.filter(c=>c.opts.method==='POST').length,0);
+});
+test('network exception is localized without reflecting raw transport text',async()=>{
+  const ui=await fixture(()=>{throw new TypeError('Failed to fetch internal diagnostic');});
+  assert.match(ui.error.textContent,/Не вдалося з’єднатися із сервером/);
+  assert.doesNotMatch(ui.error.textContent,/Failed to fetch|internal diagnostic/);
 });

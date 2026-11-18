@@ -73,6 +73,9 @@ def confirmed_clause(uid, now=None, *, excluded=()):
 
 
 def allowed(db, uid, now=None):
+    from .radar_monitor import enabled, subscription_clause
+    if enabled(db):
+        return bool(db.scalar(select(subscription_clause(uid, now))))
     if not strict(db.get_bind()):
         return billing.allowed(db, uid, now)
     return bool(db.scalar(select(access_clause(uid, now, excluded=exclusions(db.get_bind())))))
@@ -86,11 +89,13 @@ def access_clause(uid, now=None, *, excluded=()):
         BillingControl.offer[billing.FREE_ACCESS_KEY].as_boolean().is_(True)))
     identity = literal(uid, type_=User.id.type) if isinstance(uid, int) else uid
     individual_free = identity.in_(FREE_USER_IDS)
-    return (
+    legacy = (
         free
         | individual_free
         | confirmed_clause(uid, now, excluded=excluded)
     ) & identity.not_in(excluded)
+    from .radar_monitor import marker_clause, subscription_clause
+    return (marker_clause() & subscription_clause(uid, now)) | (~marker_clause() & legacy)
 
 
 def any_eligible(db, now):

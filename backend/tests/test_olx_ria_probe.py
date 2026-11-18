@@ -266,7 +266,7 @@ def test_reviewed_phase4_reads_comparison_cache_without_mutation_and_reuses_call
         r.result={**r.result,'phase':3,'calls':[{'kind':'dictionary'} for _ in range(7)]+[{'kind':'ai'} for _ in range(2)]+[{'kind':'detail'} for _ in range(13)],'olx_calls':[{'status':'http_200','bytes':10} for _ in range(3)]}
         cached={'id':'777','brand_id':70,'model_id':652,'price_usd':7200,'VIN':'PRIVATE'}
         db.add(ValuationPeer(source_id='777',group_key='test',car=cached,observed_at=live.clock[0],available=True));db.commit()
-    config=json.loads(Path(probe.PLAN).read_text())
+    config=json.loads(Path(probe.PLAN).read_text(encoding="utf-8"))
     live.plan.update(phase=4,maximum_olx_gets=4,dictionary_evidence=config['dictionary_evidence'])
     for row in live.plan['dictionary_evidence'].values():row['checked_at']=live.clock[0]
     car={'source':'olx','id':'936768428','url':live.plan['candidates'][0]['url'],

@@ -240,7 +240,7 @@ def test_non_admin_is_rejected_before_any_statistics_query(ledger, monkeypatch):
         pytest.fail("A non-admin queried private purchase statistics")
     monkeypatch.setattr(purchase_stats, "counts", forbidden)
     with Session(ledger[0]) as db:
-        assert "лише адміністратору" in bot_commands.stats_text(
+        assert "Ви не є адміністратором" in bot_commands.stats_text(
             db, FIRST_CLIENT, ADMIN, settings=ledger[1])
 
 
@@ -257,7 +257,7 @@ def test_webhook_verifies_admin_on_each_stats_call(ledger, monkeypatch):
         assert command(api, "/stats", uid=ADMIN, update=102).status_code == 200
     assert len(sent) == 2
     assert all("💳 Підписки" in response["text"] for response in sent)
-    assert "лише адміністратору" in rejected.json()["text"]
+    assert "Ви не є адміністратором" in rejected.json()["text"]
     assert "Купили тариф" not in rejected.json()["text"]
 
 
@@ -303,7 +303,7 @@ def test_database_outage_returns_error_to_admin_without_reading_payments(ledger,
     assert response.status_code == 200
     assert response.json()["text"] == bot_commands.STATS_UNAVAILABLE
     assert "Купили тариф:" not in response.text and "PRIVATE" not in response.text
-    assert "лише адміністратору" in outsider.json()["text"]
+    assert "Ви не є адміністратором" in outsider.json()["text"]
 
 
 def test_database_error_does_not_become_zero_purchases_or_leak_sql(ledger, monkeypatch):

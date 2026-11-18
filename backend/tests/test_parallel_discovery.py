@@ -9,7 +9,7 @@ from sqlalchemy.orm import Session
 
 from backend.models import Delivery, MonitorFeed, MonitorJob, MonitorSeen, Range, Search, SourceBudget, User
 from backend.monitor import Monitor, delivery_batch, reset_watch
-from backend.ria_budget import BudgetLimits
+from backend.ria_budget import BudgetLimits, background_limits
 from backend.tests.test_monitor import p, add_search, drain, wake, details, searches
 from backend.tests.test_ria_ai_price import enable
 
@@ -79,6 +79,7 @@ def test_four_due_feeds_share_last_request_and_keep_unsearched_cursors(p, monkey
     enable(p, monkeypatch)
     drain(p)
     limits = BudgetLimits(10, 20, 100)
+    background = background_limits(limits)
     factory = p.runner.search_factory
     def source_factory(engine, key):
         source = factory(engine, key)
@@ -89,8 +90,10 @@ def test_four_due_feeds_share_last_request_and_keep_unsearched_cursors(p, monkey
     with Session(p.engine) as db:
         budget = db.get(SourceBudget, "auto_ria")
         budget.total = 99 if cap == "total" else 30
-        budget.calls = ([p.clock[0]] * 9 if cap == "hourly" else
-                        [p.clock[0] - 4000] * 19 if cap == "daily" else [])
+        # Leave exactly one background call, preserving the existing reserve
+        # for interactive requests rather than pre-filling that reserve too.
+        budget.calls = ([p.clock[0]] * (background.hourly - 1) if cap == "hourly" else
+                        [p.clock[0] - 4000] * (background.daily - 1) if cap == "daily" else [])
         initial = budget.total
         cursors = {r.id: r.cursor for r in db.scalars(select(MonitorFeed))}
         db.commit()

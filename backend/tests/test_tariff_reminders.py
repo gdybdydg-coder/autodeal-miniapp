@@ -396,6 +396,9 @@ def test_two_workers_create_one_daily_campaign_and_do_not_duplicate_send(daily):
 
 def isolated_process_worker(url, settings, barrier, output):
     """A separate OS process owns a new connection pool and fixture transport."""
+    # Windows spawn does not inherit pytest's socket fence from the parent.
+    from backend.tests.conftest import _install
+    _install(setattr)
     engine = create_engine(url, connect_args={"check_same_thread": False, "timeout": 30})
     try:
         barrier.wait(timeout=10)
@@ -416,7 +419,7 @@ def test_two_os_processes_with_separate_pools_share_one_daily_campaign(daily):
     engine, settings, _ = daily
     if engine.dialect.name != "sqlite":
         pytest.skip("Explicitly checks the disposable SQLite process fixture")
-    context = multiprocessing.get_context("fork")
+    context = multiprocessing.get_context("spawn" if os.name == "nt" else "fork")
     barrier, output = context.Barrier(2), context.Queue()
     processes = [context.Process(target=isolated_process_worker,
         args=(str(engine.url), settings, barrier, output)) for _ in range(2)]

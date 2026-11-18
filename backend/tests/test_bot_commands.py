@@ -12,6 +12,28 @@ from backend.models import BotReply, MonitorControl, Search, SourceBudget, Sourc
 from backend.tests.test_backend import TOKEN, SECRET, command, headers, subscribe
 
 
+def test_radar_onboarding_copy_explains_slots_access_and_manual_resume():
+    welcome = bot_commands.payload("/start", 111, "radars")
+    assert welcome["reply_markup"]["inline_keyboard"][0][0]["text"] == "Мої радари"
+    assert "3 місця" in welcome["text"]
+    assert "без активної підписки" in welcome["text"]
+    assert "Налаштувати пошук" not in welcome["text"]
+    help_text = bot_commands.payload("/help", 111, "radars")["text"]
+    assert "Кількість місць не залежить від тарифу" in help_text
+    assert "Після поновлення ввімкніть їх вручну" in help_text
+    assert "0,95" in help_text
+    assert "Зміна фільтрів ставить пошук на паузу" not in help_text
+    assert "радари й налаштування збережені" in bot_commands.STOPPED
+
+
+def test_connection_test_copy_does_not_claim_to_activate_radars(monkeypatch):
+    calls = []
+    monkeypatch.setattr(telegram_setup, "call", lambda *args: calls.append(args) or {"ok": True})
+    telegram_setup.send_test("fixture-token", 111)
+    assert calls[0][1] == "sendMessage"
+    assert "Тест не вмикає радари" in calls[0][2]["text"]
+
+
 @pytest.fixture
 def setup(tmp_path, monkeypatch):
     engine = create_engine("sqlite:///" + str(tmp_path / "commands.db"),
@@ -108,7 +130,7 @@ def test_private_admin_stats_reports_local_quota_without_source_requests(setup, 
         budget = db.get(SourceBudget, "auto_ria")
         budget.calls, budget.total = [now - 60] * 7 + [now - 90000], 44569
         db.commit()
-        assert bot_commands.stats_text(db, 222, 111) == "⛔ Команда доступна лише адміністратору."
+        assert bot_commands.stats_text(db, 222, 111) == "⛔ Ви не є адміністратором. Ваш Telegram ID: 222"
         text = bot_commands.stats_text(db, 111, 111)
         assert "За 24 год: 7 запитів" in text
         assert "Залишок за нашим лімітом: 45 431" in text

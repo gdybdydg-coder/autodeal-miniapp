@@ -16,6 +16,13 @@ from backend.tests.test_paid_source_boundaries import confirm
 from backend.tests.test_ria_ai_price import enable
 
 
+@pytest.fixture
+def purchased_owner_policy(monkeypatch):
+    # This suite isolates admin/pilot purchase evidence. The later explicit
+    # legacy free-ID policy is independent and covered separately below.
+    monkeypatch.setattr(paid_source_access, "FREE_USER_IDS", set())
+
+
 def configure_owner(p, uid, *, configured_exclusion=False):
     settings = replace(p.settings, admin_telegram_id=uid,
         stats_excluded_user_ids=str(uid) if configured_exclusion else "")
@@ -41,7 +48,7 @@ def test_confirmed_paid_owner_is_a_current_member_while_stats_still_exclude_owne
 
 @pytest.mark.parametrize("kind", ["none", "gift", "review", "expired", "revoked", "future",
                                   "stars_test", "subscription_preview"])
-def test_admin_role_and_pilot_namespaces_never_grant_source_access(p, kind):
+def test_admin_role_and_pilot_namespaces_never_grant_source_access(p, kind, purchased_owner_policy):
     strict(p)
     uid = PILOT_OWNER
     configure_owner(p, uid)
@@ -70,7 +77,7 @@ def test_admin_role_and_pilot_namespaces_never_grant_source_access(p, kind):
 
 
 @pytest.mark.parametrize("legacy", [False, True])
-def test_owner_confirmation_updates_source_access_without_restart_or_new_schema_fields(p, monkeypatch, legacy):
+def test_owner_confirmation_updates_source_access_without_restart_or_new_schema_fields(p, monkeypatch, legacy, purchased_owner_policy):
     strict(p)
     settings = configure_owner(p, PILOT_OWNER)
     settings = replace(settings, manual_payment_review_enabled=True)
@@ -87,6 +94,17 @@ def test_owner_confirmation_updates_source_access_without_restart_or_new_schema_
         from backend.manual_payment_models import PaymentRequest
         row = reader.scalar(select(PaymentRequest).where(PaymentRequest.user_id == PILOT_OWNER))
         assert row.receipt_file_id is None and row.terms_version is None
+    assert not p.calls and not p.sent
+
+
+def test_explicit_legacy_free_grant_does_not_create_purchase_evidence(p):
+    strict(p)
+    configure_owner(p, PILOT_OWNER)
+    assert PILOT_OWNER in paid_source_access.FREE_USER_IDS
+    with Session(p.engine) as db:
+        assert paid_source_access.allowed(db, PILOT_OWNER, p.clock[0])
+        assert not paid_source_access.any_paid(db, p.clock[0])
+        assert db.get(Entitlement, PILOT_OWNER) is None
     assert not p.calls and not p.sent
 
 

@@ -18,6 +18,10 @@ def discovery_filters(raw):
 
 
 def merge(monitor, db):
+    from .radar_monitor import enabled
+    if enabled(db):
+        from .radar_discovery import merge as merge_radars
+        return merge_radars(monitor, db)
     from .monitor import active_members
 
     members = active_members(db)

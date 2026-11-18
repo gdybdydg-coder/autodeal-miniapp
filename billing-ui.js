@@ -9,13 +9,13 @@
     try {
       const state=await root.AutoDealCloud.billingStatus();
       if (!state.paid_access_required && !state.sales_enabled && state.access_available) {
-        target.textContent="Пошук і сповіщення AutoDeal безкоштовні для всіх користувачів. Оплата не потрібна.";
+        target.textContent="Налаштування радарів доступні без оплати. Активність підписки для моніторингу показано на сторінці «Мої радари».";
         return;
       }
       const until=state.expires_at?new Date(state.expires_at*1000).toLocaleString("uk-UA",{timeZone:"Europe/Kyiv"}):"";
       target.textContent=(state.paid_access_required?
-        (state.access_available?"✅ Доступ активний.":"Доступ не активний. Фільтри збережені."):
-        "Пошук зараз безкоштовний.")+
+        (state.access_available?"✅ Доступ активний.":"Доступ не активний. Радари збережені."):
+        "Налаштування радарів доступні без оплати.")+
         (until?" До "+until+" (Київ).":"")+
         (state.sales_enabled?" "+(state.payment_method==='bank_manual'?state.amount_uah+" грн":state.amount_stars+" ⭐")+" за 30 днів. Без автосписань.":" Продаж ще не відкрито.");
     } catch(_) {

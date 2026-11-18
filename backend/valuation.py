@@ -275,7 +275,7 @@ def policy():
             "missing_modification_fallback_scope": "candidate_or_peer",
             "unknown_valuation_notification": "informational_without_market_or_discount",
             "condition_basis": "no_source_damage_parts_abroad_or_custom_flags",
-            "notification_repair_condition": "disclosed_not_excluded",
+            "notification_repair_condition": "not_excluded_parts_notice_only",
             "notification_other_exclusions": ["abroad", "custom"],
             "year_tolerance": 1, "mileage_tolerance_percent": 20, "mileage_tolerance_min_km": 30000,
               "maximum_detail_age_seconds": MAX_AGE, "maximum_peer_age_seconds": peer_ttl(), "sample_max_price_ratio": 2,

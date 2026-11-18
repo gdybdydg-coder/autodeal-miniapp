@@ -54,7 +54,7 @@ def phase6(live,monkeypatch):
         db.add(SourceProbe(id=probe.STATE,status='completed_observations_not_admitted',requests=23,checked_at=live.clock[0],result={'phase':5,'error':None,'owner_id':900,'fingerprint':live.plan['fingerprint'],'calls':[{'kind':'ai' if i<3 else 'dictionary','status':'http_200','bytes':10} for i in range(23)],'olx_calls':[{'status':'http_200','bytes':10}]*5,'observations':[]}));db.commit()
     live.plan['maximum_olx_gets']=6
     live.plan['candidates']=[{'id':car(1000)['id'],'url':car(1000)['url']}]
-    live.plan['dictionary_evidence']=json.loads(Path('backend/olx_ria_probe_plan.json').read_text())['dictionary_evidence']
+    live.plan['dictionary_evidence']=json.loads(Path('backend/olx_ria_probe_plan.json').read_text(encoding='utf-8'))['dictionary_evidence']
     for e in live.plan['dictionary_evidence'].values():e['checked_at']=int(live.clock[0])
 
 

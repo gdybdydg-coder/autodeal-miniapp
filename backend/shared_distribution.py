@@ -60,7 +60,9 @@ def targets(db, settings, source_id, evidence):
             continue
         if fingerprint not in resolved_filters:
             try:
-                _, resolved_filters[fingerprint] = RiaSearch.cached_parameters(db, filters)
+                from .radar_monitor import enabled, parameters
+                _, resolved_filters[fingerprint] = (parameters(db, filters) if enabled(db)
+                    else RiaSearch.cached_parameters(db, filters))
             except RiaError:
                 # This group's ordinary poll still resolves and checks it.
                 failed.add(fingerprint)

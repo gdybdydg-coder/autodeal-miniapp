@@ -1,0 +1,200 @@
+<!doctype html>
+<html lang="uk" data-mode="subscriptions">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#070709">
+  <meta name="autodeal-version" content="20261102-57">
+  <title>AUTODEAL</title>
+  <link rel="stylesheet" href="style.css?v=20261102-57">
+</head>
+<body>
+<main class="app">
+  <header class="header"><div class="logo">AUTO<span>DEAL</span></div><button class="icon-button" id="settingsBtn" aria-label="Налаштування">⚙️</button></header>
+  <div id="searchIntro">
+  <h1 id="searchTitle" tabindex="-1">Нові вигідні авто</h1>
+  <p class="subtitle" id="searchSubtitle">Налаштуй підписку на сповіщення в чаті бота</p>
+  <p class="filter-help editing-hint" id="editingHint" hidden></p>
+  </div>
+
+  <section id="searchFilters" class="search-box" aria-label="Фільтри пошуку">
+    <div class="row group">
+      <div><label id="brandLabel" class="label" for="brand">Марка</label><select id="brand" class="input"><option value="">Всі марки</option></select><button id="brandPickerButton" class="input brand-picker-button" type="button" aria-haspopup="dialog" aria-controls="brandDialog" aria-labelledby="brandLabel brandPickerValue" hidden><span id="brandPickerValue">Всі марки</span><span aria-hidden="true">⌄</span></button></div>
+      <div><label class="label" for="model">Модель</label><select id="model" class="input" disabled><option value="">Всі моделі</option></select></div>
+    </div>
+    <div class="catalog-help"><p id="catalogStatus" class="filter-help" role="status">Завантажуємо марки та моделі AUTO.RIA…</p><button id="retryCatalog" class="manager-button" type="button" hidden>Оновити списки</button></div>
+    <div class="row range-grid group">
+      <fieldset><legend class="label">Ціна, $</legend><div class="range"><input id="priceFrom" class="input" type="number" inputmode="numeric" min="0" placeholder="Від" aria-label="Ціна від"><input id="priceTo" class="input" type="number" inputmode="numeric" min="0" placeholder="До" aria-label="Ціна до"></div></fieldset>
+      <fieldset><legend class="label">Рік</legend><div class="range"><input id="yearFrom" class="input" type="number" inputmode="numeric" placeholder="Від" aria-label="Рік від"><input id="yearTo" class="input" type="number" inputmode="numeric" placeholder="До" aria-label="Рік до"></div></fieldset>
+    </div>
+    <details id="region" class="region-picker group">
+      <summary><span class="label">Області</span><span id="regionSummary">Вся Україна</span></summary>
+      <p class="filter-help">Обери одну або кілька областей. Без позначок — вся Україна.</p>
+      <button id="clearRegions" class="reset-filters" type="button">Скинути області</button>
+      <fieldset id="regionOptions" class="choices"><legend class="sr-only">Області пошуку</legend></fieldset>
+    </details>
+    <details class="advanced" id="advancedFilters">
+      <summary>Додаткові фільтри <span id="advancedCount" class="filter-count"></span></summary>
+      <div class="advanced-body">
+        <p class="filter-help">Можна обрати кілька варіантів у кожній категорії.</p>
+        <details class="filter-section"><summary>Тип кузова <span id="bodyCount" class="filter-count"></span></summary><fieldset id="bodyOptions" class="choices"><legend class="sr-only">Тип кузова</legend></fieldset></details>
+        <details class="filter-section"><summary>Тип палива <span id="fuelCount" class="filter-count"></span></summary><fieldset id="fuelOptions" class="choices"><legend class="sr-only">Тип палива</legend></fieldset></details>
+        <details class="filter-section"><summary>Коробка передач <span id="transmissionCount" class="filter-count"></span></summary><fieldset id="transmissionOptions" class="choices"><legend class="sr-only">Коробка передач</legend></fieldset></details>
+        <fieldset class="mileage-group"><legend class="label">Пробіг, тис. км</legend><div class="row"><input id="mileageFrom" class="input" type="number" inputmode="decimal" min="0" step="any" placeholder="Від" aria-label="Пробіг від, тис. км"><input id="mileageTo" class="input" type="number" inputmode="decimal" min="0" step="any" placeholder="До" aria-label="Пробіг до, тис. км"></div></fieldset>
+        <button id="resetAdvanced" class="reset-filters" type="button">Скинути додаткові фільтри</button>
+      </div>
+    </details>
+    <button id="marketSwitch" class="market" type="button" role="switch" aria-checked="true" hidden>
+      <span class="market-left"><span class="fire">🔥</span><span><strong>Тільки вигідні авто</strong><small>Нижче ринку на вказаний відсоток</small></span></span><span class="switch active" aria-hidden="true"></span>
+    </button>
+    <div class="group discount-field">
+      <label class="label" for="minDiscount">Мінімальна різниця з орієнтиром, %</label>
+      <div class="discount-input"><input id="minDiscount" class="input" type="text" inputmode="decimal" value="15" placeholder="Наприклад, 12,5" autocomplete="off" aria-describedby="discountHelp"><span aria-hidden="true">%</span></div>
+      <p id="discountHelp" class="filter-help">Повідомляти, коли ціна нижча за обережний ціновий орієнтир хоча б на вказаний відсоток.</p>
+    </div>
+    <button id="searchBtn" class="search-button" type="button" hidden>Показати авто</button>
+    <button id="saveSearchBtn" class="search-button" type="button">Створити підписку</button>
+    <button id="cancelSubscriptionEdit" class="save-search-button" type="button" hidden>Скасувати редагування</button>
+  </section>
+
+  <section id="results" class="results" aria-live="polite" hidden>
+    <p><button id="editResultsFilters" type="button" class="manager-button">← До фільтрів</button></p>
+    <div class="results-head"><h2 id="resultsTitle" tabindex="-1">Результати пошуку</h2><span id="count" class="count"></span></div>
+    <p class="filter-help" id="resultsCriteria"></p>
+    <div id="scanProgress" class="scan-progress" hidden>
+      <div class="scan-progress-head"><strong id="scanTitle">Перевіряємо всі оголошення</strong><button id="scanControl" class="manager-button" type="button">Призупинити</button></div>
+      <progress id="scanBar" max="1" value="0" aria-label="Прогрес перевірки"></progress>
+      <p id="scanStatus" class="filter-help" role="status"></p>
+    </div>
+    <p class="filter-help" id="sourceNote">Оголошення завантажуються з AUTO.RIA.</p>
+    <p class="filter-help">Джерело: <a href="https://auto.ria.com/" target="_blank" rel="noopener">AUTO.RIA</a></p>
+    <div id="resultsList" class="results-list"></div>
+    <button id="loadMore" class="save-search-button" type="button" hidden>Показати ще</button>
+  </section>
+
+  <nav class="navbar" aria-label="Головна навігація">
+    <button class="nav active" data-tab="search" aria-current="page"><span>🔎</span>Фільтри</button>
+    <button class="nav" data-tab="deals" hidden><span>🔥</span>Вигідні</button>
+    <button class="nav" data-tab="saved"><span>♡</span>Підписки</button>
+    <button class="nav" data-tab="settings"><span>⚙️</span>Налаштування</button>
+  </nav>
+<section id="savedDialog" class="saved-page" aria-labelledby="savedTitle" hidden>
+  <div class="subscriptions-head">
+    <button id="closeSaved" class="subscription-head-button" type="button" aria-label="Повернутися до попереднього розділу">←</button>
+    <h2 id="savedTitle" tabindex="-1">Мої підписки</h2>
+    <button id="refreshCloud" class="subscription-head-button" type="button" aria-label="Оновити підписки">↻</button>
+  </div>
+  <div id="subscriptionTabs" class="subscription-tabs" role="tablist" aria-label="Збережені пошуки">
+    <button id="localTab" type="button" role="tab" aria-controls="localPanel" aria-selected="false" tabindex="-1">На пристрої <span id="localCount" class="subscription-count">0</span></button>
+    <button id="subscriptionsTab" type="button" role="tab" aria-controls="cloudPanel" aria-selected="true" tabindex="0">Підписки <span id="cloudCount" class="subscription-count">…</span></button>
+  </div>
+  <button id="newSavedSearch" class="saved-find" type="button">+ Нова підписка</button>
+  <p id="savedError" class="saved-error" role="alert" hidden></p>
+  <form id="saveSearchForm" hidden>
+    <label class="label" for="savedName">Назва підписки</label>
+    <input id="savedName" class="input" maxlength="60" required autocomplete="off">
+    <p id="draftSummary" class="filter-help"></p>
+    <button class="manager-button" id="editDraftFilters" type="button">Змінити фільтри</button>
+    <p id="saveStatus" class="saved-error" role="status" hidden></p>
+    <button class="search-button" id="saveCloudSearch" type="button">Зберегти підписку</button>
+    <p class="filter-help save-hint" id="saveHint">Збережемо в акаунті Telegram на паузі.</p>
+    <button class="save-search-button" id="confirmSaveSearch" type="submit">Лише на цьому пристрої</button>
+  </form>
+  <section id="cloudPanel" class="subscription-panel" role="tabpanel" aria-labelledby="subscriptionsTab">
+    <h3 id="cloudTitle" class="sr-only">Підписки в акаунті Telegram</h3>
+    <p id="subscriptionsHint" class="filter-help subscription-readiness" role="status"></p>
+    <div id="subscriptionSetupActions" class="subscription-setup-actions">
+      <a id="subscriptionOpenBot" class="manager-button telegram-link" href="https://t.me/auto_deal_finder1_bot?start=notifications" target="_blank" rel="noopener" hidden>Відкрити чат бота ↗</a>
+      <button id="subscriptionCheckBot" class="manager-button" type="button" hidden>Перевірити підключення</button>
+      <button id="subscriptionTestBot" class="manager-button" type="button" hidden>Надіслати тест</button>
+    </div>
+    <p id="cloudStatus" class="filter-help" role="status">Збережені в акаунті пошуки завантажуються при відкритті цього списку в Telegram.</p>
+    <div id="cloudSearchList"></div>
+  </section>
+  <section id="localPanel" class="subscription-panel" role="tabpanel" aria-labelledby="localTab" hidden>
+    <h3 id="localTitle" class="sr-only">На цьому пристрої</h3>
+    <div id="savedSearchList"></div>
+  </section>
+</section>
+<section id="settingsPage" class="settings-page" aria-labelledby="settingsTitle" hidden>
+  <h1 id="settingsTitle" tabindex="-1">Налаштування</h1>
+  <p class="subtitle">Керуй підключенням і повідомленнями</p>
+  <section class="settings-card" aria-labelledby="telegramSettingsTitle">
+    <div class="settings-card-head"><span class="settings-symbol" aria-hidden="true">↗</span><div><h2 id="telegramSettingsTitle">Telegram</h2><p id="notificationStatus" role="status">Перевіряємо стан…</p></div></div>
+      <p class="filter-help">Вигідні авто надходитимуть в особистий чат із ботом.</p>
+      <a class="manager-button telegram-link" href="https://t.me/auto_deal_finder1_bot?start=notifications" target="_blank" rel="noopener">Відкрити чат бота ↗</a>
+  </section>
+  <section class="settings-card" aria-labelledby="connectionSettingsTitle">
+      <h2 id="connectionSettingsTitle">Перевірка зв’язку</h2>
+      <p class="filter-help">Надішли /start у чаті бота та дочекайся привітання. Тестове повідомлення можна надіслати додатково.</p>
+      <div class="notification-actions">
+        <button id="refreshSettings" class="manager-button" type="button">Перевірити</button>
+        <button id="testNotification" class="manager-button" type="button" disabled>Надіслати тест</button>
+      </div>
+      <p id="settingsStatus" class="filter-help settings-status" role="status" hidden></p>
+  </section>
+  <section class="settings-card" aria-labelledby="alertSettingsTitle">
+    <h2 id="alertSettingsTitle">Підписки на авто</h2>
+    <p class="filter-help">Можна зберегти до 20 підписок. Для сповіщень увімкни тумблер біля потрібної підписки. Частота перевірок залежить від кількості різних фільтрів і доступних запитів AUTO.RIA.</p>
+    <button id="settingsSearches" class="save-search-button" type="button">Перейти до підписок →</button>
+    <p class="filter-help notification-footnote">/stop у чаті — вимкнути всі сповіщення.</p>
+  </section>
+  <section class="settings-card" aria-labelledby="billingTitle">
+    <h2 id="billingTitle">Доступ AutoDeal</h2>
+    <p id="billingStatus" class="filter-help" role="status">Пошук і сповіщення AutoDeal безкоштовні для всіх користувачів. Оплата не потрібна.</p>
+    <a class="manager-button telegram-link" href="https://t.me/auto_deal_finder1_bot?start=subscribe" target="_blank" rel="noopener">Статус доступу в боті ↗</a>
+    <p class="filter-help">Питання щодо попередніх оплат: /paysupport</p>
+  </section>
+  <section class="settings-card" aria-labelledby="launchTitle">
+    <h2 id="launchTitle">Робота підписок</h2>
+    <p id="launchProgress" class="filter-help" role="status">Увійди через Telegram, щоб побачити стан перевірок.</p>
+    <p class="filter-help">Лічильники показують останні 24 години. Час доставки рахуємо від виявлення авто до підтвердження Telegram.</p>
+  </section>
+  <section class="settings-card" aria-labelledby="supportTitle">
+    <h2 id="supportTitle">Не отримав оголошення?</h2>
+    <p class="filter-help">Вкажи числовий ID з посилання AUTO.RIA. Перевірка покаже лише записані дані твоїх підписок; нових запитів до AUTO.RIA вона не робить.</p>
+    <form id="listingTraceForm" class="listing-trace-form">
+      <label class="label" for="listingTraceId">ID оголошення</label>
+      <input id="listingTraceId" class="input" inputmode="numeric" pattern="[1-9][0-9]{0,11}" maxlength="12" required placeholder="Наприклад, 39767288">
+      <button id="listingTraceCheck" class="manager-button" type="submit">Перевірити оголошення</button>
+    </form>
+    <p id="listingTraceResult" class="filter-help" role="status" hidden></p>
+    <p class="filter-help">Якщо перевірка не пояснила пропуск, надішли підтримці посилання та ID оголошення, назву підписки й приблизний час публікації. Не передавай токени чи паролі.</p>
+  </section>
+  <details class="save-privacy"><summary>Про збереження</summary><p class="filter-help">Збереження в акаунті передає назву, фільтри та підтверджений Telegram ID на сервер AUTODeal у Render. Видалити пошук можна в його картці. Локальні пошуки залишаються в цьому браузері й автоматично не переносяться. Для пошуку сервер передає фільтри до AUTO.RIA без твого Telegram ID.</p></details>
+  <div class="app-release"><span>Версія 20261102-57</span><button id="reloadApp" class="manager-button" type="button">Оновити застосунок</button></div>
+</section>
+</main>
+<dialog id="brandDialog" class="brand-dialog" aria-labelledby="brandDialogTitle">
+  <div class="brand-dialog-head"><h2 id="brandDialogTitle">Марка авто</h2><button id="closeBrandDialog" class="dialog-close" type="button" aria-label="Закрити вибір марки">×</button></div>
+  <div class="brand-search-wrap">
+    <label class="sr-only" for="brandSearch">Пошук марки</label>
+    <input id="brandSearch" class="input" type="search" placeholder="Введи назву марки" autocomplete="off" autocapitalize="off" spellcheck="false" enterkeyhint="search" aria-controls="brandOptions">
+  </div>
+  <p id="brandSearchStatus" class="brand-search-status" role="status"></p>
+  <div id="brandOptions" class="brand-options"></div>
+</dialog>
+<dialog id="subscriptionMenu" class="subscription-sheet" aria-labelledby="subscriptionMenuTitle" aria-describedby="subscriptionMenuSummary">
+  <div class="sheet-handle" aria-hidden="true"></div>
+  <div class="subscription-sheet-head"><h2 id="subscriptionMenuTitle"></h2><button id="closeSubscriptionMenu" type="button" aria-label="Закрити меню">×</button></div>
+  <p id="subscriptionMenuSummary" class="filter-help"></p>
+  <p id="subscriptionMenuStatus" class="subscription-menu-status"></p>
+  <p id="subscriptionMenuError" class="saved-error" role="alert" hidden></p>
+  <div id="subscriptionMenuActions" class="subscription-menu-actions"></div>
+  <button id="openNotificationSettings" class="subscription-menu-button" type="button">Налаштування сповіщень →</button>
+</dialog>
+<div id="toast" class="toast" role="status"></div>
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<script src="data/cars.js?v=4"></script>
+<script src="saved-searches.js?v=20261102-57"></script>
+<script src="app.js?v=20261102-57"></script>
+<script src="brand-picker.js?v=20260917-25"></script>
+<script src="search-manager.js?v=20261102-57"></script>
+<script src="cloud-api.js?v=20261102-57"></script>
+<script src="billing-ui.js?v=20261027-free-1"></script>
+<script src="catalog-loader.js?v=20260917-25"></script>
+<script src="live-search.js?v=20261102-57"></script>
+<script src="cloud-searches.js?v=20261102-57"></script>
+<script src="app-version.js?v=20260917-22"></script>
+</body>
+</html>

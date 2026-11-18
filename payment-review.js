@@ -4,6 +4,7 @@
   const api='https://autodeal-api.onrender.com/api/manual-payments';
   const labels={review:'Очікують перевірки',clarification:'Потрібен інший скриншот',approved:'Підтверджені',rejected:'Відхилені',created:'Створені',all:'Усі заявки'};
   const status={review:'⏳ Очікує перевірки',clarification:'📸 Очікуємо інший скриншот',approved:'✅ Підтверджено',rejected:'❌ Відхилено',created:'Очікуємо оплату'};
+  const historyLabels={created:'Заявку створено',paid_reported:'Клієнт повідомив про оплату',receipt_received:'Скриншот оплати отримано',review:'Передано на перевірку',clarification:'Запрошено інший скриншот',approved:'Оплату підтверджено',rejected:'Заявку відхилено'};
   const screen=document.getElementById('screen'),error=document.getElementById('error');
   const date=n=>n?new Date(n*1000).toLocaleString('uk-UA',{timeZone:'Europe/Kyiv'})+' (Київ)':'немає';
   const money=n=>(n/100).toLocaleString('uk-UA',{minimumFractionDigits:2})+' грн';
@@ -24,7 +25,7 @@
   async function authorized(path,body){
     const initData=root.Telegram?.WebApp?.initData;
     if(!initData)throw Error('Відкрийте цей розділ кнопкою /payments у Telegram.');
-    const r=await fetch(api+path,{method:body===undefined?'GET':'POST',cache:'no-store',credentials:'omit',
+    const r=await fetch(api+path,{method:body===undefined?'GET':'POST',cache:'no-store',credentials:'omit',redirect:'error',
       headers:{'X-Telegram-Init-Data':initData,...(body===undefined?{}:{'Content-Type':'application/json'})},
       body:body===undefined?undefined:JSON.stringify(body)});
     if(!r.ok){
@@ -35,7 +36,7 @@
     return r;
   }
   async function request(path,body){return (await authorized(path,body)).json();}
-  const run=fn=>async()=>{error.textContent='';try{await fn();}catch(e){error.textContent=e.message;error.scrollIntoView?.({block:'center'});}};
+  const run=fn=>async()=>{error.textContent='';try{await fn();}catch(e){error.textContent=typeof e.message==='string'&&/[А-Яа-яІіЇїЄєҐґ]/.test(e.message)?e.message:'Не вдалося з’єднатися із сервером. Перевірте інтернет і оновіть статус заявки.';error.scrollIntoView?.({block:'center'});}};
   function button(title,fn,parent=screen,primary=false){
     const b=el('button',title,parent);b.type='button';if(primary)b.className='primary';
     b.addEventListener('click',run(async()=>{if(b.disabled)return;b.disabled=true;try{await fn();}finally{b.disabled=false;}}));return b;
@@ -75,7 +76,7 @@
     q.items.forEach(r=>{const b=button(r.name+' · '+money(r.amount_minor)+' · '+r.code,()=>card(r.code));b.className='card';});
     const filters=el('div');filters.className='queue-filters';
     Object.keys(labels).forEach(s=>button(labels[s]+(s==='all'?'':' · '+(q.counts[s]||0)),async()=>{state=s;page=1;await queue();},filters));
-    const input=field('Номер заявки, ім’я, username або Telegram ID');input.value=search;
+    const input=field('Номер заявки, ім’я, ім’я користувача або Telegram ID');input.value=search;
     button('Знайти',async()=>{search=input.value;page=1;await queue();});
     el('p','Сторінка '+q.page+' / '+q.pages+' · знайдено '+q.total);
     if(page>1)button('← Попередня',async()=>{page--;await queue();});
@@ -107,7 +108,7 @@
     el('p','👤 Клієнт: '+c.name+(c.username?' · @'+c.username:''),details);
     el('p','🆔 Telegram ID: '+c.user_id,details);el('p','🧾 Заявка: '+c.code,details);
     el('p','💰 До сплати за тарифом: '+money(c.amount_minor),details);el('p','📅 Термін: '+c.days+' днів',details);
-    el('p','🕒 Отримано: '+date(c.received_at||c.created_at),details);el('p',status[c.state]||c.state,details);
+    el('p','🕒 Отримано: '+date(c.received_at||c.created_at),details);el('p',status[c.state]||'Статус заявки потребує перевірки',details);
     if(c.current_expiry)el('p','Доступ до '+date(c.current_expiry),details);
     if(c.state==='review')approval(c,code);
     if(c.state==='created')el('p',c.awaiting_receipt?'📸 Очікуємо скриншот від клієнта.':'Клієнт ще не повідомив про оплату.');
@@ -123,7 +124,7 @@
     }
     button('📋 Усі заявки',allRequests);
     const history=el('details');el('summary','Історія заявки',history);
-    (c.history||[]).forEach(h=>el('p',date(h.at)+' · '+h.action+(h.after?' · доступ до '+date(h.after):''),history));
+    (c.history||[]).forEach(h=>el('p',date(h.at)+' · '+(historyLabels[h.action]||'Оновлення заявки')+(h.after?' · доступ до '+date(h.after):''),history));
     root.scrollTo?.(0,0);
     await receipt(c,box);
     if(thisView!==viewRevision)return;
@@ -132,7 +133,7 @@
     if(notices.length){
       const delivery=el('details');el('summary','Статус повідомлень',delivery);
       const noticeLabel={pending:'У черзі',sending:'Відправляється',sent:'Прийнято Telegram',retry:'Очікує повтору',failed:'Відправлення відхилено',superseded:'Замінено новішим статусом заявки',uncertain:'Результат невідомий — потрібна ручна перевірка'};
-      notices.forEach(n=>{el('p',(n.kind==='owner'?'Власнику: ':'Клієнту: ')+(noticeLabel[n.state]||n.state),delivery);
+      notices.forEach(n=>{el('p',(n.kind==='owner'?'Власнику: ':'Клієнту: ')+(noticeLabel[n.state]||'Стан повідомлення потребує перевірки'),delivery);
         if(n.state==='failed')button('Повторити відхилене повідомлення',async()=>{await request('/admin/retry-notice',{notice_id:n.id});await card(code);},delivery);});
     }
   }

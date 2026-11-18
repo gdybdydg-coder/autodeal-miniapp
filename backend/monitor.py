@@ -25,7 +25,7 @@ from .models import (Car, Filters, Listing, MonitorControl, MonitorFeed, Monitor
                      MonitorMatch, MonitorMembership, MonitorSeen, MonitorWatch, Search, SourceBudget,
                      StarsTestOrder, User)
 from .billing_models import BillingControl, Entitlement
-from . import billing, paid_source_access, api_attempt_audit
+from . import billing, paid_source_access, api_attempt_audit, radar_monitor
 from .ria_budget import BudgetLimits
 from .ria_search import RiaSearch, estimate, matches, parse_ids, quota_status, budget_state
 from .valuation import (MAX_AGE, VERSION, PeerBatch, is_deal, price_only_evidence,
@@ -138,21 +138,23 @@ def access_allowed_clause(uid, now=None, *, paid_only=False, excluded=()):
 
 
 def member_query(now=None, *, paid_only=False, excluded=()):
+    from .radar_monitor import search_clause
     return select(Search, MonitorWatch, MonitorMembership).join(User, User.id == Search.user_id).join(
         MonitorWatch, MonitorWatch.search_id == Search.id).join(
         MonitorMembership, MonitorMembership.search_id == Search.id).where(
         Search.enabled.is_(True), User.ready.is_(True),
         MonitorWatch.epoch == MonitorMembership.epoch,
-        access_allowed_clause(User.id, now, paid_only=paid_only, excluded=excluded))
+        access_allowed_clause(User.id, now, paid_only=paid_only, excluded=excluded), search_clause(now=now))
 
 
 def interest_query(source_id, now=None, *, paid_only=False, excluded=()):
+    from .radar_monitor import search_clause
     return select(Search.id, Search.user_id, MonitorWatch.epoch, Search.filters).join(
         User, User.id == Search.user_id).join(MonitorWatch, MonitorWatch.search_id == Search.id).join(
         MonitorSeen, MonitorSeen.search_id == Search.id).where(
         User.ready.is_(True), Search.enabled.is_(True), MonitorSeen.source_id == source_id,
         MonitorSeen.state == "pending", MonitorSeen.epoch == MonitorWatch.epoch,
-        access_allowed_clause(User.id, now, paid_only=paid_only, excluded=excluded))
+        access_allowed_clause(User.id, now, paid_only=paid_only, excluded=excluded), search_clause(now=now))
 
 
 def bind_source_access(source, query, *, reason, group):
@@ -310,17 +312,20 @@ class Monitor:
             db.commit()
 
     def current(self, db, sid, uid, epoch):
+        from .radar_monitor import search_clause
         # Same lock order as subscription edits and delivery: user before control.
         user = db.scalar(select(User).where(User.id == uid).with_for_update()
                          .execution_options(populate_existing=True))
         row, watch = db.get(Search, sid, populate_existing=True), db.get(MonitorWatch, sid, populate_existing=True)
         if (not user or not user.ready or not row or not row.enabled or not watch
                 or not db.scalar(select(access_allowed_clause(uid, **paid_source_access.query_options(db.get_bind()))))
-                or watch.epoch != epoch or not self.owned(db)):
+                or watch.epoch != epoch or not self.owned(db)
+                or (radar_monitor.enabled(db) and not db.scalar(select(search_clause(sid, uid))))):
             return None
         return row, watch
 
     def sync(self):
+        from .radar_monitor import search_clause
         with Session(self.engine) as db:
             if not recent_publications.enabled(self.settings):
                 recent_publications.disable(db)
@@ -351,7 +356,8 @@ class Monitor:
             legacy = db.execute(select(Search.id, Search.user_id).join(User, User.id == Search.user_id)
                 .outerjoin(MonitorMembership, MonitorMembership.search_id == Search.id)
                 .where(Search.enabled.is_(True), User.ready.is_(True), MonitorMembership.search_id.is_(None),
-                       access_allowed_clause(User.id, **paid_source_access.query_options(db.get_bind())))
+                       access_allowed_clause(User.id, **paid_source_access.query_options(db.get_bind())),
+                       search_clause())
                 .order_by(Search.user_id, Search.id)).all()
             for sid, uid in legacy:
                 db.scalar(select(User).where(User.id == uid).with_for_update())
@@ -418,7 +424,8 @@ class Monitor:
         bind_source_access(source, lambda now: member_query(now, **paid_source_access.query_options(source.engine)).where(
             MonitorMembership.feed_id == feed_id), reason="publication_search", group=feed_id)
         current_slice = context["slices"][0]
-        params, _ = source.discovery_parameters(filters)
+        from .radar_monitor import local_parameters
+        params, _ = local_parameters(self.engine, filters, source.discovery_parameters)
         params.update(countpage=PAGE_SIZE, page=context["page"], order_by=7,
                       published_after=stamp(current_slice["after"]),
                       published_before=stamp(current_slice["before"] + 1))
@@ -530,6 +537,7 @@ class Monitor:
             if job.result.get("discovery_kind") == "new_publication":
                 evidence["discovery_kind"] = "new_publication"
             original = self.interests(db, source_id)
+            radar_mode = radar_monitor.enabled(db)
             original_ids = {row[0] for row in original}
             additional = shared_distribution.targets(db, self.settings, source_id, evidence)
             shared_matches = total_matches = 0
@@ -569,6 +577,7 @@ class Monitor:
                     and is_deal(candidate["price_usd"], rating["market"], filters.minDiscount))
                 if (not candidate or not notification_condition_allowed(candidate) or resolved is None
                         or not matches(candidate, filters, resolved)
+                        or (radar_mode and not priced_deal)
                         or not (priced_deal or (partial and not self.settings.ria_confirmed_deals_only))):
                     continue
                 proof = (price_only_evidence(candidate, evidence["evaluated_at"], evidence["uncertainty_reasons"],
@@ -583,9 +592,15 @@ class Monitor:
                     comparables=0 if partial else rating["comparables"], observed_at=candidate["observed_at"],
                     valuation_evidence=proof,
                     pipeline={"discovered_at": job.first_seen, "evaluated_at": evidence["evaluated_at"],
+                              "region_id": candidate.get("region_id"),
                               "discovery_kind": evidence.get("discovery_kind", "new_publication"),
                               "html_expires_at": evidence.get("html_expires_at"),
                               "source_added_at": candidate.get("source_added_at")})
+                if radar_mode and (not ria_market_range.evidence_valid(car, time.time())
+                        or not (proof.get("source_range") or {}).get("provider")):
+                    # Radar thresholds always refer to the documented API
+                    # lower bound. An operator flag cannot substitute peers.
+                    continue
                 if listing is None:
                     listing = Listing(source="auto_ria", source_id=source_id)
                     db.add(listing)
@@ -665,7 +680,8 @@ class Monitor:
             filters = source_filters(raw_filters)
             fingerprint = filters.fingerprint()
             if fingerprint not in evidence["filters"]:
-                _, resolved = source.parameters(filters)
+                from .radar_monitor import local_parameters
+                _, resolved = local_parameters(self.engine, filters, source.parameters)
                 evidence["filters"][fingerprint] = resolved
             any_match |= matches(candidate, filters, evidence["filters"][fingerprint])
         if not any_match:
@@ -909,6 +925,8 @@ class Monitor:
             return False
         status, worked = "idle", False
         try:
+            # Subscription expiry must persist even when Telegram is down.
+            radar_monitor.sync_expired(self.engine)
             from .telegram_setup import webhook_status
             if webhook_status(self.engine)["status"] != "configured":
                 status = "telegram_unavailable"

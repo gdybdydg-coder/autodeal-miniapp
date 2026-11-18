@@ -54,9 +54,10 @@ def test_different_search_schedules_reproduce_three_minute_gap_without_sender_wa
     p.clock[0] += 180
     drain(p)
     assert [uid for uid, car in p.sent if car.source_id == "124"] == [111, 222]
-    # The later search safely refreshes expired details; the time gap already
-    # exists before enqueue and is not caused by the independent sender.
-    assert len([params for path, params in p.calls if path == "info" and params["auto_id"] == "124"]) == 2
+    # Three minutes remains inside the existing five-minute evidence reuse
+    # window. The delay exists before enqueue, without a second detail request
+    # or any intentional wait in the independent sender.
+    assert len([params for path, params in p.calls if path == "info" and params["auto_id"] == "124"]) == 1
     writes = []
     def capture(conn, cursor, sql, parameters, context, executemany):
         if sql.lstrip().upper().startswith(("INSERT", "UPDATE", "DELETE")):

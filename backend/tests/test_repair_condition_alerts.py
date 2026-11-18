@@ -1,4 +1,4 @@
-"""Owner-selected repair candidates are labelled and delivered, not hidden."""
+"""Repair candidates remain eligible; only the separate parts marker is shown."""
 import json
 
 import httpx
@@ -16,7 +16,7 @@ from backend.worker import TelegramSender
 
 @pytest.mark.parametrize("flag", ["damage", "technical_condition", "onRepairParts"])
 @pytest.mark.parametrize("with_peers", [False, True])
-def test_repair_candidate_reaches_telegram_once_with_condition_disclosed(p, monkeypatch, flag, with_peers):
+def test_repair_candidate_reaches_telegram_once_without_damage_warning(p, monkeypatch, flag, with_peers):
     def mutate(data):
         if flag == "technical_condition":
             data["technicalCondition"] = {"id": 3}
@@ -55,8 +55,12 @@ def test_repair_candidate_reaches_telegram_once_with_condition_disclosed(p, monk
     monkeypatch.setattr("backend.worker.httpx.Client", lambda **kw:
                         client(transport=httpx.MockTransport(handler), **kw))
     assert TelegramSender("test-only")(111, car)["ok"]
-    notice = "авто на запчастини / під ремонт" if flag == "onRepairParts" else "позначка про пошкодження / ремонт"
-    assert notice in requests[0]["text"]
+    text = requests[0]["text"]
+    assert "позначка про пошкодження / ремонт" not in text
+    if flag == "onRepairParts":
+        assert "авто на запчастини / під ремонт" in text
+    else:
+        assert "ремонт" not in text and "пошкоджен" not in text
     assert "/stop" in requests[0]["text"]
     wake(p)
     drain(p)
