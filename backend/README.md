@@ -1597,7 +1597,7 @@ API: `POST /api/admin/subscription-grants/preview`,
 `GET /api/admin/subscription-grants?telegram_id=...&limit=50`.
 Автентифікація — наявний Telegram WebApp initData; адміністратор перевіряється
 за `ADMIN_TELEGRAM_ID` і `SUBSCRIPTION_EXPECTED_ADMIN_ID`.
-Токен підтвердження підписано окремим доменом HMAC наявного `WEBHOOK_SECRET`.
+Токен підтвердження підписано окремим доменом HMAC наявного `TELEGRAM_WEBHOOK_SECRET`.
 Підтвердження використовує транзакцію й той самий порядок блокувань, що оплата:
 облік підписок, потім користувач. Записує лише `Entitlement` і
 `AccessEvent(kind="gift")`; платіж, дохід або банківське зарахування не створює.
