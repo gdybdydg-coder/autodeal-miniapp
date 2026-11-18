@@ -9,7 +9,6 @@ from sqlalchemy.orm import Session
 
 from . import billing, manual_payments as m, manual_receipts, subscription_preview, telegram_setup
 from .manual_payment_models import PaymentRequest
-from .models import User
 
 PREFIX = "ad-bank:"
 TERMS_VERSION = "20261002-card-v1"
@@ -63,16 +62,15 @@ def status(engine, settings, uid):
                 "terms_version": TERMS_VERSION, "terms": TERMS, "amount_minor": 25000, "days": 30}
 
 
-def create(engine, settings, uid, now, version, *, name="Клієнт", username=None):
+def create(engine, settings, uid, now, version, *, name="Клієнт", username=None, telegram_update_id=None):
+    # This entry point receives only verified Telegram identities. Sales, terms,
+    # registration, one active request and receipt waiting share one transaction.
     m.enabled(settings)
-    # Register an authenticated requester without enabling searches or notifications.
-    with m.mutation(engine, settings) as db:
-        require_sales(db)
-        if version != TERMS_VERSION:
-            raise m.ReviewError("terms_changed", 409)
-        if db.get(User, uid) is None:
-            db.add(User(id=uid, ready=False))
-    return m.create_request(engine, settings, uid, now, name=name, username=username, accepted_terms=version)
+    if version != TERMS_VERSION:
+        raise m.ReviewError("terms_changed", 409)
+    return m.create_request(engine, settings, uid, now, name=name, username=username,
+                            accepted_terms=version, register_user=True, expect_receipt=True,
+                            telegram_update_id=telegram_update_id)
 
 
 def requisites(engine, settings, uid, code):
@@ -110,7 +108,7 @@ def overview(engine, settings, uid, now):
     if row and row["state"] not in ("approved", "rejected"):
         if row.get("awaiting_receipt"):
             lines.append(manual_receipts.PROMPT)
-            buttons.append([{"text": "📸 Надіслати скриншот", "callback_data": PREFIX+"receipt:"+row["code"]}])
+            buttons.append([{"text": "📎 Надіслати квитанцію", "callback_data": PREFIX+"receipt:"+row["code"]}])
         elif row["state"] == "review":
             lines.append("🕓 Оплата на перевірці. Повторно не сплачуй.")
             buttons.append([{"text": "🏦 Реквізити", "callback_data": PREFIX+"details:"+row["code"]}])
@@ -179,7 +177,7 @@ def request_card(engine, settings, uid, code):
     if row["owner_note"]:
         lines.append(escape(row["owner_note"]))
     if row["state"] in ("created", "review", "clarification"):
-        buttons.append([{"text": "📸 Надіслати скриншот", "callback_data": PREFIX+"receipt:"+code}])
+        buttons.append([{"text": "📎 Надіслати квитанцію", "callback_data": PREFIX+"receipt:"+code}])
         buttons.append([{"text": "🔄 Перевірити оплату", "callback_data": PREFIX+"status:"+code}])
     buttons.append([{"text": "← Назад", "callback_data": PREFIX+"view"}])
     return response(uid, lines, buttons)
@@ -190,12 +188,22 @@ def receipt_help(engine, settings, uid, code, now=None):
 
 
 def details(engine, settings, uid, code, more=False):
-    row = m.get_status(engine, settings, uid, code)
-    if row["state"] not in ("created", "clarification", "review"):
+    # Existing payment-detail buttons enter the same durable receipt flow.
+    # Read-only API requisites/status endpoints remain read-only.
+    with m.mutation(engine, settings) as db:
+        row = m.request_row(db, code, uid)
+        if row.state in m.OPEN:
+            require_sales(db)
+            manual_receipts.arm_checkout(db, row, time.time())
+            db.flush()
+            data = m.public(row)
+            profile = subscription_preview.receiving_profile()
+        else:
+            data = None
+    if data is None:
         return request_card(engine, settings, uid, code)
-    data = requisites(engine, settings, uid, code)
-    return render_requisites(uid, data["recipient"], code, row["state"], more,
-                             awaiting_receipt=row.get("awaiting_receipt", False))
+    return render_requisites(uid, profile, code, data["state"], more,
+                             awaiting_receipt=data["awaiting_receipt"])
 
 
 def render_requisites(uid, profile, code=None, state="preview", more=False, *, awaiting_receipt=False):
@@ -215,9 +223,10 @@ def render_requisites(uid, profile, code=None, state="preview", more=False, *, a
         buttons.append([{"text": "Відкрити підписку", "callback_data": PREFIX+"view"}])
         return response(uid, lines, buttons)
     if awaiting_receipt:
-        lines.append("Переказ уже зроблено — повторно не сплачуй.")
+        lines.append("Після переказу надішли сюди фото або PDF квитанції. Окрему кнопку натискати не потрібно.")
+        lines.append("Якщо вже сплатив — повторно не сплачуй. Доступ відкриє власник після перевірки.")
         lines.append(manual_receipts.PROMPT)
-        buttons.append([{"text": "📸 Надіслати скриншот", "callback_data": PREFIX+"receipt:"+code}])
+        buttons.append([{"text": "📎 Надіслати квитанцію", "callback_data": PREFIX+"receipt:"+code}])
     elif state == "review":
         lines.append("🕓 Ти вже повідомив про оплату.\nЯкщо переказ зроблено — повторно не сплачуй. Доступ відкриє власник після перевірки.")
         buttons.append([{"text": "🔄 Перевірити оплату", "callback_data": PREFIX+"status:"+code}])
@@ -254,10 +263,11 @@ def handle(engine, settings, event, request=None, now=None):
     if mention and mention.lower() != telegram_setup.BOT_USERNAME.lower():
         return None
     deep = command == "/start" and pieces[1:] == ["subscribe"]
+    purchase = command == "/start" and pieces[1:] == ["buy_subscription"]
     old_terms = action == billing.PREFIX+"terms"
     if cb and not action.startswith(PREFIX) and not old_terms:
         return None
-    if not cb and command not in ("/subscription", "/terms") and not deep:
+    if not cb and command not in ("/subscription", "/terms") and not deep and not purchase:
         return None
     now = time.time() if now is None else now
     if type(event.get("update_id")) is not int or not 0 <= event["update_id"] < 2**63:
@@ -286,9 +296,10 @@ def handle(engine, settings, event, request=None, now=None):
         if verb == "bank":
             # Compatibility for already-delivered buttons; the extra form is gone.
             return details(engine, settings, uid, value)
-        if verb == "accept":
-            row = create(engine, settings, uid, now, value,
-                name=str(sender.get("first_name") or "Клієнт")[:100], username=sender.get("username"))
+        if verb == "accept" or purchase:
+            row = create(engine, settings, uid, now, TERMS_VERSION if purchase else value,
+                name=str(sender.get("first_name") or "Клієнт")[:100], username=sender.get("username"),
+                telegram_update_id=event["update_id"])
             return details(engine, settings, uid, row["code"])
         if verb == "details":
             return details(engine, settings, uid, value)

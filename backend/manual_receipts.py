@@ -9,8 +9,9 @@ from . import billing, manual_payments as m, telegram_setup
 from .manual_payment_models import (PaymentRequest, PaymentEvidence, ReceiptExpectation,
                                    ReceiptSubmission, ReceiptNotice)
 
-PROMPT = "📸 Надішліть у цей чат скриншот оплати.\nБез підпису та додаткового тексту — просто зображення"
-ACK = ("✅ Скриншот отримано! Ваша заявка очікує перевірки.\n"
+PROMPT = ("📎 Після переказу надішліть у цей чат квитанцію: фото, скриншот або PDF до 10 МБ.\n"
+          "Підпис і додаткові кнопки не потрібні.")
+ACK = ("✅ Квитанцію отримано! Ваша заявка очікує перевірки.\n"
        "Після підтвердження оплати адміністратором доступ\nбуде активовано. "
        "Повторно надсилати заявку не потрібно")
 PREFIX = "ad-receipt:"
@@ -24,6 +25,24 @@ def _expect(db, uid, code, now):
         db.add(row)
     row.request_id, row.active, row.awaiting_image, row.updated_at = code, True, True, now
     return row
+
+
+def arm_checkout(db, row, now):
+    """Arm an unpaid checkout in its caller's locked transaction, never claim payment.
+
+    Opening an existing reviewed request must not demand another receipt or
+    overwrite its evidence. Explicit old receipt buttons may still request a
+    correction through await_receipt.
+    """
+    if row.state not in ("created", "clarification"):
+        return
+    if row.state == "created" and row.receipt_file_id:
+        return
+    expectation = db.get(ReceiptExpectation, row.user_id)
+    if (expectation and expectation.request_id == row.id and expectation.active
+            and expectation.awaiting_image):
+        return
+    _expect(db, row.user_id, row.id, now)
 
 
 def await_receipt(engine, settings, uid, code, now=None):
@@ -42,10 +61,10 @@ def _choices(uid, rows, submission=None):
         action = "choose:"+str(submission.update_id)+":"+row.id if submission else "select:"+row.id
         buttons.append([{"text": "Заявка "+str(index)+" · "+billing.date_text(row.created_at)+" · 250 грн",
                          "callback_data": PREFIX+action}])
-    return billing.message(uid, "Для якої заявки цей скриншот? Оберіть заявку кнопкою нижче.", buttons)
+    return billing.message(uid, "Для якої заявки ця квитанція? Оберіть заявку кнопкою нижче.", buttons)
 
 
-def _image(message, legacy_pdf=False):
+def _image(message):
     photos = message.get("photo")
     if isinstance(photos, list) and photos:
         candidates = [p for p in photos if isinstance(p, dict) and isinstance(p.get("file_id"), str)]
@@ -58,7 +77,7 @@ def _image(message, legacy_pdf=False):
         item, kind = max(candidates, key=size), "photo"
     else:
         item = message.get("document")
-        allowed = ("image/jpeg", "image/png", "image/webp", *(["application/pdf"] if legacy_pdf else []))
+        allowed = ("image/jpeg", "image/png", "image/webp", "application/pdf")
         if not isinstance(item, dict) or item.get("mime_type") not in allowed:
             return None
         kind = "document"
@@ -70,7 +89,7 @@ def _image(message, legacy_pdf=False):
 
 def _save(db, settings, uid, row, submission, expectation, now):
     if row.state not in m.OPEN:
-        return billing.message(uid, "Заявку вже завершено. Новий скриншот не додано. /subscription")
+        return billing.message(uid, "Заявку вже завершено. Нову квитанцію не додано. /subscription")
     if submission.state == "saved":
         return billing.message(uid, ACK)
     row.receipt_file_id, row.receipt_kind = submission.file_id, submission.kind
@@ -118,7 +137,7 @@ def legacy_submission(engine, settings, uid, code, event, now=None):
                 raise m.ReviewError("invalid_receipt_message", 422)
             if existing.state == "saved":
                 return billing.message(uid, ACK)
-        image = _image(msg, legacy_pdf=True)
+        image = _image(msg)
         if image is None:
             raise m.ReviewError("receipt_image_or_pdf_required", 422)
         submission = existing or ReceiptSubmission(update_id=update_id, user_id=uid, message_id=message_id,
@@ -224,11 +243,11 @@ def handle(engine, settings, event, now=None, *, request=None):
     except m.ReviewError:
         msg = event.get("message") or (event.get("callback_query") or {}).get("message") or {}
         uid = (msg.get("chat") or {}).get("id")
-        return billing.message(uid, "Надішліть зображення JPG, PNG або WebP до 10 МБ. "+PROMPT) if type(uid) is int else {"ok": True}
+        return billing.message(uid, "Надішліть квитанцію у форматі JPG, PNG, WebP або PDF до 10 МБ. "+PROMPT) if type(uid) is int else {"ok": True}
     except SQLAlchemyError:
         msg = event.get("message") or (event.get("callback_query") or {}).get("message") or {}
         uid = (msg.get("chat") or {}).get("id")
-        return billing.message(uid, "Скриншот поки не збережено. Спробуйте ще раз трохи пізніше. /paysupport") if type(uid) is int else {"ok": True}
+        return billing.message(uid, "Квитанцію поки не збережено. Спробуйте ще раз трохи пізніше. /paysupport") if type(uid) is int else {"ok": True}
 
 
 def capabilities(engine, app=None):
@@ -241,6 +260,7 @@ def capabilities(engine, app=None):
     paths = set(app.openapi().get("paths", {})) if app is not None else set()
     return {"receipt_tables_ready": all(database.has_table(table) for table in tables),
             "photo_handler_available": callable(handle), "image_document_supported": True,
+            "pdf_document_supported": True,
             "caption_required": False, "durable_expectations": True,
             "webhook_route_registered": "/telegram/webhook" in paths,
             "owner_receipt_route_registered": "/api/manual-payments/admin/{code}/receipt" in paths,

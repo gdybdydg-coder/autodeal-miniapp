@@ -85,7 +85,7 @@ def free_access_enabled(db):
                 and (row.offer or {}).get(FREE_ACCESS_KEY) is True)
 
 
-def public_status(db, uid, now=None):
+def public_status(db, uid, now=None, *, settings=None):
     now = time.time() if now is None else now
     row = control(db)
     until = expiry(db, uid)
@@ -95,15 +95,43 @@ def public_status(db, uid, now=None):
         from . import manual_checkout, manual_payments
         can_sell = (manual_checkout.offer_valid(offer) and manual_payments.public_creation_allowed()
                     and manual_checkout.subscription_preview.receiving_profile() is not None)
+        if settings is not None:
+            can_sell = can_sell and settings.manual_payment_review_enabled and verified_admin(settings)
     else:
         can_sell = not offer_errors(offer)
-    return {"sales_enabled": bool(row and row.sales and can_sell),
+    result = {"sales_enabled": bool(row and row.sales and can_sell),
             "paid_access_required": bool(row and row.enforce), "access_available": allowed(db, uid, now),
             "expires_at": until or None, "days": DAYS,
             "payment_method": "bank_manual" if manual else "stars",
             "amount_uah": 250 if manual else None,
             "amount_stars": offer.get("stars") if row and row.sales else None,
-            "purchase_url": "https://t.me/" + telegram_setup.BOT_USERNAME + "?start=subscribe"}
+            "purchase_url": "https://t.me/" + telegram_setup.BOT_USERNAME
+                            + ("?start=buy_subscription" if manual else "?start=subscribe"),
+            "status_url": "https://t.me/" + telegram_setup.BOT_USERNAME + "?start=subscribe"}
+    if manual:
+        result.update(terms=manual_checkout.TERMS, terms_version=manual_checkout.TERMS_VERSION,
+                      request=None)
+        if settings is not None and settings.manual_payment_review_enabled:
+            from .manual_payment_models import PaymentRequest, ReceiptExpectation
+            # One owner-scoped query for the existing request and receipt state;
+            # never expose another client's request or the recipient's bank data.
+            current = db.execute(select(PaymentRequest.id, PaymentRequest.state,
+                PaymentRequest.receipt_file_id, ReceiptExpectation.active,
+                ReceiptExpectation.awaiting_image, ReceiptExpectation.request_id)
+                .outerjoin(ReceiptExpectation, ReceiptExpectation.user_id == PaymentRequest.user_id)
+                .where(PaymentRequest.user_id == uid)
+                .order_by(PaymentRequest.created_at.desc(), PaymentRequest.id.desc()).limit(1)).first()
+            if current is not None:
+                code, state, receipt_file_id, active, awaiting, request_id = current
+                result["request"] = {"code": code, "state": state,
+                    "receipt_attached": bool(receipt_file_id),
+                    "awaiting_receipt": bool(active and awaiting and request_id in (None, code)
+                                              and state in manual_payments.OPEN)}
+        if settings is not None and verified_admin(settings) and uid == settings.admin_telegram_id:
+            # Readiness is independent of the persisted sales switch. The owner
+            # can verify prerequisites before explicitly opening sales.
+            result["checkout_ready"] = bool(can_sell and settings.manual_payment_notices_enabled)
+    return result
 
 
 def message(uid, text, keyboard=None):

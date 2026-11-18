@@ -116,7 +116,8 @@ def test_waiting_survives_restart_text_does_not_clear_and_commands_keep_working(
 
 def test_unrelated_photo_is_ignored_and_multiple_requests_require_choice(bank):
     engine, settings, _ = bank
-    row = order(bank)
+    # A legacy internal request has no explicit checkout/receipt context.
+    row = m.create_request(engine, settings, UID, NOW)
     assert receipts.handle(engine, settings, photo(), NOW) is None
     with Session(engine) as db, db.begin():
         db.add(PaymentRequest(id="AD-SYNTH-SECOND", user_id=UID, name="Клієнт", state="created", created_at=NOW+1, updated_at=NOW+1))
@@ -214,7 +215,7 @@ def test_legacy_caption_keeps_binding_history_and_owner_media_outbox(bank):
     assert count(engine,ReceiptSubmission) == count(engine,PaymentNotice) == count(engine,PaymentEvidence) == 1
     payload["message"]["from"]["id"] = OTHER
     payload["message"]["chat"]["id"] = OTHER
-    assert "Скриншот отримано" not in manual_payment_routes.handle(engine,settings,payload)["text"]
+    assert receipts.ACK != manual_payment_routes.handle(engine,settings,payload)["text"]
     assert count(engine,PaymentEvidence) == 1
 
 

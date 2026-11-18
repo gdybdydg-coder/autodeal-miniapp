@@ -130,12 +130,26 @@ def notice(db, row, uid, kind, body):
     return result
 
 
-def create_request(engine, settings, uid, now, *, name="Клієнт", username=None, accepted_terms=None):
+def create_request(engine, settings, uid, now, *, name="Клієнт", username=None, accepted_terms=None,
+                   register_user=False, expect_receipt=False, telegram_update_id=None):
     """Internal ledger operation; public entry point additionally checks policy.
 
     Identity and display fields must come from verified Telegram data, not form JSON.
     """
     timestamp(now)
+    if type(uid) is not int or not 0 < uid < 2**52:
+        raise ReviewError("known_user_required", 409)
+    replay_id = None
+    if telegram_update_id is not None:
+        if type(telegram_update_id) is not int or not 0 <= telegram_update_id < 2**63:
+            raise ReviewError("invalid_checkout_update", 422)
+        replay_id = hashlib.sha256(f"checkout:{uid}:{telegram_update_id}".encode()).hexdigest()[:32]
+
+    def remember(db, row):
+        if replay_id:
+            db.add(PaymentAudit(id=replay_id, request_id=row.id, actor=uid,
+                               action="checkout_started", at=now, revision=row.revision))
+
     # Telegram profile labels are display-only, never payment/identity evidence.
     # Names can contain emoji joiners, invisible marks, or only whitespace;
     # absent usernames can arrive as empty strings. Do not reject checkout.
@@ -147,15 +161,35 @@ def create_request(engine, settings, uid, now, *, name="Клієнт", username=
     name = label(name, 100) or "Клієнт"
     username = label(username, 64) or None
     with mutation(engine, settings) as db:
+        if replay_id:
+            previous = db.get(PaymentAudit, replay_id)
+            if previous:
+                if previous.actor != uid or previous.action != "checkout_started":
+                    raise ReviewError("invalid_checkout_update", 409)
+                return public(request_row(db, previous.request_id, uid))
         if accepted_terms is not None:
             from . import manual_checkout
             manual_checkout.require_sales(db)
             if accepted_terms != manual_checkout.TERMS_VERSION:
                 raise ReviewError("terms_changed", 409)
-        if type(uid) is not int or uid <= 0 or db.get(User, uid) is None:
-            raise ReviewError("known_user_required", 409)
+        if db.get(User, uid) is None:
+            if not register_user or accepted_terms is None:
+                raise ReviewError("known_user_required", 409)
+            # Only the authenticated checkout adapter opts into registration;
+            # receipt waiting, consent and the request commit atomically.
+            db.add(User(id=uid, ready=False))
         current = db.scalar(select(PaymentRequest).where(PaymentRequest.active_user_id == uid))
         if current:
+            if (accepted_terms is not None and current.state == "created"
+                    and current.terms_version != accepted_terms):
+                current.terms_version, current.terms_text = accepted_terms, manual_checkout.TERMS
+                current.terms_accepted_at, current.updated_at = now, now
+                audit(db, current, uid, "terms_accepted", now)
+            if expect_receipt:
+                from .manual_receipts import arm_checkout
+                arm_checkout(db, current, now)
+            remember(db, current)
+            db.flush()
             return public(current)
         for _ in range(10):
             code = "AD-" + secrets.token_hex(6).upper()
@@ -172,6 +206,10 @@ def create_request(engine, settings, uid, now, *, name="Клієнт", username=
             row.terms_accepted_at = now
         db.add(row)
         audit(db, row, uid, "created", now)
+        if expect_receipt:
+            from .manual_receipts import arm_checkout
+            arm_checkout(db, row, now)
+        remember(db, row)
         db.flush()
         return public(row)
 
@@ -360,12 +398,18 @@ def confirm(engine, settings, actor, token, now):
         user = db.scalar(select(User).where(User.id == row.user_id).with_for_update())
         activate = (paid_source_access.strict(engine)
                     and not paid_source_access.allowed(db, row.user_id, now))
+        from . import radar_monitor
+        # Materialize any lapsed access before renewal, even between worker
+        # ticks. Approval grants access; resuming expired radars stays explicit.
+        radar_monitor.sync_expired(db, uid=row.user_id, now=now)
         until = max(now, before) + row.days*DAY
         if legacy_key:
             db.add(BankCredit(bank_key=legacy_key, request_id=row.id, user_id=row.user_id,
                              amount_minor=row.amount_minor, actor=actor, at=now,
                              before_expiry=before, after_expiry=until))
         db.merge(Entitlement(user_id=row.user_id, expires_at=until, updated_at=now))
+        db.flush()
+        radar_monitor.sync_expired(db, uid=row.user_id, now=now)
         db.add(AccessEvent(id="manual:"+row.id, user_id=row.user_id, actor=actor, kind="manual_paid",
                            at=now, expires_at=until, reason="Owner explicitly confirmed bank credit"))
         row.state, row.active_user_id, row.expires_at, row.updated_at = "approved", None, until, now

@@ -132,6 +132,29 @@ def payload(command, uid, release, text=None):
                 "url": telegram_setup.APP_URL + ("?" + urlencode({"v": release}) if release else "")}}]]}}
 
 
+def checkout_welcome(db, settings, body):
+    """Offer checkout only in the welcome explicitly requested by this user."""
+    if not settings.manual_payment_review_enabled:
+        return body
+    from . import billing
+    state = billing.public_status(db, body["chat_id"], settings=settings)
+    if state["payment_method"] != "bank_manual" or (state["expires_at"] or 0) > time.time():
+        return body
+    current = state.get("request")
+    if current and current["state"] in ("created", "review", "clarification"):
+        body["text"] += "\n\nЗаявку на оплату вже відкрито. Перегляньте її стан. Якщо вже сплатили — повторно не сплачуйте."
+        button = {"text": "Статус оплати", "url": state["status_url"]}
+    elif state["sales_enabled"]:
+        # The direct purchase link accepts the exact disclosed current offer.
+        # No campaign or marketing-consent record is created by this welcome.
+        body["text"] += "\n\n💳 Підписка — 250 грн / 30 днів.\n\n" + state["terms"]
+        button = {"text": "Придбати підписку · 250 грн", "url": state["purchase_url"]}
+    else:
+        return body
+    body["reply_markup"]["inline_keyboard"].append([button])
+    return body
+
+
 def deliver_one(engine, settings, request=None):
     request = request or telegram_setup.call
     with Session(engine) as db:
@@ -156,10 +179,13 @@ def deliver_one(engine, settings, request=None):
             reply.state = "cancelled"
         else:
             try:
-                result = request(settings.bot_token, "sendMessage", payload(
+                body = payload(
                     reply.command, reply.user_id, settings.miniapp_release,
                     stats_text(db, reply.user_id, settings.admin_telegram_id, settings=settings)
-                    if reply.command == "/stats" else None))
+                    if reply.command == "/stats" else None)
+                if reply.command == "/start":
+                    body = checkout_welcome(db, settings, body)
+                result = request(settings.bot_token, "sendMessage", body)
                 message_id = (result.get("result") or {}).get("message_id")
                 if result.get("ok") is True and type(message_id) is int and message_id > 0:
                     reply.state, reply.message_id = "sent", message_id

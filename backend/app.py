@@ -460,7 +460,7 @@ def create_app(settings: Settings, engine=None, *, paid_source_only=False):
 
     @app.get("/api/billing/status")
     def billing_status(uid=Depends(identity), db=Depends(session)):
-        result = billing.public_status(db, uid)
+        result = billing.public_status(db, uid, settings=settings)
         result["telegram_id"] = uid
         result["can_manage_subscriptions"] = bool(
             billing.verified_admin(settings) and uid == settings.admin_telegram_id)
@@ -799,6 +799,24 @@ def create_app(settings: Settings, engine=None, *, paid_source_only=False):
             return reminder_reply
         checkout_reply = await asyncio.to_thread(manual_checkout.handle, engine, settings, event)
         if checkout_reply is not None:
+            # Checkout deep links are still explicit /start commands. They
+            # connect this chat without reactivating radars or granting optional
+            # marketing consent, and an older retry cannot undo a newer /stop.
+            start_parts = text.split()
+            start_command, _, start_mention = (start_parts[0] if start_parts else "").partition("@")
+            if (start_command == "/start" and start_parts[1:] in (["subscribe"], ["buy_subscription"])
+                    and (not start_mention or start_mention.lower() == telegram_setup.BOT_USERNAME.lower())
+                    and chat.get("type") == "private" and chat.get("id") == uid
+                    and type(uid) is int and 0 < uid < 2**52 and not sender.get("is_bot")
+                    and type(command_at) is int and 0 <= time.time() - command_at <= 300
+                    and type(update_id) is int and 0 <= update_id < 2**63):
+                with Session(engine) as db, db.begin():
+                    billing.control(db, lock=True)
+                    user_row(db, uid)
+                    user = db.get(User, uid, with_for_update=True)
+                    if (command_at, update_id) > (user.last_command_at, user.last_update):
+                        user.ready = True
+                        user.last_command_at, user.last_update = command_at, update_id
             return checkout_reply
         review_reply = await asyncio.to_thread(manual_payment_routes.handle, engine, settings, event)
         if review_reply is not None:

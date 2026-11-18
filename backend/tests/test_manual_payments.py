@@ -413,8 +413,8 @@ def test_registered_webhook_owner_command_and_late_receipt(review):
         "document": {"mime_type": "application/pdf", "file_size": 500, "file_id": "SYNTHETIC-RECEIPT"}}}
     h = {"X-Telegram-Bot-Api-Secret-Token": SECRET}
     assert client.post("/telegram/webhook", json=update).status_code == 403
-    assert "Скриншот отримано" in client.post("/telegram/webhook", headers=h, json=update).json()["text"]
-    assert "Скриншот отримано" in client.post("/telegram/webhook", headers=h, json=update).json()["text"]
+    assert "Квитанцію отримано" in client.post("/telegram/webhook", headers=h, json=update).json()["text"]
+    assert "Квитанцію отримано" in client.post("/telegram/webhook", headers=h, json=update).json()["text"]
     assert m.card(engine, settings, ADMIN, code)["receipt_file_id"] == "SYNTHETIC-RECEIPT"
     assert count(engine, PaymentNotice) == 2  # Initial paid report and one late receipt.
     view = command(client, "/start paymentreceipt_"+code, uid=ADMIN).json()
@@ -423,7 +423,7 @@ def test_registered_webhook_owner_command_and_late_receipt(review):
     assert "document" not in command(client, "/start paymentreceipt_"+code, uid=OTHER).json()
     update["message"]["from"]["id"] = OTHER
     update["message"]["chat"]["id"] = OTHER
-    assert "Скриншот отримано" not in client.post("/telegram/webhook", headers=h, json=update).json()["text"]
+    assert "Квитанцію отримано" not in client.post("/telegram/webhook", headers=h, json=update).json()["text"]
 
 
 def test_owner_payments_links_open_exact_request_with_ukrainian_status(review):
