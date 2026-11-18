@@ -11,15 +11,18 @@
   const integer=value=>Number.isSafeInteger(value)&&value>0;
   const radarId=id=>typeof id==="string"&&/^[a-f0-9]{32}$/.test(id);
   function draftFrom(radar,slot=1,year=new Date().getFullYear()){
-    if(!radar) return {name:"Радар "+slot,brands:[],price_category:null,region_ids:[],year_from:2000,year_to:year,min_profit:10};
-    return {name:radar.name,brands:radar.brands.map(b=>({brand_id:b.brand_id,model_ids:[...(b.model_ids||b.models?.map(m=>m.model_id)||[])]})),
+    if(!radar) return {name:"Радар "+slot,all_brands:false,brands:[],price_category:null,region_ids:[],year_from:2000,year_to:year,min_profit:10};
+    return {name:radar.name,all_brands:radar.all_brands===true,brands:radar.brands.map(b=>({brand_id:b.brand_id,model_ids:[...(b.model_ids||b.models?.map(m=>m.model_id)||[])]})),
       price_category:radar.price_category,region_ids:[...radar.region_ids],year_from:radar.year_from,year_to:radar.year_to,min_profit:radar.min_profit};
   }
   function validate(draft,catalog,step=null){
     const checks=[];
     if(step===null||step===0){
       if(typeof draft.name!=="string"||!draft.name.trim()||draft.name.trim().length>60) checks.push("Введіть назву радара: від 1 до 60 символів.");
-      if(!Array.isArray(draft.brands)||draft.brands.length===0) checks.push("Оберіть хоча б одну марку авто.");
+      if(draft.all_brands!==undefined&&typeof draft.all_brands!=="boolean") checks.push("Оберіть режим: усі марки або окремі марки.");
+      if(!Array.isArray(draft.brands)) checks.push("Перевірте вибрані марки авто.");
+      else if(draft.all_brands===true){if(draft.brands.length)checks.push("Для режиму «Усі марки» приберіть окремі марки й моделі.");}
+      else if(draft.brands.length===0) checks.push("Оберіть хоча б одну марку авто або «Усі марки».");
       else {
         if(draft.brands.length>30) checks.push("В одному радарі можна вибрати до 30 марок.");
         const selected=new Set();
@@ -47,9 +50,14 @@
     return [...new Set(checks)];
   }
   function canonical(draft){
-    return {...copy(draft),name:draft.name.trim(),brands:draft.brands.map(b=>({brand_id:b.brand_id,model_ids:[...b.model_ids].sort((a,b)=>a-b)})).sort((a,b)=>a.brand_id-b.brand_id),region_ids:[...draft.region_ids].sort((a,b)=>a-b)};
+    return {...copy(draft),all_brands:draft.all_brands===true,name:draft.name.trim(),brands:draft.brands.map(b=>({brand_id:b.brand_id,model_ids:[...b.model_ids].sort((a,b)=>a-b)})).sort((a,b)=>a.brand_id-b.brand_id),region_ids:[...draft.region_ids].sort((a,b)=>a-b)};
+  }
+  function selectAllBrands(draft,checked){
+    draft.all_brands=checked===true;
+    if(draft.all_brands)draft.brands=[];
   }
   function toggleBrand(draft,id,checked){
+    if(checked)draft.all_brands=false;
     if(checked&&!draft.brands.some(b=>b.brand_id===id)) draft.brands.push({brand_id:id,model_ids:[]});
     if(!checked) draft.brands=draft.brands.filter(b=>b.brand_id!==id);
   }
@@ -103,7 +111,7 @@
     function facts(radar){
       const facts=node("dl",undefined,"radar-facts");
       const add=(label,value,wide=false)=>{const wrapper=node("div",undefined,wide?"wide":undefined);wrapper.append(node("dt",label),node("dd",value));facts.append(wrapper);};
-      add("Марки й моделі",radar.brands.map(b=>{const ids=b.model_ids||b.models?.map(m=>m.model_id)||[];const names=ids.map(id=>b.models?.find(m=>m.model_id===id)?.name||catalog.modelsByBrand[b.brand_id]?.find(m=>m.id===id)?.name||"Модель недоступна");return brandLabel(b)+" · "+(ids.length?names.join(", "):"усі моделі");}).join("; "));
+      add("Марки й моделі",radar.all_brands===true?"Усі марки · усі моделі":radar.brands.map(b=>{const ids=b.model_ids||b.models?.map(m=>m.model_id)||[];const names=ids.map(id=>b.models?.find(m=>m.model_id===id)?.name||catalog.modelsByBrand[b.brand_id]?.find(m=>m.id===id)?.name||"Модель недоступна");return brandLabel(b)+" · "+(ids.length?names.join(", "):"усі моделі");}).join("; "));
       add("Ціна",PRICES.find(p=>p.id===radar.price_category)?.label||"Не вибрано");add("Роки випуску",radar.year_from+"–"+radar.year_to);
       add("Регіони",radar.region_ids.length?radar.region_ids.map(id=>radar.regions?.find(r=>r.id===id)?.name||catalog.regions.find(r=>r.id===id)?.name||"Область недоступна").join(", "):"Уся Україна",true);
       add("Мінімальна вигода",radar.min_profit+"%");return facts;
@@ -126,16 +134,17 @@
     }
     function loadModels(brandId){
       if(catalog.modelsByBrand[brandId])return Promise.resolve();if(modelPromises.has(brandId))return modelPromises.get(brandId);
-      const promise=modelSerial.catch(()=>{}).then(async()=>{const data=await api.radarCatalog(brandId);if(!Array.isArray(data.models)||data.models.some(m=>!integer(m.id)||m.brand_id!==brandId||typeof m.name!=="string"))throw Error("Не вдалося прочитати моделі цієї марки.");catalog.modelsByBrand[brandId]=data.models;modelErrors.delete(brandId);}).catch(error=>{modelErrors.set(brandId,error.message);throw error;}).finally(()=>{modelPromises.delete(brandId);if(draft)renderModels();});modelSerial=promise;modelPromises.set(brandId,promise);return promise;
+      const promise=modelSerial.catch(()=>{}).then(async()=>{if(!draft||draft.all_brands||!draft.brands.some(b=>b.brand_id===brandId))return;const data=await api.radarCatalog(brandId);if(!Array.isArray(data.models)||data.models.some(m=>!integer(m.id)||m.brand_id!==brandId||typeof m.name!=="string"))throw Error("Не вдалося прочитати моделі цієї марки.");catalog.modelsByBrand[brandId]=data.models;modelErrors.delete(brandId);}).catch(error=>{modelErrors.set(brandId,error.message);throw error;}).finally(()=>{modelPromises.delete(brandId);if(draft)renderModels();});modelSerial=promise;modelPromises.set(brandId,promise);return promise;
     }
     async function openEditor(radar,slot){
       if(busy||!loaded)return;editing=radar?copy(radar):null;draft=draftFrom(radar,slot);createRequestId=radar?null:(root.crypto?.randomUUID?.()||("radar-"+Date.now().toString(36)+"-"+Math.random().toString(36).slice(2)));step=0;$("radarName").value=draft.name;$("brandSearch").value="";$("editorTitle").textContent=radar?"Редагування радара":"Новий радар";$("editorKicker").textContent="МІСЦЕ "+slot+" ІЗ 3";message("editorError","");message("catalogError","");showPage("editor");renderStep();
       try{await loadCatalog();if(!draft)return;renderControls();for(const b of draft.brands)void loadModels(b.brand_id).catch(()=>{});}catch(error){message("catalogError",error.message);$("retryRadarCatalog").hidden=false;}
     }
     function checkbox(label,checked,onChange){const wrapper=node("label",undefined,"check-choice"),input=node("input");input.type="checkbox";input.checked=checked;input.addEventListener("change",()=>onChange(input.checked));wrapper.append(input,node("span",label));return wrapper;}
-    function renderBrands(){const query=$("brandSearch").value.trim().toLocaleLowerCase("uk-UA");const brands=catalog.brands.filter(b=>b.name.toLocaleLowerCase("uk-UA").includes(query));$("radarBrands").replaceChildren(node("legend","Марки авто","sr-only"),...brands.map(b=>checkbox(b.name,draft.brands.some(s=>s.brand_id===b.id),checked=>{toggleBrand(draft,b.id,checked);renderModels(checked?b.id:null);if(checked)void loadModels(b.id).catch(()=>{});})));$("brandSearchEmpty").hidden=brands.length!==0;}
+    function syncBrandMode(){$("radarAllBrands").checked=draft.all_brands===true;$("allBrandsHint").hidden=draft.all_brands!==true;}
+    function renderBrands(){syncBrandMode();const query=$("brandSearch").value.trim().toLocaleLowerCase("uk-UA");const brands=catalog.brands.filter(b=>b.name.toLocaleLowerCase("uk-UA").includes(query));$("radarBrands").replaceChildren(node("legend","Марки авто","sr-only"),...brands.map(b=>checkbox(b.name,draft.brands.some(s=>s.brand_id===b.id),checked=>{toggleBrand(draft,b.id,checked);syncBrandMode();renderModels(checked?b.id:null);if(checked)void loadModels(b.id).catch(()=>{});})));$("brandSearchEmpty").hidden=brands.length!==0;}
     function renderModels(autoOpen){
-      if(!draft)return;const focused=document.activeElement?.dataset?.modelSearch;const cursor=focused?document.activeElement.selectionStart:null;const open=new Set([...$("radarModels").querySelectorAll("details[open]")].map(el=>Number(el.dataset.brandId)));
+      if(!draft)return;if(draft.all_brands){$("radarModels").replaceChildren();return;}const focused=document.activeElement?.dataset?.modelSearch;const cursor=focused?document.activeElement.selectionStart:null;const open=new Set([...$("radarModels").querySelectorAll("details[open]")].map(el=>Number(el.dataset.brandId)));
       const groups=draft.brands.map(selected=>{const id=selected.brand_id,group=node("details",undefined,"model-group");group.dataset.brandId=id;group.open=open.has(id)||draft.brands.length===1||autoOpen===id;const summary=node("summary",brandLabel(selected));summary.append(node("small",selected.model_ids.length?"обрано: "+selected.model_ids.length:"усі моделі"));group.append(summary);
         const all=checkbox("Усі моделі цієї марки",selected.model_ids.length===0,()=>{selected.model_ids=[];renderModels();});all.className="models-all";group.append(all);
         const models=catalog.modelsByBrand[id];if(!models){group.append(node("p",modelErrors.get(id)||"Завантажуємо моделі…","filter-help"));if(modelErrors.has(id))group.append(button("Повторити",()=>{modelErrors.delete(id);renderModels();void loadModels(id).catch(()=>{});}));return group;}
@@ -160,6 +169,7 @@
     $("refreshRadars").addEventListener("click",refresh);document.querySelectorAll("[data-page]").forEach(el=>el.addEventListener("click",()=>navigate(el.dataset.page)));document.querySelector(".logo").addEventListener("click",event=>{event.preventDefault();navigate("radars");});
     $("keepRadarEditing").addEventListener("click",()=>{pendingNavigation=null;$("discardRadarDialog").close();});$("discardRadarChanges").addEventListener("click",()=>{const next=pendingNavigation||"radars";pendingNavigation=null;$("discardRadarDialog").close();leaveEditor(next);});$("discardRadarDialog").addEventListener("cancel",()=>{pendingNavigation=null;});
     $("cancelRadar").addEventListener("click",()=>navigate("radars"));$("brandSearch").addEventListener("input",()=>{if(draft)renderBrands();});$("radarName").addEventListener("input",()=>{if(draft)draft.name=$("radarName").value;});$("radarAllUkraine").addEventListener("change",()=>{draft.region_ids=[];renderRegions();});
+    $("radarAllBrands").addEventListener("change",()=>{if(!draft)return;selectAllBrands(draft,$("radarAllBrands").checked);renderBrands();renderModels();});
     $("radarYearFrom").addEventListener("change",()=>{draft.year_from=Number($("radarYearFrom").value);updateYearBounds();});$("radarYearTo").addEventListener("change",()=>{draft.year_to=Number($("radarYearTo").value);updateYearBounds();});$("nextRadarStep").addEventListener("click",advance);$("previousRadarStep").addEventListener("click",()=>{if(busy)return;step=Math.max(0,step-1);message("editorError","");renderStep();});$("radarForm").addEventListener("submit",save);
     $("retryRadarCatalog").addEventListener("click",async()=>{try{await loadCatalog();if(draft)renderControls();}catch(error){message("catalogError",error.message);}});$("cancelRadarDelete").addEventListener("click",()=>{if(busy)return;deleting=null;$("deleteRadarDialog").close();});$("confirmRadarDelete").addEventListener("click",confirmDelete);$("deleteRadarDialog").addEventListener("cancel",event=>{if(busy)event.preventDefault();else deleting=null;});
     $("refreshSettings").addEventListener("click",refreshSettings);$("testNotification").addEventListener("click",async()=>{const button=$("testNotification");button.disabled=true;try{await api.testNotification();message("settingsStatus","Тестове повідомлення надіслано. Перевірте чат бота.");}catch(error){message("settingsStatus",error.message);}finally{void refreshSettings();}});
@@ -168,7 +178,7 @@
     const timer=root.setInterval?.(()=>{if(loaded&&page==="radars"&&!busy&&document.visibilityState==="visible")void refresh();},60000);
     return {store,refresh,destroy(){if(timer)root.clearInterval(timer);clearTimeout(toastTimer);}};
   }
-  const exported={PRICES,PROFITS,STATUS,draftFrom,validate,canonical,toggleBrand,toggleModel,toggleRegion,slots,priceMatches,describeTrace,createStore,mount};
+  const exported={PRICES,PROFITS,STATUS,draftFrom,validate,canonical,selectAllBrands,toggleBrand,toggleModel,toggleRegion,slots,priceMatches,describeTrace,createStore,mount};
   if(typeof module!=="undefined"&&module.exports)module.exports=exported;
   else {root.AutoDealRadars=exported;mount(root.document,root.AutoDealCloud);}
 })(typeof window!=="undefined"?window:globalThis);

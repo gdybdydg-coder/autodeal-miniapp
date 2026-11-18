@@ -7,7 +7,35 @@ const draft=()=>({name:'Мій радар',brands:[{brand_id:9,model_ids:[90]}],
 const item=(slot=1)=>({...draft(),id:rid(slot),slot,status:'paused',revision:1,brands:[{brand_id:9,brand_name:'BMW',model_ids:[90],models:[{model_id:90,name:'X5'}]}],regions:[]});
 
 test('new radar starts independent, with no arbitrary price category or selected brand',()=>{
- const a=Radar.draftFrom(null,1,2026),b=Radar.draftFrom(null,2,2026);assert.equal(a.name,'Радар 1');assert.equal(a.price_category,null);assert.deepEqual(a.brands,[]);a.region_ids.push(1);assert.deepEqual(b.region_ids,[]);assert.ok(Radar.validate(a,catalog).length);
+ const a=Radar.draftFrom(null,1,2026),b=Radar.draftFrom(null,2,2026);assert.equal(a.name,'Радар 1');assert.equal(a.all_brands,false);assert.equal(a.price_category,null);assert.deepEqual(a.brands,[]);a.region_ids.push(1);assert.deepEqual(b.region_ids,[]);assert.ok(Radar.validate(a,catalog).length);
+});
+
+test('all brands is an explicit validated wildcard, never an accidental empty selection',()=>{
+ const all={...draft(),all_brands:true,brands:[]};assert.deepEqual(Radar.validate(all,catalog),[]);
+ assert.deepEqual(Radar.canonical(all).brands,[]);assert.equal(Radar.canonical(all).all_brands,true);
+ for(const bad of [{...draft(),all_brands:true},{...all,all_brands:false},{...all,all_brands:undefined},{...all,all_brands:'true'},{...all,all_brands:1}])assert.ok(Radar.validate(bad,catalog).length);
+ assert.equal(Radar.draftFrom(item()).all_brands,false);assert.equal(Radar.canonical(draft()).all_brands,false);
+});
+
+test('switching to all clears individual brands/models and selecting a brand exits all without duplicates',()=>{
+ const d=draft();Radar.toggleBrand(d,84,true);Radar.toggleModel(d,84,840,true);Radar.selectAllBrands(d,true);
+ assert.equal(d.all_brands,true);assert.deepEqual(d.brands,[]);assert.deepEqual(Radar.validate(d,catalog),[]);
+ Radar.toggleBrand(d,9,true);Radar.toggleBrand(d,9,true);assert.equal(d.all_brands,false);assert.deepEqual(d.brands,[{brand_id:9,model_ids:[]}]);
+ Radar.toggleModel(d,9,90,true);Radar.toggleModel(d,9,90,true);assert.deepEqual(d.brands[0].model_ids,[90]);
+ Radar.selectAllBrands(d,true);Radar.selectAllBrands(d,false);assert.equal(d.all_brands,false);assert.deepEqual(d.brands,[]);
+ assert.match(Radar.validate(d,catalog).join(' '),/хоча б одну марку/);
+});
+
+test('all-brands create, edit and reopen preserve wildcard and every other filter',async()=>{
+ let saved,captured;const all={...draft(),all_brands:true,brands:[],region_ids:[1,10]};
+ const store=Radar.createStore({radars:async()=>({radars:saved?[saved]:[],limit:3,access:{active:false}}),
+  createRadar:async payload=>{captured=payload;return saved={...payload,id:rid(1),slot:1,status:'paused',revision:1};},
+  updateRadar:async(id,payload)=>saved={...payload,id,slot:1,status:'paused',revision:2}});
+ await store.load();await store.save(all,null,'all-brands-create-1');assert.equal(captured.all_brands,true);assert.deepEqual(captured.brands,[]);
+ await store.load();const reopened=Radar.draftFrom(store.snapshot.radars[0]);assert.deepEqual(reopened,all);
+ reopened.min_profit=20;await store.save(reopened,store.snapshot.radars[0]);await store.load();
+ assert.equal(store.snapshot.radars[0].all_brands,true);assert.equal(store.snapshot.radars[0].min_profit,20);assert.deepEqual(store.snapshot.radars[0].brands,[]);
+ assert.deepEqual(store.snapshot.radars[0].region_ids,[1,10]);assert.equal(store.snapshot.radars[0].price_category,3);
 });
 test('all six price boundaries belong to exactly one category',()=>{
  for(const [price,category] of [[0,1],[1999.99,1],[2000,2],[4999.99,2],[5000,3],[9999.99,3],[10000,4],[14999.99,4],[15000,5],[19999.99,5],[20000,6],[1000000000,6]]){
