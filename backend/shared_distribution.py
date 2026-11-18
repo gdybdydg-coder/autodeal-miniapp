@@ -52,6 +52,10 @@ def targets(db, settings, source_id, evidence):
     result, resolved_filters = [], evidence.setdefault("filters", {})
     failed = set()
     for search, watch, member in active_members(db):
+        from .notification_baseline import allowed, publication_at
+        if not allowed(db, search.user_id, published_at=publication_at(candidate),
+                       publication_after=evidence.get("publication_after")):
+            continue
         if member.started_at > boundary or db.get(MonitorSeen, (search.id, source_id)) is not None:
             continue
         filters = source_filters(search.filters)

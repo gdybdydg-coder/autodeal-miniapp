@@ -305,6 +305,8 @@ def process(engine,settings,token,public=public_fetch,provider=probe.transport,s
             if car['id']!=item['id'] or not feed.same_detail_url(car['url'],item['url']):raise ValueError('detail_identity_mismatch')
             dates=car.get('source_date_observations',{});created=dates.get('values',{}).get('createdTime',{}).get('epoch')
             if not dates.get('identity_matches') or dates.get('issues') or type(created) is not int or created<boundary:raise ValueError('old_or_unconfirmed_source_creation')
+            from .notification_baseline import olx_allowed
+            if not olx_allowed(engine,settings.admin_telegram_id,car):raise ValueError('before_notification_baseline')
             if asking_price_reasons(car):raise ValueError('full_price_or_eligibility_unverified')
             quote=fx(engine,settings,token,public) if car['currency']!='USD' else None
             price=normalize(car,quote,time.time())

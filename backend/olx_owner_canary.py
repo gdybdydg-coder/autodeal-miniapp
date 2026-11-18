@@ -237,6 +237,9 @@ def sample_text(car):
 
 
 def send_test_ad(engine, settings, state, car, sender):
+    from .notification_baseline import olx_allowed
+    if not olx_allowed(engine, settings.admin_telegram_id, car):
+        return False
     if not settings.olx_owner_canary_test_ads_enabled:
         return False
     observed = car.get('observed_asking_display', {})
@@ -267,7 +270,8 @@ def send_test_ad(engine, settings, state, car, sender):
             db.rollback(); return False
     # No role exemption, no replay after timeout, no photo-to-text fallback.
     current = permitted(engine, settings, state)
-    if not settings.olx_owner_canary_test_ads_enabled or not sample_match(car, current):
+    if (not settings.olx_owner_canary_test_ads_enabled or not sample_match(car, current)
+            or not olx_allowed(engine, settings.admin_telegram_id, car)):
         response = {'not_attempted': True}
         method = None
     else:

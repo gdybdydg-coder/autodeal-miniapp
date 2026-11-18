@@ -105,6 +105,8 @@ def caption(car,a):
 
 def send(engine,settings,plan,car,a,access,sender=telegram_setup.call,*,arm=ARM):
     """At most once, owner-only, fresh access again under the payment lock."""
+    from .notification_baseline import olx_allowed, allowed, olx_published_at
+    if not olx_allowed(engine,settings.admin_telegram_id,car):return None
     if not a['eligible_deal'] or not access(engine,settings,plan):return None
     key='olx-owner-car-'+hashlib.sha256((str(settings.admin_telegram_id)+':'+car['id']).encode()).hexdigest()[:32]
     with Session(engine) as db:
@@ -125,6 +127,7 @@ def send(engine,settings,plan,car,a,access,sender=telegram_setup.call,*,arm=ARM)
                     stopped=db.get(SourceProbe,feed.STATE)
                     searches=feed.own_searches(db,settings)
                     if (os.getenv(arm)=='true' and owner and owner.ready
+                            and allowed(db,owner.id,published_at=olx_published_at(car))
                             and paid_source_access.allowed(db,owner.id,time.time())
                             and not (stopped and stopped.status=='paused_by_owner')
                             and time.time()<plan['until'] and 0<=time.time()-car['checked_at']<=300
