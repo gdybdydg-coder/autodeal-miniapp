@@ -389,6 +389,8 @@ def create_app(settings: Settings, engine=None, *, paid_source_only=False):
         return user
 
     manual_payment_routes.install(app, engine, settings, identity)
+    from .subscription_grants import install as install_subscription_grants
+    install_subscription_grants(app, engine, settings, identity)
     from .radar_api import install as install_radars
     install_radars(app, engine, identity)
 
@@ -459,6 +461,9 @@ def create_app(settings: Settings, engine=None, *, paid_source_only=False):
     @app.get("/api/billing/status")
     def billing_status(uid=Depends(identity), db=Depends(session)):
         result = billing.public_status(db, uid)
+        result["telegram_id"] = uid
+        result["can_manage_subscriptions"] = bool(
+            billing.verified_admin(settings) and uid == settings.admin_telegram_id)
         if paid_source_access.strict(engine):
             result["paid_access_required"] = not billing.free_access_enabled(db)
             result["access_available"] = paid_source_access.allowed(db, uid)

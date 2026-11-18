@@ -1,9 +1,11 @@
 const {test}=require('node:test'),assert=require('node:assert/strict'),fs=require('fs'),vm=require('vm');
 class Element {
-  constructor(tag='div'){this.tag=tag;this.children=[];this.handlers={};this.value='';this.textContent='';this.checked=false;this.disabled=false;this.isConnected=true;}
+  constructor(tag='div'){this.tag=tag;this.children=[];this.handlers={};this.attributes={};this.value='';this.textContent='';this.checked=false;this.disabled=false;this.isConnected=true;}
   append(n){n.parent=this;this.children.push(n);}
   replaceChildren(...nodes){for(const n of this.children)n.isConnected=false;this.children=nodes;this.textContent='';}
   addEventListener(name,fn){this.handlers[name]=fn;}
+  setAttribute(name,value){this.attributes[name]=value;}
+  removeAttribute(name){delete this.attributes[name];}
   remove(){this.isConnected=false;if(this.parent)this.parent.children=this.parent.children.filter(n=>n!==this);}
   showModal(){this.open=true;}
   async click(){return this.handlers.click?.();}
@@ -11,12 +13,15 @@ class Element {
 function nodes(el){return [el,...el.children.flatMap(nodes)];}
 async function fixture(handler,authenticated=true,search=''){
   const screen=new Element(),error=new Element(),body=new Element('body'),calls=[],links=[],revoked=[];
+  const tabs=new Element('nav'),paymentsTab=new Element('button'),grantsTab=new Element('button');
+  paymentsTab.textContent='Заявки на оплату';grantsTab.textContent='Безоплатний доступ';tabs.append(paymentsTab);tabs.append(grantsTab);
+  body.append(tabs);body.append(error);body.append(screen);
   const window={location:{search},URL:{createObjectURL:()=> 'blob:synthetic-receipt',revokeObjectURL:u=>revoked.push(u)},Telegram:{WebApp:{initData:authenticated?'SIGNED-SYNTHETIC':'',ready(){},openTelegramLink(u){links.push(u);}}}};
-  const document={body,getElementById:id=>id==='screen'?screen:error,createElement:tag=>new Element(tag)};
+  const document={body,getElementById:id=>({screen,error,ownerTabs:tabs,paymentsTab,grantsTab})[id]||null,createElement:tag=>new Element(tag)};
   const fetch=async(url,opts)=>{calls.push({url,opts});const value=await handler(url,opts);return {ok:value.status===undefined||value.status===200,status:value.status||200,json:async()=>value.data??value,blob:async()=>({type:value.contentType||'image/png'})};};
-  vm.runInNewContext(fs.readFileSync('payment-review.js','utf8'),{window,document,fetch,Date,URLSearchParams});
+  vm.runInNewContext(fs.readFileSync('payment-review.js','utf8'),{window,document,fetch,Date,URLSearchParams,AbortController,setTimeout,clearTimeout});
   await new Promise(r=>setImmediate(r));
-  return {screen,error,body,calls,links,window,revoked,find:t=>nodes(screen).find(n=>n.tag==='button'&&n.textContent.includes(t)),
+  return {screen,error,body,calls,links,window,revoked,tabs,paymentsTab,grantsTab,find:t=>nodes(body).find(n=>n.tag==='button'&&n.textContent.includes(t)),
     field:t=>nodes(screen).find(n=>n.tag==='label'&&n.textContent===t)?.children[0]};
 }
 const counts={review:1,clarification:0,approved:0,rejected:0,created:0};
@@ -133,4 +138,154 @@ test('network exception is localized without reflecting raw transport text',asyn
   const ui=await fixture(()=>{throw new TypeError('Failed to fetch internal diagnostic');});
   assert.match(ui.error.textContent,/Не вдалося з’єднатися із сервером/);
   assert.doesNotMatch(ui.error.textContent,/Failed to fetch|internal diagnostic/);
+});
+
+const grantUrl='https://autodeal-api.onrender.com/api/admin/subscription-grants';
+const grantPreview={confirmation_token:'PRIVATE-CONFIRMATION-TOKEN',action_id:'g'.repeat(32),telegram_id:222,
+  days:30,reason:'Подарунок',current_expires_at:1790922000,proposed_expires_at:1793514000,
+  valid_until:1790922300,user_ready:true,radar_resume_required:true};
+const grantRecord={action_id:grantPreview.action_id,telegram_id:222,actor:111,at:1790922000,expires_at:1793514000,reason:'Подарунок'};
+const grantBasic=(url,opts)=>{
+  if(url.startsWith(grantUrl)){
+    if(url.endsWith('/preview'))return {...grantPreview,...JSON.parse(opts.body)};
+    if(url.endsWith('/confirm'))return {...grantRecord,replayed:false,radar_resume_required:true};
+    return {items:[],limit:50};
+  }
+  return basic(url);
+};
+function fillGrant(ui,{id='222',days='30',reason='Подарунок'}={}){
+  ui.field('Telegram ID користувача').value=id;ui.field('Кількість днів').value=days;
+  ui.field('Причина надання доступу').value=reason;
+}
+const postCalls=ui=>ui.calls.filter(c=>c.opts.method==='POST');
+
+test('grant page loads its own owner history without sales or payment requests',async()=>{
+  const ui=await fixture(grantBasic,true,'?view=grants');
+  assert.equal(ui.calls.length,1);assert.ok(ui.calls[0].url.startsWith(grantUrl+'?'));
+  assert.equal(ui.field('Кількість днів').value,'30');assert.equal(postCalls(ui).length,0);
+  await ui.paymentsTab.click();assert.ok(ui.calls.at(-1).url.includes('/manual-payments/admin?'));
+  await ui.grantsTab.click();assert.ok(ui.calls.at(-1).url.startsWith(grantUrl+'?'));
+});
+
+test('free grant requires server preview then explicit confirmation and sends no payment request',async()=>{
+  const ui=await fixture(grantBasic,true,'?view=grants');fillGrant(ui,{reason:'  Подарунок  '});
+  await ui.find('Перевірити перед наданням').click();
+  assert.equal(postCalls(ui).length,1);assert.deepEqual(JSON.parse(postCalls(ui)[0].opts.body),{telegram_id:222,days:30,reason:'Подарунок'});
+  assert.ok(nodes(ui.screen).some(n=>n.textContent==='Оплата: 0 грн. Невикористані дні збережуться. Радари та повідомлення автоматично не вмикаються.'));
+  assert.ok(nodes(ui.screen).some(n=>n.textContent.includes('Новий строк доступу:')));
+  assert.ok(nodes(ui.screen).some(n=>n.textContent.includes('Telegram ID 222')));
+  assert.ok(!nodes(ui.screen).some(n=>n.textContent.includes('PRIVATE-CONFIRMATION')));
+  await ui.find('Так, надати безоплатний доступ').click();
+  assert.equal(postCalls(ui).length,2);assert.deepEqual(JSON.parse(postCalls(ui)[1].opts.body),{confirmation_token:grantPreview.confirmation_token});
+  assert.ok(nodes(ui.screen).some(n=>n.textContent==='✅ Безоплатний доступ надано'));
+  assert.ok(nodes(ui.screen).some(n=>n.textContent.includes('Оплату не створено. Користувач має вручну')));
+  assert.ok(ui.calls.every(c=>c.url.startsWith(grantUrl)));
+  assert.ok(ui.calls.every(c=>c.opts.headers['X-Telegram-Init-Data']==='SIGNED-SYNTHETIC'&&c.opts.credentials==='omit'&&c.opts.redirect==='error'));
+});
+
+test('grant validation rejects invalid IDs, durations and empty or excessive reasons before any POST',async()=>{
+  for(const values of [{id:''},{id:'0'},{id:'-1'},{id:'1.2'},{id:'01'},{id:'1e5'},{id:String(2**52)},
+    {days:'0'},{days:'3651'},{days:'1.5'},{days:'+30'},{days:'-1'},{days:'030'},{reason:'   '},{reason:'я'.repeat(501)}]){
+    const ui=await fixture(grantBasic,true,'?view=grants');fillGrant(ui,values);
+    await ui.find('Перевірити перед наданням').click();assert.equal(postCalls(ui).length,0);
+    assert.match(ui.error.textContent,/[А-Яа-яІіЇїЄєҐґ]/);
+  }
+});
+
+test('maximum allowed duration and not-ready registered user are accurately previewed',async()=>{
+  const ui=await fixture((url,opts)=>url.endsWith('/preview')?{...grantBasic(url,opts),user_ready:false}:grantBasic(url,opts),true,'?view=grants');
+  fillGrant(ui,{days:'3650'});await ui.find('Перевірити перед наданням').click();
+  assert.equal(JSON.parse(postCalls(ui)[0].opts.body).days,3650);
+  assert.ok(nodes(ui.screen).some(n=>n.textContent.includes('чат не підключено')));
+  assert.equal(postCalls(ui).length,1);
+});
+
+test('unknown target and malformed preview do not create a confirmation or imply access',async()=>{
+  for(const response of [{status:404,data:{detail:'Користувача не знайдено. Нехай спочатку відкриє бота.',code:'user_not_found'}},{...grantPreview,telegram_id:999}]){
+    const ui=await fixture((url,opts)=>url.endsWith('/preview')?response:grantBasic(url,opts),true,'?view=grants');fillGrant(ui);
+    await ui.find('Перевірити перед наданням').click();
+    assert.ok(ui.error.textContent);assert.equal(ui.find('Так, надати'),undefined);assert.equal(postCalls(ui).length,1);
+  }
+});
+
+test('unsigned and forbidden grant views reveal neither history nor action controls',async()=>{
+  const unsigned=await fixture(()=>assert.fail('must not fetch'),false,'?view=grants');
+  assert.equal(unsigned.calls.length,0);assert.equal(unsigned.tabs.hidden,true);
+  const forbidden=await fixture(()=>({status:403,data:{detail:'Доступ дозволено лише адміністратору.',code:'admin_only'}}),true,'?view=grants');
+  assert.equal(forbidden.screen.children.length,0);assert.equal(forbidden.tabs.hidden,true);
+  assert.match(forbidden.error.textContent,/адміністратору/);assert.equal(postCalls(forbidden).length,0);
+});
+
+test('hostile gift reasons and history metadata render as text and history is filterable',async()=>{
+  const hostile='<img src=x onerror=alert(1)>',entry={...grantRecord,reason:hostile};
+  const ui=await fixture((url,opts)=>url.startsWith(grantUrl)&&opts.method==='GET'?{items:[entry],limit:50}:grantBasic(url,opts),true,'?view=grants');
+  assert.ok(nodes(ui.screen).some(n=>n.textContent==='Причина: '+hostile));
+  assert.ok(!nodes(ui.screen).some(n=>['img','script'].includes(n.tag)));
+  ui.field('Історія за Telegram ID (необов’язково)').value='222';await ui.find('Оновити історію').click();
+  assert.ok(ui.calls.at(-1).url.includes('telegram_id=222'));
+  fillGrant(ui,{reason:hostile});await ui.find('Перевірити перед наданням').click();
+  assert.ok(nodes(ui.screen).some(n=>n.textContent==='Причина: '+hostile));assert.ok(!nodes(ui.screen).some(n=>n.tag==='img'));
+});
+
+test('uncertain confirmation blocks new grants and explicit retries reuse exactly the same token',async()=>{
+  let attempts=0;
+  const ui=await fixture((url,opts)=>{
+    if(url.endsWith('/confirm')){attempts++;if(attempts===1)throw new TypeError('PRIVATE connection failed');if(attempts===2)return {status:503,data:{detail:'Сховище тимчасово недоступне.',code:'grant_storage_unavailable'}};return {...grantRecord,replayed:true};}
+    return grantBasic(url,opts);
+  },true,'?view=grants');fillGrant(ui);await ui.find('Перевірити перед наданням').click();
+  await ui.find('Так, надати безоплатний доступ').click();
+  assert.equal(attempts,1);assert.equal(ui.paymentsTab.disabled,true);assert.equal(ui.grantsTab.disabled,true);
+  assert.equal(ui.find('Надати доступ іншому'),undefined);assert.equal(ui.find('Змінити дані'),undefined);
+  assert.ok(nodes(ui.screen).some(n=>n.textContent.includes('Результат поки невідомий')));
+  assert.ok(!nodes(ui.screen).some(n=>n.textContent.includes('PRIVATE')));
+  await ui.find('Повторити перевірку цієї операції').click();assert.equal(attempts,2);
+  await ui.find('Повторити перевірку цієї операції').click();assert.equal(attempts,3);
+  const confirms=postCalls(ui).filter(c=>c.url.endsWith('/confirm'));
+  assert.equal(new Set(confirms.map(c=>c.opts.body)).size,1);
+  assert.equal(postCalls(ui).filter(c=>c.url.endsWith('/preview')).length,1);
+  assert.ok(nodes(ui.screen).some(n=>n.textContent.includes('Дні повторно не додано')));
+  assert.equal(ui.grantsTab.disabled,false);
+});
+
+test('double confirmation clicks cannot dispatch concurrent grants',async()=>{
+  let resolve,attempts=0;
+  const ui=await fixture((url,opts)=>url.endsWith('/confirm')?(attempts++,new Promise(r=>resolve=r)):grantBasic(url,opts),true,'?view=grants');
+  fillGrant(ui);await ui.find('Перевірити перед наданням').click();const confirm=ui.find('Так, надати безоплатний доступ');
+  const pending=confirm.click();await confirm.click();assert.equal(attempts,1);
+  resolve({...grantRecord,replayed:false});await pending;assert.equal(attempts,1);
+});
+
+test('history reconciliation uses action ID and can confirm an uncertain grant without another POST',async()=>{
+  let confirmed=false;
+  const ui=await fixture((url,opts)=>{
+    if(url.endsWith('/confirm')){confirmed=true;throw new TypeError('lost response');}
+    if(url.startsWith(grantUrl)&&opts.method==='GET')return {items:confirmed?[grantRecord]:[],limit:50};
+    return grantBasic(url,opts);
+  },true,'?view=grants');fillGrant(ui);await ui.find('Перевірити перед наданням').click();await ui.find('Так, надати безоплатний доступ').click();
+  await ui.find('Перевірити історію цього користувача').click();
+  assert.equal(postCalls(ui).length,2);assert.equal(ui.grantsTab.disabled,false);
+  assert.ok(nodes(ui.screen).some(n=>n.textContent.includes('Дні повторно не додано')));
+});
+
+test('absence from recent history is never treated as proof that a timed-out grant failed',async()=>{
+  const ui=await fixture((url,opts)=>{if(url.endsWith('/confirm'))throw new TypeError('lost');return grantBasic(url,opts);},true,'?view=grants');
+  fillGrant(ui);await ui.find('Перевірити перед наданням').click();await ui.find('Так, надати безоплатний доступ').click();
+  await ui.find('Перевірити історію цього користувача').click();assert.equal(ui.grantsTab.disabled,true);
+  assert.ok(nodes(ui.screen).some(n=>n.textContent.includes('Це не доводить, що вона не виконана')));
+  assert.ok(ui.find('Повторити перевірку цієї операції'));assert.equal(postCalls(ui).length,2);
+});
+
+test('known stale-access rejection requires a fresh preview instead of claiming success',async()=>{
+  const ui=await fixture((url,opts)=>url.endsWith('/confirm')?{status:409,data:{detail:'Строк доступу змінився. Оновіть попередній перегляд.',code:'access_changed'}}:grantBasic(url,opts),true,'?view=grants');
+  fillGrant(ui);await ui.find('Перевірити перед наданням').click();await ui.find('Так, надати безоплатний доступ').click();
+  assert.ok(nodes(ui.screen).some(n=>n.textContent==='Надання не виконано'));assert.equal(ui.find('Повторити перевірку цієї операції'),undefined);
+  await ui.find('Отримати новий попередній перегляд').click();assert.equal(ui.field('Telegram ID користувача').value,'222');
+  assert.equal(postCalls(ui).length,2);
+});
+
+test('auth revocation during grant confirmation clears the preview and confirmation controls',async()=>{
+  const ui=await fixture((url,opts)=>url.endsWith('/confirm')?{status:403,data:{detail:'Доступ дозволено лише адміністратору.',code:'admin_only'}}:grantBasic(url,opts),true,'?view=grants');
+  fillGrant(ui);await ui.find('Перевірити перед наданням').click();await ui.find('Так, надати безоплатний доступ').click();
+  assert.equal(ui.screen.children.length,0);assert.equal(ui.tabs.hidden,true);
+  assert.equal(ui.find('Повторити перевірку цієї операції'),undefined);assert.match(ui.error.textContent,/адміністратору/);
 });
