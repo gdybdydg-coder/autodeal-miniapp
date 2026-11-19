@@ -103,7 +103,7 @@ def public_status(db, uid, now=None, *, settings=None):
             "paid_access_required": bool(row and row.enforce), "access_available": allowed(db, uid, now),
             "expires_at": until or None, "days": DAYS,
             "payment_method": "bank_manual" if manual else "stars",
-            "amount_uah": 250 if manual else None,
+            "amount_uah": 650 if manual else None,
             "amount_stars": offer.get("stars") if row and row.sales else None,
             "purchase_url": "https://t.me/" + telegram_setup.BOT_USERNAME
                             + ("?start=buy_subscription" if manual else "?start=subscribe"),
@@ -161,7 +161,7 @@ def card(db, uid, now):
         parts.append("Зараз пошук доступний безкоштовно.")
     keyboard = []
     if state["sales_enabled"]:
-        price = "250 грн" if state["payment_method"] == "bank_manual" else f"{state['amount_stars']} ⭐"
+        price = "650 грн" if state["payment_method"] == "bank_manual" else f"{state['amount_stars']} ⭐"
         parts.append(f"<b>{price} за 30 днів</b>\nРазова оплата. Автоматичних списань немає.")
         keyboard.append([{"text": "Оформити абонемент", "callback_data": PREFIX + "terms"}])
     else:
