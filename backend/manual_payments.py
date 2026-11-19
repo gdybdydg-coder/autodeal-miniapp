@@ -198,7 +198,7 @@ def create_request(engine, settings, uid, now, *, name="Клієнт", username=
         else:
             raise ReviewError("request_code_unavailable", 503)
         row = PaymentRequest(id=code, user_id=uid, active_user_id=uid, name=name,
-                             username=username, amount_minor=25000, currency="UAH", days=30,
+                             username=username, amount_minor=65000, currency="UAH", days=30,
                              state="created", created_at=now, updated_at=now, revision=0,
                              transfer_note="", owner_note="")
         if accepted_terms is not None:
@@ -247,7 +247,7 @@ def report_paid(engine, settings, uid, code, now, *, reported_amount_minor=None,
                receipt_file_id=row.receipt_file_id, receipt_kind=row.receipt_kind))
         audit(db, row, uid, "paid_reported", now)
         notice(db, row, settings.admin_telegram_id, "owner",
-               f"📥 Заявка {row.id} очікує перевірки. 250 грн / 30 днів. Уся черга: /payments")
+               f"📥 Заявка {row.id} очікує перевірки. 650 грн / 30 днів. Уся черга: /payments")
         return public(row)
 
 
