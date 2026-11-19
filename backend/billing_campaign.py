@@ -46,7 +46,7 @@ COPY_B = ("🔎 <b>Шукай авто зі своїми умовами — от
 
 
 def content(offer):
-    price = f"{offer['stars']} ⭐" if type(offer.get("stars")) is int else "250 грн"
+    price = f"{offer['stars']} ⭐" if type(offer.get("stars")) is int else "650 грн"
     return {"version": VERSION, "text": COPY_A.format(price=price), "media": None,
             "price_verified": not billing.offer_errors(offer),
             "button": "Оформити підписку", "callback_data": billing.PREFIX+"terms"}
@@ -111,7 +111,7 @@ def initialize(engine, settings, now=None):
         key = "launch-preview:"+VERSION
         if billing.verified_admin(settings) and not db.get(BillingNotice, key):
             draft = ("🛠 <b>Попередній перегляд для власника</b>\n"
-                     "Продаж і масова розсилка вимкнені. 250 грн — погоджений орієнтир; ціна Stars ще не погоджена. "
+                     "Продаж і масова розсилка вимкнені. 650 грн — погоджений орієнтир; ціна Stars ще не погоджена. "
                      "Цей текст не готовий до відправки клієнтам.\n\n" + content(ctrl.offer)["text"])
             db.add(BillingNotice(id=key, kind="preview", user_id=settings.admin_telegram_id, text=draft))
         if now >= WHEN:
