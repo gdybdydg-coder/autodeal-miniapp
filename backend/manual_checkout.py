@@ -13,7 +13,7 @@ from .manual_payment_models import PaymentRequest
 PREFIX = "ad-bank:"
 TERMS_VERSION = "20261002-card-v1"
 TERMS = (
-    "250 грн / 30 днів пошуку відповідних оголошень за збереженими фільтрами та сповіщень. "
+    "650 грн / 30 днів пошуку відповідних оголошень за збереженими фільтрами та сповіщень. "
     "Оцінка ринкової ціни орієнтовна; повне охоплення всіх оголошень і купівля авто не гарантуються. "
     "Оплата — переказ за реквізитами. Власник особисто перевіряє фактичне зарахування "
     "та підтверджує доступ. Натискання «Я оплатив» і квитанція не відкривають доступ автоматично. "
@@ -22,7 +22,7 @@ TERMS = (
     "Питання щодо зарахування, спірних платежів і повернення коштів: /paysupport та опис питання. "
     "Рішення щодо повернення приймає власник; відхилення заявки не означає повернення."
 )
-OFFER = {"method": "bank_manual", "currency": "UAH", "amount_minor": 25000,
+OFFER = {"method": "bank_manual", "currency": "UAH", "amount_minor": 65000,
          "days": 30, "terms_version": TERMS_VERSION, "terms": TERMS}
 LABELS = {"created": "Очікує твого переказу", "review": "Очікує перевірки власником",
           "clarification": "Потрібне уточнення", "approved": "Підтверджено", "rejected": "Відхилено"}
@@ -59,7 +59,7 @@ def status(engine, settings, uid):
         return {"sales_enabled": sales, "paid_access_required": bool(ctrl and ctrl.enforce),
                 "free_access_all_users": billing.free_access_enabled(db),
                 "expires_at": until, "request": m.public(request) if request else None,
-                "terms_version": TERMS_VERSION, "terms": TERMS, "amount_minor": 25000, "days": 30}
+                "terms_version": TERMS_VERSION, "terms": TERMS, "amount_minor": 65000, "days": 30}
 
 
 def create(engine, settings, uid, now, version, *, name="Клієнт", username=None, telegram_update_id=None):
@@ -102,7 +102,7 @@ def overview(engine, settings, uid, now):
         lines.append("Щоб отримувати авто за своїми фільтрами, підключи підписку.")
     else:
         lines.append("Пошук зараз безкоштовний.")
-    lines.append("💳 <b>250 грн / 30 днів</b>")
+    lines.append("💳 <b>650 грн / 30 днів</b>")
     buttons = []
     row = data["request"]
     if row and row["state"] not in ("approved", "rejected"):
@@ -119,7 +119,7 @@ def overview(engine, settings, uid, now):
             buttons.append([{"text": "Статус оплати", "callback_data": PREFIX+"status:"+row["code"]}])
     elif data["sales_enabled"]:
         lines.append("Доступ після перевірки оплати. Без автосписань.\nНатискаючи кнопку, ти приймаєш умови підписки.")
-        buttons.append([{"text": "💳 Продовжити за 250 грн" if until > now or until > 0 else "💳 Підключити за 250 грн",
+        buttons.append([{"text": "💳 Продовжити за 650 грн" if until > now or until > 0 else "💳 Підключити за 650 грн",
                          "callback_data": PREFIX+"accept:"+TERMS_VERSION}])
     if not data["sales_enabled"]:
         lines.append("Нові оплати тимчасово недоступні.")
@@ -131,7 +131,7 @@ def terms(engine, settings, uid, full=False):
     data = status(engine, settings, uid)
     if data["free_access_all_users"] and not full:
         return free_card(uid)
-    lines = ["🚘 <b>Підписка AutoDeal</b>", "💳 <b>250 грн / 30 днів</b>"]
+    lines = ["🚘 <b>Підписка AutoDeal</b>", "💳 <b>650 грн / 30 днів</b>"]
     if full:
         lines = ["📄 <b>Повні умови</b>", escape(TERMS)]
     else:
@@ -141,7 +141,7 @@ def terms(engine, settings, uid, full=False):
     buttons = []
     if data["sales_enabled"]:
         lines.append("Натискаючи кнопку, ти приймаєш умови підписки.")
-        buttons.append([{"text": "💳 Перейти до оплати · 250 грн", "callback_data": PREFIX+"accept:"+TERMS_VERSION}])
+        buttons.append([{"text": "💳 Перейти до оплати · 650 грн", "callback_data": PREFIX+"accept:"+TERMS_VERSION}])
     else:
         lines.append("Нові оплати тимчасово недоступні.")
     if not full:
@@ -211,7 +211,7 @@ def render_requisites(uid, profile, code=None, state="preview", more=False, *, a
     iban, card = profile["iban"], profile.get("card_number")
     grouped = " ".join(iban[i:i+4] for i in range(0, len(iban), 4))
     lines = ["🚘 <b>AutoDeal · Оплата доступу</b>",
-             "💎 Тариф: 30 днів\n💳 <b>До сплати: 250 грн</b>",
+             "💎 Тариф: 30 днів\n💳 <b>До сплати: 650 грн</b>",
              "👤 Отримувач: "+escape(profile["recipient_name"]),
              "<b>Рахунок · IBAN</b>\n<code>"+grouped+"</code>"]
     buttons = [[{"text": "Скопіювати IBAN", "copy_text": {"text": iban}}]]
