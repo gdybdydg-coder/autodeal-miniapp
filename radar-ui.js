@@ -6,14 +6,15 @@
     {id:5,min:15000,max:20000,label:"15 000–20 000 $"},{id:6,min:20000,max:null,label:"Від 20 000 $"}
   ]);
   const PROFITS=Object.freeze([5,10,15,20,30,40,50]);
+  const FUEL_OPTIONS_MAX=10;
   const STATUS={active:"Активний",paused:"На паузі",subscription_expired:"Пауза: підписка завершилася"};
   const copy=value=>JSON.parse(JSON.stringify(value));
   const integer=value=>Number.isSafeInteger(value)&&value>0;
   const radarId=id=>typeof id==="string"&&/^[a-f0-9]{32}$/.test(id);
   function draftFrom(radar,slot=1,year=new Date().getFullYear()){
-    if(!radar) return {name:"Радар "+slot,all_brands:false,brands:[],price_category:null,region_ids:[],year_from:2000,year_to:year,min_profit:10};
+    if(!radar) return {name:"Радар "+slot,all_brands:false,brands:[],price_category:null,region_ids:[],fuel_ids:[],year_from:2000,year_to:year,min_profit:10};
     return {name:radar.name,all_brands:radar.all_brands===true,brands:radar.brands.map(b=>({brand_id:b.brand_id,model_ids:[...(b.model_ids||b.models?.map(m=>m.model_id)||[])]})),
-      price_category:radar.price_category,region_ids:[...radar.region_ids],year_from:radar.year_from,year_to:radar.year_to,min_profit:radar.min_profit};
+      price_category:radar.price_category,region_ids:[...radar.region_ids],fuel_ids:[...(radar.fuel_ids||[])],year_from:radar.year_from,year_to:radar.year_to,min_profit:radar.min_profit};
   }
   function validate(draft,catalog,step=null){
     const checks=[];
@@ -38,6 +39,9 @@
         if(draft.brands.reduce((sum,b)=>sum+Math.max(1,b.model_ids?.length||0),0)>200) checks.push("Оберіть не більше 200 поєднань марок і моделей.");
       }
     }
+    if(step===null||step===0){
+      if(!Array.isArray(draft.fuel_ids)||draft.fuel_ids.length>FUEL_OPTIONS_MAX||new Set(draft.fuel_ids).size!==draft.fuel_ids.length||draft.fuel_ids.some(id=>!integer(id)||!(catalog.fuel_types||[]).some(f=>f.id===id))) checks.push("Перевірте вибрані типи пального.");
+    }
     if(step===null||step===1){
       if(!PRICES.some(p=>p.id===draft.price_category)) checks.push("Оберіть одну категорію ціни.");
       if(!Array.isArray(draft.region_ids)||new Set(draft.region_ids).size!==draft.region_ids.length||draft.region_ids.some(id=>!integer(id)||!catalog.regions.some(r=>r.id===id))) checks.push("Перевірте вибрані області.");
@@ -50,7 +54,7 @@
     return [...new Set(checks)];
   }
   function canonical(draft){
-    return {...copy(draft),all_brands:draft.all_brands===true,name:draft.name.trim(),brands:draft.brands.map(b=>({brand_id:b.brand_id,model_ids:[...b.model_ids].sort((a,b)=>a-b)})).sort((a,b)=>a.brand_id-b.brand_id),region_ids:[...draft.region_ids].sort((a,b)=>a-b)};
+    return {...copy(draft),all_brands:draft.all_brands===true,name:draft.name.trim(),brands:draft.brands.map(b=>({brand_id:b.brand_id,model_ids:[...b.model_ids].sort((a,b)=>a-b)})).sort((a,b)=>a.brand_id-b.brand_id),region_ids:[...draft.region_ids].sort((a,b)=>a-b),fuel_ids:[...(draft.fuel_ids||[])].sort((a,b)=>a-b)};
   }
   function selectAllBrands(draft,checked){
     draft.all_brands=checked===true;
@@ -114,6 +118,8 @@
       add("Марки й моделі",radar.all_brands===true?"Усі марки · усі моделі":radar.brands.map(b=>{const ids=b.model_ids||b.models?.map(m=>m.model_id)||[];const names=ids.map(id=>b.models?.find(m=>m.model_id===id)?.name||catalog.modelsByBrand[b.brand_id]?.find(m=>m.id===id)?.name||"Модель недоступна");return brandLabel(b)+" · "+(ids.length?names.join(", "):"усі моделі");}).join("; "));
       add("Ціна",PRICES.find(p=>p.id===radar.price_category)?.label||"Не вибрано");add("Роки випуску",radar.year_from+"–"+radar.year_to);
       add("Регіони",radar.region_ids.length?radar.region_ids.map(id=>radar.regions?.find(r=>r.id===id)?.name||catalog.regions.find(r=>r.id===id)?.name||"Область недоступна").join(", "):"Уся Україна",true);
+      const fuelNames=radar.fuel_types||((radar.fuel_ids||[]).map(id=>catalog.fuel_types?.find(f=>f.id===id)?.name).filter(Boolean));
+      add("Тип пального",fuelNames.length?fuelNames.join(", "):"Усі типи",true);
       add("Мінімальна вигода",radar.min_profit+"%");return facts;
     }
     function renderDashboard(){
@@ -130,7 +136,7 @@
     async function refresh(){if(busy)return;setBusy(true);message("radarError","");try{await store.load();loaded=true;renderDashboard();}catch(error){message("radarError",error.message);if(!loaded)$("radarSlots").replaceChildren(node("p","Не вдалося завантажити радари. Натисніть «Оновити радари».","loading-state"));}finally{setBusy(false);$("radarSlots").setAttribute("aria-busy","false");}}
     async function loadCatalog(){
       if(catalogReady)return;if(catalogPromise)return catalogPromise;
-      catalogPromise=(async()=>{const response=await api.radarCatalog();if(!Array.isArray(response.brands)||!response.brands.length||!Array.isArray(response.regions)||!response.regions.length||[...response.brands,...response.regions].some(v=>!integer(v.id)||typeof v.name!=="string"))throw Error("Довідник авто тимчасово недоступний. Спробуйте оновити його.");catalog={...catalog,...response,modelsByBrand:catalog.modelsByBrand};catalogReady=true;message("catalogError","");$("retryRadarCatalog").hidden=true;})().finally(()=>{catalogPromise=null;});return catalogPromise;
+      catalogPromise=(async()=>{const response=await api.radarCatalog();if(!Array.isArray(response.brands)||!response.brands.length||!Array.isArray(response.regions)||!response.regions.length||!Array.isArray(response.fuel_types)||!response.fuel_types.length||[...response.brands,...response.regions,...response.fuel_types].some(v=>!integer(v.id)||typeof v.name!=="string"))throw Error("Довідник авто тимчасово недоступний. Спробуйте оновити його.");catalog={...catalog,...response,modelsByBrand:catalog.modelsByBrand};catalogReady=true;message("catalogError","");$("retryRadarCatalog").hidden=true;})().finally(()=>{catalogPromise=null;});return catalogPromise;
     }
     function loadModels(brandId){
       if(catalog.modelsByBrand[brandId])return Promise.resolve();if(modelPromises.has(brandId))return modelPromises.get(brandId);
@@ -153,10 +159,11 @@
         function fill(){modelQueries.set(id,search.value);const query=search.value.trim().toLocaleLowerCase("uk-UA");const list=models.filter(m=>m.name.toLocaleLowerCase("uk-UA").includes(query));choices.replaceChildren(...list.map(m=>checkbox(m.name,selected.model_ids.includes(m.id),checked=>{toggleModel(draft,id,m.id,checked);all.querySelector("input").checked=selected.model_ids.length===0;summary.querySelector("small").textContent=selected.model_ids.length?"обрано: "+selected.model_ids.length:"усі моделі";})));if(!list.length)choices.append(node("p","Модель не знайдено.","filter-help"));}search.addEventListener("input",fill);fill();group.append(search,choices);return group;});$("radarModels").replaceChildren(...groups);if(focused){const input=$("radarModels").querySelector('[data-model-search="'+focused+'"]');input?.focus();if(input&&cursor!==null)input.setSelectionRange?.(cursor,cursor);}
     }
     function renderRegions(){const all=draft.region_ids.length===0;$("radarAllUkraine").checked=all;$("radarRegions").replaceChildren(...catalog.regions.map(r=>checkbox(r.name,draft.region_ids.includes(r.id),checked=>{toggleRegion(draft,r.id,checked);$("radarAllUkraine").checked=draft.region_ids.length===0;})));}
+    function renderFuels(){const all=button("Усі типи пального",()=>{draft.fuel_ids=[];renderFuels();},"choice-button");all.setAttribute("aria-pressed",String(draft.fuel_ids.length===0));$("radarFuelTypes").replaceChildren(all,...catalog.fuel_types.map(f=>checkbox(f.name,draft.fuel_ids.includes(f.id),checked=>{draft.fuel_ids=checked?[...new Set([...draft.fuel_ids,f.id])]:draft.fuel_ids.filter(id=>id!==f.id);renderFuels();})));}
     function renderChoices(id,options,current,select){$(id).replaceChildren(...options.map(option=>{const choice=button(option.label,()=>{select(option.id);renderChoices(id,options,option.id,select);},"choice-button");choice.setAttribute("aria-pressed",String(current===option.id));return choice;}));}
     function renderYears(){for(const [id,value] of [["radarYearFrom",draft.year_from],["radarYearTo",draft.year_to]]){const options=[];for(let year=catalog.year_max;year>=catalog.year_min;year--){const option=node("option",String(year));option.value=year;options.push(option);}$(id).replaceChildren(...options);$(id).value=String(value);}updateYearBounds();}
     function updateYearBounds(){for(const option of $("radarYearTo").options)option.disabled=Number(option.value)<draft.year_from;for(const option of $("radarYearFrom").options)option.disabled=Number(option.value)>draft.year_to;}
-    function renderControls(){renderBrands();renderModels();renderRegions();renderYears();renderChoices("radarPrices",PRICES,draft.price_category,id=>draft.price_category=id);renderChoices("radarProfits",PROFITS.map(id=>({id,label:id+"%"})),draft.min_profit,id=>draft.min_profit=id);}
+    function renderControls(){renderBrands();renderModels();renderRegions();renderFuels();renderYears();renderChoices("radarPrices",PRICES,draft.price_category,id=>draft.price_category=id);renderChoices("radarProfits",PROFITS.map(id=>({id,label:id+"%"})),draft.min_profit,id=>draft.min_profit=id);}
     function renderStep(){document.querySelectorAll(".editor-step").forEach(el=>el.hidden=Number(el.dataset.step)!==step);document.querySelectorAll("#radarSteps li").forEach((el,i)=>{el.classList.toggle("current",i===step);el.classList.toggle("complete",i<step);if(i===step)el.setAttribute("aria-current","step");else el.removeAttribute("aria-current");});$("previousRadarStep").hidden=step===0;$("nextRadarStep").hidden=step===3;$("saveRadar").hidden=step!==3;if(step===3){$("radarReview").replaceChildren(node("h3",draft.name),facts(draft));$("radarSaveHint").textContent=editing?"Зміни збережуться в цьому самому радарі. Після зміни критеріїв перевірте його статус і за потреби ввімкніть знову.":"Новий радар збережеться на паузі. Для ввімкнення потрібна активна підписка.";}}
     function advance(){if(busy||!draft)return;draft.name=$("radarName").value;const errors=validate(draft,catalog,step);message("editorError",errors.join(" "));if(errors.length)return;step=Math.min(3,step+1);renderStep();document.querySelector('.editor-step[data-step="'+step+'"] h2')?.focus();}
     async function save(event){event.preventDefault();if(busy||!draft)return;if(step!==3){advance();return;}draft.name=$("radarName").value;const errors=validate(draft,catalog);if(errors.length){message("editorError",errors.join(" "));return;}setBusy(true);message("editorError","");try{await store.save(draft,editing,createRequestId);draft=null;editing=null;setBusy(false);showPage("radars");renderDashboard();announce("Радар збережено");void refresh();}catch(error){message("editorError",error.message);if(error.status===409)await store.load().then(renderDashboard).catch(()=>{});}finally{setBusy(false);}}
