@@ -36,7 +36,10 @@ def matches(car: Car, filters: Filters):
         return False
     for key in ("body", "fuel", "transmission"):
         value = getattr(car, key)
-        if getattr(filters, key) and value and value not in getattr(filters, key):
+        selected = getattr(filters, key)
+        if selected and key == "fuel" and (not value or value not in selected):
+            return False
+        if selected and value and value not in selected:
             return False
     for key, value in (("price", car.price), ("year", car.year)):
         bounds = getattr(filters, key)
