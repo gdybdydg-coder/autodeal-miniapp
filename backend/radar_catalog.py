@@ -10,10 +10,13 @@ from sqlalchemy import select
 
 from .auto_ria import RiaError
 from .models import SourceCache
-from .radar_models import BrandCatalog, ModelCatalog, RegionCatalog
+from .radar_models import BrandCatalog, ModelCatalog, RegionCatalog, FuelCatalog
 
 SEED_PATH = Path(__file__).with_name("data") / "radar_catalog_seed.json"
 POPULARITY_PATH = Path(__file__).with_name("data") / "radar_brand_popularity.json"
+FUEL_SEED = [{"id":1,"name":"Бензин"},{"id":2,"name":"Дизель"},{"id":3,"name":"Газ"},
+    {"id":4,"name":"Газ пропан-бутан / Бензин"},{"id":5,"name":"Гібрид (HEV)"},
+    {"id":6,"name":"Електро"},{"id":8,"name":"Газ метан / Бензин"},{"id":10,"name":"Гібрид (PHEV)"}]
 
 
 @lru_cache(maxsize=1)
@@ -55,6 +58,7 @@ def import_catalog(db, payload):
     brands = {row.id: row for row in db.scalars(select(BrandCatalog))}
     models = {(row.brand_id, row.id): row for row in db.scalars(select(ModelCatalog))}
     regions = {row.id: row for row in db.scalars(select(RegionCatalog))}
+    fuels = {row.id: row for row in db.scalars(select(FuelCatalog))}
     for entry in payload.get("brands", []):
         ident, name = entry["id"], entry["name"]
         if type(ident) is not int or ident <= 0 or not isinstance(name, str) or not name.strip():
@@ -90,6 +94,15 @@ def import_catalog(db, payload):
             db.add(regions[ident])
         else:
             regions[ident].name = name
+    for entry in payload.get("fuels", []):
+        ident, name = entry["id"], entry["name"]
+        if type(ident) is not int or ident <= 0 or not isinstance(name, str) or not name.strip():
+            raise ValueError("Некоректний довідник пального AUTO.RIA.")
+        if ident not in fuels:
+            fuels[ident] = FuelCatalog(id=ident, name=name)
+            db.add(fuels[ident])
+        else:
+            fuels[ident].name = name
     db.flush()
 
 
@@ -97,19 +110,27 @@ def import_existing_cache(db):
     """Expired dictionaries remain valid identities; no prices or car data reused."""
     brand = db.get(SourceCache, dictionary_key("categories/1/marks"))
     states = db.get(SourceCache, dictionary_key("states"))
+    fuel_cache = db.get(SourceCache, dictionary_key("type"))
     payload = {"brands": _items(brand.payload) if brand else [],
-               "regions": _items(states.payload) if states else []}
+               "regions": _items(states.payload) if states else [], "fuels": FUEL_SEED}
     keys = {dictionary_key(f"categories/1/marks/{row['id']}/models"): row for row in payload["brands"]}
     if keys:
         for cached in db.scalars(select(SourceCache).where(SourceCache.id.in_(keys))):
             keys[cached.id]["models"] = _items(cached.payload)
             keys[cached.id]["models_available"] = True
     import_catalog(db, payload)
+    if fuel_cache:
+        import_catalog(db, {"fuels": _items(fuel_cache.payload)})
     if SEED_PATH.exists():
         import_catalog(db, json.loads(SEED_PATH.read_text(encoding="utf-8")))
 
 
 def view(db, brand_id=None):
+    # Existing deployments may already have the original Radar migration marker.
+    # create_all adds the new tables, while this lazy seed fills their initial catalog.
+    if db.scalar(select(FuelCatalog.id).limit(1)) is None:
+        cached = db.get(SourceCache, dictionary_key("type"))
+        import_catalog(db, {"fuels": _items(cached.payload) if cached else FUEL_SEED})
     ranks, order = brand_popularity()
     brands = [{"id": row.id, "name": row.name, "models_available": row.models_available}
               for row in db.scalars(select(BrandCatalog).order_by(BrandCatalog.name))]
@@ -124,7 +145,8 @@ def view(db, brand_id=None):
     if brand_id is not None:
         models = [{"id": row.id, "brand_id": row.brand_id, "name": row.name}
                   for row in db.scalars(select(ModelCatalog).where(ModelCatalog.brand_id == brand_id).order_by(ModelCatalog.name))]
-    return {"brands": brands, "brand_order": order, "regions": regions, "models": models,
+    fuels = [{"id": row.id, "name": row.name} for row in db.scalars(select(FuelCatalog).order_by(FuelCatalog.id))]
+    return {"brands": brands, "brand_order": order, "regions": regions, "fuel_types": fuels, "models": models,
             "year_min": 1900, "year_max": min(2100, datetime.now().year + 1),
             "price_categories": [{"id": i, "minimum": low, "maximum_exclusive": high}
                 for i, low, high in [(1,0,2000),(2,2000,5000),(3,5000,10000),(4,10000,15000),(5,15000,20000),(6,20000,None)]],
@@ -144,6 +166,8 @@ def resolve(db, path, names):
             rows = db.execute(select(BrandCatalog.id, BrandCatalog.name)).all()
         elif path == "states":
             rows = db.execute(select(RegionCatalog.id, RegionCatalog.name)).all()
+        elif path == "type":
+            rows = db.execute(select(FuelCatalog.id, FuelCatalog.name)).all()
         else:
             match = re.fullmatch(r"categories/1/marks/([1-9][0-9]*)/models", path)
             if not match:

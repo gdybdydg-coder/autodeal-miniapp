@@ -21,7 +21,7 @@ from backend.radar_catalog import import_catalog, resolve, view
 from backend.radar_migration import migrate
 from backend.radar_models import (MIGRATION_VERSION, Radar, RadarBrand, RadarMigration,
                                  RadarModel, RadarRegion, RadarSearch, RadarLegacySearchState,
-                                 BrandCatalog,ModelCatalog,RegionCatalog)
+                                 BrandCatalog,ModelCatalog,RegionCatalog,FuelCatalog)
 from backend.radar_service import PRICE_BOUNDS, RadarCreate, RadarError, create
 
 
@@ -125,7 +125,7 @@ def test_entire_ukraine_switch_and_stale_editor(radar_db):
     {"brands":[{"brand_id":9,"model_ids":[]},{"brand_id":9,"model_ids":[]}]},
     {"brands":[{"brand_id":9,"model_ids":[30]}]},
     {"brands":[{"brand_id":77777,"model_ids":[]}]},
-    {"region_ids":[4,4]},{"region_ids":[99999]},{"year_from":2020,"year_to":2010},
+    {"region_ids":[4,4]},{"region_ids":[99999]},{"fuel_ids":[1,1]},{"fuel_ids":[99999]},{"year_from":2020,"year_to":2010},
     {"year_to":2100},{"year_from":1899},{"min_profit":12},{"price_category":0},
     {"price_category":7},{"min_profit":True},{"year_from":"2005"},{"name":"  "},
     {"user_id":222},{"status":"active"},{"brands":[{"brand_id":True,"model_ids":[]}]}])
@@ -200,6 +200,22 @@ def test_catalog_uses_official_ids_without_api_calls(radar_db):
     assert {r["id"] for r in result["regions"]}=={4,10}
     assert result["models"]==[{"id":30,"brand_id":84,"name":"Golf"},{"id":31,"brand_id":84,"name":"Passat"}]
     assert client.get("/api/radars/catalog?brand_id=999").status_code==404
+
+def test_fuel_choices_are_catalogued_and_saved_per_radar(radar_db):
+    _,client=radar_db
+    catalog=client.get("/api/radars/catalog").json()["fuel_types"]
+    assert {item["id"] for item in catalog} >= {1,2,3,4,5,6,8,10}
+    first=add(client,fuel_ids=[1,6])
+    second=add(client,name="Без обмеження")
+    assert first["fuel_ids"]==[1,6]
+    assert first["fuel_types"]==["Бензин","Електро"]
+    assert second["fuel_ids"]==[] and second["fuel_types"]==[]
+    edited=client.put(f"/api/radars/{first['id']}",json=payload(fuel_ids=[2],revision=1))
+    assert edited.status_code==200,edited.text
+    assert edited.json()["fuel_ids"]==[2]
+    unchanged=next(r for r in client.get("/api/radars").json()["radars"] if r["id"]==second["id"])
+    assert unchanged["fuel_ids"]==[]
+
 
 
 def test_create_retry_is_idempotent_and_key_cannot_change_payload(radar_db):

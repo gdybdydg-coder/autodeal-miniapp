@@ -552,6 +552,16 @@ class RiaSearch:
             if not names:
                 return []
             digest = hashlib.sha256(json.dumps([path, {}], sort_keys=True).encode()).hexdigest()
+            if path == "type":
+                from .radar_models import FuelCatalog
+                rows = db.execute(select(FuelCatalog.id, FuelCatalog.name)).all()
+                result = []
+                for name in names:
+                    values = {ident for ident, label in rows if normalize(label) == normalize(name)}
+                    if len(values) != 1:
+                        raise RiaError("unsupported_filter")
+                    result.append(values.pop())
+                return result
             row = db.get(SourceCache, digest)
             if row is None or row.expires_at <= time.time():
                 raise RiaError("catalog_not_cached")
@@ -878,7 +888,10 @@ class RiaSearch:
 def matches(car, filters, ids):
     for key, value in ids.items():
         if isinstance(value, list):
-            # Missing optional details are unknown, not a contradiction.
+            # Fuel restrictions are strict: missing or unknown fuel cannot match.
+            if key == "fuel_id" and value and car.get(key) not in value:
+                return False
+            # Missing body/gear details remain unknown, not a contradiction.
             if value and car.get(key) not in value and (car.get(key) is not None
                     or key not in {"body_id", "fuel_id", "gear_id"}):
                 return False

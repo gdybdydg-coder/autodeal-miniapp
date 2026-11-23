@@ -95,7 +95,7 @@ def sync_radar(db, radar):
         for model in models:
             filters = Filters(brand=brand["brand_name"], model=model["name"], region=regions,
                 price={"from": low, "to": upper}, year={"from": radar.year_from, "to": radar.year_to},
-                onlyDeals=True, minDiscount=float(radar.min_profit))
+                fuel=data["fuel_types"], onlyDeals=True, minDiscount=float(radar.min_profit))
             fingerprint = hashlib.sha256(("radar:" + radar.id + ":" + str(brand["brand_id"]) + ":"
                 + str(model["model_id"]) + ":" + filters.fingerprint()).encode()).hexdigest()
             row = Search(user_id=radar.user_id, name=radar.name, filters=filters.canonical(),

@@ -12,7 +12,7 @@ from sqlalchemy import delete, select, text, tuple_, update
 from . import billing
 from .models import User
 from .radar_models import (BrandCatalog, ModelCatalog, Radar, RadarBrand,
-                          RadarModel, RadarRegion, RegionCatalog)
+                          RadarModel, RadarRegion, RegionCatalog, FuelCatalog, RadarFuel)
 
 PRICE_BOUNDS = {1:(0,2000), 2:(2000,5000), 3:(5000,10000), 4:(10000,15000),
                 5:(15000,20000), 6:(20000,None)}
@@ -47,6 +47,7 @@ class RadarInput(StrictInput):
     brands: list[BrandSelection] = Field(max_length=30)
     price_category: int = Field(ge=1, le=6)
     region_ids: list[Identifier] = Field(default_factory=list, max_length=30)
+    fuel_ids: list[Identifier] = Field(default_factory=list, max_length=10)
     year_from: int = Field(ge=1900, le=2100)
     year_to: int = Field(ge=1900, le=2100)
     min_profit: int
@@ -70,6 +71,8 @@ class RadarInput(StrictInput):
             raise ValueError("Не вибирайте одну марку двічі.")
         if len(set(self.region_ids)) != len(self.region_ids):
             raise ValueError("Не вибирайте одну область двічі.")
+        if len(set(self.fuel_ids)) != len(self.fuel_ids):
+            raise ValueError("Не вибирайте один тип пального двічі.")
         if sum(max(1,len(b.model_ids)) for b in self.brands) > 200:
             raise ValueError("В одному радарі можна вибрати до 200 моделей.")
         return self
@@ -131,6 +134,10 @@ def validate_catalog(db, payload):
         valid_regions = set(db.scalars(select(RegionCatalog.id).where(RegionCatalog.id.in_(payload.region_ids))))
         if set(payload.region_ids) != valid_regions:
             raise RadarError(422, "region_not_found", "Виберіть області з довідника AUTO.RIA.")
+    if payload.fuel_ids:
+        valid_fuels = set(db.scalars(select(FuelCatalog.id).where(FuelCatalog.id.in_(payload.fuel_ids))))
+        if set(payload.fuel_ids) != valid_fuels:
+            raise RadarError(422, "fuel_not_found", "Виберіть типи пального з довідника AUTO.RIA.")
 
 
 def write_configuration(db, radar, payload, *, replace=False):
@@ -142,11 +149,13 @@ def write_configuration(db, radar, payload, *, replace=False):
         db.execute(delete(RadarModel).where(RadarModel.radar_id == radar.id))
         db.execute(delete(RadarBrand).where(RadarBrand.radar_id == radar.id))
         db.execute(delete(RadarRegion).where(RadarRegion.radar_id == radar.id))
+        db.execute(delete(RadarFuel).where(RadarFuel.radar_id == radar.id))
     db.add_all(RadarBrand(radar_id=radar.id, brand_id=b.brand_id) for b in payload.brands)
     db.flush()
     db.add_all(RadarModel(radar_id=radar.id, brand_id=b.brand_id, model_id=model)
                for b in payload.brands for model in b.model_ids)
     db.add_all(RadarRegion(radar_id=radar.id, region_id=region) for region in payload.region_ids)
+    db.add_all(RadarFuel(radar_id=radar.id, fuel_id=fuel) for fuel in payload.fuel_ids)
     db.flush()
 
 
@@ -156,7 +165,7 @@ def configurations(db, radars):
     by_id = {r.id: {"id":r.id,"slot":r.slot,"name":r.name,"price_category":r.price_category,
         "year_from":r.year_from,"year_to":r.year_to,"min_profit":r.min_profit,
         "status":r.status,"revision":r.revision,"created_at":r.created_at,"updated_at":r.updated_at,
-        "all_brands":True,"brands":[],"region_ids":[],"regions":[]} for r in radars}
+        "all_brands":True,"brands":[],"region_ids":[],"regions":[],"fuel_ids":[],"fuel_types":[]} for r in radars}
     brands = {}
     for rid,bid,name in db.execute(select(RadarBrand.radar_id,BrandCatalog.id,BrandCatalog.name)
             .join(BrandCatalog,BrandCatalog.id==RadarBrand.brand_id).where(RadarBrand.radar_id.in_(by_id))
@@ -175,6 +184,11 @@ def configurations(db, radars):
             .order_by(RegionCatalog.name)):
         by_id[rid]["region_ids"].append(ident)
         by_id[rid]["regions"].append({"id":ident,"name":name})
+    for rid,ident,name in db.execute(select(RadarFuel.radar_id,FuelCatalog.id,FuelCatalog.name)
+            .join(FuelCatalog,FuelCatalog.id==RadarFuel.fuel_id).where(RadarFuel.radar_id.in_(by_id))
+            .order_by(FuelCatalog.id)):
+        by_id[rid]["fuel_ids"].append(ident)
+        by_id[rid]["fuel_types"].append(name)
     return [by_id[r.id] for r in radars]
 
 
@@ -190,6 +204,9 @@ def create(db, uid, payload):
         # Older mobile retries predate this optional field; preserve their
         # persisted idempotency fingerprint for the unchanged specific mode.
         canonical.pop("all_brands", None)
+    if not payload.fuel_ids:
+        # Keep pre-fuel client retries idempotent when the new optional field is empty.
+        canonical.pop("fuel_ids", None)
     create_hash = hashlib.sha256(json.dumps(canonical,sort_keys=True).encode()).hexdigest()
     if create_key:
         prior=db.scalar(select(Radar).where(Radar.user_id==uid,Radar.create_key==create_key))

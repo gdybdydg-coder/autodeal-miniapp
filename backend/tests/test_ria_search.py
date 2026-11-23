@@ -11,6 +11,7 @@ from backend.models import Base, Filters, SourceBudget, SourceCache
 from backend.ria_budget import BudgetLimits
 from backend.ria_validation import validate_once, validation_status
 from backend.ria_search import RiaSearch, budget_state, estimate, initialize_budget, matches, parse_car, snapshot_key
+from backend.radar_models import FuelCatalog
 
 
 def raw(source_id="123", **overrides):
@@ -381,6 +382,25 @@ def test_snapshot_toggle_does_not_spend_or_hide_unvalued_cards(engine):
 
 
 def test_stale_snapshot_survives_quota_but_never_qualifies_as_deal(engine, monkeypatch):
+
+def test_radar_fuel_filter_uses_official_ids_and_rejects_unknown_fuel(engine):
+    with Session(engine) as db, db.begin():
+        db.add_all([FuelCatalog(id=1,name="Бензин"),FuelCatalog(id=2,name="Дизель")])
+    filters=Filters(fuel=["Дизель"],onlyDeals=False)
+    with Session(engine) as db:
+        _,ids=RiaSearch.cached_parameters(db,filters)
+    assert ids["fuel_id"]==[2]
+    diesel=parse_car(raw())
+    assert matches(diesel,filters,ids)
+    petrol_raw=raw()
+    petrol_raw["autoData"]={**petrol_raw["autoData"],"fuelId":1,"fuelName":"Бензин"}
+    assert not matches(parse_car(petrol_raw),filters,ids)
+    unknown_raw=raw()
+    unknown_raw["autoData"]={**unknown_raw["autoData"],"fuelId":None,"fuelName":""}
+    assert not matches(parse_car(unknown_raw),filters,ids)
+
+
+
     filters = Filters(brand="Volkswagen", onlyDeals=False)
     first = RiaSearch(engine, "key", fixture_fetch([])).search(filters)
     assert first["cars"][0]["market"] == 15000
