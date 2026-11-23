@@ -126,6 +126,11 @@ def import_existing_cache(db):
 
 
 def view(db, brand_id=None):
+    # Existing deployments may already have the original Radar migration marker.
+    # create_all adds the new tables, while this lazy seed fills their initial catalog.
+    if db.scalar(select(FuelCatalog.id).limit(1)) is None:
+        cached = db.get(SourceCache, dictionary_key("type"))
+        import_catalog(db, {"fuels": _items(cached.payload) if cached else FUEL_SEED})
     ranks, order = brand_popularity()
     brands = [{"id": row.id, "name": row.name, "models_available": row.models_available}
               for row in db.scalars(select(BrandCatalog).order_by(BrandCatalog.name))]
