@@ -89,6 +89,18 @@ class RadarRegion(Base):
     region_id: Mapped[int] = mapped_column(ForeignKey("radar_catalog_regions.id"), primary_key=True)
 
 
+class FuelCatalog(Base):
+    __tablename__ = "radar_catalog_fuels"
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=False)
+    name: Mapped[str] = mapped_column(String(150), unique=True)
+
+
+class RadarFuel(Base):
+    __tablename__ = "radar_fuels"
+    radar_id: Mapped[str] = mapped_column(ForeignKey("radars.id", ondelete="CASCADE"), primary_key=True)
+    fuel_id: Mapped[int] = mapped_column(ForeignKey("radar_catalog_fuels.id"), primary_key=True)
+
+
 class RadarSearch(Base):
     __tablename__ = "radar_search_bindings"
     search_id: Mapped[int] = mapped_column(ForeignKey("searches.id", ondelete="CASCADE"), primary_key=True)
@@ -104,4 +116,4 @@ class RadarLegacySearchState(Base):
 
 
 RADAR_TABLES = [cls.__table__ for cls in (RadarMigration, BrandCatalog, ModelCatalog,
-    RegionCatalog, Radar, RadarBrand, RadarModel, RadarRegion, RadarSearch, RadarLegacySearchState)]
+    RegionCatalog, FuelCatalog, Radar, RadarBrand, RadarModel, RadarRegion, RadarFuel, RadarSearch, RadarLegacySearchState)]
