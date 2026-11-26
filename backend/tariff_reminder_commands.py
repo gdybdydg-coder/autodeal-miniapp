@@ -1,8 +1,8 @@
-"""Private Telegram controls for the daily purchase/renewal reminder campaign.
+"""Private Telegram controls for the every-two-day subscription reminder campaign.
 
-Only explicit reminder actions change category preferences. Administrative
-controls verify the protected owner configuration before opening a DB session.
-The webhook returns a reply payload; this module never sends advertisements.
+Users are included by default; explicit reminder actions update their opt-out.
+Administrative controls verify the protected owner configuration before
+opening a DB session. The webhook returns a reply payload; it never sends ads.
 """
 from html import escape
 import time
@@ -44,13 +44,12 @@ def _admin_card(uid, data):
                      + "; придатних: " + _number(created.get("eligible_users")))
     labels = {"current_access": "Чинний доступ", "payment_in_progress": "Оплата на перевірці",
               "blocked": "Блокування", "test_or_service": "Тестові й службові",
-              "stopped": "Зупинено / неактивний стан", "opted_out": "Відмова від нагадувань",
-}
+              "stopped": "Зупинено / неактивний стан", "opted_out": "Відмова від нагадувань"}
     reasons = cohort.get("excluded_by_primary_reason") or {}
     if reasons:
         lines.append("Виключення за головною причиною:\n" + "\n".join(
             label + ": " + _number(reasons[key]) for key, label in labels.items() if key in reasons))
-    lines.append("За замовчуванням отримують усі користувачі без активного доступу; /stop вимикає нагадування для конкретного користувача.")
+    lines.append("За замовчуванням нагадування отримують користувачі без чинного доступу та незавершеної оплати; /stop вимикає їх для конкретного користувача.")
     payments = data.get("pending_payments") or {}
     if payments:
         stale = sum(item.get("stale", 0) for item in payments.get("requests", {}).values())
