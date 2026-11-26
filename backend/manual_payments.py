@@ -432,8 +432,7 @@ def confirm(engine, settings, actor, token, now):
         review.result = until
         audit(db, row, actor, "approved", now, before, until)
         notice(db, row, row.user_id, "client",
-               f"✅ Заявку {row.id} підтверджено власником. Доступ до {billing.date_text(until)} (Київ). "
-               "Автоматичного продовження немає. Зупинені сповіщення залишаються зупиненими.")
+               f"✅ Заявку {row.id} підтверджено власником. Доступ до {billing.date_text(until)} (Київ)")
         return {"code": row.id, "expires_at": until, "replayed": False}
 
 
