@@ -1,8 +1,8 @@
-"""Daily purchase/renewal reminders on the existing server/payment outbox.
+"""Every-two-day purchase/renewal reminders on the existing server/payment outbox.
 
 No car-source calls, Telegram polling, new service, or catch-up broadcast.
 BillingControl is the shared lock for owner confirmations, audience changes,
-schedule changes, daily queue construction, and the final bounded send.
+schedule changes, queue construction, and the final bounded send.
 """
 import json
 import logging
@@ -58,6 +58,31 @@ def next_morning(now):
     if candidate.timestamp() <= now:
         candidate = datetime.combine(day + timedelta(days=1), datetime.min.time(), ZONE).replace(hour=9)
     return candidate.timestamp()
+
+
+def next_reminder_morning(previous_run, now):
+    """Advance the persisted cadence by two local calendar days, skipping missed runs."""
+    day = datetime.fromtimestamp(previous_run, ZONE).date() + timedelta(days=2)
+    candidate = datetime.combine(day, datetime.min.time(), ZONE).replace(hour=9)
+    while candidate.timestamp() <= now:
+        day += timedelta(days=2)
+        candidate = datetime.combine(day, datetime.min.time(), ZONE).replace(hour=9)
+    return candidate.timestamp()
+
+
+def set_preference_in_session(db, uid, enabled, update_id, now):
+    """Persist a user's reminder choice inside an existing transaction."""
+    if type(uid) is not int or not 0 < uid < 2**52 or type(enabled) is not bool:
+        raise ValueError("Invalid reminder preference")
+    if type(update_id) is not int or not 0 <= update_id < 2**63:
+        raise ValueError("Invalid preference update")
+    row = db.get(TariffReminderPreference, uid, populate_existing=True)
+    if row is None:
+        row = TariffReminderPreference(user_id=uid, enabled=enabled, update_id=update_id, at=now)
+        db.add(row)
+    elif update_id > row.update_id:
+        row.enabled, row.update_id, row.at = enabled, update_id, now
+    return row.enabled
 
 
 def bounds(now):
@@ -199,13 +224,7 @@ def set_preference(engine, settings, uid, enabled, update_id, now):
         raise ValueError("Invalid preference update")
     with Session(engine) as db, db.begin():
         billing.control(db, lock=True)
-        row = db.get(TariffReminderPreference, uid, populate_existing=True)
-        if row is None:
-            row = TariffReminderPreference(user_id=uid, enabled=enabled, update_id=update_id, at=now)
-            db.add(row)
-        elif update_id > row.update_id:
-            row.enabled, row.update_id, row.at = enabled, update_id, now
-        return row.enabled
+        return set_preference_in_session(db, uid, enabled, update_id, now)
 
 
 def high_priority(db, now):
@@ -273,7 +292,7 @@ def tick(engine, settings, request, now=None, *, clock=None):
                     db.add(campaign)
                     db.add_all([CampaignRecipient(campaign_id=key, user_id=uid, state="pending") for uid in users])
                 schedule.last_campaign_id = key
-            schedule.next_run_at = next_morning(now)
+            schedule.next_run_at = next_reminder_morning(schedule.next_run_at, now)
         campaign = db.get(BillingCampaign, schedule.last_campaign_id) if schedule.last_campaign_id else None
         if not campaign or campaign.status != "running":
             return "scheduled"
