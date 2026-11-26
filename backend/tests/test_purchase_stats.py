@@ -13,7 +13,7 @@ from sqlalchemy.engine import make_url
 from sqlalchemy.exc import OperationalError
 from sqlalchemy.orm import Session
 
-from backend import billing, bot_commands, manual_payments as payments, purchase_stats
+from backend import billing, bot_commands, manual_checkout, manual_payments as payments, purchase_stats
 from backend.app import Settings, create_app
 from backend.billing_models import AccessEvent, BillingControl, Entitlement
 from backend.manual_payment_models import PaymentRequest
@@ -82,7 +82,7 @@ def approve(ledger, uid, now=NOW, *, legacy=False, request=None):
     evidence = dict(bank_verified=True)
     if legacy:
         evidence.update(account="FIXTURE-ACCOUNT", operation="CREDIT-" + request["code"],
-                        actual_amount_minor=25000)
+                        actual_amount_minor=manual_checkout.OFFER["amount_minor"])
     preview = payments.preview(engine, settings, ADMIN, request["code"], request["revision"],
                                now + 2, **evidence)
     result = payments.confirm(engine, settings, ADMIN, preview["confirmation"], now + 3)
