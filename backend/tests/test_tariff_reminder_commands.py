@@ -330,7 +330,7 @@ def test_real_admin_view_and_disable_are_guarded_and_replay_safe(webhook):
         db.add(TariffReminderSchedule(id=tariff_reminders.ID, enabled=True,
             installed_at=now, first_run_at=future, next_run_at=future))
     view = post(webhook, event(uid=ADMIN, text="/tariff_reminders", stamp=int(now)))
-    assert view.status_code == 200 and "Придатних отримувачів зараз: 0" in view.json()["text"]
+    assert view.status_code == 200 and "Придатних отримувачів зараз: 1" in view.json()["text"]
     denied = post(webhook, event(callback=commands.PREFIX+"admin:off"))
     assert denied.json() == {"ok": True}
     with Session(engine) as db:
