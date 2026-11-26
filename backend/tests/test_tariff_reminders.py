@@ -475,7 +475,9 @@ def test_two_os_processes_with_separate_pools_share_one_daily_campaign(daily):
 def test_schedule_and_recipient_progress_survive_new_engine(daily, monkeypatch):
     engine, settings, _ = daily
     queue_without_transport(daily, monkeypatch)
-    reopened = create_engine(engine.url, connect_args={"check_same_thread": False, "timeout": 30})
+    connect_args = ({"check_same_thread": False, "timeout": 30} if engine.dialect.name == "sqlite"
+                    else {"connect_timeout": 5})
+    reopened = create_engine(engine.url, connect_args=connect_args)
     try:
         assert reminders.initialize(reopened, settings, MORNING+1) == "enabled"
         assert snapshot(reopened, settings)["next_run_at"] == at("2026-10-05T09:00:00+03:00")
