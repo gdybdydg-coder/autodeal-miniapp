@@ -36,7 +36,6 @@ def clauses(settings, now):
     legacy_opt_out = exists().where(
         MarketingConsent.user_id == User.id,
         MarketingConsent.allowed.is_(False),
-        MarketingConsent.source == GLOBAL_OPT_OUT_SOURCE,
         or_(MarketingConsent.update_id < 0,
             MarketingConsent.update_id >= func.coalesce(latest_preference_update, -1)),
     )
