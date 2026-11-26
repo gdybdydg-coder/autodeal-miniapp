@@ -34,9 +34,9 @@ def setup(tmp_path, monkeypatch):
     calls = []
     transport = []
     data = {"id": "daily-first-purchase-v1", "enabled": True,
-            "next_run_at": NOW+86400, "next_run_kyiv": "2026-10-04T09:00:00+03:00",
+            "next_run_at": NOW+172800, "next_run_kyiv": "2026-10-05T09:00:00+03:00",
             "eligible_recipients": 29, "heartbeat": NOW,
-            "text": "🚘 AutoDeal\n💳 250 грн / 30 днів",
+            "text": "🚘 AutoDeal\n💳 650 грн / 30 днів",
             "buttons": ["💳 Переглянути тариф", "🔕 Не нагадувати"], "last_result": {}}
 
     def snapshot(db, actual_settings, now):
@@ -97,7 +97,7 @@ def test_admin_view_keeps_previous_day_summary_after_today_runs(setup):
 
 def test_admin_shows_created_cohort_exclusions_and_unconfirmed_sent_records(setup):
     setup.data["audience"] = {"created_only": {"total_users": 2, "eligible_users": 0},
-        "excluded_by_primary_reason": {"missing_explicit_consent": 143, "current_access": 5}}
+        "excluded_by_primary_reason": {"opted_out": 143, "current_access": 5}}
     setup.data["last_result"] = {"date_kyiv": "2026-10-04", "selected": 2,
         "sent": 2, "telegram_accepted": 1, "sent_without_receipt": 1,
         "excluded": 0, "errors": 0, "uncertain": 0}
@@ -105,7 +105,7 @@ def test_admin_shows_created_cohort_exclusions_and_unconfirmed_sent_records(setu
         "stale_receipt_expectations": 1, "stale_after_days": 7}
     result = handle(setup, event(uid=ADMIN, text="/tariff_reminders"))
     assert "Лише створена неоплачена заявка: 2; придатних: 0" in result["text"]
-    assert "Без записаної явної згоди: 143" in result["text"]
+    assert "Відмова від нагадувань: 143" in result["text"]
     assert "надіслано 1" in result["text"]
     assert "Без збереженого підтвердження Telegram: 1" in result["text"]
     assert "Застарілі заявки: 2; очікування скриншота: 1" in result["text"]
@@ -159,9 +159,10 @@ def test_protected_owner_configuration_is_checked_for_every_call(setup, monkeypa
     assert result == {"ok": True} and setup.calls == []
 
 
-def test_reminder_prompt_does_not_opt_in_and_explains_frequency(setup):
+def test_reminder_prompt_explains_default_schedule_and_stop_command(setup):
     result = handle(setup, event())
-    assert "щодня о 09:00 за Києвом" in result["text"]
+    assert "раз на два дні о 09:00 за Києвом" in result["text"]
+    assert "/stop вимикає всі сповіщення" in result["text"]
     assert setup.calls == [] and setup.transport == []
     assert result["reply_markup"]["inline_keyboard"][0][0]["callback_data"] == commands.PREFIX+"on"
 
