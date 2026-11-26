@@ -277,12 +277,17 @@ def tick(engine, settings, request, now=None, *, clock=None):
             return "disabled"
         start, end = bounds(now)
         if now >= schedule.next_run_at:
-            # Missed days advance directly to the next future morning. No backfill.
-            due_today = datetime.fromtimestamp(schedule.next_run_at, ZONE).date() <= datetime.fromtimestamp(now, ZONE).date()
-            if due_today and start <= now < end:
+            scheduled_day = datetime.fromtimestamp(schedule.next_run_at, ZONE).date()
+            today = datetime.fromtimestamp(now, ZONE).date()
+            # If the service recovers before 09:00, let today's window run rather
+            # than skipping it. A late send becomes the new two-day anchor.
+            if scheduled_day < today and now < start:
+                schedule.next_run_at = start
+                return "scheduled"
+            if scheduled_day <= today and start <= now < end:
                 if not readiness(db, settings):
                     return "checkout_unavailable"
-                key = PREFIX + datetime.fromtimestamp(now, ZONE).date().isoformat()
+                key = PREFIX + today.isoformat()
                 campaign = db.get(BillingCampaign, key)
                 if campaign is None:
                     users = audience.ids(db, settings, now)  # One authoritative bulk query.
@@ -294,7 +299,10 @@ def tick(engine, settings, request, now=None, *, clock=None):
                     db.add(campaign)
                     db.add_all([CampaignRecipient(campaign_id=key, user_id=uid, state="pending") for uid in users])
                 schedule.last_campaign_id = key
-            schedule.next_run_at = next_reminder_morning(schedule.next_run_at, now)
+            # Preserve the two-day cadence when a window was missed. If a
+            # delayed run is actually sent today, count two days from today.
+            anchor = now if scheduled_day < today and start <= now < end else schedule.next_run_at
+            schedule.next_run_at = next_reminder_morning(anchor, now)
         campaign = db.get(BillingCampaign, schedule.last_campaign_id) if schedule.last_campaign_id else None
         if not campaign or campaign.status != "running":
             return "scheduled"
