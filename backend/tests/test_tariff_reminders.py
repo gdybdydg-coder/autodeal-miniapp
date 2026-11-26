@@ -13,6 +13,7 @@ from sqlalchemy.exc import OperationalError
 from sqlalchemy.orm import Session
 
 from backend import billing, manual_checkout, manual_payments, subscription_promotion
+from backend import tariff_reminder_audience as audience
 from backend import tariff_reminders as reminders
 from backend.billing_models import (AccessEvent, BillingCampaign, BillingNotice, CampaignRecipient,
                                     Entitlement, MarketingConsent, TariffReminderPreference,
@@ -123,6 +124,14 @@ def test_installing_after_nine_does_not_send_late_or_create_today_queue(bank):
     assert reminders.initialize(engine, settings, MORNING+60) == "enabled"
     assert reminders.tick(engine, settings, no_send, MORNING+61) == "scheduled"
     assert snapshot(engine, settings)["next_run_at"] == at("2026-10-04T09:00:00+03:00")
+
+
+def test_user_without_marketing_consent_is_included_by_default(daily):
+    engine, settings, _ = daily
+    with Session(engine) as db, db.begin():
+        db.add(User(id=THIRD, ready=True))
+    with Session(engine) as db:
+        assert audience.eligible(db, settings, THIRD, MORNING)
 
 
 def test_three_clients_two_confirmed_purchases_only_third_gets_reminder(daily):
@@ -458,7 +467,7 @@ def test_schedule_and_recipient_progress_survive_new_engine(daily, monkeypatch):
     reopened = create_engine(engine.url, connect_args={"check_same_thread": False, "timeout": 30})
     try:
         assert reminders.initialize(reopened, settings, MORNING+1) == "enabled"
-        assert snapshot(reopened, settings)["next_run_at"] == at("2026-10-04T09:00:00+03:00")
+        assert snapshot(reopened, settings)["next_run_at"] == at("2026-10-05T09:00:00+03:00")
         sent = []
         assert reminders.tick(reopened, settings, accepted(sent), MORNING+2) == "sent"
         assert reminders.tick(reopened, settings, no_send, MORNING+4) == "complete"
@@ -556,18 +565,20 @@ def test_database_outcome_write_failure_quarantines_a_send_that_already_started(
     assert len(calls) == 1
 
 
-def test_one_reminder_per_local_day_allows_only_next_days_new_campaign(daily):
+def test_reminders_run_every_two_calendar_days(daily):
     engine, settings, _ = daily
     calls = []
     assert reminders.tick(engine, settings, accepted(calls), MORNING) == "sent"
     assert reminders.tick(engine, settings, no_send, MORNING+2) == "complete"
     assert reminders.tick(engine, settings, no_send, MORNING+10) == "scheduled"
-    next_day = at("2026-10-04T09:00:00+03:00")
-    assert reminders.tick(engine, settings, accepted(calls), next_day) == "sent"
-    assert reminders.tick(engine, settings, no_send, next_day+2) == "complete"
+    skipped_day = at("2026-10-04T09:00:00+03:00")
+    assert reminders.tick(engine, settings, no_send, skipped_day) == "scheduled"
+    next_run = at("2026-10-05T09:00:00+03:00")
+    assert reminders.tick(engine, settings, accepted(calls), next_run) == "sent"
+    assert reminders.tick(engine, settings, no_send, next_run+2) == "complete"
     with Session(engine) as db:
         rows = db.execute(select(CampaignRecipient.campaign_id, CampaignRecipient.state)).all()
-        assert sorted(rows) == [(KEY, "sent"), (reminders.PREFIX + "2026-10-04", "sent")]
+        assert sorted(rows) == [(KEY, "sent"), (reminders.PREFIX + "2026-10-05", "sent")]
     assert len(calls) == 2
 
 
