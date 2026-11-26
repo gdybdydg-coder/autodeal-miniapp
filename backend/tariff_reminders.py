@@ -286,10 +286,10 @@ def tick(engine, settings, request, now=None, *, clock=None):
                 schedule.first_run_at = schedule.next_run_at = start
                 return "scheduled"
             if scheduled_day <= today and start <= now < end:
-                if scheduled_day < today:
-                    schedule.first_run_at = start
                 if not readiness(db, settings):
                     return "checkout_unavailable"
+                if scheduled_day < today:
+                    schedule.first_run_at = start
                 key = PREFIX + today.isoformat()
                 campaign = db.get(BillingCampaign, key)
                 if campaign is None:
