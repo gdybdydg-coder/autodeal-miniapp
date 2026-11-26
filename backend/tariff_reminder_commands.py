@@ -15,7 +15,7 @@ from .manual_payments import ReviewError
 from .subscription_promotion import EligibilityUnavailable
 
 PREFIX = "ad-reminder:"
-OFF_CONFIRMATION = "🔕 Нагадування про придбання тарифу вимкнено"
+OFF_CONFIRMATION = "🔕 Нагадування про підписку вимкнено. Щоб знову їх отримувати, надішли /reminders."
 UNAVAILABLE = "Налаштування нагадувань тимчасово недоступні. Спробуй пізніше."
 
 
@@ -32,7 +32,7 @@ def _admin_card(uid, data):
     enabled = data.get("enabled") is True
     lines = ["🛠 <b>Нагадування про придбання тарифу</b>",
              "Стан: " + ("✅ Увімкнено" if enabled else "🔕 Вимкнено"),
-             "Розклад: щодня о 09:00 · Europe/Kyiv",
+             "Розклад: раз на два дні о 09:00 · Europe/Kyiv",
              "Вікно надсилання: 09:00–09:30 за Києвом",
              "Наступний запуск: " + escape(str(data.get("next_run_kyiv") or "не запланований")),
              "Придатних отримувачів зараз: " + _number(data.get("eligible_recipients")),
@@ -45,13 +45,12 @@ def _admin_card(uid, data):
     labels = {"current_access": "Чинний доступ", "payment_in_progress": "Оплата на перевірці",
               "blocked": "Блокування", "test_or_service": "Тестові й службові",
               "stopped": "Зупинено / неактивний стан", "opted_out": "Відмова від нагадувань",
-              "missing_explicit_consent": "Без записаної явної згоди"}
+}
     reasons = cohort.get("excluded_by_primary_reason") or {}
     if reasons:
         lines.append("Виключення за головною причиною:\n" + "\n".join(
             label + ": " + _number(reasons[key]) for key, label in labels.items() if key in reasons))
-    if reasons.get("missing_explicit_consent", 0):
-        lines.append("Добровільне ввімкнення клієнтом: /reminders. Згода автоматично не змінюється.")
+    lines.append("За замовчуванням отримують усі користувачі без активного доступу; /stop вимикає нагадування для конкретного користувача.")
     payments = data.get("pending_payments") or {}
     if payments:
         stale = sum(item.get("stale", 0) for item in payments.get("requests", {}).values())
@@ -111,10 +110,11 @@ def _admin_card(uid, data):
 def _user_card(uid):
     return billing.message(uid,
         "🔔 <b>Нагадування про придбання тарифу</b>\n\n"
-        "За твоїм дозволом — щодня о 09:00 за Києвом, коли немає чинного доступу "
-        "й оплати на перевірці.\n"
-        "Обери, чи хочеш отримувати ці нагадування. Налаштування пошуку й доступу збережуться.",
-        [[{"text": "🔔 Дозволити щоденні нагадування", "callback_data": PREFIX + "on"}],
+        "За замовчуванням надсилаємо нагадування раз на два дні о 09:00 за Києвом, "
+        "якщо немає чинного доступу чи оплати на перевірці.\n"
+        "/stop вимикає всі сповіщення, включно з нагадуваннями про підписку. "
+        "Тут їх можна знову ввімкнути або вимкнути. Налаштування радарів збережуться.",
+        [[{"text": "🔔 Увімкнути нагадування", "callback_data": PREFIX + "on"}],
          [{"text": "🔕 Не нагадувати", "callback_data": PREFIX + "off"}]])
 
 
@@ -183,8 +183,8 @@ def handle(engine, settings, event, request=None, now=None):
             return _user_card(uid)
         enabled = action == PREFIX + "on"
         enabled = api.set_preference(engine, settings, uid, enabled, update_id, now)
-        return billing.message(uid, "🔔 Щоденні нагадування про придбання тарифу увімкнено."
-            "\nЧас: 09:00 за Києвом. Вимкнути їх можна командою /reminders."
+        return billing.message(uid, "🔔 Нагадування про підписку увімкнено."
+            "\nЧас: раз на два дні о 09:00 за Києвом. Вимкнути їх можна командою /stop або /reminders."
             if enabled else OFF_CONFIRMATION)
     except PermissionError:
         return {"ok": True}
