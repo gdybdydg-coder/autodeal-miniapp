@@ -32,11 +32,23 @@ def test_owner_preflight_does_not_arm_receipt_expectation(prepared, monkeypatch)
         calls.append(args[2])
         return {"ok": True, "result": {"message_id": 42}}
 
+    # checkout.create() may already have established the owner's expectation.
+    # The preflight must leave that baseline unchanged rather than assume an empty DB.
+    with Session(engine) as db:
+        before = db.get(ReceiptExpectation, ADMIN)
+        before_values = (None if before is None else
+                         {column.name: getattr(before, column.name)
+                          for column in ReceiptExpectation.__table__.columns})
+
     assert preflight.run_once(engine, settings, accepted, NOW) == "accepted"
     assert len(calls) == 1
     with Session(engine) as db:
         assert db.get(PaymentRequest, row["code"]).state == "created"
-        assert db.get(ReceiptExpectation, ADMIN) is None
+        after = db.get(ReceiptExpectation, ADMIN)
+        after_values = (None if after is None else
+                        {column.name: getattr(after, column.name)
+                         for column in ReceiptExpectation.__table__.columns})
+        assert after_values == before_values
 
 
 def test_exact_marker_required_and_no_implicit_send(prepared, monkeypatch):
