@@ -206,7 +206,8 @@ def set_enabled(engine, settings, actor, enabled, now, *, update_id=None):
         if enabled and not readiness(db, settings):
             raise manual_payments.ReviewError("reminder_checkout_unavailable", 503)
         if enabled and not row.enabled:
-            row.next_run_at = next_morning(now)
+            future = next_morning(now)
+            row.first_run_at = row.next_run_at = future
         row.enabled = enabled
         if update_id is not None:
             row.admin_update_id = update_id
@@ -282,9 +283,11 @@ def tick(engine, settings, request, now=None, *, clock=None):
             # If the service recovers before 09:00, let today's window run rather
             # than skipping it. A late send becomes the new two-day anchor.
             if scheduled_day < today and now < start:
-                schedule.next_run_at = start
+                schedule.first_run_at = schedule.next_run_at = start
                 return "scheduled"
             if scheduled_day <= today and start <= now < end:
+                if scheduled_day < today:
+                    schedule.first_run_at = start
                 if not readiness(db, settings):
                     return "checkout_unavailable"
                 key = PREFIX + today.isoformat()
