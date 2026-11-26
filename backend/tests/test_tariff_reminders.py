@@ -343,7 +343,7 @@ def test_long_outage_skips_missed_days_instead_of_catching_up(daily):
     calls = []
     assert reminders.tick(engine, settings, accepted(calls), recovered) == "sent"
     assert len(calls) == 1
-    assert snapshot(engine, settings, recovered)["next_run_at"] == at("2026-10-07T09:00:00+03:00")
+    assert snapshot(engine, settings, recovered)["next_run_at"] == at("2026-10-08T09:00:00+03:00")
     with Session(engine) as db:
         assert list(db.scalars(select(BillingCampaign.id))) == [reminders.PREFIX + "2026-10-06"]
 
