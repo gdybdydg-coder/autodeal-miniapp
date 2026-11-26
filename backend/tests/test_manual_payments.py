@@ -366,6 +366,9 @@ def test_queued_old_statuses_never_arrive_after_approval(review):
     assert m.deliver_notice(engine, settings, accepted, NOW+7) == "empty"
     assert len(sent) == 1 and sent[0]["chat_id"] == UID
     assert "підтверджено власником" in sent[0]["text"]
+    assert sent[0]["text"].endswith("(Київ)")
+    assert "Автоматичного продовження немає" not in sent[0]["text"]
+    assert "Зупинені сповіщення залишаються зупиненими" not in sent[0]["text"]
     with Session(engine) as db:
         statuses = list(db.scalars(select(PaymentNotice.state)))
         assert statuses.count("superseded") == 3 and statuses.count("sent") == 1
