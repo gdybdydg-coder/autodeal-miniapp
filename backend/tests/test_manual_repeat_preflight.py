@@ -7,7 +7,7 @@ from sqlalchemy.orm import Session
 from backend import billing, manual_checkout as checkout
 from backend import manual_repeat_preflight as preflight
 from backend.billing_models import Entitlement
-from backend.manual_payment_models import BankCredit, PaymentRequest, PaymentNotice
+from backend.manual_payment_models import BankCredit, PaymentRequest, PaymentNotice, ReceiptExpectation
 from backend.models import SourceProbe
 from backend.tests.test_manual_checkout import bank
 from backend.tests.test_manual_payments import review, ADMIN, UID, NOW, count
@@ -21,6 +21,22 @@ def prepared(bank, monkeypatch):
         billing.control(db).enforce = True
     row = checkout.create(engine, settings, ADMIN, NOW, checkout.TERMS_VERSION)
     return bank, row
+
+
+def test_owner_preflight_does_not_arm_receipt_expectation(prepared, monkeypatch):
+    bank, row = prepared
+    engine, settings, _ = bank
+    calls = []
+
+    def accepted(*args, **kwargs):
+        calls.append(args[2])
+        return {"ok": True, "result": {"message_id": 42}}
+
+    assert preflight.run_once(engine, settings, accepted, NOW) == "accepted"
+    assert len(calls) == 1
+    with Session(engine) as db:
+        assert db.get(PaymentRequest, row["code"]).state == "created"
+        assert db.get(ReceiptExpectation, ADMIN) is None
 
 
 def test_exact_marker_required_and_no_implicit_send(prepared, monkeypatch):
