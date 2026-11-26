@@ -71,7 +71,7 @@ def handle(setup, value, *, settings=None, request=None):
 
 def test_admin_view_has_current_count_schedule_preview_and_controls(setup):
     result = handle(setup, event(uid=ADMIN, text="/tariff_reminders"))
-    assert "2026-10-04T09:00:00+03:00" in result["text"]
+    assert "2026-10-05T09:00:00+03:00" in result["text"]
     assert "Придатних отримувачів зараз: 29" in result["text"]
     assert "09:00–09:30" in result["text"]
     assert setup.data["text"] in result["text"]
