@@ -1,7 +1,8 @@
-"""Current-access audience for daily purchase and renewal reminders.
+"""Current-access audience for subscription reminders.
 
-An old /start is never consent. Explicit daily consent is scoped to this
-campaign and does not mutate general marketing preferences or vehicle access.
+Users without active access are included by default. An explicit reminder
+opt-out, a legacy global opt-out, or /stop excludes them without changing
+vehicle access or subscription state.
 """
 from sqlalchemy import and_, case, exists, func, not_, or_, select
 from sqlalchemy.exc import SQLAlchemyError
@@ -25,35 +26,21 @@ def clauses(settings, now):
     except (TypeError, ValueError, AttributeError):
         raise EligibilityUnavailable("tariff_reminder_exclusions_unavailable") from None
 
-    preference_exists = exists().where(TariffReminderPreference.user_id == User.id)
-    explicit_general_consent = exists().where(
-        MarketingConsent.user_id == User.id,
-        MarketingConsent.allowed.is_(True),
-        MarketingConsent.blocked.is_(False),
-        MarketingConsent.source == EXPLICIT_MARKETING_SOURCE,
-        MarketingConsent.update_id >= 0,
-    )
-    # Telegram update IDs order the choices independently of webhook processing
-    # order. Processing timestamps would let a delayed older opt-in override a
-    # newer refusal. Missing provenance on a global refusal fails closed.
-    explicit_daily_consent = exists().where(
+    preference_disabled = exists().where(
         TariffReminderPreference.user_id == User.id,
-        TariffReminderPreference.enabled.is_(True),
-        TariffReminderPreference.update_id >= 0,
-        not_(exists().where(
-            MarketingConsent.user_id == TariffReminderPreference.user_id,
-            or_(MarketingConsent.blocked.is_(True), and_(
-                MarketingConsent.allowed.is_(False),
-                MarketingConsent.source == GLOBAL_OPT_OUT_SOURCE,
-                or_(MarketingConsent.update_id < 0,
-                    MarketingConsent.update_id >= TariffReminderPreference.update_id),
-            )),
-        )),
+        TariffReminderPreference.enabled.is_(False),
     )
-    permission = or_(
-        and_(not_(preference_exists), explicit_general_consent),
-        explicit_daily_consent,
+    latest_preference_update = (select(TariffReminderPreference.update_id)
+        .where(TariffReminderPreference.user_id == User.id)
+        .correlate(User).scalar_subquery())
+    legacy_opt_out = exists().where(
+        MarketingConsent.user_id == User.id,
+        MarketingConsent.allowed.is_(False),
+        MarketingConsent.source == GLOBAL_OPT_OUT_SOURCE,
+        or_(MarketingConsent.update_id < 0,
+            MarketingConsent.update_id >= latest_preference_update),
     )
+    opted_out = or_(preference_disabled, legacy_opt_out)
     latest_access = (select(AccessEvent.expires_at).where(AccessEvent.user_id == User.id)
         .order_by(AccessEvent.at.desc(), AccessEvent.id.desc()).limit(1)
         .correlate(User).scalar_subquery())
@@ -84,17 +71,11 @@ def clauses(settings, now):
         exists().where(CampaignRecipient.user_id == User.id, CampaignRecipient.state == "failed",
                        CampaignRecipient.error == "403"),
     )
-    opted_out = or_(
-        exists().where(TariffReminderPreference.user_id == User.id,
-                       TariffReminderPreference.enabled.is_(False)),
-        and_(not_(permission), exists().where(MarketingConsent.user_id == User.id,
-            MarketingConsent.allowed.is_(False), MarketingConsent.source == GLOBAL_OPT_OUT_SOURCE)),
-    )
     service = or_(User.id.in_(exclusions), exists().where(StarsTestOrder.user_id == User.id,
         or_(StarsTestOrder.state.in_(PAID_STATES), StarsTestOrder.charge_id.is_not(None))))
     return {"current_access": func.coalesce(active, False), "payment_in_progress": pending,
             "blocked": blocked, "test_or_service": service, "stopped": User.ready.is_not(True),
-            "opted_out": opted_out, "missing_explicit_consent": not_(permission)}
+            "opted_out": opted_out}
 
 
 def query(settings, now):
