@@ -7,14 +7,14 @@ import os
 import secrets
 from datetime import datetime
 
-from sqlalchemy import and_, case, exists, func, not_, or_, select, update
+from sqlalchemy import case, exists, func, not_, or_, select, update
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import Session
 
 from . import billing, billing_campaign, tariff_reminders as daily
 from . import tariff_reminder_audience as audience
 from . import subscription_promotion as promotion
-from .billing_models import BillingCampaign, CampaignRecipient, MarketingConsent, TariffReminderSchedule
+from .billing_models import BillingCampaign, CampaignRecipient, TariffReminderSchedule
 from .models import User
 
 ID = "tariff-reminder-owner-once-20261006:095843"
