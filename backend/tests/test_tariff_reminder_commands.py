@@ -169,7 +169,7 @@ def test_reminder_prompt_explains_default_schedule_and_stop_command(setup):
 
 def test_user_opt_out_has_exact_confirmation_and_only_changes_category(setup):
     result = handle(setup, event(callback=commands.PREFIX+"off", update_id=91))
-    assert result["text"] == "🔕 Нагадування про придбання тарифу вимкнено"
+    assert result["text"] == commands.OFF_CONFIRMATION
     assert setup.calls == [("set_preference", setup.engine, setup.settings, CLIENT, False, 91, NOW)]
     assert [call[0] for call in setup.transport] == ["answerCallbackQuery"]
 
