@@ -29,12 +29,9 @@ def armed():
 
 
 def checks(settings, now):
+    # The one-off campaign uses the same explicit opt-outs as the recurring
+    # campaign. No missing-consent gate remains: users are included by default.
     conditions = audience.clauses(settings, now)
-    missing_permission = conditions.pop("missing_explicit_consent")
-    # This one-time instruction permits clients with no recorded preference.
-    # It cannot override any recorded refusal or invent a daily opt-in.
-    conditions["recorded_permission_denied"] = and_(missing_permission,
-        exists().where(MarketingConsent.user_id == User.id, MarketingConsent.allowed.is_(False)))
     day = datetime.fromtimestamp(now, daily.ZONE).date().isoformat()
     conditions["already_queued_or_attempted_today"] = exists().where(
         CampaignRecipient.user_id == User.id, CampaignRecipient.campaign_id != ID,
@@ -42,7 +39,6 @@ def checks(settings, now):
             CampaignRecipient.campaign_id.startswith(DAY_PREFIX)),
         CampaignRecipient.state.in_(("pending", "retry", "sending", "sent", "uncertain")))
     return {"invalid_private_recipient": User.id <= 0, **conditions}
-
 
 def query(settings, now):
     return select(User.id).where(*(not_(value) for value in checks(settings, now).values()))
