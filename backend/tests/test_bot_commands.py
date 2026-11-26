@@ -92,6 +92,7 @@ def test_failed_or_uncertain_welcome_never_grants_delivery_or_retries(setup, res
 
 def test_stop_cancels_queued_start_and_persists_reminder_opt_out(setup):
     from backend.billing_models import TariffReminderPreference
+    from backend import tariff_reminder_audience
     engine, settings, api = setup
     command(api, "/start")
     sid = subscribe(api).json()["id"]
@@ -112,6 +113,7 @@ def test_stop_cancels_queued_start_and_persists_reminder_opt_out(setup):
         assert db.get(Search, sid).enabled is False
         preference = db.get(TariffReminderPreference, 111)
         assert preference.enabled is False and preference.update_id == 2
+        assert not tariff_reminder_audience.eligible(db, settings, 111, time.time())
 
 
 def test_help_is_read_only_for_consent_and_wrong_bot_mentions_are_ignored(setup):
