@@ -52,7 +52,7 @@ def ready_health(engine, monkeypatch):
 def test_bot_checkout_persists_terms_copy_controls_and_waits_for_owner(bank):
     engine, settings, client=bank
     intro=command(client,"/subscription").json()
-    assert "250 грн / 30 днів" in intro["text"]
+    assert "650 грн / 30 днів" in intro["text"]
     assert count(engine,PaymentRequest)==0
     terms=callback(bank,c.PREFIX+"terms").json()
     assert "Повні умови" not in terms["text"]
@@ -121,7 +121,7 @@ def test_extra_requisites_removed_and_old_button_keeps_main_payment_details(bank
     text=json.dumps(main,ensure_ascii=False)
     assert "Додаткові реквізити" not in text and "Скопіювати призначення" not in text
     assert "Скопіювати IBAN" in text and "Скопіювати картку" in text
-    assert "До сплати: 250 грн" in text and "Отримувач" in text
+    assert "До сплати: 650 грн" in text and "Отримувач" in text
 
 
 @pytest.mark.parametrize("changes",[
@@ -287,7 +287,7 @@ def test_telegram_display_name_never_blocks_checkout_or_repeat(bank, name, usern
     sender={'id':UID,'first_name':name}
     if username is not None: sender['username']=username
     first=callback(bank,c.PREFIX+'accept:'+c.TERMS_VERSION,**{'from':sender}).json()
-    assert 'До сплати: 250 грн' in first['text']
+    assert 'До сплати: 650 грн' in first['text']
     second=callback(bank,c.PREFIX+'accept:'+c.TERMS_VERSION,update=101,**{'from':sender}).json()
     assert first['text']==second['text'] and count(engine,PaymentRequest)==1
     with Session(engine) as db:
