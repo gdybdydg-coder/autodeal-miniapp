@@ -348,6 +348,17 @@ def test_long_outage_skips_missed_days_instead_of_catching_up(daily):
         assert list(db.scalars(select(BillingCampaign.id))) == [reminders.PREFIX + "2026-10-06"]
 
 
+def test_long_outage_recovered_before_nine_uses_today_as_new_cadence_anchor(daily):
+    engine, settings, _ = daily
+    recovered = at("2026-10-06T08:30:00+03:00")
+    assert reminders.tick(engine, settings, no_send, recovered) == "scheduled"
+    assert snapshot(engine, settings, recovered)["next_run_at"] == at("2026-10-06T09:00:00+03:00")
+    calls = []
+    assert reminders.tick(engine, settings, accepted(calls), at("2026-10-06T09:00:00+03:00")) == "sent"
+    assert snapshot(engine, settings, recovered)["first_run_at"] == at("2026-10-06T09:00:00+03:00")
+    assert snapshot(engine, settings, recovered)["next_run_at"] == at("2026-10-08T09:00:00+03:00")
+
+
 def test_long_outage_recovered_after_morning_window_does_not_send(daily):
     engine, settings, _ = daily
     recovered = at("2026-10-06T19:00:00+03:00")
