@@ -89,7 +89,7 @@ def test_admin_view_keeps_previous_day_summary_after_today_runs(setup):
         {"date_kyiv": "2026-10-04", "run_observed": True, "selected": 0}]}
     result = handle(setup, event(uid=ADMIN, text="/tariff_reminders"))
     assert "Останній запуск 2026-10-04: обрано 0" in result["text"]
-    assert ("Попередній день 2026-10-03: обрано 3, поставлено в чергу 3, "
+    assert ("Попередній запуск 2026-10-03: обрано 3, поставлено в чергу 3, "
             "Telegram: 2, помилки 0, невизначено 1") in result["text"]
     assert len(result["text"]) < 4000
     assert setup.transport == []
@@ -123,7 +123,7 @@ def test_admin_previous_day_missing_history_is_not_reported_as_zero(setup, statu
         {"date_kyiv": "2026-10-03", "run_observed": False, "status": status},
         {"date_kyiv": "2026-10-04", "run_observed": True}]}
     result = handle(setup, event(uid=ADMIN, text="/tariff_reminders"))
-    assert "Попередній день 2026-10-03: " + expected in result["text"]
+    assert "Попередній запуск 2026-10-03: " + expected in result["text"]
     assert "Telegram: 0" not in result["text"]
 
 
