@@ -19,7 +19,7 @@ GLOBAL_OPT_OUT_SOURCE = "explicit_opt_out"
 
 
 def clauses(settings, now):
-    """Only current access blocks renewals; consent rules remain unchanged."""
+    """Exclude active access, pending payments, stopped users, and explicit opt-outs."""
     try:
         # Being an administrator is not evidence of payment or a test account.
         exclusions = excluded_user_ids(settings, admin_uid=0)
@@ -38,7 +38,7 @@ def clauses(settings, now):
         MarketingConsent.allowed.is_(False),
         MarketingConsent.source == GLOBAL_OPT_OUT_SOURCE,
         or_(MarketingConsent.update_id < 0,
-            MarketingConsent.update_id >= latest_preference_update),
+            MarketingConsent.update_id >= func.coalesce(latest_preference_update, -1)),
     )
     opted_out = or_(preference_disabled, legacy_opt_out)
     latest_access = (select(AccessEvent.expires_at).where(AccessEvent.user_id == User.id)
