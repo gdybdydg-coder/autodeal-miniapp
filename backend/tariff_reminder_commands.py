@@ -81,9 +81,10 @@ def _admin_card(uid, data):
     else:
         lines.append("Запусків цієї кампанії ще не було.")
     records = (data.get("history") or {}).get("records", [])
-    if len(records) >= 2:
-        previous = records[-2]  # Audit dates are ordered, with today last.
-        label = "Попередній день " + escape(str(previous.get("date_kyiv", "")))
+    previous = next((item for item in reversed(records[:-1])
+                     if item.get("status") != "not_scheduled"), None)
+    if previous:
+        label = "Попередній запуск " + escape(str(previous.get("date_kyiv", "")))
         if previous.get("run_observed"):
             lines.append(label + ": обрано " + _number(previous.get("selected"))
                          + ", поставлено в чергу " + _number(previous.get("queued"))
@@ -91,9 +92,11 @@ def _admin_card(uid, data):
                          + ", помилки " + _number(previous.get("errors"))
                          + ", невизначено " + _number(previous.get("uncertain")))
         else:
-            lines.append(label + (": запуск ще не був запланований."
-                if previous.get("status") == "before_first_planned_run"
-                else ": збереженого запуску немає; кількість відправлень невідома."))
+            status = previous.get("status")
+            detail = ("запуск ще не був запланований." if status == "before_first_planned_run"
+                      else "запуск ще не настав." if status == "not_yet_due"
+                      else "збереженого запуску немає; кількість відправлень невідома.")
+            lines.append(label + ": " + detail)
     text = data.get("text")
     if isinstance(text, str):
         lines.append("<b>Текст нагадування</b>\n" + text)
