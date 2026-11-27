@@ -125,7 +125,11 @@ def initialize(engine, settings, now=None):
             enabled = readiness(db, settings)
             row = TariffReminderSchedule(id=ID, enabled=enabled, installed_at=now,
                 first_run_at=future, next_run_at=future,
-                last_result={} if enabled else {"status": "checkout_unavailable"})
+                # A new schedule already uses the current cadence. Without this
+                # marker, the next startup mistakes a fresh install for a legacy
+                # daily schedule and skips its first 09:00 window.
+                last_result={"cadence_version": CADENCE_VERSION} if enabled else {
+                    "status": "checkout_unavailable", "cadence_version": CADENCE_VERSION})
             db.add(row)
         else:
             metadata = dict(row.last_result) if isinstance(row.last_result, dict) else {}
