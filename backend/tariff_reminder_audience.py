@@ -1,8 +1,8 @@
 """Current-access audience for subscription reminders.
 
 Users without active access are included by default. An explicit reminder
-opt-out, a legacy global opt-out, or /stop excludes them without changing
-vehicle access or subscription state.
+opt-out, a legacy global opt-out, /stop, or a blocked account excludes them
+without changing vehicle access or subscription state.
 """
 from sqlalchemy import and_, case, exists, func, not_, or_, select
 from sqlalchemy.exc import SQLAlchemyError
@@ -137,7 +137,7 @@ def summary(db, settings, now):
                 "excluded_by_primary_reason": reasons,
                 "eligible_copy": {"purchase": eligible_total-renewals, "renewal": renewals},
                 "created_only": created,
-                "basis": "current_access_and_unchanged_explicit_consent", "observed_at": now}
+                "basis": "current_access_payment_state_and_blocked_or_opted_out_users", "observed_at": now}
     except SQLAlchemyError:
         raise EligibilityUnavailable("tariff_reminder_audience_unavailable") from None
 
