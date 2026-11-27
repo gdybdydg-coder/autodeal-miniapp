@@ -50,6 +50,8 @@ def test_default_inclusion_and_all_bulk_views_agree(ledger):
         assert audience.eligible(db, ledger[1], UID, NOW)
         assert audience.ids(db, ledger[1], NOW) == [UID]
         assert audience.count(db, ledger[1], NOW) == 1
+        assert audience.summary(db, ledger[1], NOW)["basis"] == (
+            "current_access_payment_state_and_blocked_or_opted_out_users")
 
 
 @pytest.mark.parametrize("source", ["start", "fixture", "migration", "", "explicit_opt_out"])
