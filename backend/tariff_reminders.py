@@ -24,6 +24,7 @@ from .manual_payment_models import PaymentNotice
 
 ID = "daily-first-purchase-v1"
 PREFIX = ID + ":"
+CADENCE_VERSION = 2
 ZONE = ZoneInfo("Europe/Kyiv")
 WINDOW_MINUTES = 30
 SEND_INTERVAL = 1
@@ -112,7 +113,7 @@ def readiness(db, settings):
 
 
 def initialize(engine, settings, now=None):
-    """Install once; neither restarting nor deploying again re-enables an opt-out."""
+    """Install once and safely migrate the old daily schedule to a two-day cadence."""
     if not configured(settings):
         return "not_installed"
     now = time.time() if now is None else now
@@ -126,6 +127,26 @@ def initialize(engine, settings, now=None):
                 first_run_at=future, next_run_at=future,
                 last_result={} if enabled else {"status": "checkout_unavailable"})
             db.add(row)
+        else:
+            metadata = dict(row.last_result) if isinstance(row.last_result, dict) else {}
+            if metadata.get("cadence_version", 0) < CADENCE_VERSION:
+                # The old daily worker persisted the most recent campaign date.
+                # Anchor the new cadence to that date, not the old next_run_at
+                # (which may be only one day after the previous daily campaign).
+                if row.enabled and isinstance(row.last_campaign_id, str) and row.last_campaign_id.startswith(PREFIX):
+                    try:
+                        last_day = datetime.fromisoformat(row.last_campaign_id[len(PREFIX):]).date()
+                    except ValueError:
+                        last_day = None
+                    if last_day is not None:
+                        last_morning = datetime.combine(last_day, datetime.min.time(), ZONE).replace(hour=9)
+                        row.next_run_at = next_reminder_morning(last_morning.timestamp(), now)
+                elif row.enabled and row.next_run_at <= now:
+                    # No recorded campaign to anchor to: skip missed windows,
+                    # but don't invent a catch-up send.
+                    row.next_run_at = next_morning(now)
+                metadata.update(cadence_version=CADENCE_VERSION, cadence_migrated_at=now)
+                row.last_result = metadata
         return "enabled" if row.enabled else "disabled"
 
 
@@ -187,7 +208,9 @@ def finish(db, schedule, campaign, now, status, reason):
             state="excluded" if status == "cancelled" else "expired", error=reason))
     campaign.status = status
     db.flush()
-    schedule.last_result = result(db, campaign, now)
+    latest = result(db, campaign, now)
+    latest["cadence_version"] = CADENCE_VERSION
+    schedule.last_result = latest
 
 
 def set_enabled(engine, settings, actor, enabled, now, *, update_id=None):
