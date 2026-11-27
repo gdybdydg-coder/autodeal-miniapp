@@ -116,6 +116,38 @@ def test_installation_is_future_only_and_restart_does_not_reset_schedule(daily):
         assert db.scalar(select(func.count()).select_from(CampaignRecipient)) == 0
 
 
+def test_existing_daily_schedule_migrates_from_last_campaign_by_two_kyiv_days(daily):
+    engine, settings, _ = daily
+    with Session(engine) as db, db.begin():
+        row = db.get(TariffReminderSchedule, reminders.ID)
+        row.first_run_at = at("2026-10-01T09:00:00+03:00")
+        row.next_run_at = at("2026-10-04T09:00:00+03:00")  # Old daily cadence.
+        row.last_campaign_id = reminders.PREFIX + "2026-10-03"
+        row.last_result = {"status": "complete"}
+    upgraded_at = at("2026-10-03T10:00:00+03:00")
+    assert reminders.initialize(engine, settings, upgraded_at) == "enabled"
+    data = snapshot(engine, settings, upgraded_at)
+    assert data["next_run_at"] == at("2026-10-05T09:00:00+03:00")
+    with Session(engine) as db:
+        row = db.get(TariffReminderSchedule, reminders.ID)
+        assert row.last_result["cadence_version"] == reminders.CADENCE_VERSION
+        assert row.last_result["cadence_migrated_at"] == upgraded_at
+    # Reinitialization must not move the already migrated schedule.
+    assert reminders.initialize(engine, settings, upgraded_at + 3600) == "enabled"
+    assert snapshot(engine, settings, upgraded_at + 3600)["next_run_at"] == at("2026-10-05T09:00:00+03:00")
+
+
+def test_existing_daily_schedule_migration_respects_kyiv_dst(daily):
+    engine, settings, _ = daily
+    with Session(engine) as db, db.begin():
+        row = db.get(TariffReminderSchedule, reminders.ID)
+        row.last_campaign_id = reminders.PREFIX + "2026-10-24"
+        row.next_run_at = at("2026-10-25T09:00:00+02:00")
+    now = at("2026-10-24T10:00:00+03:00")
+    assert reminders.initialize(engine, settings, now) == "enabled"
+    assert snapshot(engine, settings, now)["next_run_at"] == at("2026-10-26T09:00:00+02:00")
+
+
 def test_installing_after_nine_does_not_send_late_or_create_today_queue(bank):
     engine, settings, _ = bank
     settings = replace(settings, manual_payment_notices_enabled=True)
