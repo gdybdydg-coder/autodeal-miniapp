@@ -1,4 +1,4 @@
-"""Daily advertising eligibility on isolated ledgers, with no external I/O."""
+"""Subscription reminder eligibility on isolated ledgers, with no external I/O."""
 from types import SimpleNamespace
 
 import pytest
@@ -45,24 +45,26 @@ def preference(ledger, enabled, at=NOW-50):
         db.merge(TariffReminderPreference(user_id=UID, enabled=enabled, update_id=2, at=at))
 
 
-def test_verified_consent_and_all_bulk_views_agree(ledger):
+def test_default_inclusion_and_all_bulk_views_agree(ledger):
     with Session(ledger[0]) as db:
         assert audience.eligible(db, ledger[1], UID, NOW)
         assert audience.ids(db, ledger[1], NOW) == [UID]
         assert audience.count(db, ledger[1], NOW) == 1
+        assert audience.summary(db, ledger[1], NOW)["basis"] == (
+            "current_access_payment_state_and_blocked_or_opted_out_users")
 
 
 @pytest.mark.parametrize("source", ["start", "fixture", "migration", "", "explicit_opt_out"])
-def test_allowed_flag_with_unverified_origin_is_not_permission(ledger, source):
+def test_old_allowed_flag_origin_does_not_change_default_inclusion(ledger, source):
     with Session(ledger[0]) as db, db.begin():
         db.get(MarketingConsent, UID).source = source
-    assert not eligible(ledger)
+    assert eligible(ledger)
 
 
-def test_start_alone_or_missing_consent_is_not_permission(ledger):
+def test_missing_marketing_consent_is_included_by_default(ledger):
     with Session(ledger[0]) as db, db.begin():
         db.delete(db.get(MarketingConsent, UID))
-    assert not eligible(ledger)
+    assert eligible(ledger)
 
 
 def test_explicit_daily_consent_can_be_category_only(ledger):
@@ -108,16 +110,16 @@ def test_delayed_global_refusal_20_does_not_override_daily_opt_in_21(ledger):
     assert eligible(ledger)
 
 
-def test_daily_permission_without_verified_telegram_update_fails_closed(ledger):
+def test_legacy_enabled_preference_without_update_id_does_not_opt_users_out(ledger):
     with Session(ledger[0]) as db, db.begin():
         db.add(TariffReminderPreference(user_id=UID, enabled=True, update_id=-1, at=NOW))
-    assert not eligible(ledger)
+    assert eligible(ledger)
 
 
-def test_general_permission_without_verified_telegram_update_fails_closed(ledger):
+def test_old_marketing_record_without_update_id_does_not_change_default(ledger):
     with Session(ledger[0]) as db, db.begin():
         db.get(MarketingConsent, UID).update_id = -1
-    assert not eligible(ledger)
+    assert eligible(ledger)
 
 
 def test_general_reoptin_does_not_cancel_daily_specific_refusal(ledger):

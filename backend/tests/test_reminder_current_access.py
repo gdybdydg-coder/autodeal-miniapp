@@ -21,7 +21,7 @@ def test_expired_buyer_is_eligible_again_with_existing_consent(daily):
     assert reminders.tick(engine, settings, accepted(calls), MORNING) == "sent"
     assert len(calls) == 1
     assert "Продовж" in calls[0]["text"]
-    assert "250 грн на 30 днів" in calls[0]["text"]
+    assert "650 грн / 30 днів" in calls[0]["text"]
     assert "вперше" not in calls[0]["text"]
 
 

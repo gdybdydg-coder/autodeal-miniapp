@@ -3,7 +3,7 @@ const Radar=require('./radar-ui.js'),{create}=require('./cloud-api.js');
 const rid=n=>n.toString(16).padStart(32,'0');
 const catalog={brands:[{id:9,name:'BMW'},{id:84,name:'Volkswagen'}],regions:[{id:1,name:'Вінницька область'},{id:10,name:'Київська область'}],year_min:1900,year_max:2027,
  modelsByBrand:{9:[{id:90,brand_id:9,name:'X5'},{id:91,brand_id:9,name:'3 Series'}],84:[{id:840,brand_id:84,name:'Golf'}]}};
-const draft=()=>({name:'Мій радар',brands:[{brand_id:9,model_ids:[90]}],price_category:3,region_ids:[],year_from:2005,year_to:2026,min_profit:10});
+const draft=()=>({name:'Мій радар',brands:[{brand_id:9,model_ids:[90]}],price_category:3,region_ids:[],year_from:2005,year_to:2026,min_profit:10,fuel_ids:[]});
 const item=(slot=1)=>({...draft(),id:rid(slot),slot,status:'paused',revision:1,brands:[{brand_id:9,brand_name:'BMW',model_ids:[90],models:[{model_id:90,name:'X5'}]}],regions:[]});
 
 test('new radar starts independent, with no arbitrary price category or selected brand',()=>{

@@ -78,7 +78,9 @@ def test_two_current_buyers_and_one_created_request_only_third_is_sent(armed):
     assert tick(armed, now=NOW+2) == "complete"
     assert view(armed)["telegram_accepted"] == 1
     with Session(engine) as db:
-        assert audience.count(db, settings, NOW) == 0
+        # A newly created request is not a submitted/in-review payment; the
+        # user remains eligible until they submit a receipt or gain access.
+        assert audience.count(db, settings, NOW) == 1
         assert db.scalar(select(func.count()).select_from(TariffReminderPreference)) == 0
         assert db.scalar(select(func.count()).select_from(MarketingConsent)) == 0
 

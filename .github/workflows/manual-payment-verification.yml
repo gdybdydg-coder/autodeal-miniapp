@@ -13,6 +13,17 @@ on:
       - 'tools/manual-payment-ui-smoke.cjs'
       - '.github/workflows/manual-payment-verification.yml'
 
+  pull_request:
+    paths:
+      - 'backend/**'
+      - '!backend/docs/**'
+      - '*-test.cjs'
+      - 'payment-review*'
+      - 'billing-ui.js'
+      - 'index.html'
+      - 'tools/manual-payment-ui-smoke.cjs'
+      - '.github/workflows/manual-payment-verification.yml'
+
 permissions:
   contents: read
 
@@ -54,7 +65,7 @@ jobs:
       - name: SQLite and isolated PostgreSQL transactions and authentication
         env:
           AUTODEAL_TEST_POSTGRES_URL: postgresql+psycopg://autodeal_fixture:fixture-only@127.0.0.1:${{ job.services.postgres.ports['5432'] }}/autodeal_manual_fixture
-        run: python -m pytest backend/tests/test_manual_payments.py backend/tests/test_manual_receipts.py backend/tests/test_manual_receipt_proxy.py backend/tests/test_subscription_promotion.py backend/tests/test_manual_checkout.py backend/tests/test_manual_repeat_notice.py backend/tests/test_manual_repeat_preflight.py backend/tests/test_manual_access_audit.py backend/tests/test_subscription_preview.py backend/tests/test_billing_launch.py backend/tests/test_purchase_stats.py backend/tests/test_operational_stats.py backend/tests/test_bot_commands.py -q
+        run: python -m pytest backend/tests/test_manual_payments.py backend/tests/test_manual_receipts.py backend/tests/test_manual_receipt_proxy.py backend/tests/test_subscription_promotion.py backend/tests/test_manual_checkout.py backend/tests/test_manual_repeat_notice.py backend/tests/test_manual_repeat_preflight.py backend/tests/test_manual_access_audit.py backend/tests/test_subscription_preview.py backend/tests/test_billing_launch.py backend/tests/test_purchase_stats.py backend/tests/test_operational_stats.py backend/tests/test_bot_commands.py backend/tests/test_tariff_reminders.py backend/tests/test_tariff_reminder_audience.py backend/tests/test_tariff_reminder_once.py backend/tests/test_tariff_reminder_commands.py backend/tests/test_reminder_current_access.py -q
       - name: Frontend behavior
         run: node --test ./*-test.cjs
       - name: Mobile browser with fully mocked network

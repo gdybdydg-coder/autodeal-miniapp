@@ -16,6 +16,7 @@ def history(db, schedule, now):
     receipts = dict(db.execute(select(CampaignRecipient.campaign_id, func.count()).where(
         CampaignRecipient.campaign_id.in_(keys), CampaignRecipient.state == "sent",
         CampaignRecipient.message_id.is_not(None)).group_by(CampaignRecipient.campaign_id)).all())
+    first_day = datetime.fromtimestamp(schedule.first_run_at, ZONE).date() if schedule else None
     records = []
     for day, key in zip(dates, keys):
         morning = datetime.combine(day, datetime.min.time(), ZONE).replace(hour=9).timestamp()
@@ -25,14 +26,19 @@ def history(db, schedule, now):
             item.update(run_observed=True, telegram_accepted=receipts.get(key, 0),
                         sent_without_receipt=item["sent"]-receipts.get(key, 0))
         else:
-            status = ("before_first_planned_run" if schedule and morning < schedule.first_run_at
-                      else "not_yet_due" if morning > now else "no_saved_campaign")
+            days_from_first = (day-first_day).days if first_day is not None else -1
+            scheduled_day = days_from_first >= 0 and days_from_first % 2 == 0
+            status = ("schedule_not_installed" if schedule is None
+                      else "before_first_planned_run" if morning < schedule.first_run_at
+                      else "not_yet_due" if morning > now
+                      else "no_saved_campaign" if scheduled_day
+                      else "not_scheduled")
             item = {"campaign_id": key, "date_kyiv": day.isoformat(), "status": status,
                     "run_observed": False, "selected": None, "queued": None,
                     "telegram_accepted": None, "excluded": None,
                     "audience_at_selection": None}
         records.append(item)
-    return {"basis": "saved_daily_campaigns_and_telegram_message_ids",
+    return {"basis": "saved_every_two_day_campaigns_and_telegram_message_ids",
             "records": records, "missing_campaign_is_not_zero_delivery": True}
 
 

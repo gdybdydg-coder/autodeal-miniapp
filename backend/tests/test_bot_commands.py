@@ -90,7 +90,9 @@ def test_failed_or_uncertain_welcome_never_grants_delivery_or_retries(setup, res
     assert bot_commands.deliver_one(engine, settings, lambda *_: pytest.fail("retry")) == "idle"
 
 
-def test_stop_cancels_queued_start_and_confirms_without_deleting_filters(setup):
+def test_stop_cancels_queued_start_and_persists_reminder_opt_out(setup):
+    from backend.billing_models import TariffReminderPreference
+    from backend import tariff_reminder_audience
     engine, settings, api = setup
     command(api, "/start")
     sid = subscribe(api).json()["id"]
@@ -102,10 +104,16 @@ def test_stop_cancels_queued_start_and_confirms_without_deleting_filters(setup):
     with Session(engine) as db:
         assert db.get(User, 111).ready is False
         assert db.get(Search, sid).enabled is False
+        preference = db.get(TariffReminderPreference, 111)
+        assert preference is not None and preference.enabled is False
+        assert preference.update_id == 2
     command(api, "/start", update=3)
     bot_commands.deliver_one(engine, settings, accepted(calls))
     with Session(engine) as db:
         assert db.get(Search, sid).enabled is False
+        preference = db.get(TariffReminderPreference, 111)
+        assert preference.enabled is False and preference.update_id == 2
+        assert not tariff_reminder_audience.eligible(db, settings, 111, time.time())
 
 
 def test_help_is_read_only_for_consent_and_wrong_bot_mentions_are_ignored(setup):
@@ -178,7 +186,7 @@ def test_command_menu_requires_verified_bot_and_is_idempotent(setup):
     def send(token, method, payload):
         calls.append(method)
         assert method == "setMyCommands"
-        assert {c["command"] for c in payload["commands"]} == {"start", "help", "stop", "stats"}
+        assert {c["command"] for c in payload["commands"]} == {"start", "help", "stats", "stop", "reminders"}
         return {"ok": True, "result": True}
     bot_commands.configure(engine, settings, send)
     assert calls == []

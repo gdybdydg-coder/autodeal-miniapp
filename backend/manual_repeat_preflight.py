@@ -64,19 +64,24 @@ def run_once(engine, settings, request, now=None):
         code = "ready"
         payload = None
         try:
+            # This is a read-only preflight. Do not call manual_checkout.details():
+            # it opens a second mutation transaction and arms a client's receipt
+            # expectation, neither of which is appropriate for an owner check.
             manual_checkout.require_sales(db)
             if not billing.control(db).enforce:
                 raise m.ReviewError("access_enforcement_disabled")
             owner_request = manual_checkout.latest(db, settings.admin_telegram_id)
+            profile = manual_checkout.subscription_preview.receiving_profile()
+            if profile is None:
+                raise m.ReviewError("recipient_configuration_unavailable")
             if owner_request and owner_request.state in ("created", "clarification", "review"):
-                payload = manual_checkout.details(engine, settings, settings.admin_telegram_id,
-                                                  owner_request.id)
+                data = m.public(owner_request)
+                payload = manual_checkout.render_requisites(
+                    settings.admin_telegram_id, profile, code=owner_request.id,
+                    state=data["state"], awaiting_receipt=data["awaiting_receipt"])
             else:
-                profile = manual_checkout.subscription_preview.receiving_profile()
-                if profile is None:
-                    raise m.ReviewError("recipient_configuration_unavailable")
-                payload = manual_checkout.render_requisites(settings.admin_telegram_id, profile,
-                                                            code=None, state="preview")
+                payload = manual_checkout.render_requisites(
+                    settings.admin_telegram_id, profile, code=None, state="preview")
             if payload.pop("method", None) != "sendMessage":
                 raise m.ReviewError("requisites_payload_invalid")
             payload["text"] = "🔎 Перевірка реквізитів для власника\n\n" + payload["text"]

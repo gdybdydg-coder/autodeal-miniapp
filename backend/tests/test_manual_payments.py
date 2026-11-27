@@ -78,7 +78,7 @@ def pending(review, uid=UID, now=NOW):
 
 def preview(review, row, now=NOW+2, operation="FIXTURE-CREDIT-1", **changes):
     engine, settings, _ = review
-    data = dict(account="FIXTURE-ACCOUNT", operation=operation, actual_amount_minor=25000, bank_verified=True)
+    data = dict(account="FIXTURE-ACCOUNT", operation=operation, actual_amount_minor=manual_checkout.OFFER["amount_minor"], bank_verified=True)
     data.update(changes)
     return m.preview(engine, settings, ADMIN, row["code"], row["revision"], now, **data)
 
@@ -108,7 +108,7 @@ def test_full_signed_api_workflow_with_synthetic_bank_offer(review, monkeypatch)
     body={"terms_version":manual_checkout.TERMS_VERSION}
     row = client.post("/api/manual-payments", headers=headers(), json=body).json()
     code = row["code"]
-    assert row["amount_minor"] == 25000 and row["days"] == 30
+    assert row["amount_minor"] == manual_checkout.OFFER["amount_minor"] and row["days"] == 30
     assert client.post("/api/manual-payments", headers=headers(), json=body).json()["code"] == code
     path = "/api/manual-payments/" + code
     paid = client.post(path + "/paid", headers=headers(), json={}).json()
@@ -125,7 +125,7 @@ def test_full_signed_api_workflow_with_synthetic_bank_offer(review, monkeypatch)
     assert card["name"] == "Test" and card["username"] is None
     pre = client.post("/api/manual-payments/admin/preview", headers=headers(ADMIN), json={
         "code": code, "revision": paid["revision"], "account": "FIXTURE-ACCOUNT", "operation": "FIXTURE-1",
-        "actual_amount_minor": 25000, "bank_verified": True})
+        "actual_amount_minor": manual_checkout.OFFER["amount_minor"], "bank_verified": True})
     assert pre.status_code == 200, pre.text
     result = client.post("/api/manual-payments/admin/confirm", headers=headers(ADMIN),
                          json={"confirmation": pre.json()["confirmation"]})
@@ -164,7 +164,7 @@ def test_owner_configuration_rechecked_for_old_confirmation(review, monkeypatch)
     assert count(engine, BankCredit) == 0
 
 
-@pytest.mark.parametrize("actual", [24900, 25100])
+@pytest.mark.parametrize("actual", [manual_checkout.OFFER["amount_minor"] - 100, manual_checkout.OFFER["amount_minor"] + 100])
 def test_underpayment_and_overpayment_do_not_grant(review, actual):
     row = pending(review)
     with pytest.raises(m.ReviewError, match="amount_requires_clarification"):
@@ -366,6 +366,9 @@ def test_queued_old_statuses_never_arrive_after_approval(review):
     assert m.deliver_notice(engine, settings, accepted, NOW+7) == "empty"
     assert len(sent) == 1 and sent[0]["chat_id"] == UID
     assert "підтверджено власником" in sent[0]["text"]
+    assert sent[0]["text"].endswith("(Київ)")
+    assert "Автоматичного продовження немає" not in sent[0]["text"]
+    assert "Зупинені сповіщення залишаються зупиненими" not in sent[0]["text"]
     with Session(engine) as db:
         statuses = list(db.scalars(select(PaymentNotice.state)))
         assert statuses.count("superseded") == 3 and statuses.count("sent") == 1

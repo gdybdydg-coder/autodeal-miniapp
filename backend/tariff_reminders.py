@@ -1,8 +1,8 @@
-"""Daily purchase/renewal reminders on the existing server/payment outbox.
+"""Every-two-day purchase/renewal reminders on the existing server/payment outbox.
 
 No car-source calls, Telegram polling, new service, or catch-up broadcast.
 BillingControl is the shared lock for owner confirmations, audience changes,
-schedule changes, daily queue construction, and the final bounded send.
+schedule changes, queue construction, and the final bounded send.
 """
 import json
 import logging
@@ -24,27 +24,30 @@ from .manual_payment_models import PaymentNotice
 
 ID = "daily-first-purchase-v1"
 PREFIX = ID + ":"
+CADENCE_VERSION = 2
 ZONE = ZoneInfo("Europe/Kyiv")
 WINDOW_MINUTES = 30
 SEND_INTERVAL = 1
 LEASE = 60
 LOG = logging.getLogger("uvicorn.error")
+PRICE_UAH = manual_checkout.OFFER["amount_minor"] // 100
 TEXT = (
-    "🚘 Шукаєте автомобіль без постійного перегляду оголошень?\n\n"
-    "AutoDeal знаходить вигідні пропозиції AUTO.RIA за вашими фільтрами "
-    "та надсилає їх у Telegram.\n\n"
-    "💳 Підписка — 250 грн на 30 днів.\n\n"
-    "Після переказу натисніть «Я оплатив» і надішліть скриншот. "
-    "Адміністратор перевірить надходження коштів та активує доступ.\n\n"
-    "👇 Перегляньте тариф і реквізити для оплати."
+    "🚘 Шукаєш вигідні автомобілі без постійного перегляду оголошень?\n\n"
+    "AutoDeal відстежує AUTO.RIA за твоїми фільтрами та надсилає нові "
+    "пропозиції в Telegram.\n\n"
+    f"💳 Підписка — {PRICE_UAH} грн / 30 днів.\n\n"
+    "Твої радари й налаштування збережені. Підключи підписку, щоб "
+    "продовжити користуватися AutoDeal.\n\n"
+    "👇 Переглянь тариф та умови оплати."
 )
 RENEWAL_TEXT = (
-    "🔔 Продовж підписку AutoDeal, щоб знову отримувати оголошення.\n\n"
-    "AutoDeal шукає вигідні оголошення AUTO.RIA за твоїми фільтрами "
+    "🔔 Продовж підписку AutoDeal, щоб знову отримувати вигідні пропозиції!\n\n"
+    "AutoDeal відстежує оголошення AUTO.RIA за твоїми фільтрами "
     "та надсилає їх у Telegram.\n\n"
-    "💳 Підписка — 250 грн на 30 днів.\n"
-    "Доступ активується після перевірки оплати адміністратором.\n\n"
-    "Твої фільтри збережені. Переглянь умови продовження 👇"
+    f"💳 Підписка — {PRICE_UAH} грн / 30 днів.\n"
+    "Твої радари й налаштування збережені. Підключи підписку, щоб "
+    "відновити пошук і сповіщення.\n\n"
+    "👇 Переглянь умови підписки."
 )
 BUTTONS = [[{"text": "💳 Переглянути тариф", "callback_data": manual_checkout.PREFIX + "view"}],
            [{"text": "🔕 Не нагадувати", "callback_data": "ad-reminder:off"}]]
@@ -58,6 +61,31 @@ def next_morning(now):
     if candidate.timestamp() <= now:
         candidate = datetime.combine(day + timedelta(days=1), datetime.min.time(), ZONE).replace(hour=9)
     return candidate.timestamp()
+
+
+def next_reminder_morning(previous_run, now):
+    """Advance the persisted cadence by two local calendar days, skipping missed runs."""
+    day = datetime.fromtimestamp(previous_run, ZONE).date() + timedelta(days=2)
+    candidate = datetime.combine(day, datetime.min.time(), ZONE).replace(hour=9)
+    while candidate.timestamp() <= now:
+        day += timedelta(days=2)
+        candidate = datetime.combine(day, datetime.min.time(), ZONE).replace(hour=9)
+    return candidate.timestamp()
+
+
+def set_preference_in_session(db, uid, enabled, update_id, now):
+    """Persist a user's reminder choice inside an existing transaction."""
+    if type(uid) is not int or not 0 < uid < 2**52 or type(enabled) is not bool:
+        raise ValueError("Invalid reminder preference")
+    if type(update_id) is not int or not 0 <= update_id < 2**63:
+        raise ValueError("Invalid preference update")
+    row = db.get(TariffReminderPreference, uid, populate_existing=True)
+    if row is None:
+        row = TariffReminderPreference(user_id=uid, enabled=enabled, update_id=update_id, at=now)
+        db.add(row)
+    elif update_id > row.update_id:
+        row.enabled, row.update_id, row.at = enabled, update_id, now
+    return row.enabled
 
 
 def bounds(now):
@@ -85,7 +113,7 @@ def readiness(db, settings):
 
 
 def initialize(engine, settings, now=None):
-    """Install once; neither restarting nor deploying again re-enables an opt-out."""
+    """Install once and safely migrate the old daily schedule to a two-day cadence."""
     if not configured(settings):
         return "not_installed"
     now = time.time() if now is None else now
@@ -97,8 +125,32 @@ def initialize(engine, settings, now=None):
             enabled = readiness(db, settings)
             row = TariffReminderSchedule(id=ID, enabled=enabled, installed_at=now,
                 first_run_at=future, next_run_at=future,
-                last_result={} if enabled else {"status": "checkout_unavailable"})
+                # A new schedule already uses the current cadence. Without this
+                # marker, the next startup mistakes a fresh install for a legacy
+                # daily schedule and skips its first 09:00 window.
+                last_result={"cadence_version": CADENCE_VERSION} if enabled else {
+                    "status": "checkout_unavailable", "cadence_version": CADENCE_VERSION})
             db.add(row)
+        else:
+            metadata = dict(row.last_result) if isinstance(row.last_result, dict) else {}
+            if metadata.get("cadence_version", 0) < CADENCE_VERSION:
+                # The old daily worker persisted the most recent campaign date.
+                # Anchor the new cadence to that date, not the old next_run_at
+                # (which may be only one day after the previous daily campaign).
+                if row.enabled and isinstance(row.last_campaign_id, str) and row.last_campaign_id.startswith(PREFIX):
+                    try:
+                        last_day = datetime.fromisoformat(row.last_campaign_id[len(PREFIX):]).date()
+                    except ValueError:
+                        last_day = None
+                    if last_day is not None:
+                        last_morning = datetime.combine(last_day, datetime.min.time(), ZONE).replace(hour=9)
+                        row.next_run_at = next_reminder_morning(last_morning.timestamp(), now)
+                elif row.enabled and row.next_run_at <= now:
+                    # No recorded campaign to anchor to: skip missed windows,
+                    # but don't invent a catch-up send.
+                    row.next_run_at = next_morning(now)
+                metadata.update(cadence_version=CADENCE_VERSION, cadence_migrated_at=now)
+                row.last_result = metadata
         return "enabled" if row.enabled else "disabled"
 
 
@@ -160,7 +212,9 @@ def finish(db, schedule, campaign, now, status, reason):
             state="excluded" if status == "cancelled" else "expired", error=reason))
     campaign.status = status
     db.flush()
-    schedule.last_result = result(db, campaign, now)
+    latest = result(db, campaign, now)
+    latest["cadence_version"] = CADENCE_VERSION
+    schedule.last_result = latest
 
 
 def set_enabled(engine, settings, actor, enabled, now, *, update_id=None):
@@ -179,7 +233,8 @@ def set_enabled(engine, settings, actor, enabled, now, *, update_id=None):
         if enabled and not readiness(db, settings):
             raise manual_payments.ReviewError("reminder_checkout_unavailable", 503)
         if enabled and not row.enabled:
-            row.next_run_at = next_morning(now)
+            future = next_morning(now)
+            row.first_run_at = row.next_run_at = future
         row.enabled = enabled
         if update_id is not None:
             row.admin_update_id = update_id
@@ -199,13 +254,7 @@ def set_preference(engine, settings, uid, enabled, update_id, now):
         raise ValueError("Invalid preference update")
     with Session(engine) as db, db.begin():
         billing.control(db, lock=True)
-        row = db.get(TariffReminderPreference, uid, populate_existing=True)
-        if row is None:
-            row = TariffReminderPreference(user_id=uid, enabled=enabled, update_id=update_id, at=now)
-            db.add(row)
-        elif update_id > row.update_id:
-            row.enabled, row.update_id, row.at = enabled, update_id, now
-        return row.enabled
+        return set_preference_in_session(db, uid, enabled, update_id, now)
 
 
 def high_priority(db, now):
@@ -256,12 +305,19 @@ def tick(engine, settings, request, now=None, *, clock=None):
             return "disabled"
         start, end = bounds(now)
         if now >= schedule.next_run_at:
-            # Missed days advance directly to the next future morning. No backfill.
-            due_today = datetime.fromtimestamp(schedule.next_run_at, ZONE).date() <= datetime.fromtimestamp(now, ZONE).date()
-            if due_today and start <= now < end:
+            scheduled_day = datetime.fromtimestamp(schedule.next_run_at, ZONE).date()
+            today = datetime.fromtimestamp(now, ZONE).date()
+            # If the service recovers before 09:00, let today's window run rather
+            # than skipping it. A late send becomes the new two-day anchor.
+            if scheduled_day < today and now < start:
+                schedule.first_run_at = schedule.next_run_at = start
+                return "scheduled"
+            if scheduled_day <= today and start <= now < end:
                 if not readiness(db, settings):
                     return "checkout_unavailable"
-                key = PREFIX + datetime.fromtimestamp(now, ZONE).date().isoformat()
+                if scheduled_day < today:
+                    schedule.first_run_at = start
+                key = PREFIX + today.isoformat()
                 campaign = db.get(BillingCampaign, key)
                 if campaign is None:
                     users = audience.ids(db, settings, now)  # One authoritative bulk query.
@@ -273,7 +329,10 @@ def tick(engine, settings, request, now=None, *, clock=None):
                     db.add(campaign)
                     db.add_all([CampaignRecipient(campaign_id=key, user_id=uid, state="pending") for uid in users])
                 schedule.last_campaign_id = key
-            schedule.next_run_at = next_morning(now)
+            # Preserve the two-day cadence when a window was missed. If a
+            # delayed run is actually sent today, count two days from today.
+            anchor = now if scheduled_day < today and start <= now < end else schedule.next_run_at
+            schedule.next_run_at = next_reminder_morning(anchor, now)
         campaign = db.get(BillingCampaign, schedule.last_campaign_id) if schedule.last_campaign_id else None
         if not campaign or campaign.status != "running":
             return "scheduled"

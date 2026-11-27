@@ -869,6 +869,11 @@ def create_app(settings: Settings, engine=None, *, paid_source_only=False):
             if command in ("/start", "/stop"):
                 user.ready = command == "/start"
             if command == "/stop":
+                # /stop is also a durable opt-out from subscription reminders.
+                # Share BillingControl's lock with audience construction and sends.
+                billing.control(db, lock=True)
+                tariff_reminders.set_preference_in_session(
+                    db, uid, False, update_id, command_at)
                 if engine.get_execution_options().get("autodeal_radars_enabled") is True:
                     from .radar_monitor import pause_user
                     pause_user(db, uid)

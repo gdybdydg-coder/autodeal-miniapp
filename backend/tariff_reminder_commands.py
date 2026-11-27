@@ -1,8 +1,8 @@
-"""Private Telegram controls for the daily purchase/renewal reminder campaign.
+"""Private Telegram controls for the every-two-day subscription reminder campaign.
 
-Only explicit reminder actions change category preferences. Administrative
-controls verify the protected owner configuration before opening a DB session.
-The webhook returns a reply payload; this module never sends advertisements.
+Users are included by default; explicit reminder actions update their opt-out.
+Administrative controls verify the protected owner configuration before
+opening a DB session. The webhook returns a reply payload; it never sends ads.
 """
 from html import escape
 import time
@@ -15,7 +15,7 @@ from .manual_payments import ReviewError
 from .subscription_promotion import EligibilityUnavailable
 
 PREFIX = "ad-reminder:"
-OFF_CONFIRMATION = "🔕 Нагадування про придбання тарифу вимкнено"
+OFF_CONFIRMATION = "🔕 Нагадування про підписку вимкнено. Щоб знову їх отримувати, надішли /reminders."
 UNAVAILABLE = "Налаштування нагадувань тимчасово недоступні. Спробуй пізніше."
 
 
@@ -32,7 +32,7 @@ def _admin_card(uid, data):
     enabled = data.get("enabled") is True
     lines = ["🛠 <b>Нагадування про придбання тарифу</b>",
              "Стан: " + ("✅ Увімкнено" if enabled else "🔕 Вимкнено"),
-             "Розклад: щодня о 09:00 · Europe/Kyiv",
+             "Розклад: раз на два дні о 09:00 · Europe/Kyiv",
              "Вікно надсилання: 09:00–09:30 за Києвом",
              "Наступний запуск: " + escape(str(data.get("next_run_kyiv") or "не запланований")),
              "Придатних отримувачів зараз: " + _number(data.get("eligible_recipients")),
@@ -44,14 +44,12 @@ def _admin_card(uid, data):
                      + "; придатних: " + _number(created.get("eligible_users")))
     labels = {"current_access": "Чинний доступ", "payment_in_progress": "Оплата на перевірці",
               "blocked": "Блокування", "test_or_service": "Тестові й службові",
-              "stopped": "Зупинено / неактивний стан", "opted_out": "Відмова від нагадувань",
-              "missing_explicit_consent": "Без записаної явної згоди"}
+              "stopped": "Зупинено / неактивний стан", "opted_out": "Відмова від нагадувань"}
     reasons = cohort.get("excluded_by_primary_reason") or {}
     if reasons:
         lines.append("Виключення за головною причиною:\n" + "\n".join(
             label + ": " + _number(reasons[key]) for key, label in labels.items() if key in reasons))
-    if reasons.get("missing_explicit_consent", 0):
-        lines.append("Добровільне ввімкнення клієнтом: /reminders. Згода автоматично не змінюється.")
+    lines.append("За замовчуванням нагадування отримують користувачі без чинного доступу та незавершеної оплати; /stop вимикає їх для конкретного користувача.")
     payments = data.get("pending_payments") or {}
     if payments:
         stale = sum(item.get("stale", 0) for item in payments.get("requests", {}).values())
@@ -83,9 +81,10 @@ def _admin_card(uid, data):
     else:
         lines.append("Запусків цієї кампанії ще не було.")
     records = (data.get("history") or {}).get("records", [])
-    if len(records) >= 2:
-        previous = records[-2]  # Audit dates are ordered, with today last.
-        label = "Попередній день " + escape(str(previous.get("date_kyiv", "")))
+    previous = next((item for item in reversed(records[:-1])
+                     if item.get("status") != "not_scheduled"), None)
+    if previous:
+        label = "Попередній запуск " + escape(str(previous.get("date_kyiv", "")))
         if previous.get("run_observed"):
             lines.append(label + ": обрано " + _number(previous.get("selected"))
                          + ", поставлено в чергу " + _number(previous.get("queued"))
@@ -93,9 +92,11 @@ def _admin_card(uid, data):
                          + ", помилки " + _number(previous.get("errors"))
                          + ", невизначено " + _number(previous.get("uncertain")))
         else:
-            lines.append(label + (": запуск ще не був запланований."
-                if previous.get("status") == "before_first_planned_run"
-                else ": збереженого запуску немає; кількість відправлень невідома."))
+            status = previous.get("status")
+            detail = ("запуск ще не був запланований." if status == "before_first_planned_run"
+                      else "запуск ще не настав." if status == "not_yet_due"
+                      else "збереженого запуску немає; кількість відправлень невідома.")
+            lines.append(label + ": " + detail)
     text = data.get("text")
     if isinstance(text, str):
         lines.append("<b>Текст нагадування</b>\n" + text)
@@ -111,10 +112,11 @@ def _admin_card(uid, data):
 def _user_card(uid):
     return billing.message(uid,
         "🔔 <b>Нагадування про придбання тарифу</b>\n\n"
-        "За твоїм дозволом — щодня о 09:00 за Києвом, коли немає чинного доступу "
-        "й оплати на перевірці.\n"
-        "Обери, чи хочеш отримувати ці нагадування. Налаштування пошуку й доступу збережуться.",
-        [[{"text": "🔔 Дозволити щоденні нагадування", "callback_data": PREFIX + "on"}],
+        "За замовчуванням надсилаємо нагадування раз на два дні о 09:00 за Києвом, "
+        "якщо немає чинного доступу чи оплати на перевірці.\n"
+        "/stop вимикає всі сповіщення, включно з нагадуваннями про підписку. "
+        "Тут їх можна знову ввімкнути або вимкнути. Налаштування радарів збережуться.",
+        [[{"text": "🔔 Увімкнути нагадування", "callback_data": PREFIX + "on"}],
          [{"text": "🔕 Не нагадувати", "callback_data": PREFIX + "off"}]])
 
 
@@ -183,8 +185,8 @@ def handle(engine, settings, event, request=None, now=None):
             return _user_card(uid)
         enabled = action == PREFIX + "on"
         enabled = api.set_preference(engine, settings, uid, enabled, update_id, now)
-        return billing.message(uid, "🔔 Щоденні нагадування про придбання тарифу увімкнено."
-            "\nЧас: 09:00 за Києвом. Вимкнути їх можна командою /reminders."
+        return billing.message(uid, "🔔 Нагадування про підписку увімкнено."
+            "\nЧас: раз на два дні о 09:00 за Києвом. Вимкнути їх можна командою /stop або /reminders."
             if enabled else OFF_CONFIRMATION)
     except PermissionError:
         return {"ok": True}
